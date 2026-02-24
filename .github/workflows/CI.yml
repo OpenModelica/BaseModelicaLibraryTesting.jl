@@ -22,6 +22,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        omc-version:
+          - 'nightly'
         version:
           - '1.10'
           - '1.12'
@@ -31,10 +33,31 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v6
-      - uses: julia-actions/setup-julia@v2
+
+      - name: "Set up OpenModelica Compiler"
+        uses: OpenModelica/setup-openmodelica@v1.0
+        with:
+          version: ${{ matrix.omc-version }}
+          packages: |
+            omc
+          libraries: |
+            'Modelica 4.1.0'
+
+      - name: "Setup Julia ${{ matrix.version }}-${{ matrix.arch }}"
+        uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
+
+      - name: Sanity check
+        run: |
+          julia --project='.' -e 'using BaseModelicaLibraryTesting; main(library = "Modelica", version = "4.1.0", filter = "Modelica.Electrical.Analog.Examples.ChuaCircuit", results_root = "main/Modelica/4.1.0/")'
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v6
+        with:
+          name: test-results-${{ matrix.version }}-${{ matrix.os }}-${{ matrix.arch }}
+          path: main/
