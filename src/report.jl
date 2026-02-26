@@ -33,6 +33,15 @@ function rel_log_file_or_nothing(results_root::String, model::String,
     isfile(path) ? joinpath("files", model, "$(model)_$(phase).log") : nothing
 end
 
+function _format_duration(t::Float64)::String
+    t < 60 && return @sprintf("%.1f s", t)
+    m = div(floor(Int, t), 60)
+    s = floor(Int, t) % 60
+    m < 60 && return @sprintf("%d min %d s", m, s)
+    h = div(m, 60)
+    return @sprintf("%d h %d min %d s", h, m % 60, s)
+end
+
 """
     generate_report(results, results_root, info) → report_path
 
@@ -66,6 +75,7 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
     filter_row = isempty(info.filter)   ? "" : "<br>Filter: $(info.filter)"
     ref_row    = isempty(info.ref_root) ? "" : "<br>Reference results: $(info.ref_root)"
     ram_str    = @sprintf("%.1f", info.ram_gb)
+    time_str   = _format_duration(info.total_time_s)
 
     html = """<!DOCTYPE html>
 <html lang="en">
@@ -91,7 +101,8 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
 OpenModelica: $(info.omc_version)<br>
 BaseModelica.jl: $(info.bm_version)$(filter_row)$(ref_row)</p>
 <p>CPU: $(info.cpu_model) ($(info.cpu_threads) threads)<br>
-RAM: $(ram_str) GiB</p>
+RAM: $(ram_str) GiB<br>
+Total run time: $(time_str)</p>
 
 <table style="width:auto; margin-bottom:1.5em;">
   <tr><th>Stage</th><th>Passed</th><th>Total</th><th>Rate</th></tr>

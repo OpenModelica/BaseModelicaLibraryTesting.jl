@@ -53,6 +53,7 @@ Metadata about a single test run, collected by `main()` and written into both
 - `cpu_model`    — CPU model name from `Sys.cpu_info()`
 - `cpu_threads`  — number of logical CPU threads
 - `ram_gb`       — total system RAM in GiB
+- `total_time_s` — wall-clock duration of the full test run in seconds
 """
 struct RunInfo
     library      :: String
@@ -66,6 +67,7 @@ struct RunInfo
     cpu_model    :: String
     cpu_threads  :: Int
     ram_gb       :: Float64
+    total_time_s :: Float64
 end
 
 # ── Result type ────────────────────────────────────────────────────────────────

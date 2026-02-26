@@ -66,6 +66,8 @@ function main(;
     results_root :: String                = "",
     ref_root     :: String                = get(ENV, "MAPLIB_REF", ""),
 )
+    t0 = time()
+
     if isempty(results_root)
         results_root = joinpath(library, version)
     end
@@ -150,6 +152,7 @@ function main(;
         isempty(cpu_info) ? "unknown" : strip(cpu_info[1].model),
         length(cpu_info),
         Sys.total_memory() / 1024^3,
+        time() - t0,
     )
 
     generate_report(results, results_root, info)
