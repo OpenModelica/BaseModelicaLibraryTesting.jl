@@ -37,8 +37,11 @@ function write_summary(
             print(io,
                 "    {\"name\":\"$(_esc_json(r.name))\"," *
                 "\"export\":$(r.export_success)," *
+                "\"export_time\":$(@sprintf "%.3f" r.export_time)," *
                 "\"parse\":$(r.parse_success)," *
+                "\"parse_time\":$(@sprintf "%.3f" r.parse_time)," *
                 "\"sim\":$(r.sim_success)," *
+                "\"sim_time\":$(@sprintf "%.3f" r.sim_time)," *
                 "\"cmp_total\":$(r.cmp_total)," *
                 "\"cmp_pass\":$(r.cmp_pass)}$sep\n")
         end
@@ -112,15 +115,18 @@ function load_summary(results_root::String)::Union{RunSummary,Nothing}
 
     models = Dict{String,Any}[]
     for m in eachmatch(
-        r"\{\"name\":\"([^\"]*)\",\"export\":(true|false),\"parse\":(true|false),\"sim\":(true|false),\"cmp_total\":(\d+),\"cmp_pass\":(\d+)\}",
+        r"\{\"name\":\"([^\"]*)\",\"export\":(true|false),\"export_time\":([\d.]+),\"parse\":(true|false),\"parse_time\":([\d.]+),\"sim\":(true|false),\"sim_time\":([\d.]+),\"cmp_total\":(\d+),\"cmp_pass\":(\d+)\}",
         txt)
         push!(models, Dict{String,Any}(
-            "name"      => string(m.captures[1]),
-            "export"    => m.captures[2] == "true",
-            "parse"     => m.captures[3] == "true",
-            "sim"       => m.captures[4] == "true",
-            "cmp_total" => parse(Int, m.captures[5]),
-            "cmp_pass"  => parse(Int, m.captures[6]),
+            "name"        => string(m.captures[1]),
+            "export"      => m.captures[2] == "true",
+            "export_time" => parse(Float64, m.captures[3]),
+            "parse"       => m.captures[4] == "true",
+            "parse_time"  => parse(Float64, m.captures[5]),
+            "sim"         => m.captures[6] == "true",
+            "sim_time"    => parse(Float64, m.captures[7]),
+            "cmp_total"   => parse(Int, m.captures[8]),
+            "cmp_pass"    => parse(Int, m.captures[9]),
         ))
     end
     return RunSummary(
