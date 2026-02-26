@@ -52,12 +52,53 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
 
-      - name: Sanity check
+  sanity:
+    name: Sanity check - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    permissions:
+      actions: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: "Set up OpenModelica Compiler"
+        uses: OpenModelica/setup-openmodelica@v1.0
+        with:
+          version: 'nightly'
+          packages: |
+            omc
+          libraries: |
+            'Modelica 4.1.0'
+
+      - name: "Setup Julia 1.12-x64"
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.12'
+          arch: x64
+      - uses: julia-actions/cache@v2
+      - uses: julia-actions/julia-buildpkg@v1
+
+      - name: Sanity check ChuaCircuit
         run: |
-          julia --project='.' -e 'using BaseModelicaLibraryTesting; main(library = "Modelica", version = "4.1.0", filter = "Modelica.Electrical.Analog.Examples.ChuaCircuit", results_root = "main/Modelica/4.1.0/")'
+          julia --project='.' -e '
+            using BaseModelicaLibraryTesting
+            main(
+              library      = "Modelica",
+              version      = "4.1.0",
+              filter       = "Modelica.Electrical.Analog.Examples.ChuaCircuit",
+              results_root = "main/Modelica/4.1.0/"
+            )
+          '
 
       - name: Upload test results
         uses: actions/upload-artifact@v6
         with:
-          name: test-results-${{ matrix.version }}-${{ matrix.os }}-${{ matrix.arch }}
+          name: sanity-results-${{ matrix.os }}
           path: main/
+          if-no-files-found: error
