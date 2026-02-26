@@ -33,6 +33,43 @@ Base.@kwdef mutable struct CompareSettings
     error_fn :: Symbol  = :mixed
 end
 
+# ── Run metadata ───────────────────────────────────────────────────────────────
+
+"""
+    RunInfo
+
+Metadata about a single test run, collected by `main()` and written into both
+`index.html` and `summary.json`.
+
+# Fields
+- `library`      — Modelica library name (e.g. `"Modelica"`)
+- `lib_version`  — library version (e.g. `"4.1.0"`)
+- `filter`       — model name filter regex, or `""` when none was given
+- `omc_exe`      — path / command used to launch OMC
+- `results_root` — absolute path where results are written
+- `ref_root`     — absolute path to reference results, or `""` when unused
+- `omc_version`  — version string returned by `getVersion()`, e.g. `"v1.23.0"`
+- `bm_version`   — BaseModelica.jl version string, e.g. `"1.6.0"`
+- `cpu_model`    — CPU model name from `Sys.cpu_info()`
+- `cpu_threads`  — number of logical CPU threads
+- `ram_gb`       — total system RAM in GiB
+- `total_time_s` — wall-clock duration of the full test run in seconds
+"""
+struct RunInfo
+    library      :: String
+    lib_version  :: String
+    filter       :: String   # "" when no filter was given
+    omc_exe      :: String
+    results_root :: String
+    ref_root     :: String   # "" when no reference root was given
+    omc_version  :: String
+    bm_version   :: String
+    cpu_model    :: String
+    cpu_threads  :: Int
+    ram_gb       :: Float64
+    total_time_s :: Float64
+end
+
 # ── Result type ────────────────────────────────────────────────────────────────
 
 struct ModelResult

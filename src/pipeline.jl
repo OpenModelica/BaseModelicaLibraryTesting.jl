@@ -66,6 +66,8 @@ function main(;
     results_root :: String                = "",
     ref_root     :: String                = get(ENV, "MAPLIB_REF", ""),
 )
+    t0 = time()
+
     if isempty(results_root)
         results_root = joinpath(library, version)
     end
@@ -76,6 +78,7 @@ function main(;
     @info "Starting OMC session ($(omc_exe))..."
     omc = OMJulia.OMCSession(omc_exe)
 
+    omc_version = "unknown"
     results = ModelResult[]
     try
         omc_version = sendExpression(omc, "getVersion()")
@@ -136,6 +139,23 @@ function main(;
         OMJulia.quit(omc)
     end
 
-    generate_report(results, results_root, library, version)
+    cpu_info = Sys.cpu_info()
+    info = RunInfo(
+        library,
+        version,
+        something(filter, ""),
+        omc_exe,
+        results_root,
+        ref_root,
+        omc_version,
+        string(pkgversion(BaseModelica)),
+        isempty(cpu_info) ? "unknown" : strip(cpu_info[1].model),
+        length(cpu_info),
+        Sys.total_memory() / 1024^3,
+        time() - t0,
+    )
+
+    generate_report(results, results_root, info)
+    write_summary(results, results_root, info)
     return results
 end
