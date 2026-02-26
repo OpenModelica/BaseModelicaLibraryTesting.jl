@@ -5,10 +5,11 @@ import Printf: @sprintf
 
 function _status_cell(ok::Bool, t::Float64, logFile::Union{String,Nothing})
     link = isnothing(logFile) ? "" : """ <a href="$(logFile)">(log)</a>"""
+    time = t > 0 ? @sprintf("%.2f", t) * " s" : ""
     if ok
-        return """<td class="ok">&#10003; $(@sprintf "%.2f" t) s$link</td>"""
+        return """<td class="ok">&#10003;$(time)$(link)</td>"""
     else
-        return """<td class="fail">&#10007;$link</td>"""
+        return """<td class="fail">&#10007;$(time)$(link)</td>"""
     end
 end
 
@@ -18,12 +19,17 @@ function _cmp_cell(r::ModelResult, results_root::String)
     end
     n, p = r.cmp_total, r.cmp_pass
     if p == n
-        return """<td class="ok">&#10003; $p/$n</td>"""
+        # No diff CSV when all signals pass — link the sim CSV instead
+        short = split(r.name, ".")[end]
+        sim_csv = joinpath("files", r.name, "$(short)_sim.csv")
+        csv_link = isfile(joinpath(results_root, sim_csv)) ? """ <a href="$sim_csv">(CSV)</a>""" : ""
+        return """<td class="ok">&#10003; $p/$n$(csv_link)</td>"""
     else
         # Link to the interactive diff HTML (next to the CSV, same name, .html extension)
         diff_html = replace(r.cmp_csv, r"\.csv$" => ".html")
         rel = relpath(isfile(diff_html) ? diff_html : r.cmp_csv, results_root)
-        return """<td class="fail"><a href="$rel">$p/$n</a></td>"""
+        csv_link = isempty(r.cmp_csv) ? "" : """ <a href="$(relpath(r.cmp_csv, results_root))">(CSV)</a>"""
+        return """<td class="fail"><a href="$rel">$p/$n</a>$(csv_link)</td>"""
     end
 end
 
