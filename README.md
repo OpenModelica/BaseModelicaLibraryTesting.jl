@@ -1,6 +1,7 @@
 # BaseModelicaLibraryTesting.jl
 
 [![Build Status][build-badge-svg]][build-action-url]
+[![MSL Test Reports][msl-badge-svg]][msl-pages-url]
 
 Experimental Base Modelica library testing based on Julia.
 
@@ -68,6 +69,8 @@ file for details.
 
 [build-badge-svg]: https://github.com/OpenModelica/BaseModelicaLibraryTesting.jl/actions/workflows/CI.yml/badge.svg?branch=main
 [build-action-url]: https://github.com/OpenModelica/BaseModelicaLibraryTesting.jl/actions/workflows/CI.yml?query=branch%3Amain
+[msl-badge-svg]: https://github.com/OpenModelica/BaseModelicaLibraryTesting.jl/actions/workflows/msl-test.yml/badge.svg?branch=main
+[msl-pages-url]: https://openmodelica.github.io/BaseModelicaLibraryTesting.jl/
 [openmodelica-url]: https://openmodelica.org/
 [basemodelicajl-url]: https://github.com/SciML/BaseModelica.jl
 [modelingtoolkitjl-url]: https://github.com/SciML/ModelingToolkit.jl
