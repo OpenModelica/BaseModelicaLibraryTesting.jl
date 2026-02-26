@@ -1,0 +1,182 @@
+//! base 0.1.0
+package 'BUF3S'
+  type 'Modelica.Electrical.Digital.Interfaces.Logic' = enumeration('\'U\'', '\'X\'', '\'0\'', '\'1\'', '\'Z\'', '\'W\'', '\'L\'', '\'H\'', '\'-\'');
+
+  type 'Modelica.Electrical.Digital.Interfaces.Strength' = enumeration('\'S_X01\'', '\'S_X0H\'', '\'S_XL1\'', '\'S_X0Z\'', '\'S_XZ1\'', '\'S_WLH\'', '\'S_WLZ\'', '\'S_WZH\'', '\'S_W0H\'', '\'S_WL1\'');
+
+  type 'Modelica.Electrical.Digital.Interfaces.UX01' = enumeration('\'U\'', '\'X\'', '\'0\'', '\'1\'');
+
+  model 'BUF3S' "Functionality test of BUF3S"
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'e_table.x[1]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'e_table.x[2]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'e_table.x[3]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'' "Vector of values";
+    parameter Real 'e_table.t[1]' = 0.0 "Vector of corresponding time points";
+    parameter Real 'e_table.t[2]' = 5.0 "Vector of corresponding time points";
+    parameter Real 'e_table.t[3]' = 9.0 "Vector of corresponding time points";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'e_table.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial output value";
+    parameter Integer 'e_table.n' = 3 "Table size";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'e_table.y';
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'x_table.x[1]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'x_table.x[2]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter Real 'x_table.t[1]' = 1.0 "Vector of corresponding time points";
+    parameter Real 'x_table.t[2]' = 7.0 "Vector of corresponding time points";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'x_table.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial output value";
+    parameter Integer 'x_table.n' = 2 "Table size";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'x_table.y';
+    parameter Real 'bUF3S.tHL'(unit = "s", quantity = "Time") = 1.0 "High->Low delay";
+    parameter Real 'bUF3S.tLH'(unit = "s", quantity = "Time") = 1.0 "Low->High delay";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Strength' 'bUF3S.strength' = 'Modelica.Electrical.Digital.Interfaces.Strength'.'\'S_X01\'' "Output strength";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.enable';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.x';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.y';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.nextstate'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.yy'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.inertialDelaySensitive.x'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital input signal";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.inertialDelaySensitive.y'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital output signal";
+    parameter Real 'bUF3S.inertialDelaySensitive.tLH'(start = 0.0, unit = "s", quantity = "Time") = 1.0 "Rise inertial delay";
+    parameter Real 'bUF3S.inertialDelaySensitive.tHL'(start = 0.0, unit = "s", quantity = "Time") = 1.0 "Fall inertial delay";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.inertialDelaySensitive.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial value of output";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'bUF3S.inertialDelaySensitive.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    Real 'bUF3S.inertialDelaySensitive.delayTime'(unit = "s", quantity = "Time");
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.inertialDelaySensitive.y_auxiliary'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'bUF3S.inertialDelaySensitive.y_old'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    Integer 'bUF3S.inertialDelaySensitive.lh';
+    discrete Real 'bUF3S.inertialDelaySensitive.t_next'(unit = "s", quantity = "Time");
+  equation
+    'bUF3S.yy' = 'bUF3S.inertialDelaySensitive.x';
+    'bUF3S.inertialDelaySensitive.y' = 'bUF3S.y';
+    'x_table.y' = 'bUF3S.x';
+    'e_table.y' = 'bUF3S.enable';
+  algorithm
+    if initial() then
+      assert(true, "Invalid size of table (n < 1)", AssertionLevel.error);
+    end if;
+
+    'e_table.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+
+    if time >= ({0.0, 5.0, 9.0})[1] then
+      'e_table.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\''})[1];
+    end if;
+
+    if time >= ({0.0, 5.0, 9.0})[2] then
+      'e_table.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\''})[2];
+    end if;
+
+    if time >= ({0.0, 5.0, 9.0})[3] then
+      'e_table.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\''})[3];
+    end if;
+  algorithm
+    if initial() then
+      assert(true, "Invalid size of table (n < 1)", AssertionLevel.error);
+    end if;
+
+    'x_table.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+
+    if time >= ({1.0, 7.0})[1] then
+      'x_table.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[1];
+    end if;
+
+    if time >= ({1.0, 7.0})[2] then
+      'x_table.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[2];
+    end if;
+  algorithm
+    when {initial(), change('bUF3S.inertialDelaySensitive.x') and not initial()} then
+      'bUF3S.inertialDelaySensitive.y_old' := if initial() or pre('bUF3S.inertialDelaySensitive.y') == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' else pre('bUF3S.inertialDelaySensitive.y');
+      'bUF3S.inertialDelaySensitive.lh' := ({{0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}})['bUF3S.inertialDelaySensitive.y_old','bUF3S.inertialDelaySensitive.x'];
+      'bUF3S.inertialDelaySensitive.delayTime' := if 'bUF3S.inertialDelaySensitive.lh' > 0 then 1.0 else if 'bUF3S.inertialDelaySensitive.lh' < 0 then 1.0 else 0.0;
+      'bUF3S.inertialDelaySensitive.t_next' := time + 'bUF3S.inertialDelaySensitive.delayTime';
+
+      if 'bUF3S.inertialDelaySensitive.lh' == 0 or abs('bUF3S.inertialDelaySensitive.delayTime') < 2.2250738585072014e-308 then
+        'bUF3S.inertialDelaySensitive.y_auxiliary' := 'bUF3S.inertialDelaySensitive.x';
+      end if;
+    elsewhen time >= 'bUF3S.inertialDelaySensitive.t_next' then
+      'bUF3S.inertialDelaySensitive.y_auxiliary' := 'bUF3S.inertialDelaySensitive.x';
+    end when;
+
+    'bUF3S.inertialDelaySensitive.y' := 'bUF3S.inertialDelaySensitive.y_auxiliary';
+  algorithm
+    'bUF3S.nextstate' := ({{'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''}})[({'Modelica.Electrical.Digital.Interfaces.UX01'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'X\''})['bUF3S.enable'],({'Modelica.Electrical.Digital.Interfaces.UX01'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.UX01'.'\'X\''})['bUF3S.x']];
+    'bUF3S.yy' := 'bUF3S.nextstate';
+    annotation(experiment(StopTime = 12));
+  end 'BUF3S';
+end 'BUF3S';

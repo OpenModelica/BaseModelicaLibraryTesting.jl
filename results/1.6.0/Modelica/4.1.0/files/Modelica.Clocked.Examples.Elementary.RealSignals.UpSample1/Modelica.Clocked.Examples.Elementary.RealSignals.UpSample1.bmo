@@ -1,0 +1,89 @@
+//! base 0.1.0
+package 'UpSample1'
+  type 'Modelica.Clocked.Types.Resolution' = enumeration('y', 'd', 'h', 'm', 's', 'ms', 'us', 'ns');
+
+  model 'UpSample1' "Example of an UpSample block for Real signals"
+    parameter Integer 'periodicClock.factor'(min = 0) = 20 "Sample factor with respect to resolution" annotation(Evaluate = true);
+    parameter 'Modelica.Clocked.Types.Resolution' 'periodicClock.resolution' = 'Modelica.Clocked.Types.Resolution'.'ms' "Clock resolution" annotation(Evaluate = true);
+    parameter Boolean 'periodicClock.useSolver' = false "= true, if solverMethod shall be explicitly defined" annotation(Evaluate = true);
+    parameter String 'periodicClock.solverMethod' = "ExplicitEuler" "Integration method used for discretized continuous-time partitions";
+    Clock 'periodicClock.y';
+    constant Integer 'periodicClock.conversionTable[1]' = 31536000 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[2]' = 86400 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[3]' = 3600 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[4]' = 60 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[5]' = 1 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[6]' = 1000 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[7]' = 1000000 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[8]' = 1000000000 "Table to convert from Resolution to Integer clock resolution";
+    parameter Integer 'periodicClock.resolutionFactor' = 1000 annotation(Evaluate = true);
+    Clock 'periodicClock.c';
+    parameter Real 'sine.amplitude' = 1.0 "Amplitude of sine wave";
+    parameter Real 'sine.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 2.0 "Frequency of sine wave";
+    parameter Real 'sine.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of sine wave";
+    parameter Boolean 'sine.continuous' = false "Make output continuous by starting at offset + amplitude*sin(phase)" annotation(Evaluate = true);
+    Real 'sine.y' "Connector of Real output signal";
+    parameter Real 'sine.offset' = 0.1 "Offset of output signal y";
+    parameter Real 'sine.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    Real 'sample1.u' "Connector of continuous-time, Real input signal";
+    Real 'sample1.y' "Connector of clocked, Real output signal";
+    Clock 'sample1.clock' "Output signal y is associated with this clock input";
+    parameter Boolean 'upSample1.inferFactor' = true "= true, if upsampling factor is inferred" annotation(Evaluate = true);
+    parameter Integer 'upSample1.factor'(min = 1) = 1 "Upsampling factor >= 1 (if inferFactor=false)" annotation(Evaluate = true);
+    Real 'upSample1.u' "Connector of clocked, Real input signal";
+    Real 'upSample1.y' "Connector of clocked, Real output signal (clock of y is faster as clock of u)";
+    Real 'upSample1.dummy';
+    Boolean 'upSample1.b'(start = false);
+    Boolean 'upSample1.b_super'(start = false);
+    Real 'upSample1.u_super';
+    parameter Boolean 'upSample2.inferFactor' = false "= true, if upsampling factor is inferred" annotation(Evaluate = true);
+    parameter Integer 'upSample2.factor'(min = 1) = 3 "Upsampling factor >= 1 (if inferFactor=false)" annotation(Evaluate = true);
+    Real 'upSample2.u' "Connector of clocked, Real input signal";
+    Real 'upSample2.y' "Connector of clocked, Real output signal (clock of y is faster as clock of u)";
+    Real 'upSample2.dummy';
+    Boolean 'upSample2.b'(start = false);
+    Boolean 'upSample2.b_super'(start = false);
+    Real 'upSample2.u_super';
+    Real 'add.u1' "Connector of Real input signal 1";
+    Real 'add.u2' "Connector of Real input signal 2";
+    Real 'add.y' "Connector of Real output signal";
+    parameter Real 'add.k1' = 1.0 "Gain of input signal 1";
+    parameter Real 'add.k2' = 1.0 "Gain of input signal 2";
+  equation
+    'sine.y' = 'sample1.u';
+    'periodicClock.y' = 'sample1.clock';
+    'upSample2.u' = 'sample1.y';
+    'upSample2.u' = 'upSample1.u';
+    'upSample2.y' = 'add.u2';
+    'upSample1.y' = 'add.u1';
+    'periodicClock.c' = Clock('periodicClock.factor', 1000);
+    'periodicClock.y' = 'periodicClock.c';
+    'sine.y' = 0.1 + (if time < 0.0 then 0.0 else sin(12.566370614359172 * time));
+    'sample1.y' = sample('sample1.u', 'sample1.clock');
+
+    when Clock() then
+      'upSample1.dummy' = 'upSample1.u';
+      'upSample1.b' = not previous('upSample1.b');
+    end when;
+
+    when Clock() then
+      'upSample1.b_super' = superSample('upSample1.b', 0);
+      'upSample1.u_super' = superSample('upSample1.u', 0);
+      'upSample1.y' = if 'upSample1.b_super' <> previous('upSample1.b_super') then 'upSample1.u_super' else 0.0;
+    end when;
+
+    when Clock() then
+      'upSample2.dummy' = 'upSample2.u';
+      'upSample2.b' = not previous('upSample2.b');
+    end when;
+
+    when Clock() then
+      'upSample2.b_super' = superSample('upSample2.b', 0);
+      'upSample2.u_super' = superSample('upSample2.u', 3);
+      'upSample2.y' = if 'upSample2.b_super' <> previous('upSample2.b_super') then 'upSample2.u_super' else 0.0;
+    end when;
+
+    'add.y' = 'add.u1' + 'add.u2';
+    annotation(experiment(StopTime = 0.09));
+  end 'UpSample1';
+end 'UpSample1';
