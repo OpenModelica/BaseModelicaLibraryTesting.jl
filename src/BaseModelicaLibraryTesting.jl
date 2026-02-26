@@ -14,12 +14,13 @@ include("export.jl")
 include("parse_bm.jl")
 include("simulate.jl")
 include("report.jl")
+include("summary.jl")
 include("pipeline.jl")
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 
 # Shared types and constants
-export ModelResult, CompareSettings
+export ModelResult, CompareSettings, RunInfo
 export LIBRARY, LIBRARY_VERSION, CMP_REL_TOL, CMP_ABS_TOL
 
 # Comparison configuration
@@ -35,6 +36,9 @@ export compare_with_reference, write_diff_html
 
 # HTML report
 export generate_report
+
+# Summary JSON
+export RunSummary, write_summary, load_summary
 
 # Top-level orchestration
 export test_model, main

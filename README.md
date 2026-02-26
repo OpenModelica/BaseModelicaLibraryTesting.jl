@@ -49,7 +49,7 @@ main(
   version = "4.1.0",
   filter = "Modelica.Electrical.Analog.Examples.ChuaCircuit",
   omc_exe = "omc",
-  results_root = "main/Modelica/4.1.0/",
+  results_root = "results/main/Modelica/4.1.0/",
   ref_root = "MAP-LIB_ReferenceResults"
 )
 ```
@@ -57,7 +57,7 @@ main(
 Preview the generated HTML report at `main/Modelica/4.1.0/report.html`.
 
 ```bash
-python -m http.server -d main/Modelica/4.1.0/
+python -m http.server -d results/main/Modelica/4.1.0/
 ```
 
 ## License

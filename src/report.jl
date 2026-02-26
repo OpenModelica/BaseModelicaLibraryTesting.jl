@@ -2,7 +2,6 @@
 
 import Dates: now
 import Printf: @sprintf
-import BaseModelica
 
 function _status_cell(ok::Bool, t::Float64, logFile::Union{String,Nothing})
     link = isnothing(logFile) ? "" : """ <a href="$(logFile)">(log)</a>"""
@@ -35,12 +34,12 @@ function rel_log_file_or_nothing(results_root::String, model::String,
 end
 
 """
-    generate_report(results, results_root, library, version) → report_path
+    generate_report(results, results_root, info) → report_path
 
 Write an `index.html` overview report to `results_root` and return its path.
 """
 function generate_report(results::Vector{ModelResult}, results_root::String,
-                         library::String, version::String)
+                         info::RunInfo)
     n     = length(results)
     n_exp = count(r -> r.export_success, results)
     n_par = count(r -> r.parse_success,  results)
@@ -64,14 +63,15 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
       $(_cmp_cell(r, results_root))
     </tr>""" for r in results], "\n")
 
-    omc_ver = try sendExpression(OMJulia.OMCSession("omc"), "getVersion()") catch; "unknown" end
-    bm_ver  = string(pkgversion(BaseModelica))
+    filter_row = isempty(info.filter)   ? "" : "<br>Filter: $(info.filter)"
+    ref_row    = isempty(info.ref_root) ? "" : "<br>Reference results: $(info.ref_root)"
+    ram_str    = @sprintf("%.1f", info.ram_gb)
 
     html = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>$library $version — Base Modelica / MTK Results</title>
+  <title>$(info.library) $(info.lib_version) — Base Modelica / MTK Results</title>
   <style>
     body { font-family: sans-serif; margin: 2em; font-size: 14px; }
     h1   { font-size: 1.4em; }
@@ -86,10 +86,12 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
   </style>
 </head>
 <body>
-<h1>$library $version — Base Modelica / MTK Pipeline Test Results</h1>
+<h1>$(info.library) $(info.lib_version) — Base Modelica / MTK Pipeline Test Results</h1>
 <p>Generated: $(now())<br>
-OpenModelica: $omc_ver<br>
-BaseModelica.jl: $bm_ver</p>
+OpenModelica: $(info.omc_version)<br>
+BaseModelica.jl: $(info.bm_version)$(filter_row)$(ref_row)</p>
+<p>CPU: $(info.cpu_model) ($(info.cpu_threads) threads)<br>
+RAM: $(ram_str) GiB</p>
 
 <table style="width:auto; margin-bottom:1.5em;">
   <tr><th>Stage</th><th>Passed</th><th>Total</th><th>Rate</th></tr>

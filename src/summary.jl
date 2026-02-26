@@ -1,0 +1,137 @@
+# ── Summary JSON serialization ─────────────────────────────────────────────────
+
+function _esc_json(s::String)::String
+    replace(s, "\\" => "\\\\", "\"" => "\\\"", "\n" => "\\n")
+end
+
+"""
+    write_summary(results, results_root, info)
+
+Write a `summary.json` to `results_root` encoding run settings, tool versions,
+machine info, and per-model pipeline pass/fail data.
+Called automatically by `main()` at the end of each run.
+"""
+function write_summary(
+    results      :: Vector{ModelResult},
+    results_root :: String,
+    info         :: RunInfo,
+)
+    path = joinpath(results_root, "summary.json")
+    open(path, "w") do io
+        print(io, "{\n")
+        print(io, "  \"library\":      \"$(_esc_json(info.library))\",\n")
+        print(io, "  \"lib_version\":  \"$(_esc_json(info.lib_version))\",\n")
+        print(io, "  \"filter\":       \"$(_esc_json(info.filter))\",\n")
+        print(io, "  \"omc_exe\":      \"$(_esc_json(info.omc_exe))\",\n")
+        print(io, "  \"results_root\": \"$(_esc_json(info.results_root))\",\n")
+        print(io, "  \"ref_root\":     \"$(_esc_json(info.ref_root))\",\n")
+        print(io, "  \"omc_version\":  \"$(_esc_json(info.omc_version))\",\n")
+        print(io, "  \"bm_version\":   \"$(_esc_json(info.bm_version))\",\n")
+        print(io, "  \"cpu_model\":    \"$(_esc_json(info.cpu_model))\",\n")
+        print(io, "  \"cpu_threads\":  $(info.cpu_threads),\n")
+        print(io, "  \"ram_gb\":       $(@sprintf "%.2f" info.ram_gb),\n")
+        print(io, "  \"models\": [\n")
+        for (i, r) in enumerate(results)
+            sep = i < length(results) ? "," : ""
+            print(io,
+                "    {\"name\":\"$(_esc_json(r.name))\"," *
+                "\"export\":$(r.export_success)," *
+                "\"parse\":$(r.parse_success)," *
+                "\"sim\":$(r.sim_success)," *
+                "\"cmp_total\":$(r.cmp_total)," *
+                "\"cmp_pass\":$(r.cmp_pass)}$sep\n")
+        end
+        print(io, "  ]\n}\n")
+    end
+    @info "summary.json written to $results_root"
+end
+
+# ── Summary type and JSON loading ──────────────────────────────────────────────
+
+"""
+    RunSummary
+
+Parsed contents of a single `summary.json` file.
+
+# Fields
+- `library`      — Modelica library name (e.g. `"Modelica"`)
+- `lib_version`  — library version (e.g. `"4.1.0"`)
+- `filter`       — model name filter regex, or `""` when none was given
+- `omc_exe`      — path / command used to launch OMC
+- `results_root` — absolute path where results were written
+- `ref_root`     — absolute path to reference results, or `""` when unused
+- `omc_version`  — OMC version string
+- `bm_version`   — BaseModelica.jl version string (e.g. `"1.6.0"`)
+- `cpu_model`    — CPU model name
+- `cpu_threads`  — number of logical CPU threads
+- `ram_gb`       — total system RAM in GiB
+- `models`       — vector of per-model dicts; each has keys
+                   `"name"`, `"export"`, `"parse"`, `"sim"`, `"cmp_total"`, `"cmp_pass"`
+"""
+struct RunSummary
+    library      :: String
+    lib_version  :: String
+    filter       :: String
+    omc_exe      :: String
+    results_root :: String
+    ref_root     :: String
+    omc_version  :: String
+    bm_version   :: String
+    cpu_model    :: String
+    cpu_threads  :: Int
+    ram_gb       :: Float64
+    models       :: Vector{Dict{String,Any}}
+end
+
+"""
+    load_summary(results_root) → RunSummary or nothing
+
+Read and parse the `summary.json` written by `write_summary` from `results_root`.
+Returns `nothing` if the file does not exist or cannot be parsed.
+"""
+function load_summary(results_root::String)::Union{RunSummary,Nothing}
+    path = joinpath(results_root, "summary.json")
+    isfile(path) || return nothing
+    txt = read(path, String)
+
+    _str(key) = begin
+        m = match(Regex("\"$(key)\"\\s*:\\s*\"([^\"]*)\""), txt)
+        m === nothing ? "" : string(m.captures[1])
+    end
+    _int(key) = begin
+        m = match(Regex("\"$(key)\"\\s*:\\s*(\\d+)"), txt)
+        m === nothing ? 0 : parse(Int, m.captures[1])
+    end
+    _float(key) = begin
+        m = match(Regex("\"$(key)\"\\s*:\\s*([\\d.]+)"), txt)
+        m === nothing ? 0.0 : parse(Float64, m.captures[1])
+    end
+
+    models = Dict{String,Any}[]
+    for m in eachmatch(
+        r"\{\"name\":\"([^\"]*)\",\"export\":(true|false),\"parse\":(true|false),\"sim\":(true|false),\"cmp_total\":(\d+),\"cmp_pass\":(\d+)\}",
+        txt)
+        push!(models, Dict{String,Any}(
+            "name"      => string(m.captures[1]),
+            "export"    => m.captures[2] == "true",
+            "parse"     => m.captures[3] == "true",
+            "sim"       => m.captures[4] == "true",
+            "cmp_total" => parse(Int, m.captures[5]),
+            "cmp_pass"  => parse(Int, m.captures[6]),
+        ))
+    end
+    return RunSummary(
+        _str("library"),
+        _str("lib_version"),
+        _str("filter"),
+        _str("omc_exe"),
+        _str("results_root"),
+        _str("ref_root"),
+        _str("omc_version"),
+        _str("bm_version"),
+        _str("cpu_model"),
+        _int("cpu_threads"),
+        _float("ram_gb"),
+        models,
+    )
+end
