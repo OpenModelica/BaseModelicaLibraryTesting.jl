@@ -9,8 +9,6 @@ name: MSL Test & GitHub Pages
 on:
   schedule:
     - cron: '0 3 * * *'   # every day 03:00 UTC
-  pull_request:
-    branches: [main] # only for testing
   workflow_dispatch:
     inputs:
       lib_version:
@@ -69,6 +67,15 @@ jobs:
             println("bm_version=" * string(pkgversion(BaseModelica)))
           ' >> "$GITHUB_OUTPUT"
 
+      # ── Reference results ─────────────────────────────────────────────────────
+      - name: Checkout MAP-LIB reference results
+        uses: actions/checkout@v6
+        with:
+          repository: modelica/MAP-LIB_ReferenceResults
+          ref: v${{ env.LIB_VERSION }}
+          path: MAP-LIB_ReferenceResults
+          fetch-depth: 1
+
       # ── Run the pipeline ──────────────────────────────────────────────────────
       - name: Run MSL pipeline
         env:
@@ -77,8 +84,10 @@ jobs:
           julia --project=. -e '
             using BaseModelicaLibraryTesting
             main(
+              library      = "Modelica",
               version      = ENV["LIB_VERSION"],
               results_root = "results/$(ENV["BM_VERSION"])/Modelica/$(ENV["LIB_VERSION"])",
+              ref_root     = "MAP-LIB_ReferenceResults",
             )
           '
 
