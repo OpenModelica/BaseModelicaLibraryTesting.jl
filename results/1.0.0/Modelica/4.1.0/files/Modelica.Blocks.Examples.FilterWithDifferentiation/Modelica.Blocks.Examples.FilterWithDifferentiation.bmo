@@ -1,0 +1,124 @@
+//! base 0.1.0
+package 'FilterWithDifferentiation'
+  function 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass' "Return low pass filter coefficients at given cut-off frequency"
+    input Real[:] 'cr_in';
+    input Real[:] 'c0_in';
+    input Real[size('c0_in', 1)] 'c1_in';
+    input Real 'f_cut'(unit = "Hz", quantity = "Frequency");
+    output Real[size('cr_in', 1)] 'cr';
+    output Real[size('c0_in', 1)] 'c0';
+    output Real[size('c0_in', 1)] 'c1';
+    Real 'w_cut'(unit = "rad/s", quantity = "AngularVelocity") = 6.283185307179586 * 'f_cut';
+    Real 'w_cut2' = 'w_cut' * 'w_cut';
+  algorithm
+    assert('f_cut' > 0.0, "Cut-off frequency f_cut must be positive", AssertionLevel.error);
+    'cr' := 'w_cut' * 'cr_in';
+    'c1' := 'w_cut' * 'c1_in';
+    'c0' := 'w_cut2' * 'c0_in';
+  end 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass';
+
+  function 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass' "Return low pass filter roots as needed for block for given cut-off frequency"
+    input Real[:] 'cr_in';
+    input Real[:] 'c0_in';
+    input Real[size('c0_in', 1)] 'c1_in';
+    input Real 'f_cut'(unit = "Hz", quantity = "Frequency");
+    output Real[size('cr_in', 1)] 'r';
+    output Real[size('c0_in', 1)] 'a';
+    output Real[size('c0_in', 1)] 'b';
+    output Real[size('c0_in', 1)] 'ku';
+    Real[size('c0_in', 1)] 'c0';
+    Real[size('c0_in', 1)] 'c1';
+    Real[size('cr_in', 1)] 'cr';
+  algorithm
+    ('cr', 'c0', 'c1') := 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass'('cr_in', 'c0_in', 'c1_in', 'f_cut');
+
+    for 'i' in 1:size('cr_in', 1) loop
+      'r'['i'] := -'cr'['i'];
+    end for;
+
+    for 'i' in 1:size('c0_in', 1) loop
+      'a'['i'] := -'c1'['i'] / 2.0;
+      'b'['i'] := sqrt('c0'['i'] - 'a'['i'] * 'a'['i']);
+      'ku'['i'] := 'c0'['i'] / 'b'['i'];
+    end for;
+  end 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass';
+
+  type 'Modelica.Blocks.Types.AnalogFilter' = enumeration('CriticalDamping', 'Bessel', 'Butterworth', 'ChebyshevI');
+
+  type 'Modelica.Blocks.Types.FilterType' = enumeration('LowPass', 'HighPass', 'BandPass', 'BandStop');
+
+  type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
+
+  model 'FilterWithDifferentiation' "Demonstrates the use of low pass filters to determine derivatives of filters"
+    parameter Real 'f_cut'(unit = "Hz", quantity = "Frequency") = 2.0 "Cut-off frequency";
+    parameter Real 'step.height' = 1.0 "Height of step";
+    Real 'step.y' "Connector of Real output signal";
+    parameter Real 'step.offset' = 0.1 "Offset of output signal y";
+    parameter Real 'step.startTime'(unit = "s", quantity = "Time") = 0.1 "Output y = offset for time < startTime";
+    Real 'Bessel.u' "Connector of Real input signal";
+    Real 'Bessel.y' "Connector of Real output signal";
+    parameter 'Modelica.Blocks.Types.AnalogFilter' 'Bessel.analogFilter' = 'Modelica.Blocks.Types.AnalogFilter'.'Bessel' "Analog filter characteristics (CriticalDamping/Bessel/Butterworth/ChebyshevI)";
+    parameter 'Modelica.Blocks.Types.FilterType' 'Bessel.filterType' = 'Modelica.Blocks.Types.FilterType'.'LowPass' "Type of filter (LowPass/HighPass/BandPass/BandStop)";
+    parameter Integer 'Bessel.order'(min = 1) = 3 "Order of filter";
+    parameter Real 'Bessel.f_cut'(unit = "Hz", quantity = "Frequency") = 2.0 "Cut-off frequency";
+    parameter Real 'Bessel.gain' = 1.0 "Gain (= amplitude of frequency response at zero frequency)";
+    parameter Real 'Bessel.A_ripple'(unit = "dB") = 0.5 "Pass band ripple for Chebyshev filter (otherwise not used); > 0 required";
+    parameter Real 'Bessel.f_min'(unit = "Hz", quantity = "Frequency") = 0.0 "Band of band pass/stop filter is f_min (A=-3db*gain) .. f_cut (A=-3db*gain)";
+    parameter Boolean 'Bessel.normalized' = true "= true, if amplitude at f_cut = -3db, otherwise unmodified filter";
+    parameter 'Modelica.Blocks.Types.Init' 'Bessel.init' = 'Modelica.Blocks.Types.Init'.'SteadyState' "Type of initialization (no init/steady state/initial state/initial output)" annotation(Evaluate = true);
+    parameter Integer 'Bessel.nx' = 3;
+    parameter Real 'Bessel.x_start[1]' = 0.0 "Initial or guess values of states";
+    parameter Real 'Bessel.x_start[2]' = 0.0 "Initial or guess values of states";
+    parameter Real 'Bessel.x_start[3]' = 0.0 "Initial or guess values of states";
+    parameter Real 'Bessel.y_start' = 0.0 "Initial value of output";
+    parameter Real 'Bessel.u_nominal' = 1.0 "Nominal value of input (used for scaling the states)";
+    Real 'Bessel.x[1]' "Filter states";
+    Real 'Bessel.x[2]' "Filter states";
+    Real 'Bessel.x[3]' "Filter states";
+    parameter Integer 'Bessel.ncr' = 1;
+    parameter Integer 'Bessel.nc0' = 1;
+    parameter Integer 'Bessel.na' = 1;
+    parameter Integer 'Bessel.nr' = 1;
+    parameter Real 'Bessel.cr[1]'(fixed = false);
+    parameter Real 'Bessel.c0[1]'(fixed = false);
+    parameter Real 'Bessel.c1[1]'(fixed = false);
+    parameter Real 'Bessel.r[1]'(fixed = false);
+    parameter Real 'Bessel.a[1]'(fixed = false);
+    parameter Real 'Bessel.b[1]'(fixed = false);
+    parameter Real 'Bessel.ku[1]'(fixed = false);
+    Real 'Bessel.uu[1]';
+    Real 'Bessel.uu[2]';
+    Real 'Bessel.uu[3]';
+    Real 'der1.u' "Connector of Real input signal";
+    Real 'der1.y' "Connector of Real output signal";
+    Real 'der2.u' "Connector of Real input signal";
+    Real 'der2.y' "Connector of Real output signal";
+    Real 'der3.u' "Connector of Real input signal";
+    Real 'der3.y' "Connector of Real output signal";
+  initial equation
+    'Bessel.cr[1]' = 1.3247533710053048;
+    'Bessel.c0[1]' = 2.1021837778259527;
+    'Bessel.c1[1]' = 2.0981087231842808;
+    ('Bessel.r', 'Bessel.a', 'Bessel.b', 'Bessel.ku') = 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass'({'Bessel.cr[1]'}, {'Bessel.c0[1]'}, {'Bessel.c1[1]'}, 2.0);
+    der('Bessel.x[1]') = 0.0;
+    der('Bessel.x[2]') = 0.0;
+    der('Bessel.x[3]') = 0.0;
+  equation
+    'step.y' = 'Bessel.u';
+    'Bessel.y' = 'der1.u';
+    'der1.y' = 'der2.u';
+    'der2.y' = 'der3.u';
+    'step.y' = 0.1 + (if time < 0.1 then 0.0 else 1.0);
+    'Bessel.uu[1]' = 'Bessel.u';
+    der('Bessel.x[1]') = 'Bessel.r[1]' * ('Bessel.x[1]' - 'Bessel.uu[1]');
+    der('Bessel.x[2]') = 'Bessel.a[1]' * 'Bessel.x[2]' - 'Bessel.b[1]' * 'Bessel.x[3]' + 'Bessel.ku[1]' * 'Bessel.uu[2]';
+    der('Bessel.x[3]') = 'Bessel.b[1]' * 'Bessel.x[2]' + 'Bessel.a[1]' * 'Bessel.x[3]';
+    'Bessel.uu[2]' = 'Bessel.x[1]';
+    'Bessel.uu[3]' = 'Bessel.x[3]';
+    'Bessel.y' = 'Bessel.uu[3]';
+    'der1.y' = der('der1.u');
+    'der2.y' = der('der2.u');
+    'der3.y' = der('der3.u');
+    annotation(experiment(StopTime = 0.9));
+  end 'FilterWithDifferentiation';
+end 'FilterWithDifferentiation';
