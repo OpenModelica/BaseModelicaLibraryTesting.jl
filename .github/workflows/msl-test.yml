@@ -69,12 +69,18 @@ jobs:
       - name: Restore Julia package cache
         uses: julia-actions/cache@v2
 
-      - name: Pin BaseModelica.jl version
-        if: env.BM_VERSION_INPUT != 'main'
-        run: julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(name="BaseModelica", version=ENV["BM_VERSION_INPUT"]))'
-
       - name: Build package
-        uses: julia-actions/julia-buildpkg@v1
+        run: |
+          julia --project=. -e '
+            using Pkg
+            bm_ver = get(ENV, "BM_VERSION_INPUT", "main")
+            if bm_ver != "main"
+              Pkg.add(name="BaseModelica", version=bm_ver)
+            else
+              Pkg.add(name="BaseModelica", rev=bm_ver)
+            end
+            Pkg.instantiate()
+          '
 
       # ── Resolve versions ──────────────────────────────────────────────────────
       - name: Resolve BaseModelica.jl version
