@@ -1,0 +1,29 @@
+//! base 0.1.0
+package 'TickBasedStep'
+  model 'TickBasedStep' "Example of using the clocked tick based Step source block"
+    Real 'assignClock1.u' "Connector of clocked, Real input signal";
+    Real 'assignClock1.y' "Connector of clocked, Real output signal";
+    Clock 'assignClock1.clock';
+    parameter Real 'periodicClock1.period'(unit = "s", quantity = "Time") = 0.1 "Period of clock (defined as Real number)" annotation(Evaluate = true);
+    parameter Boolean 'periodicClock1.useSolver' = false "= true, if solverMethod shall be explicitly defined" annotation(Evaluate = true);
+    parameter String 'periodicClock1.solverMethod' = "ExplicitEuler" "Integration method used for discretized continuous-time partitions";
+    Clock 'periodicClock1.y';
+    Real 'step.y' "Connector of clocked, Real output signal";
+    parameter Real 'step.height' = 1.0 "Height of step";
+    parameter Real 'step.offset' = 0.0 "Offset of output signal y";
+    parameter Integer 'step.startTick'(min = 1) = 3 "Output y = offset for clock tick < startTick";
+    Integer 'step.counter'(start = 0);
+  equation
+    'periodicClock1.y' = 'assignClock1.clock';
+    'step.y' = 'assignClock1.u';
+
+    when 'assignClock1.clock' then
+      'assignClock1.y' = 'assignClock1.u';
+    end when;
+
+    'periodicClock1.y' = Clock('periodicClock1.period');
+    'step.counter' = if previous('step.counter') < 3 then previous('step.counter') + 1 else previous('step.counter');
+    'step.y' = if 'step.counter' < 3 then 0.0 else 1.0;
+    annotation(experiment(StopTime = 1.0));
+  end 'TickBasedStep';
+end 'TickBasedStep';

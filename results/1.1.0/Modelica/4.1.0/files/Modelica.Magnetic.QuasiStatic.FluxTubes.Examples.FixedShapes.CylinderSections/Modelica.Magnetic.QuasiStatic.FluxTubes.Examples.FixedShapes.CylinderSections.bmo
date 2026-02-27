@@ -1,0 +1,447 @@
+//! base 0.1.0
+package 'CylinderSections'
+  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Complex.\'constructor\'.fromReal';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := atan2('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
+  function 'Modelica.Units.SI.ComplexMagneticFieldStrength.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticFieldStrength.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
+
+  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
+    Real 're';
+    Real 'im';
+  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
+
+  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
+    Real 're';
+    Real 'im';
+  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
+
+  record 'Modelica.Units.SI.ComplexMagneticFieldStrength'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticFieldStrength';
+
+  record 'Modelica.Units.SI.ComplexMagneticFlux'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticFlux';
+
+  record 'Modelica.Units.SI.ComplexMagneticFluxDensity'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticFluxDensity';
+
+  record 'Modelica.Units.SI.ComplexMagneticPotential'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticPotential';
+
+  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
+
+  model 'CylinderSections' "Magnetic circuit using different cylinder sections"
+    parameter Real 'mu_rConst'(unit = "1", quantity = "RelativePermeability") = 100.0 "Relative permeability";
+    Real 'hollowCylinderAxialInner.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderAxialInner.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialInner.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderAxialInner.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialInner.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'hollowCylinderAxialInner.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderAxialInner.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialInner.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderAxialInner.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialInner.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'hollowCylinderAxialInner.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderAxialInner.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialInner.abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('hollowCylinderAxialInner.V_m.re' ^ 2.0 + 'hollowCylinderAxialInner.V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
+    Real 'hollowCylinderAxialInner.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderAxialInner.V_m.im', 'hollowCylinderAxialInner.V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'hollowCylinderAxialInner.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderAxialInner.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialInner.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") = sqrt('hollowCylinderAxialInner.Phi.re' ^ 2.0 + 'hollowCylinderAxialInner.Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
+    Real 'hollowCylinderAxialInner.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderAxialInner.Phi.im', 'hollowCylinderAxialInner.Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'hollowCylinderAxialInner.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Real 'hollowCylinderAxialInner.mu_rConst'(unit = "1", quantity = "RelativePermeability") = 100.0 "Constant relative permeability";
+    Real 'hollowCylinderAxialInner.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
+    Real 'hollowCylinderAxialInner.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
+    Real 'hollowCylinderAxialInner.B.re'(unit = "T", quantity = "MagneticFluxDensity") "Real part of complex number";
+    Real 'hollowCylinderAxialInner.B.im'(unit = "T", quantity = "MagneticFluxDensity") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialInner.abs_B'(unit = "T", quantity = "MagneticFluxDensity") = sqrt('hollowCylinderAxialInner.B.re' ^ 2.0 + 'hollowCylinderAxialInner.B.im' ^ 2.0) "Magnitude of complex magnetic flux density";
+    Real 'hollowCylinderAxialInner.arg_B'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderAxialInner.B.im', 'hollowCylinderAxialInner.B.re', 0.0) "Argument of complex magnetic flux density";
+    Real 'hollowCylinderAxialInner.A'(unit = "m2", quantity = "Area") "Area of cross section penetrated by magnetic flux";
+    Real 'hollowCylinderAxialInner.H.re'(unit = "A/m", quantity = "MagneticFieldStrength") "Real part of complex number";
+    Real 'hollowCylinderAxialInner.H.im'(unit = "A/m", quantity = "MagneticFieldStrength") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialInner.abs_H'(unit = "A/m", quantity = "MagneticFieldStrength") = sqrt('hollowCylinderAxialInner.H.re' ^ 2.0 + 'hollowCylinderAxialInner.H.im' ^ 2.0) "Magnitude of complex magnetic field strength";
+    Real 'hollowCylinderAxialInner.arg_H'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderAxialInner.H.im', 'hollowCylinderAxialInner.H.re', 0.0) "Argument of complex magnetic field strength";
+    Real 'hollowCylinderAxialInner.mu_r'(unit = "1", quantity = "RelativePermeability") "Relative magnetic permeability";
+    parameter Real 'hollowCylinderAxialInner.l'(unit = "m", quantity = "Length") = 0.01 "Axial length (in direction of flux)";
+    parameter Real 'hollowCylinderAxialInner.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.01 "Inner radius of hollow cylinder (zero for cylinder)";
+    parameter Real 'hollowCylinderAxialInner.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.02 "Outer radius of (hollow) cylinder";
+    parameter Real 'hollowCylinderAxialInner.alpha'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 6.283185307179586 "Central angle";
+    Real 'hollowCylinderRadiaLRight.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderRadiaLRight.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderRadiaLRight.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderRadiaLRight.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderRadiaLRight.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'hollowCylinderRadiaLRight.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderRadiaLRight.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderRadiaLRight.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderRadiaLRight.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderRadiaLRight.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'hollowCylinderRadiaLRight.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderRadiaLRight.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderRadiaLRight.abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('hollowCylinderRadiaLRight.V_m.re' ^ 2.0 + 'hollowCylinderRadiaLRight.V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
+    Real 'hollowCylinderRadiaLRight.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderRadiaLRight.V_m.im', 'hollowCylinderRadiaLRight.V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'hollowCylinderRadiaLRight.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderRadiaLRight.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderRadiaLRight.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") = sqrt('hollowCylinderRadiaLRight.Phi.re' ^ 2.0 + 'hollowCylinderRadiaLRight.Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
+    Real 'hollowCylinderRadiaLRight.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderRadiaLRight.Phi.im', 'hollowCylinderRadiaLRight.Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'hollowCylinderRadiaLRight.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Real 'hollowCylinderRadiaLRight.mu_rConst'(unit = "1", quantity = "RelativePermeability") = 100.0 "Constant relative permeability";
+    Real 'hollowCylinderRadiaLRight.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
+    Real 'hollowCylinderRadiaLRight.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
+    Real 'hollowCylinderRadiaLRight.B.re'(unit = "T", quantity = "MagneticFluxDensity") "Real part of complex number";
+    Real 'hollowCylinderRadiaLRight.B.im'(unit = "T", quantity = "MagneticFluxDensity") "Imaginary part of complex number";
+    Real 'hollowCylinderRadiaLRight.abs_B'(unit = "T", quantity = "MagneticFluxDensity") = sqrt('hollowCylinderRadiaLRight.B.re' ^ 2.0 + 'hollowCylinderRadiaLRight.B.im' ^ 2.0) "Magnitude of complex magnetic flux density";
+    Real 'hollowCylinderRadiaLRight.arg_B'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderRadiaLRight.B.im', 'hollowCylinderRadiaLRight.B.re', 0.0) "Argument of complex magnetic flux density";
+    Real 'hollowCylinderRadiaLRight.A'(unit = "m2", quantity = "Area") "Area of cross section penetrated by magnetic flux";
+    Real 'hollowCylinderRadiaLRight.H.re'(unit = "A/m", quantity = "MagneticFieldStrength") "Real part of complex number";
+    Real 'hollowCylinderRadiaLRight.H.im'(unit = "A/m", quantity = "MagneticFieldStrength") "Imaginary part of complex number";
+    Real 'hollowCylinderRadiaLRight.abs_H'(unit = "A/m", quantity = "MagneticFieldStrength") = sqrt('hollowCylinderRadiaLRight.H.re' ^ 2.0 + 'hollowCylinderRadiaLRight.H.im' ^ 2.0) "Magnitude of complex magnetic field strength";
+    Real 'hollowCylinderRadiaLRight.arg_H'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderRadiaLRight.H.im', 'hollowCylinderRadiaLRight.H.re', 0.0) "Argument of complex magnetic field strength";
+    Real 'hollowCylinderRadiaLRight.mu_r'(unit = "1", quantity = "RelativePermeability") "Relative magnetic permeability";
+    parameter Real 'hollowCylinderRadiaLRight.l'(unit = "m", quantity = "Length") = 0.02 "Width (orthogonal to flux direction)";
+    parameter Real 'hollowCylinderRadiaLRight.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.015 "Inner radius of hollow cylinder";
+    parameter Real 'hollowCylinderRadiaLRight.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.055 "Outer radius of hollow cylinder";
+    parameter Real 'hollowCylinderRadiaLRight.alpha'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 6.283185307179586 "Central angle";
+    Real 'hollowCylinderRadialLeft.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderRadialLeft.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderRadialLeft.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderRadialLeft.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderRadialLeft.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'hollowCylinderRadialLeft.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderRadialLeft.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderRadialLeft.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderRadialLeft.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderRadialLeft.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'hollowCylinderRadialLeft.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderRadialLeft.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderRadialLeft.abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('hollowCylinderRadialLeft.V_m.re' ^ 2.0 + 'hollowCylinderRadialLeft.V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
+    Real 'hollowCylinderRadialLeft.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderRadialLeft.V_m.im', 'hollowCylinderRadialLeft.V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'hollowCylinderRadialLeft.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderRadialLeft.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderRadialLeft.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") = sqrt('hollowCylinderRadialLeft.Phi.re' ^ 2.0 + 'hollowCylinderRadialLeft.Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
+    Real 'hollowCylinderRadialLeft.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderRadialLeft.Phi.im', 'hollowCylinderRadialLeft.Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'hollowCylinderRadialLeft.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Real 'hollowCylinderRadialLeft.mu_rConst'(unit = "1", quantity = "RelativePermeability") = 100.0 "Constant relative permeability";
+    Real 'hollowCylinderRadialLeft.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
+    Real 'hollowCylinderRadialLeft.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
+    Real 'hollowCylinderRadialLeft.B.re'(unit = "T", quantity = "MagneticFluxDensity") "Real part of complex number";
+    Real 'hollowCylinderRadialLeft.B.im'(unit = "T", quantity = "MagneticFluxDensity") "Imaginary part of complex number";
+    Real 'hollowCylinderRadialLeft.abs_B'(unit = "T", quantity = "MagneticFluxDensity") = sqrt('hollowCylinderRadialLeft.B.re' ^ 2.0 + 'hollowCylinderRadialLeft.B.im' ^ 2.0) "Magnitude of complex magnetic flux density";
+    Real 'hollowCylinderRadialLeft.arg_B'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderRadialLeft.B.im', 'hollowCylinderRadialLeft.B.re', 0.0) "Argument of complex magnetic flux density";
+    Real 'hollowCylinderRadialLeft.A'(unit = "m2", quantity = "Area") "Area of cross section penetrated by magnetic flux";
+    Real 'hollowCylinderRadialLeft.H.re'(unit = "A/m", quantity = "MagneticFieldStrength") "Real part of complex number";
+    Real 'hollowCylinderRadialLeft.H.im'(unit = "A/m", quantity = "MagneticFieldStrength") "Imaginary part of complex number";
+    Real 'hollowCylinderRadialLeft.abs_H'(unit = "A/m", quantity = "MagneticFieldStrength") = sqrt('hollowCylinderRadialLeft.H.re' ^ 2.0 + 'hollowCylinderRadialLeft.H.im' ^ 2.0) "Magnitude of complex magnetic field strength";
+    Real 'hollowCylinderRadialLeft.arg_H'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderRadialLeft.H.im', 'hollowCylinderRadialLeft.H.re', 0.0) "Argument of complex magnetic field strength";
+    Real 'hollowCylinderRadialLeft.mu_r'(unit = "1", quantity = "RelativePermeability") "Relative magnetic permeability";
+    parameter Real 'hollowCylinderRadialLeft.l'(unit = "m", quantity = "Length") = 0.02 "Width (orthogonal to flux direction)";
+    parameter Real 'hollowCylinderRadialLeft.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.015 "Inner radius of hollow cylinder";
+    parameter Real 'hollowCylinderRadialLeft.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.055 "Outer radius of hollow cylinder";
+    parameter Real 'hollowCylinderRadialLeft.alpha'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 6.283185307179586 "Central angle";
+    Real 'hollowCylinderAxialOuter.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderAxialOuter.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialOuter.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderAxialOuter.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialOuter.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'hollowCylinderAxialOuter.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderAxialOuter.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialOuter.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderAxialOuter.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialOuter.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'hollowCylinderAxialOuter.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'hollowCylinderAxialOuter.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialOuter.abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('hollowCylinderAxialOuter.V_m.re' ^ 2.0 + 'hollowCylinderAxialOuter.V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
+    Real 'hollowCylinderAxialOuter.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderAxialOuter.V_m.im', 'hollowCylinderAxialOuter.V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'hollowCylinderAxialOuter.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'hollowCylinderAxialOuter.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialOuter.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") = sqrt('hollowCylinderAxialOuter.Phi.re' ^ 2.0 + 'hollowCylinderAxialOuter.Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
+    Real 'hollowCylinderAxialOuter.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderAxialOuter.Phi.im', 'hollowCylinderAxialOuter.Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'hollowCylinderAxialOuter.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Real 'hollowCylinderAxialOuter.mu_rConst'(unit = "1", quantity = "RelativePermeability") = 100.0 "Constant relative permeability";
+    Real 'hollowCylinderAxialOuter.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
+    Real 'hollowCylinderAxialOuter.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
+    Real 'hollowCylinderAxialOuter.B.re'(unit = "T", quantity = "MagneticFluxDensity") "Real part of complex number";
+    Real 'hollowCylinderAxialOuter.B.im'(unit = "T", quantity = "MagneticFluxDensity") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialOuter.abs_B'(unit = "T", quantity = "MagneticFluxDensity") = sqrt('hollowCylinderAxialOuter.B.re' ^ 2.0 + 'hollowCylinderAxialOuter.B.im' ^ 2.0) "Magnitude of complex magnetic flux density";
+    Real 'hollowCylinderAxialOuter.arg_B'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderAxialOuter.B.im', 'hollowCylinderAxialOuter.B.re', 0.0) "Argument of complex magnetic flux density";
+    Real 'hollowCylinderAxialOuter.A'(unit = "m2", quantity = "Area") "Area of cross section penetrated by magnetic flux";
+    Real 'hollowCylinderAxialOuter.H.re'(unit = "A/m", quantity = "MagneticFieldStrength") "Real part of complex number";
+    Real 'hollowCylinderAxialOuter.H.im'(unit = "A/m", quantity = "MagneticFieldStrength") "Imaginary part of complex number";
+    Real 'hollowCylinderAxialOuter.abs_H'(unit = "A/m", quantity = "MagneticFieldStrength") = sqrt('hollowCylinderAxialOuter.H.re' ^ 2.0 + 'hollowCylinderAxialOuter.H.im' ^ 2.0) "Magnitude of complex magnetic field strength";
+    Real 'hollowCylinderAxialOuter.arg_H'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('hollowCylinderAxialOuter.H.im', 'hollowCylinderAxialOuter.H.re', 0.0) "Argument of complex magnetic field strength";
+    Real 'hollowCylinderAxialOuter.mu_r'(unit = "1", quantity = "RelativePermeability") "Relative magnetic permeability";
+    parameter Real 'hollowCylinderAxialOuter.l'(unit = "m", quantity = "Length") = 0.01 "Axial length (in direction of flux)";
+    parameter Real 'hollowCylinderAxialOuter.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.05 "Inner radius of hollow cylinder (zero for cylinder)";
+    parameter Real 'hollowCylinderAxialOuter.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.06 "Outer radius of (hollow) cylinder";
+    parameter Real 'hollowCylinderAxialOuter.alpha'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 6.283185307179586 "Central angle";
+    Real 'ground.port.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'ground.port.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'ground.port.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'ground.port.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'ground.port.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    parameter Real 'constFrequency.k'(start = 1.0) = 50.0 "Constant output value";
+    Real 'constFrequency.y' "Connector of Real output signal";
+    Real 'source.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'source.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'source.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'source.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'source.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'source.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'source.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'source.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'source.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'source.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'source.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    Real 'source.gamma'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") = 'source.port_p.reference.gamma';
+    Real 'source.f'(unit = "Hz");
+    Real 'source.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'source.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'source.Phi.re' "Real part of complex number";
+    Real 'source.Phi.im' "Imaginary part of complex number";
+    Real 'crossing.port_p1.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'crossing.port_p1.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'crossing.port_p1.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'crossing.port_p1.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'crossing.port_p1.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'crossing.port_p2.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'crossing.port_p2.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'crossing.port_p2.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'crossing.port_p2.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'crossing.port_p2.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'crossing.port_n1.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'crossing.port_n1.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'crossing.port_n1.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'crossing.port_n1.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'crossing.port_n1.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'crossing.port_n2.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'crossing.port_n2.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'crossing.port_n2.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'crossing.port_n2.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'crossing.port_n2.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'complexRamp.y.re' "Real part of complex number";
+    Real 'complexRamp.y.im' "Imaginary part of complex number";
+    parameter Real 'complexRamp.magnitude1'(start = 1.0, min = 0.0) = 0.0 "Magnitude of complex phasor at startTime";
+    parameter Real 'complexRamp.magnitude2'(start = 1.0, min = 0.0) = 8e-4 "Magnitude of complex phasor at startTime+duration";
+    parameter Boolean 'complexRamp.useLogRamp' = false "Ramp appears linear on a logarithmic scale, if true";
+    parameter Real 'complexRamp.phi'(start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Angle of complex phasor";
+    parameter Real 'complexRamp.startTime'(unit = "s", quantity = "Time") = 0.0 "Start time of frequency sweep";
+    parameter Real 'complexRamp.duration'(start = 1.0, min = 0.0, unit = "s", quantity = "Time") = 1.0 "Duration of ramp (= 0.0 gives a Step)";
+    Real 'complexRamp.magnitude' "Actual magnitude of complex phasor";
+  equation
+    'hollowCylinderAxialInner.port_n.V_m.re' = 'hollowCylinderRadiaLRight.port_p.V_m.re';
+    'hollowCylinderAxialInner.port_n.V_m.im' = 'hollowCylinderRadiaLRight.port_p.V_m.im';
+    'hollowCylinderRadiaLRight.port_n.V_m.re' = 'hollowCylinderAxialOuter.port_p.V_m.re';
+    'hollowCylinderRadiaLRight.port_n.V_m.im' = 'hollowCylinderAxialOuter.port_p.V_m.im';
+    'hollowCylinderRadiaLRight.port_n.reference.gamma' = 'hollowCylinderAxialOuter.port_p.reference.gamma';
+    'hollowCylinderAxialOuter.port_n.V_m.re' = 'hollowCylinderRadialLeft.port_p.V_m.re';
+    'hollowCylinderAxialOuter.port_n.V_m.im' = 'hollowCylinderRadialLeft.port_p.V_m.im';
+    'hollowCylinderAxialOuter.port_n.reference.gamma' = 'hollowCylinderRadialLeft.port_p.reference.gamma';
+    'constFrequency.y' = 'source.f';
+    'crossing.port_p1.V_m.re' = 'ground.port.V_m.re';
+    'crossing.port_p1.V_m.re' = 'hollowCylinderRadialLeft.port_n.V_m.re';
+    'crossing.port_p1.V_m.im' = 'ground.port.V_m.im';
+    'crossing.port_p1.V_m.im' = 'hollowCylinderRadialLeft.port_n.V_m.im';
+    'crossing.port_p1.reference.gamma' = 'ground.port.reference.gamma';
+    'crossing.port_p1.reference.gamma' = 'hollowCylinderRadialLeft.port_n.reference.gamma';
+    'source.port_p.V_m.re' = 'crossing.port_p2.V_m.re';
+    'source.port_p.V_m.im' = 'crossing.port_p2.V_m.im';
+    'source.port_p.reference.gamma' = 'crossing.port_p2.reference.gamma';
+    'source.port_n.V_m.re' = 'crossing.port_n1.V_m.re';
+    'source.port_n.V_m.im' = 'crossing.port_n1.V_m.im';
+    'source.port_n.reference.gamma' = 'crossing.port_n1.reference.gamma';
+    'crossing.port_n2.V_m.re' = 'hollowCylinderAxialInner.port_p.V_m.re';
+    'crossing.port_n2.V_m.im' = 'hollowCylinderAxialInner.port_p.V_m.im';
+    'crossing.port_n2.reference.gamma' = 'hollowCylinderAxialInner.port_p.reference.gamma';
+    'complexRamp.y.re' = 'source.Phi.re';
+    'complexRamp.y.im' = 'source.Phi.im';
+    'hollowCylinderRadiaLRight.port_p.Phi.re' + 'hollowCylinderAxialInner.port_n.Phi.re' = 0.0;
+    'hollowCylinderRadiaLRight.port_p.Phi.im' + 'hollowCylinderAxialInner.port_n.Phi.im' = 0.0;
+    'hollowCylinderAxialOuter.port_p.Phi.re' + 'hollowCylinderRadiaLRight.port_n.Phi.re' = 0.0;
+    'hollowCylinderAxialOuter.port_p.Phi.im' + 'hollowCylinderRadiaLRight.port_n.Phi.im' = 0.0;
+    'crossing.port_p1.Phi.re' + 'ground.port.Phi.re' + 'hollowCylinderRadialLeft.port_n.Phi.re' = 0.0;
+    'crossing.port_p1.Phi.im' + 'ground.port.Phi.im' + 'hollowCylinderRadialLeft.port_n.Phi.im' = 0.0;
+    'hollowCylinderAxialOuter.port_n.Phi.re' + 'hollowCylinderRadialLeft.port_p.Phi.re' = 0.0;
+    'hollowCylinderAxialOuter.port_n.Phi.im' + 'hollowCylinderRadialLeft.port_p.Phi.im' = 0.0;
+    'crossing.port_p2.Phi.re' + 'source.port_p.Phi.re' = 0.0;
+    'crossing.port_p2.Phi.im' + 'source.port_p.Phi.im' = 0.0;
+    'crossing.port_n1.Phi.re' + 'source.port_n.Phi.re' = 0.0;
+    'crossing.port_n1.Phi.im' + 'source.port_n.Phi.im' = 0.0;
+    'crossing.port_n2.Phi.re' + 'hollowCylinderAxialInner.port_p.Phi.re' = 0.0;
+    'crossing.port_n2.Phi.im' + 'hollowCylinderAxialInner.port_p.Phi.im' = 0.0;
+    'hollowCylinderAxialInner.A' = 9.42477796076938e-4;
+    'hollowCylinderAxialInner.G_m' = 1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r' * 'hollowCylinderAxialInner.A' / 0.01;
+    'hollowCylinderAxialInner.mu_r' = 100.0;
+    'hollowCylinderAxialInner.R_m' = 1.0 / 'hollowCylinderAxialInner.G_m';
+    'hollowCylinderAxialInner.V_m.re' = 'hollowCylinderAxialInner.Phi.re' * 'hollowCylinderAxialInner.R_m';
+    'hollowCylinderAxialInner.V_m.im' = 'hollowCylinderAxialInner.Phi.im' * 'hollowCylinderAxialInner.R_m';
+    'hollowCylinderAxialInner.B.re' = 'hollowCylinderAxialInner.Phi.re' * 'hollowCylinderAxialInner.A' / ('hollowCylinderAxialInner.A' * 'hollowCylinderAxialInner.A');
+    'hollowCylinderAxialInner.B.im' = 'hollowCylinderAxialInner.Phi.im' * 'hollowCylinderAxialInner.A' / ('hollowCylinderAxialInner.A' * 'hollowCylinderAxialInner.A');
+    'hollowCylinderAxialInner.H.re' = 'hollowCylinderAxialInner.B.re' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r') / (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r'));
+    'hollowCylinderAxialInner.H.im' = 'hollowCylinderAxialInner.B.im' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r') / (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r'));
+    0.0 = 'hollowCylinderAxialInner.port_p.Phi.re' + 'hollowCylinderAxialInner.port_n.Phi.re';
+    0.0 = 'hollowCylinderAxialInner.port_p.Phi.im' + 'hollowCylinderAxialInner.port_n.Phi.im';
+    'hollowCylinderAxialInner.port_p.reference.gamma' = 'hollowCylinderAxialInner.port_n.reference.gamma';
+    'hollowCylinderAxialInner.omega' = der('hollowCylinderAxialInner.port_p.reference.gamma');
+    'hollowCylinderAxialInner.V_m.re' = 'hollowCylinderAxialInner.port_p.V_m.re' - 'hollowCylinderAxialInner.port_n.V_m.re';
+    'hollowCylinderAxialInner.V_m.im' = 'hollowCylinderAxialInner.port_p.V_m.im' - 'hollowCylinderAxialInner.port_n.V_m.im';
+    'hollowCylinderAxialInner.Phi.re' = 'hollowCylinderAxialInner.port_p.Phi.re';
+    'hollowCylinderAxialInner.Phi.im' = 'hollowCylinderAxialInner.port_p.Phi.im';
+    'hollowCylinderRadiaLRight.A' = 0.004398229715025711;
+    'hollowCylinderRadiaLRight.G_m' = 1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r' * 6.283185307179586 * 0.02 / 1.2992829841302609;
+    'hollowCylinderRadiaLRight.mu_r' = 100.0;
+    'hollowCylinderRadiaLRight.R_m' = 1.0 / 'hollowCylinderRadiaLRight.G_m';
+    'hollowCylinderRadiaLRight.V_m.re' = 'hollowCylinderRadiaLRight.Phi.re' * 'hollowCylinderRadiaLRight.R_m';
+    'hollowCylinderRadiaLRight.V_m.im' = 'hollowCylinderRadiaLRight.Phi.im' * 'hollowCylinderRadiaLRight.R_m';
+    'hollowCylinderRadiaLRight.B.re' = 'hollowCylinderRadiaLRight.Phi.re' * 'hollowCylinderRadiaLRight.A' / ('hollowCylinderRadiaLRight.A' * 'hollowCylinderRadiaLRight.A');
+    'hollowCylinderRadiaLRight.B.im' = 'hollowCylinderRadiaLRight.Phi.im' * 'hollowCylinderRadiaLRight.A' / ('hollowCylinderRadiaLRight.A' * 'hollowCylinderRadiaLRight.A');
+    'hollowCylinderRadiaLRight.H.re' = 'hollowCylinderRadiaLRight.B.re' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r') / (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r'));
+    'hollowCylinderRadiaLRight.H.im' = 'hollowCylinderRadiaLRight.B.im' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r') / (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r'));
+    0.0 = 'hollowCylinderRadiaLRight.port_p.Phi.re' + 'hollowCylinderRadiaLRight.port_n.Phi.re';
+    0.0 = 'hollowCylinderRadiaLRight.port_p.Phi.im' + 'hollowCylinderRadiaLRight.port_n.Phi.im';
+    'hollowCylinderRadiaLRight.port_p.reference.gamma' = 'hollowCylinderRadiaLRight.port_n.reference.gamma';
+    'hollowCylinderRadiaLRight.omega' = der('hollowCylinderRadiaLRight.port_p.reference.gamma');
+    'hollowCylinderRadiaLRight.V_m.re' = 'hollowCylinderRadiaLRight.port_p.V_m.re' - 'hollowCylinderRadiaLRight.port_n.V_m.re';
+    'hollowCylinderRadiaLRight.V_m.im' = 'hollowCylinderRadiaLRight.port_p.V_m.im' - 'hollowCylinderRadiaLRight.port_n.V_m.im';
+    'hollowCylinderRadiaLRight.Phi.re' = 'hollowCylinderRadiaLRight.port_p.Phi.re';
+    'hollowCylinderRadiaLRight.Phi.im' = 'hollowCylinderRadiaLRight.port_p.Phi.im';
+    'hollowCylinderRadialLeft.A' = 0.004398229715025711;
+    'hollowCylinderRadialLeft.G_m' = 1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r' * 6.283185307179586 * 0.02 / 1.2992829841302609;
+    'hollowCylinderRadialLeft.mu_r' = 100.0;
+    'hollowCylinderRadialLeft.R_m' = 1.0 / 'hollowCylinderRadialLeft.G_m';
+    'hollowCylinderRadialLeft.V_m.re' = 'hollowCylinderRadialLeft.Phi.re' * 'hollowCylinderRadialLeft.R_m';
+    'hollowCylinderRadialLeft.V_m.im' = 'hollowCylinderRadialLeft.Phi.im' * 'hollowCylinderRadialLeft.R_m';
+    'hollowCylinderRadialLeft.B.re' = 'hollowCylinderRadialLeft.Phi.re' * 'hollowCylinderRadialLeft.A' / ('hollowCylinderRadialLeft.A' * 'hollowCylinderRadialLeft.A');
+    'hollowCylinderRadialLeft.B.im' = 'hollowCylinderRadialLeft.Phi.im' * 'hollowCylinderRadialLeft.A' / ('hollowCylinderRadialLeft.A' * 'hollowCylinderRadialLeft.A');
+    'hollowCylinderRadialLeft.H.re' = 'hollowCylinderRadialLeft.B.re' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r') / (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r'));
+    'hollowCylinderRadialLeft.H.im' = 'hollowCylinderRadialLeft.B.im' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r') / (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r'));
+    0.0 = 'hollowCylinderRadialLeft.port_p.Phi.re' + 'hollowCylinderRadialLeft.port_n.Phi.re';
+    0.0 = 'hollowCylinderRadialLeft.port_p.Phi.im' + 'hollowCylinderRadialLeft.port_n.Phi.im';
+    'hollowCylinderRadialLeft.port_p.reference.gamma' = 'hollowCylinderRadialLeft.port_n.reference.gamma';
+    'hollowCylinderRadialLeft.omega' = der('hollowCylinderRadialLeft.port_p.reference.gamma');
+    'hollowCylinderRadialLeft.V_m.re' = 'hollowCylinderRadialLeft.port_p.V_m.re' - 'hollowCylinderRadialLeft.port_n.V_m.re';
+    'hollowCylinderRadialLeft.V_m.im' = 'hollowCylinderRadialLeft.port_p.V_m.im' - 'hollowCylinderRadialLeft.port_n.V_m.im';
+    'hollowCylinderRadialLeft.Phi.re' = 'hollowCylinderRadialLeft.port_p.Phi.re';
+    'hollowCylinderRadialLeft.Phi.im' = 'hollowCylinderRadialLeft.port_p.Phi.im';
+    'hollowCylinderAxialOuter.A' = 0.0034557519189487708;
+    'hollowCylinderAxialOuter.G_m' = 1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r' * 'hollowCylinderAxialOuter.A' / 0.01;
+    'hollowCylinderAxialOuter.mu_r' = 100.0;
+    'hollowCylinderAxialOuter.R_m' = 1.0 / 'hollowCylinderAxialOuter.G_m';
+    'hollowCylinderAxialOuter.V_m.re' = 'hollowCylinderAxialOuter.Phi.re' * 'hollowCylinderAxialOuter.R_m';
+    'hollowCylinderAxialOuter.V_m.im' = 'hollowCylinderAxialOuter.Phi.im' * 'hollowCylinderAxialOuter.R_m';
+    'hollowCylinderAxialOuter.B.re' = 'hollowCylinderAxialOuter.Phi.re' * 'hollowCylinderAxialOuter.A' / ('hollowCylinderAxialOuter.A' * 'hollowCylinderAxialOuter.A');
+    'hollowCylinderAxialOuter.B.im' = 'hollowCylinderAxialOuter.Phi.im' * 'hollowCylinderAxialOuter.A' / ('hollowCylinderAxialOuter.A' * 'hollowCylinderAxialOuter.A');
+    'hollowCylinderAxialOuter.H.re' = 'hollowCylinderAxialOuter.B.re' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r') / (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r'));
+    'hollowCylinderAxialOuter.H.im' = 'hollowCylinderAxialOuter.B.im' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r') / (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r'));
+    0.0 = 'hollowCylinderAxialOuter.port_p.Phi.re' + 'hollowCylinderAxialOuter.port_n.Phi.re';
+    0.0 = 'hollowCylinderAxialOuter.port_p.Phi.im' + 'hollowCylinderAxialOuter.port_n.Phi.im';
+    'hollowCylinderAxialOuter.port_p.reference.gamma' = 'hollowCylinderAxialOuter.port_n.reference.gamma';
+    'hollowCylinderAxialOuter.omega' = der('hollowCylinderAxialOuter.port_p.reference.gamma');
+    'hollowCylinderAxialOuter.V_m.re' = 'hollowCylinderAxialOuter.port_p.V_m.re' - 'hollowCylinderAxialOuter.port_n.V_m.re';
+    'hollowCylinderAxialOuter.V_m.im' = 'hollowCylinderAxialOuter.port_p.V_m.im' - 'hollowCylinderAxialOuter.port_n.V_m.im';
+    'hollowCylinderAxialOuter.Phi.re' = 'hollowCylinderAxialOuter.port_p.Phi.re';
+    'hollowCylinderAxialOuter.Phi.im' = 'hollowCylinderAxialOuter.port_p.Phi.im';
+    'ground.port.V_m.re' = 0.0;
+    'ground.port.V_m.im' = 0.0;
+    'constFrequency.y' = 50.0;
+    'source.omega' = 6.283185307179586 * 'source.f';
+    'source.V_m.re' = 'source.port_p.V_m.re' - 'source.port_n.V_m.re';
+    'source.V_m.im' = 'source.port_p.V_m.im' - 'source.port_n.V_m.im';
+    0.0 = 'source.port_p.Phi.re' + 'source.port_n.Phi.re';
+    0.0 = 'source.port_p.Phi.im' + 'source.port_n.Phi.im';
+    'source.Phi.re' = 'source.port_p.Phi.re';
+    'source.Phi.im' = 'source.port_p.Phi.im';
+    'source.port_p.reference.gamma' = 'source.port_n.reference.gamma';
+    'source.omega' = der('source.port_p.reference.gamma');
+    'crossing.port_p1.reference.gamma' = 'crossing.port_p2.reference.gamma';
+    'crossing.port_n1.reference.gamma' = 'crossing.port_n2.reference.gamma';
+    'crossing.port_p1.V_m.re' = 'crossing.port_p2.V_m.re';
+    'crossing.port_p1.V_m.im' = 'crossing.port_p2.V_m.im';
+    'crossing.port_p1.Phi.re' + 'crossing.port_p2.Phi.re' = 0.0;
+    'crossing.port_p1.Phi.im' + 'crossing.port_p2.Phi.im' = 0.0;
+    'crossing.port_n1.V_m.re' = 'crossing.port_n2.V_m.re';
+    'crossing.port_n1.V_m.im' = 'crossing.port_n2.V_m.im';
+    'crossing.port_n1.Phi.re' + 'crossing.port_n2.Phi.re' = 0.0;
+    'crossing.port_n1.Phi.im' + 'crossing.port_n2.Phi.im' = 0.0;
+    'complexRamp.magnitude' = if time < 0.0 then 0.0 else if time < 1.0 then time * 8e-4 else 8e-4;
+    'complexRamp.y.re' = 'complexRamp.magnitude';
+    'complexRamp.y.im' = 0.0;
+    annotation(experiment(StopTime = 1, Interval = 0.001));
+  end 'CylinderSections';
+end 'CylinderSections';
