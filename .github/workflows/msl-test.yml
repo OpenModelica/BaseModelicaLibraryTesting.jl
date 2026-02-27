@@ -11,10 +11,20 @@ on:
     - cron: '0 3 * * *'   # every day 03:00 UTC
   workflow_dispatch:
     inputs:
+      library:
+        description: 'Modelica library name'
+        required: false
+        default: 'Modelica'
+        type: string
       lib_version:
         description: 'Modelica Standard Library version'
         required: false
         default: '4.1.0'
+        type: string
+      bm_version:
+        description: 'BaseModelica.jl version (branch, tag, or "main")'
+        required: false
+        default: 'main'
         type: string
 
 concurrency:
@@ -23,6 +33,8 @@ concurrency:
 
 permissions:
   contents: write   # needed to push to gh-pages
+  pages: write      # needed to deploy to GitHub Pages
+  id-token: write   # needed for OIDC Pages deployment
 
 jobs:
   test-and-deploy:
@@ -31,7 +43,9 @@ jobs:
     timeout-minutes: 480
 
     env:
+      LIB_NAME:    ${{ inputs.library    || 'Modelica' }}
       LIB_VERSION: ${{ inputs.lib_version || '4.1.0' }}
+      BM_VERSION_INPUT: ${{ inputs.bm_version || 'main' }}
 
     steps:
       - name: Checkout source
@@ -44,7 +58,7 @@ jobs:
           packages: |
             omc
           libraries: |
-            'Modelica ${{ env.LIB_VERSION }}'
+            '${{ env.LIB_NAME }} ${{ env.LIB_VERSION }}'
 
       - name: Set up Julia
         uses: julia-actions/setup-julia@v2
@@ -54,6 +68,10 @@ jobs:
 
       - name: Restore Julia package cache
         uses: julia-actions/cache@v2
+
+      - name: Pin BaseModelica.jl version
+        if: env.BM_VERSION_INPUT != 'main'
+        run: julia --project=. -e 'using Pkg; Pkg.add(PackageSpec(name="BaseModelica", version=ENV["BM_VERSION_INPUT"]))'
 
       - name: Build package
         uses: julia-actions/julia-buildpkg@v1
@@ -84,9 +102,9 @@ jobs:
           julia --project=. -e '
             using BaseModelicaLibraryTesting
             main(
-              library      = "Modelica",
+              library      = ENV["LIB_NAME"],
               version      = ENV["LIB_VERSION"],
-              results_root = "results/$(ENV["BM_VERSION"])/Modelica/$(ENV["LIB_VERSION"])",
+              results_root = "results/$(ENV["BM_VERSION"])/$(ENV["LIB_NAME"])/$(ENV["LIB_VERSION"])",
               ref_root     = "MAP-LIB_ReferenceResults",
             )
           '
@@ -125,5 +143,13 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --quiet && { echo "Nothing to commit."; exit 0; }
-          git commit -m "results: ${BM_VERSION}/Modelica/${LIB_VERSION} [$(date -u '+%Y-%m-%d')]"
+          git commit -m "results: ${BM_VERSION}/${LIB_NAME}/${LIB_VERSION} [$(date -u '+%Y-%m-%d')]"
           git push origin HEAD:gh-pages
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site/
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
