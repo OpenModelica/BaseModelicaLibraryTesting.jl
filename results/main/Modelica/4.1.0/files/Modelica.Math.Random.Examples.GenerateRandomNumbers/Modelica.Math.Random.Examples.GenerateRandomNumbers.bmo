@@ -1,0 +1,113 @@
+//! base 0.1.0
+package 'GenerateRandomNumbers'
+  function 'Modelica.Math.Random.Generators.Xorshift1024star.random' "Returns a uniform random number with the xorshift1024* algorithm"
+    input Integer[33] 'stateIn';
+    output Real 'result';
+    output Integer[33] 'stateOut';
+  external "C" ModelicaRandom_xorshift1024star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift1024star.random';
+
+  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
+    input Integer[4] 'stateIn';
+    output Real 'result';
+    output Integer[4] 'stateOut';
+  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
+
+  function 'Modelica.Math.Random.Generators.Xorshift64star.random' "Returns a uniform random number with the xorshift64* algorithm"
+    input Integer[2] 'stateIn';
+    output Real 'result';
+    output Integer[2] 'stateOut';
+  external "C" ModelicaRandom_xorshift64star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift64star.random';
+
+  function 'Modelica.Math.Random.Utilities.impureRandom' "Impure random number generator (with hidden state vector)"
+    input Integer 'id';
+    output Real 'y';
+  external "C" 'y' = ModelicaRandom_impureRandom_xorshift1024star('id') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Utilities.impureRandom';
+
+  function 'Modelica.Math.Random.Utilities.impureRandomInteger' "Impure random number generator for integer values (with hidden state vector)"
+    input Integer 'id';
+    input Integer 'imin' = 1;
+    input Integer 'imax' = 268435456;
+    output Integer 'y';
+    Real 'r';
+  algorithm
+    'r' := 'Modelica.Math.Random.Utilities.impureRandom'('id');
+    'y' := min('imax', integer('r' * ('imax' - 'imin' + 1)) + 'imin');
+  end 'Modelica.Math.Random.Utilities.impureRandomInteger';
+
+  model 'GenerateRandomNumbers' "Generate random numbers with the various random number generators"
+    parameter Real 'samplePeriod'(unit = "s", quantity = "Time") = 0.05 "Sample period for the generation of random numbers";
+    parameter Integer 'globalSeed' = 30020 "Global seed to initialize random number generator";
+    parameter Integer 'localSeed' = 614657 "Local seed to initialize random number generator";
+    output Real 'r64' "Random number generated with Xorshift64star";
+    output Real 'r128' "Random number generated with Xorshift128plus";
+    output Real 'r1024' "Random number generated with Xorshift1024star";
+    Integer 'state64[1]'(fixed = true, start = 0);
+    Integer 'state64[2]'(fixed = true, start = 0);
+    Integer 'state128[1]'(fixed = true, start = 0);
+    Integer 'state128[2]'(fixed = true, start = 0);
+    Integer 'state128[3]'(fixed = true, start = 0);
+    Integer 'state128[4]'(fixed = true, start = 0);
+    Integer 'state1024[1]'(fixed = true, start = 0);
+    Integer 'state1024[2]'(fixed = true, start = 0);
+    Integer 'state1024[3]'(fixed = true, start = 0);
+    Integer 'state1024[4]'(fixed = true, start = 0);
+    Integer 'state1024[5]'(fixed = true, start = 0);
+    Integer 'state1024[6]'(fixed = true, start = 0);
+    Integer 'state1024[7]'(fixed = true, start = 0);
+    Integer 'state1024[8]'(fixed = true, start = 0);
+    Integer 'state1024[9]'(fixed = true, start = 0);
+    Integer 'state1024[10]'(fixed = true, start = 0);
+    Integer 'state1024[11]'(fixed = true, start = 0);
+    Integer 'state1024[12]'(fixed = true, start = 0);
+    Integer 'state1024[13]'(fixed = true, start = 0);
+    Integer 'state1024[14]'(fixed = true, start = 0);
+    Integer 'state1024[15]'(fixed = true, start = 0);
+    Integer 'state1024[16]'(fixed = true, start = 0);
+    Integer 'state1024[17]'(fixed = true, start = 0);
+    Integer 'state1024[18]'(fixed = true, start = 0);
+    Integer 'state1024[19]'(fixed = true, start = 0);
+    Integer 'state1024[20]'(fixed = true, start = 0);
+    Integer 'state1024[21]'(fixed = true, start = 0);
+    Integer 'state1024[22]'(fixed = true, start = 0);
+    Integer 'state1024[23]'(fixed = true, start = 0);
+    Integer 'state1024[24]'(fixed = true, start = 0);
+    Integer 'state1024[25]'(fixed = true, start = 0);
+    Integer 'state1024[26]'(fixed = true, start = 0);
+    Integer 'state1024[27]'(fixed = true, start = 0);
+    Integer 'state1024[28]'(fixed = true, start = 0);
+    Integer 'state1024[29]'(fixed = true, start = 0);
+    Integer 'state1024[30]'(fixed = true, start = 0);
+    Integer 'state1024[31]'(fixed = true, start = 0);
+    Integer 'state1024[32]'(fixed = true, start = 0);
+    Integer 'state1024[33]'(fixed = true, start = 0);
+    parameter Integer 'id' = 715827883 "A unique number used to sort equations correctly";
+    discrete Real 'rImpure' "Impure Real random number";
+    Integer 'iImpure' "Impure Integer random number";
+  algorithm
+    when initial() then
+      'state64' := {-139195358, -797266357};
+      'state128' := {-139195358, -797266357, -1912715464, -800614040};
+      'state1024' := {-139195358, -797266357, -1912715464, -800614040, 1407347368, 47392831, -816480869, -1965180524, -1436984735, 798995491, -523274940, -223056597, -543030091, 1869724577, -708896756, -2110939845, -1297460102, 523746857, 338173146, 1724951493, 35319384, 599297666, -603041602, 1840497529, -1171433680, -1302937652, 977231140, 1882969419, -1279746552, -1114541373, -29584150, -1355597061, 1884814717};
+      'r64' := 0.0;
+      'r128' := 0.0;
+      'r1024' := 0.0;
+    elsewhen sample(0.0, 0.05) then
+      ('r64', 'state64') := 'Modelica.Math.Random.Generators.Xorshift64star.random'(pre('state64'));
+      ('r128', 'state128') := 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('state128'));
+      ('r1024', 'state1024') := 'Modelica.Math.Random.Generators.Xorshift1024star.random'(pre('state1024'));
+    end when;
+  algorithm
+    when initial() then
+      'rImpure' := 0.0;
+      'iImpure' := 0;
+    elsewhen sample(0.0, 0.05) then
+      'rImpure' := 'Modelica.Math.Random.Utilities.impureRandom'(715827883);
+      'iImpure' := 'Modelica.Math.Random.Utilities.impureRandomInteger'(715827883, -1234, 2345);
+    end when;
+    annotation(experiment(StopTime = 2));
+  end 'GenerateRandomNumbers';
+end 'GenerateRandomNumbers';

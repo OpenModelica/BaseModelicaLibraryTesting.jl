@@ -1,0 +1,69 @@
+//! base 0.1.0
+package 'AssignClockVectorized'
+  type 'Modelica.Clocked.Types.Resolution' = enumeration('y', 'd', 'h', 'm', 's', 'ms', 'us', 'ns');
+
+  model 'AssignClockVectorized' "Example of an AssignClockVectorized block for Boolean signals"
+    parameter Integer 'periodicClock.factor'(min = 0) = 20 "Sample factor with respect to resolution" annotation(Evaluate = true);
+    parameter 'Modelica.Clocked.Types.Resolution' 'periodicClock.resolution' = 'Modelica.Clocked.Types.Resolution'.'ms' "Clock resolution" annotation(Evaluate = true);
+    parameter Boolean 'periodicClock.useSolver' = false "= true, if solverMethod shall be explicitly defined" annotation(Evaluate = true);
+    parameter String 'periodicClock.solverMethod' = "ExplicitEuler" "Integration method used for discretized continuous-time partitions";
+    Clock 'periodicClock.y';
+    constant Integer 'periodicClock.conversionTable[1]' = 31536000 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[2]' = 86400 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[3]' = 3600 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[4]' = 60 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[5]' = 1 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[6]' = 1000 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[7]' = 1000000 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[8]' = 1000000000 "Table to convert from Resolution to Integer clock resolution";
+    parameter Integer 'periodicClock.resolutionFactor' = 1000 annotation(Evaluate = true);
+    Clock 'periodicClock.c';
+    Boolean 'unitDelay1.u'(start = false) "Connector of clocked, Real input signal";
+    Boolean 'unitDelay1.y' "Connector of clocked, Real output signal";
+    parameter Boolean 'unitDelay1.y_start' = false "Value of output signal at first clock tick";
+    parameter Integer 'assignClock1.n'(min = 1) = 2 "Size of input signal vector u (= size of output signal vector y)";
+    Boolean 'assignClock1.u[1]' "Connector of clocked, Boolean input signal";
+    Boolean 'assignClock1.u[2]' "Connector of clocked, Boolean input signal";
+    Boolean 'assignClock1.y[1]' "Connector of clocked, Boolean output signal";
+    Boolean 'assignClock1.y[2]' "Connector of clocked, Boolean output signal";
+    Clock 'assignClock1.clock';
+    Boolean 'unitDelay2.u'(start = true) "Connector of clocked, Real input signal";
+    Boolean 'unitDelay2.y' "Connector of clocked, Real output signal";
+    parameter Boolean 'unitDelay2.y_start' = true "Value of output signal at first clock tick";
+    Boolean 'xor.u1' "Connector of first Boolean input signal";
+    Boolean 'xor.u2' "Connector of second Boolean input signal";
+    Boolean 'xor.y' "Connector of Boolean output signal";
+    parameter Boolean 'integerConstant.k' = true "Constant output value";
+    Boolean 'integerConstant.y' "Connector of Boolean output signal";
+    Boolean 'xor1.u1' "Connector of first Boolean input signal";
+    Boolean 'xor1.u2' "Connector of second Boolean input signal";
+    Boolean 'xor1.y' "Connector of Boolean output signal";
+    parameter Boolean 'integerConstant1.k' = true "Constant output value";
+    Boolean 'integerConstant1.y' "Connector of Boolean output signal";
+  equation
+    'periodicClock.y' = 'assignClock1.clock';
+    'xor.u1' = 'unitDelay1.y';
+    'xor.u2' = 'integerConstant.y';
+    'xor1.u1' = 'integerConstant1.y';
+    'unitDelay2.y' = 'xor1.u2';
+    'xor.y' = 'assignClock1.u[1]';
+    'xor1.y' = 'assignClock1.u[2]';
+    'assignClock1.y[1]' = 'unitDelay1.u';
+    'assignClock1.y[2]' = 'unitDelay2.u';
+    'periodicClock.c' = Clock('periodicClock.factor', 1000);
+    'periodicClock.y' = 'periodicClock.c';
+    'unitDelay1.y' = previous('unitDelay1.u');
+
+    when 'assignClock1.clock' then
+      'assignClock1.y[1]' = 'assignClock1.u[1]';
+      'assignClock1.y[2]' = 'assignClock1.u[2]';
+    end when;
+
+    'unitDelay2.y' = previous('unitDelay2.u');
+    'xor.y' = not ('xor.u1' and 'xor.u2' or not 'xor.u1' and not 'xor.u2');
+    'integerConstant.y' = true;
+    'xor1.y' = not ('xor1.u1' and 'xor1.u2' or not 'xor1.u1' and not 'xor1.u2');
+    'integerConstant1.y' = true;
+    annotation(experiment(StopTime = 0.09));
+  end 'AssignClockVectorized';
+end 'AssignClockVectorized';
