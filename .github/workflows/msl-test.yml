@@ -86,10 +86,14 @@ jobs:
       - name: Resolve BaseModelica.jl version
         id: versions
         run: |
-          julia --project=. -e '
-            import BaseModelica
-            println("bm_version=" * string(pkgversion(BaseModelica)))
-          ' >> "$GITHUB_OUTPUT"
+          if [ "$BM_VERSION_INPUT" = "main" ]; then
+            echo "bm_version=main" >> "$GITHUB_OUTPUT"
+          else
+            julia --project=. -e '
+              import BaseModelica
+              println("bm_version=" * string(pkgversion(BaseModelica)))
+            ' >> "$GITHUB_OUTPUT"
+          fi
 
       # ── Reference results ─────────────────────────────────────────────────────
       - name: Checkout MAP-LIB reference results
