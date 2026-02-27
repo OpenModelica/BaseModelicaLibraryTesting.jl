@@ -1,0 +1,82 @@
+//! base 0.1.0
+package 'ClockedWithDiscreteTextbookController'
+  model 'ClockedWithDiscreteTextbookController' "Simple controlled drive with discrete textbook controller (period is not used in the controller)"
+    Real 'load.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'load.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    Real 'load.flange_b.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'load.flange_b.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    parameter Real 'load.J'(start = 1.0, min = 0.0, unit = "kg.m2", quantity = "MomentOfInertia") = 10.0 "Moment of inertia";
+    parameter StateSelect 'load.stateSelect' = StateSelect.default "Priority to use phi and w as states";
+    Real 'load.phi'(stateSelect = StateSelect.default, fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of component";
+    Real 'load.w'(stateSelect = StateSelect.default, fixed = true, start = 0.0, unit = "rad/s", quantity = "AngularVelocity") "Absolute angular velocity of component (= der(phi))";
+    Real 'load.a'(unit = "rad/s2", quantity = "AngularAcceleration") "Absolute angular acceleration of component (= der(w))";
+    Real 'speed.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'speed.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    Real 'speed.w'(unit = "rad/s") "Absolute angular velocity of flange as output signal";
+    parameter Real 'ramp.height' = 1.0 "Height of ramp";
+    parameter Real 'ramp.duration'(start = 2.0, min = 0.0, unit = "s", quantity = "Time") = 2.0 "Duration of ramp (= 0.0 gives a Step)";
+    Real 'ramp.y' "Connector of Real output signal";
+    parameter Real 'ramp.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'ramp.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    Real 'feedback.u1' "Commanded input";
+    Real 'feedback.u2' "Feedback input";
+    Real 'feedback.y';
+    parameter Boolean 'torque.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
+    Real 'torque.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'torque.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    Real 'torque.phi_support'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute angle of support flange";
+    Real 'torque.tau'(unit = "N.m") "Accelerating torque acting at flange (= -flange.tau)";
+    Real 'PI.u' "Connector of clocked, Real input signal";
+    Real 'PI.y' "Connector of clocked, Real output signal";
+    parameter Real 'PI.kd' = 110.0 "Gain of discrete PI controller";
+    parameter Real 'PI.Td'(min = 2.2250738585072014e-308) = 1.0 "Time constant of discrete PI controller";
+    Real 'PI.x'(fixed = true, start = 0.0) "Discrete PI state";
+    Real 'sample2.u' "Connector of continuous-time, Real input signal";
+    Real 'sample2.y' "Connector of clocked, Real output signal";
+    Clock 'sample2.clock' "Output signal y is associated with this clock input";
+    parameter Real 'hold1.y_start' = 0.0 "Value of output y before the first tick of the clock associated to input u";
+    Real 'hold1.u'(start = 0.0) "Connector of clocked, Real input signal";
+    Real 'hold1.y' "Connector of continuous-time, Real output signal";
+    Real 'sample1.u' "Connector of continuous-time, Real input signal";
+    Real 'sample1.y' "Connector of clocked, Real output signal";
+    parameter Real 'periodicClock.period'(unit = "s", quantity = "Time") = 0.1 "Period of clock (defined as Real number)" annotation(Evaluate = true);
+    parameter Boolean 'periodicClock.useSolver' = false "= true, if solverMethod shall be explicitly defined" annotation(Evaluate = true);
+    parameter String 'periodicClock.solverMethod' = "ExplicitEuler" "Integration method used for discretized continuous-time partitions";
+    Clock 'periodicClock.y';
+  equation
+    'speed.flange.phi' = 'load.flange_b.phi';
+    'torque.flange.phi' = 'load.flange_a.phi';
+    'feedback.y' = 'PI.u';
+    'ramp.y' = 'sample2.u';
+    'sample2.y' = 'feedback.u1';
+    'PI.y' = 'hold1.u';
+    'hold1.y' = 'torque.tau';
+    'sample1.u' = 'speed.w';
+    'feedback.u2' = 'sample1.y';
+    'periodicClock.y' = 'sample2.clock';
+    'speed.flange.tau' + 'load.flange_b.tau' = 0.0;
+    'torque.flange.tau' + 'load.flange_a.tau' = 0.0;
+    'load.phi' = 'load.flange_a.phi';
+    'load.phi' = 'load.flange_b.phi';
+    'load.w' = der('load.phi');
+    'load.a' = der('load.w');
+    10.0 * 'load.a' = 'load.flange_a.tau' + 'load.flange_b.tau';
+    'speed.w' = der('speed.flange.phi');
+    0.0 = 'speed.flange.tau';
+    'ramp.y' = if time < 0.0 then 0.0 else if time < 2.0 then time / 2.0 else 1.0;
+    'feedback.y' = 'feedback.u1' - 'feedback.u2';
+    'torque.flange.tau' = -'torque.tau';
+    'torque.phi_support' = 0.0;
+
+    when Clock() then
+      'PI.x' = previous('PI.x') + 'PI.u';
+      'PI.y' = 110.0 * ('PI.x' + 'PI.u');
+    end when;
+
+    'sample2.y' = sample('sample2.u', 'sample2.clock');
+    'hold1.y' = hold('hold1.u');
+    'sample1.y' = sample('sample1.u', Clock());
+    'periodicClock.y' = Clock('periodicClock.period');
+    annotation(experiment(StopTime = 5));
+  end 'ClockedWithDiscreteTextbookController';
+end 'ClockedWithDiscreteTextbookController';

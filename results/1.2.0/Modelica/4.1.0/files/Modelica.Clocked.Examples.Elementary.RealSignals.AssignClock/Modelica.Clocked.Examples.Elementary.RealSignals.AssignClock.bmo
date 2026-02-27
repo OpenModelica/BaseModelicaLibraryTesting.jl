@@ -1,0 +1,52 @@
+//! base 0.1.0
+package 'AssignClock'
+  type 'Modelica.Clocked.Types.Resolution' = enumeration('y', 'd', 'h', 'm', 's', 'ms', 'us', 'ns');
+
+  model 'AssignClock' "Example of a AssignClock block for Real signals"
+    parameter Integer 'periodicClock.factor'(min = 0) = 20 "Sample factor with respect to resolution" annotation(Evaluate = true);
+    parameter 'Modelica.Clocked.Types.Resolution' 'periodicClock.resolution' = 'Modelica.Clocked.Types.Resolution'.'ms' "Clock resolution" annotation(Evaluate = true);
+    parameter Boolean 'periodicClock.useSolver' = false "= true, if solverMethod shall be explicitly defined" annotation(Evaluate = true);
+    parameter String 'periodicClock.solverMethod' = "ExplicitEuler" "Integration method used for discretized continuous-time partitions";
+    Clock 'periodicClock.y';
+    constant Integer 'periodicClock.conversionTable[1]' = 31536000 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[2]' = 86400 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[3]' = 3600 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[4]' = 60 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[5]' = 1 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[6]' = 1000 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[7]' = 1000000 "Table to convert from Resolution to Integer clock resolution";
+    constant Integer 'periodicClock.conversionTable[8]' = 1000000000 "Table to convert from Resolution to Integer clock resolution";
+    parameter Integer 'periodicClock.resolutionFactor' = 1000 annotation(Evaluate = true);
+    Clock 'periodicClock.c';
+    Real 'assignClock1.u' "Connector of clocked, Real input signal";
+    Real 'assignClock1.y' "Connector of clocked, Real output signal";
+    Clock 'assignClock1.clock';
+    Real 'unitDelay1.u'(start = 0.0) "Connector of clocked, Real input signal";
+    Real 'unitDelay1.y' "Connector of clocked, Real output signal";
+    parameter Real 'unitDelay1.y_start' = 0.0 "Value of output signal at first clock tick";
+    Real 'add.u1' "Connector of Real input signal 1";
+    Real 'add.u2' "Connector of Real input signal 2";
+    Real 'add.y' "Connector of Real output signal";
+    parameter Real 'add.k1' = 1.0 "Gain of input signal 1";
+    parameter Real 'add.k2' = 1.0 "Gain of input signal 2";
+    parameter Real 'const.k'(start = 1.0) = 1.0 "Constant output value";
+    Real 'const.y' "Connector of Real output signal";
+  equation
+    'periodicClock.y' = 'assignClock1.clock';
+    'add.u2' = 'const.y';
+    'assignClock1.y' = 'unitDelay1.u';
+    'unitDelay1.y' = 'add.u1';
+    'add.y' = 'assignClock1.u';
+    'periodicClock.c' = Clock('periodicClock.factor', 1000);
+    'periodicClock.y' = 'periodicClock.c';
+
+    when 'assignClock1.clock' then
+      'assignClock1.y' = 'assignClock1.u';
+    end when;
+
+    'unitDelay1.y' = previous('unitDelay1.u');
+    'add.y' = 'add.u1' + 'add.u2';
+    'const.y' = 1.0;
+    annotation(experiment(StopTime = 0.09));
+  end 'AssignClock';
+end 'AssignClock';

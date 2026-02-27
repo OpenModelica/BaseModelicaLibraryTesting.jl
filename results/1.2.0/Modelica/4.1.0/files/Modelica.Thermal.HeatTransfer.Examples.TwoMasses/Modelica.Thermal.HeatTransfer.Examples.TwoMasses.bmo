@@ -1,0 +1,53 @@
+//! base 0.1.0
+package 'TwoMasses'
+  model 'TwoMasses' "Simple conduction demo"
+    parameter Real 'T_final_K'(nominal = 300.0, fixed = false, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Projected final temperature";
+    parameter Real 'mass1.C'(unit = "J/K", quantity = "HeatCapacity") = 15.0 "Heat capacity of element (= cp*m)";
+    Real 'mass1.T'(nominal = 300.0, fixed = true, start = 373.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of element";
+    Real 'mass1.der_T'(start = 0.0, unit = "K/s", quantity = "TemperatureSlope") "Time derivative of temperature (= der(T))";
+    Real 'mass1.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'mass1.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+    parameter Real 'mass2.C'(unit = "J/K", quantity = "HeatCapacity") = 15.0 "Heat capacity of element (= cp*m)";
+    Real 'mass2.T'(nominal = 300.0, fixed = true, start = 273.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of element";
+    Real 'mass2.der_T'(start = 0.0, unit = "K/s", quantity = "TemperatureSlope") "Time derivative of temperature (= der(T))";
+    Real 'mass2.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'mass2.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'conduction.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from port_a -> port_b";
+    Real 'conduction.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'conduction.port_a.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'conduction.port_a.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'conduction.port_b.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'conduction.port_b.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+    parameter Real 'conduction.G'(unit = "W/K", quantity = "ThermalConductance") = 10.0 "Constant thermal conductance of material";
+    Real 'Tsensor1.T'(unit = "degC") "Absolute temperature in degree Celsius as output signal";
+    Real 'Tsensor1.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'Tsensor1.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'Tsensor2.T'(unit = "degC") "Absolute temperature in degree Celsius as output signal";
+    Real 'Tsensor2.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'Tsensor2.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+  initial equation
+    'T_final_K' = ('mass1.T' * 15.0 + 'mass2.T' * 15.0) / 30.0;
+  equation
+    'mass1.port.T' = 'Tsensor1.port.T';
+    'mass1.port.T' = 'conduction.port_a.T';
+    'mass2.port.T' = 'Tsensor2.port.T';
+    'mass2.port.T' = 'conduction.port_b.T';
+    'Tsensor1.port.Q_flow' + 'conduction.port_a.Q_flow' + 'mass1.port.Q_flow' = 0.0;
+    'Tsensor2.port.Q_flow' + 'conduction.port_b.Q_flow' + 'mass2.port.Q_flow' = 0.0;
+    'mass1.T' = 'mass1.port.T';
+    'mass1.der_T' = der('mass1.T');
+    15.0 * der('mass1.T') = 'mass1.port.Q_flow';
+    'mass2.T' = 'mass2.port.T';
+    'mass2.der_T' = der('mass2.T');
+    15.0 * der('mass2.T') = 'mass2.port.Q_flow';
+    'conduction.Q_flow' = 10.0 * 'conduction.dT';
+    'conduction.dT' = 'conduction.port_a.T' - 'conduction.port_b.T';
+    'conduction.port_a.Q_flow' = 'conduction.Q_flow';
+    'conduction.port_b.Q_flow' = -'conduction.Q_flow';
+    'Tsensor1.T' = 'Tsensor1.port.T' - 273.15;
+    'Tsensor1.port.Q_flow' = 0.0;
+    'Tsensor2.T' = 'Tsensor2.port.T' - 273.15;
+    'Tsensor2.port.Q_flow' = 0.0;
+    annotation(experiment(StopTime = 1.0, Interval = 0.001));
+  end 'TwoMasses';
+end 'TwoMasses';

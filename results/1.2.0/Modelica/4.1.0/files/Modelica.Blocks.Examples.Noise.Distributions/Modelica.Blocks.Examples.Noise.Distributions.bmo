@@ -1,0 +1,352 @@
+//! base 0.1.0
+package 'Distributions'
+  function 'Modelica.Math.Distributions.TruncatedNormal.quantile' "Quantile of truncated normal distribution"
+    input Real 'u'(max = 1.0, min = 0.0);
+    input Real 'y_min' = 0.0;
+    input Real 'y_max' = 1.0;
+    input Real 'mu' = ('y_max' + 'y_min') / 2.0;
+    input Real 'sigma' = ('y_max' - 'y_min') / 6.0;
+    output Real 'y';
+    Real 'cdf_min' = (1.0 + 'Modelica.Math.Special.erf'(('y_min' - 'mu') / ('sigma' * 1.4142135623730951))) / 2.0;
+    Real 'cdf_max' = (1.0 + 'Modelica.Math.Special.erf'(('y_max' - 'mu') / ('sigma' * 1.4142135623730951))) / 2.0;
+  algorithm
+    'y' := 'mu' + 'sigma' * 1.4142135623730951 * 'Modelica.Math.Special.erfInv'(2.0 * ('cdf_min' + 'u' * ('cdf_max' - 'cdf_min')) - 1.0);
+    'y' := min('y_max', max('y_min', 'y'));
+    annotation(smoothOrder = 1);
+  end 'Modelica.Math.Distributions.TruncatedNormal.quantile';
+
+  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
+    input Integer[4] 'stateIn';
+    output Real 'result';
+    output Integer[4] 'stateOut';
+  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
+
+  function 'Modelica.Math.Random.Generators.Xorshift64star.initialState' "Returns an initial state for the xorshift64* algorithm"
+    input Integer 'localSeed';
+    input Integer 'globalSeed';
+    output Integer[2] 'state';
+    Real 'r';
+    constant Integer 'p' = 10;
+  algorithm
+    if 'localSeed' == 0 and 'globalSeed' == 0 then
+      'state' := {126247697, 'globalSeed'};
+    elseif true then
+      'state' := {'localSeed', 'globalSeed'};
+    end if;
+
+    for 'i' in 1:'p' loop
+      ('r', 'state') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state');
+    end for;
+  end 'Modelica.Math.Random.Generators.Xorshift64star.initialState';
+
+  function 'Modelica.Math.Random.Generators.Xorshift64star.random' "Returns a uniform random number with the xorshift64* algorithm"
+    input Integer[2] 'stateIn';
+    output Real 'result';
+    output Integer[2] 'stateOut';
+  external "C" ModelicaRandom_xorshift64star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift64star.random';
+
+  function 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star' "Return an initial state vector for a random number generator (based on xorshift64star algorithm)"
+    input Integer 'localSeed';
+    input Integer 'globalSeed';
+    input Integer 'nState'(min = 1);
+    output Integer['nState'] 'state';
+    Real 'r';
+    Integer[2] 'aux';
+    Integer 'nStateEven';
+  algorithm
+    'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
+
+    if 'nState' >= 2 then
+      'state'[1:2] := 'aux';
+    elseif true then
+      'state'[1] := 'aux'[1];
+    end if;
+
+    'nStateEven' := 2 * div('nState', 2);
+
+    for 'i' in 3:2:'nStateEven' loop
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['i' - 2:'i' - 1]);
+      'state'['i':'i' + 1] := 'aux';
+    end for;
+
+    if 'nState' >= 3 and 'nState' <> 'nStateEven' then
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['nState' - 2:'nState' - 1]);
+      'state'['nState'] := 'aux'[1];
+    end if;
+  end 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star';
+
+  function 'Modelica.Math.Random.Utilities.initializeImpureRandom' "Initializes the internal state of the impure random number generator"
+    input Integer 'seed';
+    output Integer 'id';
+    constant Integer 'localSeed' = 715827883;
+    Integer[33] 'rngState';
+  algorithm
+    'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
+    'id' := 'localSeed';
+    'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
+  end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
+
+  function 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState' "Stores the given state vector in an external static variable"
+    input Integer[33] 'rngState';
+    input Integer 'id';
+  external "C" ModelicaRandom_setInternalState_xorshift1024star('rngState', size('rngState', 1), 'id') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState';
+
+  function 'Modelica.Math.Special.erf' "Error function erf(u) = 2/sqrt(pi)*Integral_0_u exp(-t^2)*d"
+    input Real 'u';
+    output Real 'y';
+    Boolean 'inv';
+    Real 'z';
+    Real 'zz';
+    constant Real 'y1' = 1.0449485778808594;
+    constant Real[5] 'P' = {0.08343058921465318, -0.3381651344593609, -0.050999073514677744, -0.007727583458021333, -3.227801209646057e-4};
+    constant Real[5] 'Q' = {1.0, 0.455004033050794, 0.08752226001422525, 0.008585719250744061, 3.70900071787748e-4};
+  algorithm
+    if 'u' >= 0.0 then
+      'z' := 'u';
+      'inv' := false;
+    elseif true then
+      'z' := -'u';
+      'inv' := true;
+    end if;
+
+    if 'z' < 0.5 then
+      if 'z' <= 0.0 then
+        'y' := 0.0;
+      elseif 'z' < 1e-10 then
+        'y' := 'z' * 1.125 + 'z' * 0.0033791670955125737;
+      elseif true then
+        'zz' := 'z' * 'z';
+        'y' := 'z' * ('y1' + 'Modelica.Math.Special.Internal.polyEval'('P', 'zz') / 'Modelica.Math.Special.Internal.polyEval'('Q', 'zz'));
+      end if;
+    elseif 'z' < 5.8 then
+      'y' := 1.0 - 'Modelica.Math.Special.Internal.erfcUtil'('z');
+    elseif true then
+      'y' := 1.0;
+    end if;
+
+    if 'inv' then
+      'y' := -'y';
+    end if;
+  end 'Modelica.Math.Special.erf';
+
+  function 'Modelica.Math.Special.erfInv' "Inverse error function: u = erf(erfInv(u))"
+    input Real 'u';
+    output Real 'y';
+    constant Real 'eps' = 0.1;
+  algorithm
+    if 'u' >= 1.0 then
+      'y' := 1e60;
+    elseif 'u' <= (-1.0) then
+      'y' := -1e60;
+    elseif 'u' == 0.0 then
+      'y' := 0.0;
+    elseif 'u' < 0.0 then
+      'y' := -'Modelica.Math.Special.Internal.erfInvUtil'(-'u', 1.0 + 'u');
+    elseif true then
+      'y' := 'Modelica.Math.Special.Internal.erfInvUtil'('u', 1.0 - 'u');
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Math.Special.erfInv';
+
+  function 'Modelica.Math.Special.Internal.erfInvUtil' "Utility function for erfInv(u) and erfcInv(u)"
+    input Real 'p';
+    input Real 'q';
+    output Real 'y';
+    Real 'g';
+    Real 'r';
+    Real 'xs';
+    Real 'x';
+    constant Real 'y1' = 0.08913147449493408;
+    constant Real[8] 'P1' = {-5.087819496582806e-4, -0.008368748197417368, 0.03348066254097446, -0.012692614766297404, -0.03656379714117627, 0.02198786811111689, 0.008226878746769157, -0.005387729650712429};
+    constant Real[10] 'Q1' = {1.0, -0.9700050433032906, -1.5657455823417585, 1.5622155839842302, 0.662328840472003, -0.7122890234154284, -0.05273963823400997, 0.07952836873415717, -0.0023339375937419, 8.862163904564247e-4};
+    constant Real 'y2' = 2.249481201171875;
+    constant Real[9] 'P2' = {-0.20243350835593876, 0.10526468069939171, 8.3705032834312, 17.644729840837403, -18.851064805871424, -44.6382324441787, 17.445385985570866, 21.12946554483405, -3.6719225470772936};
+    constant Real[9] 'Q2' = {1.0, 6.242641248542475, 3.971343795334387, -28.66081804998, -20.14326346804852, 48.560921310873994, 10.826866735546016, -22.643693341313973, 1.7211476576120028};
+    constant Real 'y3' = 0.807220458984375;
+    constant Real[11] 'P3' = {-0.1311027816799519, -0.16379404719331705, 0.11703015634199525, 0.38707973897260434, 0.3377855389120359, 0.14286953440815717, 0.029015791000532906, 0.0021455899538880526, -6.794655751811263e-7, 2.8522533178221704e-8, -6.81149956853777e-10};
+    constant Real[8] 'Q3' = {1.0, 3.4662540724256723, 5.381683457070069, 4.778465929458438, 2.5930192162362027, 0.848854343457902, 0.15226433829533179, 0.011059242293464892};
+    constant Real 'y4' = 0.9399557113647461;
+    constant Real[9] 'P4' = {-0.0350353787183178, -0.0022242652921344794, 0.018557330651423107, 0.009508047013259196, 0.0018712349281955923, 1.5754461742496055e-4, 4.60469890584318e-6, -2.304047769118826e-10, 2.6633922742578204e-12};
+    constant Real[7] 'Q4' = {1.0, 1.3653349817554064, 0.7620591645536234, 0.22009110576413124, 0.03415891436709477, 0.00263861676657016, 7.646752923027944e-5};
+    constant Real 'y5' = 0.9836282730102539;
+    constant Real[9] 'P5' = {-0.016743100507663373, -0.0011295143874558028, 0.001056288621524929, 2.0938631748758808e-4, 1.4962478375834237e-5, 4.4969678992770644e-7, 4.625961635228786e-9, -2.811287356288318e-14, 9.905570997331033e-17};
+    constant Real[7] 'Q5' = {1.0, 0.5914293448864175, 0.1381518657490833, 0.016074608709367652, 9.640118070051656e-4, 2.7533547476472603e-5, 2.82243172016108e-7};
+    constant Real 'y6' = 0.9971456527709961;
+    constant Real[8] 'P6' = {-0.002497821279189813, -7.79190719229054e-6, 2.5472303741302746e-5, 1.6239777734251093e-6, 3.963410113048012e-8, 4.116328311909442e-10, 1.4559628671867504e-12, -1.1676501239718427e-18};
+    constant Real[7] 'Q6' = {1.0, 0.2071231122144225, 0.01694108381209759, 6.905382656226846e-4, 1.4500735981823264e-5, 1.4443775662814415e-7, 5.097612765997785e-10};
+    constant Real 'y7' = 0.9994134902954102;
+    constant Real[8] 'P7' = {-5.390429110190785e-4, -2.8398759004727723e-7, 8.994651148922914e-7, 2.2934585926592085e-8, 2.2556144486350015e-10, 9.478466275030226e-13, 1.3588013010892486e-15, -3.4889039339994887e-22};
+    constant Real[7] 'Q7' = {1.0, 0.08457462340018994, 0.002820929847262647, 4.682929219408942e-5, 3.999688121938621e-7, 1.6180929088790448e-9, 2.315586083102596e-12};
+  algorithm
+    if 'p' <= 0.5 then
+      'g' := 'p' * ('p' + 10.0);
+      'r' := 'Modelica.Math.Special.Internal.polyEval'('P1', 'p') / 'Modelica.Math.Special.Internal.polyEval'('Q1', 'p');
+      'y' := 'g' * 'y1' + 'g' * 'r';
+    elseif 'q' >= 0.25 then
+      'g' := sqrt(-2.0 * log('q'));
+      'xs' := 'q' - 0.25;
+      'r' := 'Modelica.Math.Special.Internal.polyEval'('P2', 'xs') / 'Modelica.Math.Special.Internal.polyEval'('Q2', 'xs');
+      'y' := 'g' / ('y2' + 'r');
+    elseif true then
+      'x' := sqrt(-log('q'));
+
+      if 'x' < 3.0 then
+        'xs' := 'x' - 1.125;
+        'r' := 'Modelica.Math.Special.Internal.polyEval'('P3', 'xs') / 'Modelica.Math.Special.Internal.polyEval'('Q3', 'xs');
+        'y' := 'y3' * 'x' + 'r' * 'x';
+      elseif 'x' < 6.0 then
+        'xs' := 'x' - 3.0;
+        'r' := 'Modelica.Math.Special.Internal.polyEval'('P4', 'xs') / 'Modelica.Math.Special.Internal.polyEval'('Q4', 'xs');
+        'y' := 'y4' * 'x' + 'r' * 'x';
+      elseif 'x' < 18.0 then
+        'xs' := 'x' - 6.0;
+        'r' := 'Modelica.Math.Special.Internal.polyEval'('P5', 'xs') / 'Modelica.Math.Special.Internal.polyEval'('Q5', 'xs');
+        'y' := 'y5' * 'x' + 'r' * 'x';
+      elseif 'x' < 44.0 then
+        'xs' := 'x' - 18.0;
+        'r' := 'Modelica.Math.Special.Internal.polyEval'('P6', 'xs') / 'Modelica.Math.Special.Internal.polyEval'('Q6', 'xs');
+        'y' := 'y6' * 'x' + 'r' * 'x';
+      elseif true then
+        'xs' := 'x' - 44.0;
+        'r' := 'Modelica.Math.Special.Internal.polyEval'('P7', 'xs') / 'Modelica.Math.Special.Internal.polyEval'('Q7', 'xs');
+        'y' := 'y7' * 'x' + 'r' * 'x';
+      end if;
+    end if;
+  end 'Modelica.Math.Special.Internal.erfInvUtil';
+
+  function 'Modelica.Math.Special.Internal.erfcUtil' "Evaluate erfc(z) for 0.5 <= z "
+    input Real 'z';
+    output Real 'y';
+    constant Real 'y1' = 0.40593576431274414;
+    constant Real[6] 'P1' = {-0.09809059221628125, 0.17811466584112035, 0.19100369579677542, 0.08889003689678844, 0.01950490012512188, 0.0018042453829701423};
+    constant Real[7] 'Q1' = {1.0, 1.8475907098300222, 1.4262800484551132, 0.5780528048899024, 0.12385097467900864, 0.011338523357700142, 3.3751147248309467e-6};
+    constant Real 'y2' = 0.5067281723022461;
+    constant Real[6] 'P2' = {-0.024350047620769845, 0.03865403750357072, 0.04394818964209516, 0.017567943631180208, 0.0032396240629084215, 2.3583911559688073e-4};
+    constant Real[6] 'Q2' = {1.0, 1.5399149494855244, 0.9824037091579202, 0.3257329247824444, 0.05639218374204782, 0.004103697239789046};
+    constant Real 'y3' = 0.5405750274658203;
+    constant Real[6] 'P3' = {0.0029527671653097167, 0.013738442589635533, 0.008408076155555853, 0.0021282562091461863, 2.5026996154479465e-4, 1.1321240664884757e-5};
+    constant Real[6] 'Q3' = {1.0, 1.0421781416693843, 0.4425976594815631, 0.09584927263010615, 0.010598290648487654, 4.7941126952171447e-4};
+    constant Real 'y4' = 0.5579090118408203;
+    constant Real[7] 'P4' = {0.006280571706269649, 0.01753898340524933, -0.21265225287280423, -0.68771768115365, -2.5518551727311523, -3.2272945176414374, -2.817540111451338};
+    constant Real[7] 'Q4' = {1.0, 2.792577509805753, 11.056723792780016, 15.930646027911795, 22.93673765228806, 13.506417019180288, 5.484091822386417};
+  algorithm
+    if 'z' < 1.5 then
+      'y' := 'y1' + 'Modelica.Math.Special.Internal.polyEval'('P1', 'z' - 0.5) / 'Modelica.Math.Special.Internal.polyEval'('Q1', 'z' - 0.5);
+    elseif 'z' < 2.5 then
+      'y' := 'y2' + 'Modelica.Math.Special.Internal.polyEval'('P2', 'z' - 1.5) / 'Modelica.Math.Special.Internal.polyEval'('Q2', 'z' - 1.5);
+    elseif 'z' < 4.5 then
+      'y' := 'y3' + 'Modelica.Math.Special.Internal.polyEval'('P3', 'z' - 3.5) / 'Modelica.Math.Special.Internal.polyEval'('Q3', 'z' - 3.5);
+    elseif true then
+      'y' := 'y4' + 'Modelica.Math.Special.Internal.polyEval'('P4', 1.0 / 'z') / 'Modelica.Math.Special.Internal.polyEval'('Q4', 1.0 / 'z');
+    end if;
+
+    'y' := 'y' * (exp(-'z' * 'z') / 'z');
+  end 'Modelica.Math.Special.Internal.erfcUtil';
+
+  function 'Modelica.Math.Special.Internal.polyEval' "Evaluate a polynomial c[1] + c[2]*u + c[3]*u^2 + ...."
+    input Real[:] 'c';
+    input Real 'u';
+    output Real 'y';
+  algorithm
+    'y' := 'c'[size('c', 1)];
+
+    for 'j' in size('c', 1) - 1:(-1):1 loop
+      'y' := 'c'['j'] + 'u' * 'y';
+    end for;
+  end 'Modelica.Math.Special.Internal.polyEval';
+
+  model 'Distributions' "Demonstrates noise with different types of distributions"
+    parameter Real 'samplePeriod'(unit = "s", quantity = "Time") = 0.02 "Sample period of all blocks";
+    parameter Real 'y_min' = -1.0 "Minimum value of band for random values";
+    parameter Real 'y_max' = 3.0 "Maximum value of band for random values";
+    parameter Boolean 'globalSeed.enableNoise' = true "= true, if noise blocks generate noise as output; = false, if they generate a constant output";
+    parameter Boolean 'globalSeed.useAutomaticSeed' = false "= true, choose a seed by system time and process id; = false, use fixedSeed";
+    parameter Integer 'globalSeed.fixedSeed' = 67867967 "Fixed global seed for random number generators (if useAutomaticSeed = false)";
+    parameter Integer 'globalSeed.seed'(fixed = false) "Actually used global seed";
+    parameter Integer 'globalSeed.id_impure'(fixed = false) "ID for impure random number generators Modelica.Math.Random.Utilities.impureXXX";
+    output Real 'uniformNoise_y' = 'uniformNoise.y';
+    output Real 'truncatedNormalNoise_y' = 'truncatedNormalNoise.y';
+    Integer 'n' = if time < 0.5 then 12 else 2;
+    Real 'uniformNoise.y' "Connector of Real output signal";
+    parameter Real 'uniformNoise.samplePeriod'(start = 0.01, unit = "s", quantity = "Time") = 0.02 "Period for sampling the raw random numbers";
+    parameter Boolean 'uniformNoise.enableNoise' = true "= true: y = noise, otherwise y = y_off";
+    parameter Real 'uniformNoise.y_off' = 0.0 "Sets y = y_off if enableNoise=false (or time<startTime, see below)";
+    parameter Boolean 'uniformNoise.useGlobalSeed' = true "= true: use global seed, otherwise ignore it";
+    parameter Boolean 'uniformNoise.useAutomaticLocalSeed' = false "= true: use automatic local seed, otherwise use fixedLocalSeed";
+    parameter Integer 'uniformNoise.fixedLocalSeed' = 1 "Local seed (any Integer number)";
+    parameter Real 'uniformNoise.startTime'(unit = "s", quantity = "Time") = 0.0 "Start time for sampling the raw random numbers";
+    parameter Integer 'uniformNoise.localSeed'(fixed = false) "The actual localSeed";
+    parameter Integer 'uniformNoise.actualGlobalSeed' = 'globalSeed.seed' "The global seed, which is actually used";
+    parameter Boolean 'uniformNoise.generateNoise' = true "= true, if noise shall be generated, otherwise no noise";
+    Integer 'uniformNoise.state[1]' "Internal state of random number generator";
+    Integer 'uniformNoise.state[2]' "Internal state of random number generator";
+    Integer 'uniformNoise.state[3]' "Internal state of random number generator";
+    Integer 'uniformNoise.state[4]' "Internal state of random number generator";
+    discrete Real 'uniformNoise.r' "Random number according to the desired distribution";
+    discrete Real 'uniformNoise.r_raw' "Uniform random number in the range (0,1]";
+    parameter Real 'uniformNoise.y_min'(start = 0.0) = -1.0 "Lower limit of y";
+    parameter Real 'uniformNoise.y_max'(start = 1.0) = 3.0 "Upper limit of y";
+    Real 'truncatedNormalNoise.y' "Connector of Real output signal";
+    parameter Real 'truncatedNormalNoise.samplePeriod'(start = 0.01, unit = "s", quantity = "Time") = 0.02 "Period for sampling the raw random numbers";
+    parameter Boolean 'truncatedNormalNoise.enableNoise' = true "= true: y = noise, otherwise y = y_off";
+    parameter Real 'truncatedNormalNoise.y_off' = 0.0 "Sets y = y_off if enableNoise=false (or time<startTime, see below)";
+    parameter Boolean 'truncatedNormalNoise.useGlobalSeed' = true "= true: use global seed, otherwise ignore it";
+    parameter Boolean 'truncatedNormalNoise.useAutomaticLocalSeed' = false "= true: use automatic local seed, otherwise use fixedLocalSeed";
+    parameter Integer 'truncatedNormalNoise.fixedLocalSeed' = 1 "Local seed (any Integer number)";
+    parameter Real 'truncatedNormalNoise.startTime'(unit = "s", quantity = "Time") = 0.0 "Start time for sampling the raw random numbers";
+    parameter Integer 'truncatedNormalNoise.localSeed'(fixed = false) "The actual localSeed";
+    parameter Integer 'truncatedNormalNoise.actualGlobalSeed' = 'globalSeed.seed' "The global seed, which is actually used";
+    parameter Boolean 'truncatedNormalNoise.generateNoise' = true "= true, if noise shall be generated, otherwise no noise";
+    Integer 'truncatedNormalNoise.state[1]' "Internal state of random number generator";
+    Integer 'truncatedNormalNoise.state[2]' "Internal state of random number generator";
+    Integer 'truncatedNormalNoise.state[3]' "Internal state of random number generator";
+    Integer 'truncatedNormalNoise.state[4]' "Internal state of random number generator";
+    discrete Real 'truncatedNormalNoise.r' "Random number according to the desired distribution";
+    discrete Real 'truncatedNormalNoise.r_raw' "Uniform random number in the range (0,1]";
+    parameter Real 'truncatedNormalNoise.y_min'(start = 0.0) = -1.0 "Lower limit of y";
+    parameter Real 'truncatedNormalNoise.y_max'(start = 1.0) = 3.0 "Upper limit of y";
+    parameter Real 'truncatedNormalNoise.mu' = 1.0 "Expectation (mean) value of the normal distribution";
+    parameter Real 'truncatedNormalNoise.sigma' = 0.6666666666666666 "Standard deviation of the normal distribution";
+  initial equation
+    'globalSeed.seed' = 67867967;
+    'globalSeed.id_impure' = 'Modelica.Math.Random.Utilities.initializeImpureRandom'('globalSeed.seed');
+    'uniformNoise.r' = 'uniformNoise.r_raw' * 4.0 - 1.0;
+    'uniformNoise.localSeed' = 1;
+    pre('uniformNoise.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('uniformNoise.localSeed', 'uniformNoise.actualGlobalSeed', 4))[1];
+    pre('uniformNoise.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('uniformNoise.localSeed', 'uniformNoise.actualGlobalSeed', 4))[2];
+    pre('uniformNoise.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('uniformNoise.localSeed', 'uniformNoise.actualGlobalSeed', 4))[3];
+    pre('uniformNoise.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('uniformNoise.localSeed', 'uniformNoise.actualGlobalSeed', 4))[4];
+    'uniformNoise.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('uniformNoise.state'));
+    'truncatedNormalNoise.r' = 'Modelica.Math.Distributions.TruncatedNormal.quantile'('truncatedNormalNoise.r_raw', -1.0, 3.0, 1.0, 0.6666666666666666);
+    'truncatedNormalNoise.localSeed' = 1;
+    pre('truncatedNormalNoise.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('truncatedNormalNoise.localSeed', 'truncatedNormalNoise.actualGlobalSeed', 4))[1];
+    pre('truncatedNormalNoise.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('truncatedNormalNoise.localSeed', 'truncatedNormalNoise.actualGlobalSeed', 4))[2];
+    pre('truncatedNormalNoise.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('truncatedNormalNoise.localSeed', 'truncatedNormalNoise.actualGlobalSeed', 4))[3];
+    pre('truncatedNormalNoise.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('truncatedNormalNoise.localSeed', 'truncatedNormalNoise.actualGlobalSeed', 4))[4];
+    'truncatedNormalNoise.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('truncatedNormalNoise.state'));
+  equation
+    when sample(0.0, 0.02) then
+      'uniformNoise.r' = 'uniformNoise.r_raw' * 4.0 - 1.0;
+    end when;
+
+    when sample(0.0, 0.02) then
+      ('uniformNoise.r_raw', 'uniformNoise.state') = 'Modelica.Math.Random.Generators.Xorshift128plus.random'({pre('uniformNoise.state[1]'), pre('uniformNoise.state[2]'), pre('uniformNoise.state[3]'), pre('uniformNoise.state[4]')});
+    end when;
+
+    'uniformNoise.y' = if time < 0.0 then 0.0 else 'uniformNoise.r';
+
+    when sample(0.0, 0.02) then
+      'truncatedNormalNoise.r' = 'Modelica.Math.Distributions.TruncatedNormal.quantile'('truncatedNormalNoise.r_raw', -1.0, 3.0, 1.0, 0.6666666666666666);
+    end when;
+
+    when sample(0.0, 0.02) then
+      ('truncatedNormalNoise.r_raw', 'truncatedNormalNoise.state') = 'Modelica.Math.Random.Generators.Xorshift128plus.random'({pre('truncatedNormalNoise.state[1]'), pre('truncatedNormalNoise.state[2]'), pre('truncatedNormalNoise.state[3]'), pre('truncatedNormalNoise.state[4]')});
+    end when;
+
+    'truncatedNormalNoise.y' = if time < 0.0 then 0.0 else 'truncatedNormalNoise.r';
+    annotation(experiment(StopTime = 2));
+  end 'Distributions';
+end 'Distributions';

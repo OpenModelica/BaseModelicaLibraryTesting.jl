@@ -1,0 +1,215 @@
+//! base 0.1.0
+package 'UniformNoiseProperties'
+  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
+    input Integer[4] 'stateIn';
+    output Real 'result';
+    output Integer[4] 'stateOut';
+  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
+
+  function 'Modelica.Math.Random.Generators.Xorshift64star.initialState' "Returns an initial state for the xorshift64* algorithm"
+    input Integer 'localSeed';
+    input Integer 'globalSeed';
+    output Integer[2] 'state';
+    Real 'r';
+    constant Integer 'p' = 10;
+  algorithm
+    if 'localSeed' == 0 and 'globalSeed' == 0 then
+      'state' := {126247697, 'globalSeed'};
+    elseif true then
+      'state' := {'localSeed', 'globalSeed'};
+    end if;
+
+    for 'i' in 1:'p' loop
+      ('r', 'state') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state');
+    end for;
+  end 'Modelica.Math.Random.Generators.Xorshift64star.initialState';
+
+  function 'Modelica.Math.Random.Generators.Xorshift64star.random' "Returns a uniform random number with the xorshift64* algorithm"
+    input Integer[2] 'stateIn';
+    output Real 'result';
+    output Integer[2] 'stateOut';
+  external "C" ModelicaRandom_xorshift64star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift64star.random';
+
+  function 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star' "Return an initial state vector for a random number generator (based on xorshift64star algorithm)"
+    input Integer 'localSeed';
+    input Integer 'globalSeed';
+    input Integer 'nState'(min = 1);
+    output Integer['nState'] 'state';
+    Real 'r';
+    Integer[2] 'aux';
+    Integer 'nStateEven';
+  algorithm
+    'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
+
+    if 'nState' >= 2 then
+      'state'[1:2] := 'aux';
+    elseif true then
+      'state'[1] := 'aux'[1];
+    end if;
+
+    'nStateEven' := 2 * div('nState', 2);
+
+    for 'i' in 3:2:'nStateEven' loop
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['i' - 2:'i' - 1]);
+      'state'['i':'i' + 1] := 'aux';
+    end for;
+
+    if 'nState' >= 3 and 'nState' <> 'nStateEven' then
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['nState' - 2:'nState' - 1]);
+      'state'['nState'] := 'aux'[1];
+    end if;
+  end 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star';
+
+  function 'Modelica.Math.Random.Utilities.initializeImpureRandom' "Initializes the internal state of the impure random number generator"
+    input Integer 'seed';
+    output Integer 'id';
+    constant Integer 'localSeed' = 715827883;
+    Integer[33] 'rngState';
+  algorithm
+    'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
+    'id' := 'localSeed';
+    'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
+  end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
+
+  function 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState' "Stores the given state vector in an external static variable"
+    input Integer[33] 'rngState';
+    input Integer 'id';
+  external "C" ModelicaRandom_setInternalState_xorshift1024star('rngState', size('rngState', 1), 'id') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState';
+
+  model 'UniformNoiseProperties' "Demonstrates the computation of properties for uniformly distributed noise"
+    parameter Real 'y_min' = 0.0 "Minimum value of band";
+    parameter Real 'y_max' = 6.0 "Maximum value of band";
+    parameter Real 'pMean' = 3.0 "Theoretical mean value of uniform distribution";
+    parameter Real 'var' = 3.0 "Theoretical variance of uniform distribution";
+    parameter Real 'std' = 1.7320508075688772 "Theoretical standard deviation of uniform distribution";
+    parameter Boolean 'globalSeed.enableNoise' = true "= true, if noise blocks generate noise as output; = false, if they generate a constant output";
+    parameter Boolean 'globalSeed.useAutomaticSeed' = false "= true, choose a seed by system time and process id; = false, use fixedSeed";
+    parameter Integer 'globalSeed.fixedSeed' = 67867967 "Fixed global seed for random number generators (if useAutomaticSeed = false)";
+    parameter Integer 'globalSeed.seed'(fixed = false) "Actually used global seed";
+    parameter Integer 'globalSeed.id_impure'(fixed = false) "ID for impure random number generators Modelica.Math.Random.Utilities.impureXXX";
+    output Real 'meanError_y' = 'meanError.y';
+    output Real 'sigmaError_y' = 'sigmaError.y';
+    Real 'noise.y' "Connector of Real output signal";
+    parameter Real 'noise.samplePeriod'(start = 0.01, unit = "s", quantity = "Time") = 0.001 "Period for sampling the raw random numbers";
+    parameter Boolean 'noise.enableNoise' = true "= true: y = noise, otherwise y = y_off";
+    parameter Real 'noise.y_off' = 0.0 "Sets y = y_off if enableNoise=false (or time<startTime, see below)";
+    parameter Boolean 'noise.useGlobalSeed' = true "= true: use global seed, otherwise ignore it";
+    parameter Boolean 'noise.useAutomaticLocalSeed' = false "= true: use automatic local seed, otherwise use fixedLocalSeed";
+    parameter Integer 'noise.fixedLocalSeed' = 1 "Local seed (any Integer number)";
+    parameter Real 'noise.startTime'(unit = "s", quantity = "Time") = 0.0 "Start time for sampling the raw random numbers";
+    parameter Integer 'noise.localSeed'(fixed = false) "The actual localSeed";
+    parameter Integer 'noise.actualGlobalSeed' = 'globalSeed.seed' "The global seed, which is actually used";
+    parameter Boolean 'noise.generateNoise' = true "= true, if noise shall be generated, otherwise no noise";
+    Integer 'noise.state[1]' "Internal state of random number generator";
+    Integer 'noise.state[2]' "Internal state of random number generator";
+    Integer 'noise.state[3]' "Internal state of random number generator";
+    Integer 'noise.state[4]' "Internal state of random number generator";
+    discrete Real 'noise.r' "Random number according to the desired distribution";
+    discrete Real 'noise.r_raw' "Uniform random number in the range (0,1]";
+    parameter Real 'noise.y_min'(start = 0.0) = 0.0 "Lower limit of y";
+    parameter Real 'noise.y_max'(start = 1.0) = 6.0 "Upper limit of y";
+    parameter Real 'mean.t_eps'(min = 0.0, unit = "s", quantity = "Time") = 1e-7 "Mean value calculation starts at startTime + t_eps";
+    Real 'mean.u' "Noisy input signal";
+    Real 'mean.y' "Expectation (mean) value of the input signal";
+    parameter Real 'mean.startTime' = -1e60 "Starting point for mean if after simulation start-point";
+    Real 'mean.mu'(fixed = true, start = 0.0) "Internal integrator variable";
+    parameter Real 'mean.t_0'(fixed = false) "Start time";
+    parameter Real 'mean.actualStartTime' = max('mean.t_0', -1e60);
+    parameter Real 'variance.t_eps'(min = 2.220446049250313e-14, unit = "s", quantity = "Time") = 1e-7 "Variance calculation starts at startTime + t_eps";
+    Real 'variance.u' "Noisy input signal";
+    Real 'variance.y' "Variance of the input signal";
+    Real 'variance.mu' "Mean value (state variable)";
+    Real 'variance.var' "Variance (state variable)";
+    parameter Real 'variance.t_0'(fixed = false) "Start time";
+    parameter Integer 'theoreticalVariance.significantDigits'(min = 1) = 3 "Number of significant digits to be shown in dynamic diagram layer for y";
+    parameter Integer 'theoreticalVariance.nu'(min = 0) = 2 "Number of input connections";
+    Real 'theoreticalVariance.u[1]';
+    Real 'theoreticalVariance.u[2]';
+    Real 'theoreticalVariance.y';
+    Real 'meanError.u1' "Commanded input";
+    Real 'meanError.u2' "Feedback input";
+    Real 'meanError.y';
+    parameter Real 'theoreticalMean.k'(start = 1.0) = 3.0 "Constant output value";
+    Real 'theoreticalMean.y' "Connector of Real output signal";
+    Real 'varianceError.u1' "Commanded input";
+    Real 'varianceError.u2' "Feedback input";
+    Real 'varianceError.y';
+    parameter Real 'theoreticalSigma.k'(start = 1.0) = 1.7320508075688772 "Constant output value";
+    Real 'theoreticalSigma.y' "Connector of Real output signal";
+    parameter Real 'standardDeviation.t_eps'(min = 2.220446049250313e-14, unit = "s", quantity = "Time") = 1e-7 "Standard deviation calculation starts at startTime + t_eps";
+    Real 'standardDeviation.u' "Noisy input signal";
+    Real 'standardDeviation.y' "Standard deviation of the input signal";
+    parameter Real 'standardDeviation.variance.t_eps'(min = 2.220446049250313e-14, unit = "s", quantity = "Time") = 1e-7 "Variance calculation starts at startTime + t_eps";
+    Real 'standardDeviation.variance.u' "Noisy input signal";
+    Real 'standardDeviation.variance.y' "Variance of the input signal";
+    Real 'standardDeviation.variance.mu' "Mean value (state variable)";
+    Real 'standardDeviation.variance.var' "Variance (state variable)";
+    parameter Real 'standardDeviation.variance.t_0'(fixed = false) "Start time";
+    Real 'standardDeviation.sqrt1.u' "Connector of Real input signal";
+    Real 'standardDeviation.sqrt1.y' "Connector of Real output signal";
+    Real 'sigmaError.u1' "Commanded input";
+    Real 'sigmaError.u2' "Feedback input";
+    Real 'sigmaError.y';
+  initial equation
+    'globalSeed.seed' = 67867967;
+    'globalSeed.id_impure' = 'Modelica.Math.Random.Utilities.initializeImpureRandom'('globalSeed.seed');
+    'noise.r' = 'noise.r_raw' * 6.0;
+    'noise.localSeed' = 1;
+    pre('noise.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('noise.localSeed', 'noise.actualGlobalSeed', 4))[1];
+    pre('noise.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('noise.localSeed', 'noise.actualGlobalSeed', 4))[2];
+    pre('noise.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('noise.localSeed', 'noise.actualGlobalSeed', 4))[3];
+    pre('noise.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('noise.localSeed', 'noise.actualGlobalSeed', 4))[4];
+    'noise.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('noise.state'));
+    'mean.t_0' = time;
+    'variance.t_0' = time;
+    'variance.mu' = 'variance.u';
+    'variance.var' = 0.0;
+    'standardDeviation.variance.t_0' = time;
+    'standardDeviation.variance.mu' = 'standardDeviation.variance.u';
+    'standardDeviation.variance.var' = 0.0;
+  equation
+    'standardDeviation.variance.u' = 'standardDeviation.u';
+    'standardDeviation.sqrt1.u' = 'standardDeviation.variance.y';
+    'standardDeviation.sqrt1.y' = 'standardDeviation.y';
+    'noise.y' = 'standardDeviation.u';
+    'noise.y' = 'variance.u';
+    'noise.y' = 'mean.u';
+    'mean.y' = 'meanError.u1';
+    'theoreticalMean.y' = 'meanError.u2';
+    'theoreticalSigma.y' = 'sigmaError.u2';
+    'theoreticalSigma.y' = 'theoreticalVariance.u[2]';
+    'theoreticalSigma.y' = 'theoreticalVariance.u[1]';
+    'variance.y' = 'varianceError.u1';
+    'theoreticalVariance.y' = 'varianceError.u2';
+    'standardDeviation.y' = 'sigmaError.u1';
+
+    when sample(0.0, 0.001) then
+      'noise.r' = 'noise.r_raw' * 6.0;
+    end when;
+
+    when sample(0.0, 0.001) then
+      ('noise.r_raw', 'noise.state') = 'Modelica.Math.Random.Generators.Xorshift128plus.random'({pre('noise.state[1]'), pre('noise.state[2]'), pre('noise.state[3]'), pre('noise.state[4]')});
+    end when;
+
+    'noise.y' = if time < 0.0 then 0.0 else 'noise.r';
+    der('mean.mu') = if time >= 'mean.actualStartTime' then 'mean.u' else 0.0;
+    'mean.y' = noEvent(if time > 'mean.actualStartTime' + 1e-7 then 'mean.mu' / (time - 'mean.actualStartTime') else 'mean.u');
+    der('variance.mu') = noEvent(if time >= 'variance.t_0' + 1e-7 then ('variance.u' - 'variance.mu') / (time - 'variance.t_0') else 0.0);
+    der('variance.var') = noEvent(if time >= 'variance.t_0' + 1e-7 then (('variance.u' - 'variance.mu') ^ 2.0 - 'variance.var') / (time - 'variance.t_0') else 0.0);
+    'variance.y' = noEvent(if time >= 'variance.t_0' + 1e-7 then max('variance.var', 0.0) else 0.0);
+    'theoreticalVariance.y' = 'theoreticalVariance.u[1]' * 'theoreticalVariance.u[2]';
+    'meanError.y' = 'meanError.u1' - 'meanError.u2';
+    'theoreticalMean.y' = 3.0;
+    'varianceError.y' = 'varianceError.u1' - 'varianceError.u2';
+    'theoreticalSigma.y' = 1.7320508075688772;
+    der('standardDeviation.variance.mu') = noEvent(if time >= 'standardDeviation.variance.t_0' + 1e-7 then ('standardDeviation.variance.u' - 'standardDeviation.variance.mu') / (time - 'standardDeviation.variance.t_0') else 0.0);
+    der('standardDeviation.variance.var') = noEvent(if time >= 'standardDeviation.variance.t_0' + 1e-7 then (('standardDeviation.variance.u' - 'standardDeviation.variance.mu') ^ 2.0 - 'standardDeviation.variance.var') / (time - 'standardDeviation.variance.t_0') else 0.0);
+    'standardDeviation.variance.y' = noEvent(if time >= 'standardDeviation.variance.t_0' + 1e-7 then max('standardDeviation.variance.var', 0.0) else 0.0);
+    'standardDeviation.sqrt1.y' = sqrt('standardDeviation.sqrt1.u');
+    'sigmaError.y' = 'sigmaError.u1' - 'sigmaError.u2';
+    annotation(experiment(StopTime = 20, Interval = 0.4e-2, Tolerance = 1e-009));
+  end 'UniformNoiseProperties';
+end 'UniformNoiseProperties';

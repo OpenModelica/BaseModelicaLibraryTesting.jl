@@ -1,0 +1,360 @@
+//! base 0.1.0
+package 'HalfAdder'
+  type 'Modelica.Electrical.Digital.Interfaces.Logic' = enumeration('\'U\'', '\'X\'', '\'0\'', '\'1\'', '\'Z\'', '\'W\'', '\'L\'', '\'H\'', '\'-\'');
+
+  model 'HalfAdder' "Adding circuit for binary numbers without input carry bit"
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'a.x[1]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'a.x[2]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'a.x[3]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'a.x[4]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter Real 'a.t[1]' = 1.0 "Vector of corresponding time points";
+    parameter Real 'a.t[2]' = 2.0 "Vector of corresponding time points";
+    parameter Real 'a.t[3]' = 3.0 "Vector of corresponding time points";
+    parameter Real 'a.t[4]' = 4.0 "Vector of corresponding time points";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'a.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Initial output value";
+    parameter Integer 'a.n' = 4 "Table size";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'a.y';
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'b.x[1]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'b.x[2]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter Real 'b.t[1]' = 2.0 "Vector of corresponding time points";
+    parameter Real 'b.t[2]' = 4.0 "Vector of corresponding time points";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'b.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Initial output value";
+    parameter Integer 'b.n' = 2 "Table size";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'b.y';
+    parameter Real 'Adder.delayTime' = 0.3 "Delay time";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.b';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.s';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.a';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.c';
+    parameter Integer 'Adder.AND.n'(min = 2) = 2 "Number of inputs";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.x[1]' "Connector of Digital input signal vector";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.x[2]' "Connector of Digital input signal vector";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.y' "Connector of Digital output signal";
+    parameter Real 'Adder.AND.tLH'(start = 0.0, unit = "s", quantity = "Time") = 0.3 "Rise inertial delay";
+    parameter Real 'Adder.AND.tHL'(start = 0.0, unit = "s", quantity = "Time") = 0.3 "Fall inertial delay";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial value of output";
+    parameter Integer 'Adder.AND.G1.n'(min = 2) = 2 "Number of inputs";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G1.x[1]' "Connector of Digital input signal vector";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G1.x[2]' "Connector of Digital input signal vector";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G1.y' "Connector of Digital output signal";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G1.auxiliary[1]'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G1.auxiliary[2]'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G1.auxiliary_n'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G2.x'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital input signal";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G2.y'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital output signal";
+    parameter Real 'Adder.AND.G2.tLH'(start = 0.0, unit = "s", quantity = "Time") = 0.3 "Rise inertial delay";
+    parameter Real 'Adder.AND.G2.tHL'(start = 0.0, unit = "s", quantity = "Time") = 0.3 "Fall inertial delay";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G2.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial value of output";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.AND.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    Real 'Adder.AND.G2.delayTime'(unit = "s", quantity = "Time");
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G2.y_auxiliary'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.AND.G2.y_old'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    Integer 'Adder.AND.G2.lh';
+    discrete Real 'Adder.AND.G2.t_next'(unit = "s", quantity = "Time");
+    parameter Real 'Adder.XOR.tLH'(start = 0.0, unit = "s", quantity = "Time") = 0.3 "Rise inertial delay";
+    parameter Real 'Adder.XOR.tHL'(start = 0.0, unit = "s", quantity = "Time") = 0.3 "Fall inertial delay";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial value of output";
+    parameter Integer 'Adder.XOR.n'(min = 2) = 2 "Number of inputs";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.x[1]' "Connector of Digital input signal vector";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.x[2]' "Connector of Digital input signal vector";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.y' "Connector of Digital output signal";
+    parameter Integer 'Adder.XOR.G1.n'(min = 2) = 2 "Number of inputs";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G1.x[1]' "Connector of Digital input signal vector";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G1.x[2]' "Connector of Digital input signal vector";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G1.y' "Connector of Digital output signal";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G1.auxiliary[1]'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G1.auxiliary[2]'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G1.auxiliary_n'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G2.x'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital input signal";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G2.y'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital output signal";
+    parameter Real 'Adder.XOR.G2.tLH'(start = 0.0, unit = "s", quantity = "Time") = 0.3 "Rise inertial delay";
+    parameter Real 'Adder.XOR.G2.tHL'(start = 0.0, unit = "s", quantity = "Time") = 0.3 "Fall inertial delay";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G2.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial value of output";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'']' = 0 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'']' = -1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'']' = 1 "Specification of delay according to signal change";
+    constant Integer 'Adder.XOR.G2.delayTable['Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'','Modelica.Electrical.Digital.Interfaces.Logic'.'\'-\'']' = 0 "Specification of delay according to signal change";
+    Real 'Adder.XOR.G2.delayTime'(unit = "s", quantity = "Time");
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G2.y_auxiliary'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'Adder.XOR.G2.y_old'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    Integer 'Adder.XOR.G2.lh';
+    discrete Real 'Adder.XOR.G2.t_next'(unit = "s", quantity = "Time");
+    'Modelica.Electrical.Digital.Interfaces.Logic' 's.x[1]';
+    Real 's.y[1]';
+    parameter Integer 's.n'(start = 1, min = 1) = 1 "Signal width";
+    parameter Real 's.value_U'(start = 0.5) = 0.5 "Value for digital U (uninitialized)";
+    parameter Real 's.value_X'(start = 0.5) = 0.5 "Value for digital X (Forcing Unknown)";
+    parameter Real 's.value_0'(start = 0.0) = 0.0 "Value for digital 0 (Forcing 0)";
+    parameter Real 's.value_1'(start = 1.0) = 1.0 "Value for digital 1 (Forcing 1)";
+    parameter Real 's.value_Z'(start = 0.5) = 0.5 "Value for digital Z (High Impedance)";
+    parameter Real 's.value_W'(start = 0.5) = 0.5 "Value for digital W (Weak    Unknown)";
+    parameter Real 's.value_L'(start = 0.0) = 0.0 "Value for digital L (Weak 0)";
+    parameter Real 's.value_H'(start = 1.0) = 1.0 "Value for digital H (Weak 1)";
+    parameter Real 's.value_m'(start = 0.5) = 0.5 "Value for digital m (Do not care)";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'c.x[1]';
+    Real 'c.y[1]';
+    parameter Integer 'c.n'(start = 1, min = 1) = 1 "Signal width";
+    parameter Real 'c.value_U'(start = 0.5) = 0.5 "Value for digital U (uninitialized)";
+    parameter Real 'c.value_X'(start = 0.5) = 0.5 "Value for digital X (Forcing Unknown)";
+    parameter Real 'c.value_0'(start = 0.0) = 0.0 "Value for digital 0 (Forcing 0)";
+    parameter Real 'c.value_1'(start = 1.0) = 1.0 "Value for digital 1 (Forcing 1)";
+    parameter Real 'c.value_Z'(start = 0.5) = 0.5 "Value for digital Z (High Impedance)";
+    parameter Real 'c.value_W'(start = 0.5) = 0.5 "Value for digital W (Weak    Unknown)";
+    parameter Real 'c.value_L'(start = 0.0) = 0.0 "Value for digital L (Weak 0)";
+    parameter Real 'c.value_H'(start = 1.0) = 1.0 "Value for digital H (Weak 1)";
+    parameter Real 'c.value_m'(start = 0.5) = 0.5 "Value for digital m (Do not care)";
+  equation
+    'Adder.AND.x[1]' = 'Adder.AND.G1.x[1]';
+    'Adder.AND.x[2]' = 'Adder.AND.G1.x[2]';
+    'Adder.AND.y' = 'Adder.AND.G2.y';
+    'Adder.AND.G1.y' = 'Adder.AND.G2.x';
+    'Adder.XOR.x[1]' = 'Adder.XOR.G1.x[1]';
+    'Adder.XOR.x[2]' = 'Adder.XOR.G1.x[2]';
+    'Adder.XOR.G1.y' = 'Adder.XOR.G2.x';
+    'Adder.XOR.G2.y' = 'Adder.XOR.y';
+    'Adder.AND.y' = 'Adder.c';
+    'Adder.XOR.y' = 'Adder.s';
+    'Adder.b' = 'Adder.XOR.x[1]';
+    'Adder.b' = 'Adder.AND.x[1]';
+    'Adder.a' = 'Adder.AND.x[2]';
+    'Adder.a' = 'Adder.XOR.x[2]';
+    'b.y' = 'Adder.b';
+    'a.y' = 'Adder.a';
+    'Adder.s' = 's.x[1]';
+    'Adder.c' = 'c.x[1]';
+    'Adder.AND.G1.auxiliary[1]' = 'Adder.AND.G1.x[1]';
+    'Adder.AND.G1.auxiliary[2]' = ({{'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}})['Adder.AND.G1.auxiliary[1]','Adder.AND.G1.x[2]'];
+    'Adder.AND.G1.auxiliary_n' = 'Adder.AND.G1.auxiliary[2]';
+    'Adder.AND.G1.y' = pre('Adder.AND.G1.auxiliary_n');
+    'Adder.XOR.G1.auxiliary[1]' = 'Adder.XOR.G1.x[1]';
+    'Adder.XOR.G1.auxiliary[2]' = ({{'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\''}})['Adder.XOR.G1.auxiliary[1]','Adder.XOR.G1.x[2]'];
+    'Adder.XOR.G1.auxiliary_n' = 'Adder.XOR.G1.auxiliary[2]';
+    'Adder.XOR.G1.y' = pre('Adder.XOR.G1.auxiliary_n');
+    's.y[1]' = if 's.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' then 0.5 else if 's.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'' then 0.5 else if 's.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' then 0.0 else if 's.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' then 1.0 else if 's.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'' then 0.5 else if 's.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'' then 0.5 else if 's.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'' then 0.0 else if 's.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'' then 1.0 else 0.5;
+    'c.y[1]' = if 'c.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' then 0.5 else if 'c.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'' then 0.5 else if 'c.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' then 0.0 else if 'c.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' then 1.0 else if 'c.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'' then 0.5 else if 'c.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'' then 0.5 else if 'c.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'' then 0.0 else if 'c.x[1]' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'' then 1.0 else 0.5;
+  algorithm
+    if initial() then
+      assert(true, "Invalid size of table (n < 1)", AssertionLevel.error);
+    end if;
+
+    'a.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
+
+    if time >= ({1.0, 2.0, 3.0, 4.0})[1] then
+      'a.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[1];
+    end if;
+
+    if time >= ({1.0, 2.0, 3.0, 4.0})[2] then
+      'a.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[2];
+    end if;
+
+    if time >= ({1.0, 2.0, 3.0, 4.0})[3] then
+      'a.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[3];
+    end if;
+
+    if time >= ({1.0, 2.0, 3.0, 4.0})[4] then
+      'a.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[4];
+    end if;
+  algorithm
+    if initial() then
+      assert(true, "Invalid size of table (n < 1)", AssertionLevel.error);
+    end if;
+
+    'b.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
+
+    if time >= ({2.0, 4.0})[1] then
+      'b.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[1];
+    end if;
+
+    if time >= ({2.0, 4.0})[2] then
+      'b.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[2];
+    end if;
+  algorithm
+    when {initial(), change('Adder.AND.G2.x') and not initial()} then
+      'Adder.AND.G2.y_old' := if initial() or pre('Adder.AND.G2.y') == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' else pre('Adder.AND.G2.y');
+      'Adder.AND.G2.lh' := ({{0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}})['Adder.AND.G2.y_old','Adder.AND.G2.x'];
+      'Adder.AND.G2.delayTime' := if 'Adder.AND.G2.lh' > 0 then 0.3 else if 'Adder.AND.G2.lh' < 0 then 0.3 else 0.0;
+      'Adder.AND.G2.t_next' := time + 'Adder.AND.G2.delayTime';
+
+      if 'Adder.AND.G2.lh' == 0 or abs('Adder.AND.G2.delayTime') < 2.2250738585072014e-308 then
+        'Adder.AND.G2.y_auxiliary' := 'Adder.AND.G2.x';
+      end if;
+    elsewhen time >= 'Adder.AND.G2.t_next' then
+      'Adder.AND.G2.y_auxiliary' := 'Adder.AND.G2.x';
+    end when;
+
+    'Adder.AND.G2.y' := 'Adder.AND.G2.y_auxiliary';
+  algorithm
+    when {initial(), change('Adder.XOR.G2.x') and not initial()} then
+      'Adder.XOR.G2.y_old' := if initial() or pre('Adder.XOR.G2.y') == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' else pre('Adder.XOR.G2.y');
+      'Adder.XOR.G2.lh' := ({{0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}})['Adder.XOR.G2.y_old','Adder.XOR.G2.x'];
+      'Adder.XOR.G2.delayTime' := if 'Adder.XOR.G2.lh' > 0 then 0.3 else if 'Adder.XOR.G2.lh' < 0 then 0.3 else 0.0;
+      'Adder.XOR.G2.t_next' := time + 'Adder.XOR.G2.delayTime';
+
+      if 'Adder.XOR.G2.lh' == 0 or abs('Adder.XOR.G2.delayTime') < 2.2250738585072014e-308 then
+        'Adder.XOR.G2.y_auxiliary' := 'Adder.XOR.G2.x';
+      end if;
+    elsewhen time >= 'Adder.XOR.G2.t_next' then
+      'Adder.XOR.G2.y_auxiliary' := 'Adder.XOR.G2.x';
+    end when;
+
+    'Adder.XOR.G2.y' := 'Adder.XOR.G2.y_auxiliary';
+    annotation(experiment(StopTime = 5));
+  end 'HalfAdder';
+end 'HalfAdder';

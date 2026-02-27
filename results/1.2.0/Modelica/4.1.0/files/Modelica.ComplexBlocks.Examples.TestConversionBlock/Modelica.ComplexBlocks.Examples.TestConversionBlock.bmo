@@ -1,0 +1,54 @@
+//! base 0.1.0
+package 'TestConversionBlock'
+  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Complex.\'constructor\'.fromReal';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
+
+  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
+    Real 're';
+    Real 'im';
+  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
+
+  model 'TestConversionBlock' "Test the conversion blocks"
+    parameter Real 'len.height' = 1.0 "Height of ramp";
+    parameter Real 'len.duration'(start = 2.0, min = 0.0, unit = "s", quantity = "Time") = 1.0 "Duration of ramp (= 0.0 gives a Step)";
+    Real 'len.y' "Connector of Real output signal";
+    parameter Real 'len.offset' = 1e-6 "Offset of output signal y";
+    parameter Real 'len.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'phi.height' = 12.566370614359172 "Height of ramp";
+    parameter Real 'phi.duration'(start = 2.0, min = 0.0, unit = "s", quantity = "Time") = 1.0 "Duration of ramp (= 0.0 gives a Step)";
+    Real 'phi.y' "Connector of Real output signal";
+    parameter Real 'phi.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'phi.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    Real 'polarToComplex.y.re' "Real part of complex number";
+    Real 'polarToComplex.y.im' "Imaginary part of complex number";
+    Real 'polarToComplex.len';
+    Real 'polarToComplex.phi'(unit = "rad");
+    Real 'complexToReal.re';
+    Real 'complexToReal.im';
+    Real 'complexToReal.u.re' "Real part of complex number";
+    Real 'complexToReal.u.im' "Imaginary part of complex number";
+    parameter Boolean 'complexToReal.useConjugateInput' = false "If true, input is processed conjugate complex";
+  equation
+    'phi.y' = 'polarToComplex.phi';
+    'len.y' = 'polarToComplex.len';
+    'polarToComplex.y.re' = 'complexToReal.u.re';
+    'polarToComplex.y.im' = 'complexToReal.u.im';
+    'len.y' = 1e-6 + (if time < 0.0 then 0.0 else if time < 1.0 then time else 1.0);
+    'phi.y' = if time < 0.0 then 0.0 else if time < 1.0 then time * 12.566370614359172 else 12.566370614359172;
+    'polarToComplex.y.re' = 'polarToComplex.len' * cos('polarToComplex.phi');
+    'polarToComplex.y.im' = 'polarToComplex.len' * sin('polarToComplex.phi');
+    'complexToReal.re' = 'complexToReal.u.re';
+    'complexToReal.im' = 'complexToReal.u.im';
+    annotation(experiment(StopTime = 1.01, Interval = 0.001));
+  end 'TestConversionBlock';
+end 'TestConversionBlock';
