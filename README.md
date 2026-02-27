@@ -16,9 +16,36 @@ For a given Modelica library test
    [DifferentialEquations.jl][diffeqjl-url])
 4. Validating simulation results
 
-## Usage
+## Automated Testing
+
+Libraries and versions under test are declared in [`.ci/configuration.json`](.ci/configuration.json):
+
+```json
+[
+  {
+    "library": "Modelica",
+    "versions": ["4.1.0", "4.0.0"],
+    "ref_results": {
+      "repository": "modelica/MAP-LIB_ReferenceResults",
+      "ref_prefix": "v"
+    }
+  }
+]
+```
+
+Each library has a dedicated workflow (e.g. [`test-Modelica.yml`](.github/workflows/test-Modelica.yml)) that runs
+daily and on manual dispatch. The workflow fans out to a parallel matrix job — one runner per version — using the
+reusable [`_test-library.yml`](.github/workflows/_test-library.yml) workflow. Once all versions complete, a single
+deploy job collects the results and publishes them to [GitHub Pages][msl-pages-url].
+
+To test an additional library version, add it to the `versions` array in `.ci/configuration.json`.
+To add a new library, add an entry to the array and create a corresponding `test-<LibraryName>.yml`
+workflow file.
+
+## Local Usage
 
 ```julia
+using BaseModelicaLibraryTesting
 main(
   library = "<Modelica library name>",
   version = "<Modelica library version>",
@@ -44,7 +71,6 @@ Library v4.1.0 with:
 
 ```julia
 using BaseModelicaLibraryTesting
-
 main(
   library = "Modelica",
   version = "4.1.0",
@@ -55,12 +81,6 @@ main(
 )
 ```
 
-Preview the generated HTML report at `main/Modelica/4.1.0/report.html`.
-
-```bash
-python -m http.server -d results/main/Modelica/4.1.0/
-```
-
 ## License
 
 This package is available under the [OSMC-PL License][osmc-license-file] and the
@@ -69,7 +89,7 @@ file for details.
 
 [build-badge-svg]: https://github.com/OpenModelica/BaseModelicaLibraryTesting.jl/actions/workflows/CI.yml/badge.svg?branch=main
 [build-action-url]: https://github.com/OpenModelica/BaseModelicaLibraryTesting.jl/actions/workflows/CI.yml?query=branch%3Amain
-[msl-badge-svg]: https://github.com/OpenModelica/BaseModelicaLibraryTesting.jl/actions/workflows/msl-test.yml/badge.svg?branch=main
+[msl-badge-svg]: https://github.com/OpenModelica/BaseModelicaLibraryTesting.jl/actions/workflows/test-Modelica.yml/badge.svg?branch=main
 [msl-pages-url]: https://openmodelica.github.io/BaseModelicaLibraryTesting.jl/
 [openmodelica-url]: https://openmodelica.org/
 [basemodelicajl-url]: https://github.com/SciML/BaseModelica.jl
