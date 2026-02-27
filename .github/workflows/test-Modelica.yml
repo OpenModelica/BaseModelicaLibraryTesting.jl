@@ -1,0 +1,140 @@
+name: Test Modelica Standard Library
+
+# Reads library versions from .ci/configuration.json, tests all versions
+# in parallel, then deploys results to GitHub Pages.
+#
+# Prerequisites (one-time repo setup):
+#   Settings → Pages → Source: GitHub Actions
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # every day 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      bm_version:
+        description: 'BaseModelica.jl version to pin (semver tag), or "main" for Project.toml default'
+        required: false
+        default: 'main'
+        type: string
+
+concurrency:
+  group: pages
+  cancel-in-progress: false   # never abort a Pages deployment mid-flight
+
+jobs:
+
+  # ── Read configuration ────────────────────────────────────────────────────────
+  setup:
+    name: Read configuration
+    runs-on: ubuntu-latest
+    outputs:
+      versions:   ${{ steps.cfg.outputs.versions }}
+      ref_repo:   ${{ steps.cfg.outputs.ref_repo }}
+      ref_prefix: ${{ steps.cfg.outputs.ref_prefix }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+
+      - name: Parse .ci/configuration.json
+        id: cfg
+        run: |
+          python3 - << 'PYEOF'
+          import json, os
+
+          with open(".ci/configuration.json") as f:
+              configs = json.load(f)
+
+          entry = next(c for c in configs if c["library"] == "Modelica")
+
+          versions   = json.dumps(entry["versions"])
+          ref        = entry.get("ref_results") or {}
+          ref_repo   = ref.get("repository", "")
+          ref_prefix = ref.get("ref_prefix", "")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"versions={versions}\n")
+              out.write(f"ref_repo={ref_repo}\n")
+              out.write(f"ref_prefix={ref_prefix}\n")
+          PYEOF
+
+  # ── Test all versions in parallel ────────────────────────────────────────────
+  test:
+    name: Test Modelica ${{ matrix.lib_version }}
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        lib_version: ${{ fromJSON(needs.setup.outputs.versions) }}
+    uses: ./.github/workflows/_test-library.yml
+    with:
+      library:          'Modelica'
+      lib_version:      ${{ matrix.lib_version }}
+      bm_version:       ${{ inputs.bm_version || 'main' }}
+      ref_results_repo: ${{ needs.setup.outputs.ref_repo }}
+      ref_results_ref:  ${{ needs.setup.outputs.ref_prefix }}${{ matrix.lib_version }}
+    permissions:
+      contents: read
+      actions:  write
+
+  # ── Deploy all results to GitHub Pages ───────────────────────────────────────
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write   # push to gh-pages branch
+      pages:    write   # upload Pages artifact
+      id-token: write   # OIDC token for Pages deployment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0   # needed so git can find origin/gh-pages for the worktree
+
+      - name: Download all results artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: results-*
+          path: results/
+          merge-multiple: true   # merge all results-* into results/ (no per-artifact subdirs)
+
+      # ── Deploy to gh-pages ────────────────────────────────────────────────────
+      - name: Prepare gh-pages worktree
+        run: |
+          git fetch origin gh-pages 2>/dev/null || true
+          if git show-ref --verify refs/remotes/origin/gh-pages 2>/dev/null; then
+            git worktree add site origin/gh-pages
+          else
+            # First ever run: create an orphan branch
+            git worktree add --orphan -b gh-pages site
+          fi
+
+      - name: Copy new results into gh-pages tree
+        run: rsync -a results/ site/results/
+
+      - name: Generate landing page
+        run: python3 .github/scripts/gen_landing_page.py site
+
+      - name: Commit and push to gh-pages
+        run: |
+          cd site
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && { echo "Nothing to commit."; exit 0; }
+          git commit -m "results: Modelica [$(date -u '+%Y-%m-%d')]"
+          git push origin HEAD:gh-pages
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

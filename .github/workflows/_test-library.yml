@@ -1,0 +1,128 @@
+name: Test Library (reusable)
+
+# Reusable workflow: tests one (library, lib_version) pair.
+# Called by per-library orchestrator workflows (e.g. test-Modelica.yml).
+# Does NOT deploy to Pages — the caller's deploy job handles that after
+# all matrix cells complete.
+
+on:
+  workflow_call:
+    inputs:
+      library:
+        description: 'Modelica library name (e.g. "Modelica")'
+        required: true
+        type: string
+      lib_version:
+        description: 'Library version string (e.g. "4.1.0")'
+        required: true
+        type: string
+      bm_version:
+        description: 'BaseModelica.jl version to pin (semver tag), or "main" to use Project.toml default'
+        required: false
+        default: 'main'
+        type: string
+      ref_results_repo:
+        description: 'GitHub owner/repo for reference results (e.g. "modelica/MAP-LIB_ReferenceResults"), or empty to skip'
+        required: false
+        default: ''
+        type: string
+      ref_results_ref:
+        description: 'Git ref for reference results checkout (e.g. "v4.1.0"), or empty to skip'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  actions: write   # julia-actions/cache needs this to manage cache entries
+
+jobs:
+  test:
+    name: ${{ inputs.library }} ${{ inputs.lib_version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 480
+
+    env:
+      LIBRARY:          ${{ inputs.library }}
+      LIB_VERSION:      ${{ inputs.lib_version }}
+      BM_VERSION_INPUT: ${{ inputs.bm_version }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+
+      - name: Set up OpenModelica (nightly)
+        uses: OpenModelica/setup-openmodelica@v1.0
+        with:
+          version: nightly
+          packages: |
+            omc
+          libraries: |
+            '${{ inputs.library }} ${{ inputs.lib_version }}'
+
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: '1'
+          arch: x64
+
+      - name: Restore Julia package cache
+        uses: julia-actions/cache@v2
+
+      - name: Build package
+        run: |
+          julia --project=. -e '
+            using Pkg
+            bm_ver = get(ENV, "BM_VERSION_INPUT", "main")
+            if bm_ver != "main"
+              Pkg.add(name="BaseModelica", version=bm_ver)
+            else
+              Pkg.add(name="BaseModelica", rev=bm_ver)
+            end
+            Pkg.instantiate()
+          '
+
+      # ── Resolve versions ──────────────────────────────────────────────────────
+      - name: Resolve BaseModelica.jl version
+        id: versions
+        run: |
+          julia --project=. -e '
+            import BaseModelica
+            println("bm_version=" * string(pkgversion(BaseModelica)))
+          ' >> "$GITHUB_OUTPUT"
+
+      # ── Reference results (optional) ──────────────────────────────────────────
+      - name: Checkout reference results
+        if: inputs.ref_results_repo != '' && inputs.ref_results_ref != ''
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.ref_results_repo }}
+          ref: ${{ inputs.ref_results_ref }}
+          path: ref_results
+          fetch-depth: 1
+
+      # ── Run the pipeline ──────────────────────────────────────────────────────
+      - name: Run ${{ inputs.library }} ${{ inputs.lib_version }} pipeline
+        env:
+          BM_VERSION:  ${{ steps.versions.outputs.bm_version }}
+          HAS_REF:     ${{ inputs.ref_results_repo != '' && inputs.ref_results_ref != '' }}
+        run: |
+          julia --project=. -e '
+            using BaseModelicaLibraryTesting
+            kwargs = (
+              library      = ENV["LIBRARY"],
+              version      = ENV["LIB_VERSION"],
+              results_root = "results/$(ENV["BM_VERSION"])/$(ENV["LIBRARY"])/$(ENV["LIB_VERSION"])",
+            )
+            if ENV["HAS_REF"] == "true"
+              kwargs = merge(kwargs, (ref_root = "ref_results",))
+            end
+            main(; kwargs...)
+          '
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ inputs.library }}-${{ inputs.lib_version }}
+          path: results/
+          if-no-files-found: error
