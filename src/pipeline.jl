@@ -142,6 +142,8 @@ function main(;
     end
 
     cpu_info = Sys.cpu_info()
+    bm_ver_env = get(ENV, "BM_VERSION", "")
+    bm_version = isempty(bm_ver_env) ? string(pkgversion(BaseModelica)) : bm_ver_env
     info = RunInfo(
         library,
         version,
@@ -151,7 +153,7 @@ function main(;
         results_root,
         ref_root,
         omc_version,
-        string(pkgversion(BaseModelica)),
+        bm_version,
         isempty(cpu_info) ? "unknown" : strip(cpu_info[1].model),
         length(cpu_info),
         Sys.total_memory() / 1024^3,
