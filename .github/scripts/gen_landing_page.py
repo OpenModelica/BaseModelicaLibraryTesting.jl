@@ -89,11 +89,12 @@ def load_runs(site_root: Path) -> list[dict]:
         n_cmp      = len(cmp_models)
         n_cmp_pass = sum(1 for m in cmp_models if m["cmp_pass"] == m["cmp_total"])
 
-        run_dir   = summary_path.parent
-        index_url = str((run_dir / "index.html").relative_to(site_root)).replace("\\", "/")
+        run_dir       = summary_path.parent
+        index_url     = str((run_dir / "index.html").relative_to(site_root)).replace("\\", "/")
+        bm_version_dir = summary_path.relative_to(results_dir).parts[0]
 
         runs.append({
-            "bm_version":  data.get("bm_version",  "?"),
+            "bm_version":  bm_version_dir if bm_version_dir == "main" else data.get("bm_version",  "?"),
             "library":     data.get("library",      "?"),
             "lib_version": data.get("lib_version",  "?"),
             "omc_version": data.get("omc_version",  "?"),
