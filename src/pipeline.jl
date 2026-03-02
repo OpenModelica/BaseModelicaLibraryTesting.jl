@@ -52,7 +52,7 @@ end
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 """
-    main(; library, version, filter, omc_exe, results_root, ref_root) → results
+    main(; library, version, filter, omc_exe, results_root, ref_root, bm_options) → results
 
 Run the full pipeline over all experiment models in `library` `version`.
 Discovers models via OMC, runs `test_model` for each, then writes the HTML
@@ -65,6 +65,7 @@ function main(;
     omc_exe      :: String                = get(ENV, "OMC_EXE", "omc"),
     results_root :: String                = "",
     ref_root     :: String                = get(ENV, "MAPLIB_REF", ""),
+    bm_options   :: String                = get(ENV, "BM_OPTIONS", "scalarize,moveBindings"),
 )
     t0 = time()
 
@@ -78,13 +79,14 @@ function main(;
     @info "Starting OMC session ($(omc_exe))..."
     omc = OMJulia.OMCSession(omc_exe)
 
+    omc_options = "--baseModelica --frontendInline --baseModelicaOptions=$(bm_options) -d=evaluateAllParameters"
     omc_version = "unknown"
     results = ModelResult[]
     try
         omc_version = sendExpression(omc, "getVersion()")
         @info "OMC version: $omc_version"
 
-        ok = sendExpression(omc, """setCommandLineOptions("--baseModelica --frontendInline --baseModelicaOptions=scalarize -d=evaluateAllParameters")""")
+        ok = sendExpression(omc, """setCommandLineOptions("$(omc_options)")""")
         ok || @warn "Failed to set Base Modelica options: $(sendExpression(omc, "getErrorString()"))"
 
         ok = sendExpression(omc, """loadModel($library, {"$version"})""")
@@ -145,6 +147,7 @@ function main(;
         version,
         something(filter, ""),
         omc_exe,
+        omc_options,
         results_root,
         ref_root,
         omc_version,

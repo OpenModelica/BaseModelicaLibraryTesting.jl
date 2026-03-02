@@ -105,6 +105,7 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
 <h1>$(info.library) $(info.lib_version) — Base Modelica / MTK Pipeline Test Results</h1>
 <p>Generated: $(now())<br>
 OpenModelica: $(info.omc_version)<br>
+OMC options: <code>$(info.omc_options)</code><br>
 BaseModelica.jl: $(info.bm_version)$(filter_row)$(ref_row)</p>
 <p>CPU: $(info.cpu_model) ($(info.cpu_threads) threads)<br>
 RAM: $(ram_str) GiB<br>

@@ -46,6 +46,7 @@ Metadata about a single test run, collected by `main()` and written into both
 - `lib_version`  — library version (e.g. `"4.1.0"`)
 - `filter`       — model name filter regex, or `""` when none was given
 - `omc_exe`      — path / command used to launch OMC
+- `omc_options`  — full options string passed to `setCommandLineOptions`
 - `results_root` — absolute path where results are written
 - `ref_root`     — absolute path to reference results, or `""` when unused
 - `omc_version`  — version string returned by `getVersion()`, e.g. `"v1.23.0"`
@@ -60,6 +61,7 @@ struct RunInfo
     lib_version  :: String
     filter       :: String   # "" when no filter was given
     omc_exe      :: String
+    omc_options  :: String
     results_root :: String
     ref_root     :: String   # "" when no reference root was given
     omc_version  :: String

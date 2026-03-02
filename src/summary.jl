@@ -23,6 +23,7 @@ function write_summary(
         print(io, "  \"lib_version\":  \"$(_esc_json(info.lib_version))\",\n")
         print(io, "  \"filter\":       \"$(_esc_json(info.filter))\",\n")
         print(io, "  \"omc_exe\":      \"$(_esc_json(info.omc_exe))\",\n")
+        print(io, "  \"omc_options\":  \"$(_esc_json(info.omc_options))\",\n")
         print(io, "  \"results_root\": \"$(_esc_json(info.results_root))\",\n")
         print(io, "  \"ref_root\":     \"$(_esc_json(info.ref_root))\",\n")
         print(io, "  \"omc_version\":  \"$(_esc_json(info.omc_version))\",\n")
@@ -62,6 +63,7 @@ Parsed contents of a single `summary.json` file.
 - `lib_version`  — library version (e.g. `"4.1.0"`)
 - `filter`       — model name filter regex, or `""` when none was given
 - `omc_exe`      — path / command used to launch OMC
+- `omc_options`  — full options string passed to `setCommandLineOptions`
 - `results_root` — absolute path where results were written
 - `ref_root`     — absolute path to reference results, or `""` when unused
 - `omc_version`  — OMC version string
@@ -78,6 +80,7 @@ struct RunSummary
     lib_version  :: String
     filter       :: String
     omc_exe      :: String
+    omc_options  :: String
     results_root :: String
     ref_root     :: String
     omc_version  :: String
@@ -134,6 +137,7 @@ function load_summary(results_root::String)::Union{RunSummary,Nothing}
         _str("lib_version"),
         _str("filter"),
         _str("omc_exe"),
+        _str("omc_options"),
         _str("results_root"),
         _str("ref_root"),
         _str("omc_version"),
