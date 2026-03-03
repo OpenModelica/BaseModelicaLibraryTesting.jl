@@ -80,7 +80,7 @@ package 'UniformNoise'
   end 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState';
 
   model 'UniformNoise' "Demonstrates the most simple usage of the UniformNoise block"
-    output Real 'uniformNoise2_y' = 'uniformNoise2.y';
+    output Real 'uniformNoise2_y';
     parameter Boolean 'globalSeed.enableNoise' = true "= true, if noise blocks generate noise as output; = false, if they generate a constant output";
     parameter Boolean 'globalSeed.useAutomaticSeed' = false "= true, choose a seed by system time and process id; = false, use fixedSeed";
     parameter Integer 'globalSeed.fixedSeed' = 67867967 "Fixed global seed for random number generators (if useAutomaticSeed = false)";
@@ -142,6 +142,8 @@ package 'UniformNoise'
     pre('uniformNoise2.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('uniformNoise2.localSeed', 'uniformNoise2.actualGlobalSeed', 4))[4];
     'uniformNoise2.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('uniformNoise2.state'));
   equation
+    'uniformNoise2_y' = 'uniformNoise2.y';
+
     when sample(0.0, 0.02) then
       'uniformNoise1.r' = 'uniformNoise1.r_raw' * 4.0 - 1.0;
     end when;

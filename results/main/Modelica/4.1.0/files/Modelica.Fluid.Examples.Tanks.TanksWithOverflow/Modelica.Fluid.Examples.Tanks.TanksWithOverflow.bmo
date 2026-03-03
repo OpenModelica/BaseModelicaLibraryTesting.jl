@@ -908,7 +908,7 @@ package 'TanksWithOverflow'
     parameter Real 'upperTank.p_ambient'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'upperTank.T_ambient'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'upperTank.level_start'(min = 0.0, unit = "m", quantity = "Length") = 2.0 "Start value of tank level";
-    Real 'upperTank.fluidVolume'(unit = "m3", quantity = "Volume") = 'upperTank.V' "Volume";
+    Real 'upperTank.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'upperTank.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'upperTank.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'upperTank.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -930,8 +930,8 @@ package 'TanksWithOverflow'
     Real 'upperTank.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'upperTank.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'upperTank.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'upperTank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'upperTank.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'upperTank.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'upperTank.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'upperTank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'upperTank.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'upperTank.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'upperTank.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'upperTank.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -970,8 +970,8 @@ package 'TanksWithOverflow'
     Real 'upperTank.ports_H_flow[3]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'upperTank.use_HeatTransfer' = false "= true to use the HeatTransfer model";
     parameter Integer 'upperTank.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'upperTank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'upperTank.medium.state.p' "Absolute pressure of medium";
-    Real 'upperTank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'upperTank.medium.state.T' "Temperature of medium";
+    Real 'upperTank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'upperTank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'upperTank.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'upperTank.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'upperTank.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -1005,7 +1005,7 @@ package 'TanksWithOverflow'
     Real 'upperTank.m_flow_turbulent[1]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'upperTank.m_flow_turbulent[2]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'upperTank.m_flow_turbulent[3]'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'upperTank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") = 'upperTank.level' "Level of fluid in the vessel for treating heights of ports";
+    Real 'upperTank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") "Level of fluid in the vessel for treating heights of ports";
     parameter Real 'upperTank.fluidLevel_max'(min = 0.0, unit = "m", quantity = "Length") = 20.0 "Maximum level of fluid in the vessel";
     parameter Real 'upperTank.vesselArea'(unit = "m2", quantity = "Area") = 0.2 "Area of the vessel used to relate to cross flow area of ports";
     Real 'upperTank.portsData_diameter_internal[1]';
@@ -1052,8 +1052,8 @@ package 'TanksWithOverflow'
     Real 'massFlowRate.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'massFlowRate.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'massFlowRate.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'massFlowRate.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'massFlowRate.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'massFlowRate.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'massFlowRate.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'massFlowRate.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'massFlowRate.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'massFlowRate.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.Linear cold water") "Mass flow rate from the connection point into the component";
     Real 'massFlowRate.ports[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
     Real 'massFlowRate.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
@@ -1165,7 +1165,7 @@ package 'TanksWithOverflow'
     parameter Boolean 'pipe.flowModel.constantPressureLossCoefficient' = false "= true, if the pressure loss does not depend on fluid states" annotation(Evaluate = true);
     parameter Boolean 'pipe.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'pipe.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 993.2044280025, 993.2044280025, 0.0015, 0.0015, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]') "Pressure loss for nominal conditions";
+    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
     Real 'lowerTank.level'(stateSelect = StateSelect.prefer, start = 2.0, min = 0.0, unit = "m", quantity = "Length") "Level height of tank";
     Real 'lowerTank.V'(stateSelect = StateSelect.never, unit = "m3", quantity = "Volume") "Actual tank volume";
     parameter Real 'lowerTank.height'(min = 0.0, unit = "m", quantity = "Length") = 20.0 "Height of tank";
@@ -1173,7 +1173,7 @@ package 'TanksWithOverflow'
     parameter Real 'lowerTank.p_ambient'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'lowerTank.T_ambient'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'lowerTank.level_start'(min = 0.0, unit = "m", quantity = "Length") = 2.0 "Start value of tank level";
-    Real 'lowerTank.fluidVolume'(unit = "m3", quantity = "Volume") = 'lowerTank.V' "Volume";
+    Real 'lowerTank.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'lowerTank.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'lowerTank.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'lowerTank.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -1195,8 +1195,8 @@ package 'TanksWithOverflow'
     Real 'lowerTank.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'lowerTank.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'lowerTank.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'lowerTank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'lowerTank.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'lowerTank.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'lowerTank.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'lowerTank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'lowerTank.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'lowerTank.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'lowerTank.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'lowerTank.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -1227,8 +1227,8 @@ package 'TanksWithOverflow'
     Real 'lowerTank.ports_H_flow[2]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'lowerTank.use_HeatTransfer' = false "= true to use the HeatTransfer model";
     parameter Integer 'lowerTank.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'lowerTank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'lowerTank.medium.state.p' "Absolute pressure of medium";
-    Real 'lowerTank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'lowerTank.medium.state.T' "Temperature of medium";
+    Real 'lowerTank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'lowerTank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'lowerTank.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'lowerTank.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'lowerTank.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -1254,7 +1254,7 @@ package 'TanksWithOverflow'
     constant Real 'lowerTank.Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 100.0 "cf. suddenExpansion";
     Real 'lowerTank.m_flow_turbulent[1]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'lowerTank.m_flow_turbulent[2]'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'lowerTank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") = 'lowerTank.level' "Level of fluid in the vessel for treating heights of ports";
+    Real 'lowerTank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") "Level of fluid in the vessel for treating heights of ports";
     parameter Real 'lowerTank.fluidLevel_max'(min = 0.0, unit = "m", quantity = "Length") = 20.0 "Maximum level of fluid in the vessel";
     parameter Real 'lowerTank.vesselArea'(unit = "m2", quantity = "Area") = 1.0 "Area of the vessel used to relate to cross flow area of ports";
     Real 'lowerTank.portsData_diameter_internal[1]';
@@ -1366,7 +1366,7 @@ package 'TanksWithOverflow'
     parameter Boolean 'overflow.flowModel.constantPressureLossCoefficient' = false "= true, if the pressure loss does not depend on fluid states" annotation(Evaluate = true);
     parameter Boolean 'overflow.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'overflow.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'overflow.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow'('overflow.flowModel.m_flow_nominal', 993.2044280025, 993.2044280025, 0.0015, 0.0015, 'overflow.flowModel.pathLengths_internal[1]', 'overflow.flowModel.diameters[1]', ('overflow.flowModel.crossAreas[1]' + 'overflow.flowModel.crossAreas[2]') / 2.0, ('overflow.flowModel.roughnesses[1]' + 'overflow.flowModel.roughnesses[2]') / 2.0, 'overflow.flowModel.m_flow_small', 'overflow.flowModel.Res_turbulent_internal[1]') "Pressure loss for nominal conditions";
+    Real 'overflow.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
   initial equation
     'upperTank.level' = 2.0;
     'upperTank.medium.T' = 'upperTank.T_start';
@@ -1378,6 +1378,22 @@ package 'TanksWithOverflow'
     'overflow.flowModel.dp_nominal' = 1000.0 * 'overflow.flowModel.dp_small';
     'overflow.flowModel.dp_small' = 1.0;
   equation
+    'upperTank.fluidVolume' = 'upperTank.V';
+    'upperTank.medium.T_degC' = 'upperTank.medium.T' - 273.15;
+    'upperTank.medium.p_bar' = 'upperTank.medium.p' / 1e5;
+    'upperTank.heatTransfer.states[1].p' = 'upperTank.medium.state.p';
+    'upperTank.heatTransfer.states[1].T' = 'upperTank.medium.state.T';
+    'upperTank.fluidLevel' = 'upperTank.level';
+    'massFlowRate.medium.T_degC' = 'massFlowRate.medium.T' - 273.15;
+    'massFlowRate.medium.p_bar' = 'massFlowRate.medium.p' / 1e5;
+    'pipe.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 993.2044280025, 993.2044280025, 0.0015, 0.0015, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]');
+    'lowerTank.fluidVolume' = 'lowerTank.V';
+    'lowerTank.medium.T_degC' = 'lowerTank.medium.T' - 273.15;
+    'lowerTank.medium.p_bar' = 'lowerTank.medium.p' / 1e5;
+    'lowerTank.heatTransfer.states[1].p' = 'lowerTank.medium.state.p';
+    'lowerTank.heatTransfer.states[1].T' = 'lowerTank.medium.state.T';
+    'lowerTank.fluidLevel' = 'lowerTank.level';
+    'overflow.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow'('overflow.flowModel.m_flow_nominal', 993.2044280025, 993.2044280025, 0.0015, 0.0015, 'overflow.flowModel.pathLengths_internal[1]', 'overflow.flowModel.diameters[1]', ('overflow.flowModel.crossAreas[1]' + 'overflow.flowModel.crossAreas[2]') / 2.0, ('overflow.flowModel.roughnesses[1]' + 'overflow.flowModel.roughnesses[2]') / 2.0, 'overflow.flowModel.m_flow_small', 'overflow.flowModel.Res_turbulent_internal[1]');
     'upperTank.portsData_diameter[1]' = 'upperTank.portsData_diameter_internal[1]';
     'upperTank.portsData_diameter[2]' = 'upperTank.portsData_diameter_internal[2]';
     'upperTank.portsData_diameter[3]' = 'upperTank.portsData_diameter_internal[3]';

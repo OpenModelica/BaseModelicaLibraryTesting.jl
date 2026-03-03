@@ -174,8 +174,8 @@ package 'SinglePhaseTransformerWithHysteresis2'
     Real 'transformer.resistor1.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.resistor1.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.resistor1.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.resistor1.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.resistor1.T_heatPort' "Port temperature";
-    Real 'transformer.resistor1.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.resistor1.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.resistor1.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.resistor1.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.resistor1.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.resistor1.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.resistor1.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -190,8 +190,8 @@ package 'SinglePhaseTransformerWithHysteresis2'
     Real 'transformer.resistor2.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.resistor2.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.resistor2.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.resistor2.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.resistor2.T_heatPort' "Port temperature";
-    Real 'transformer.resistor2.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.resistor2.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.resistor2.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.resistor2.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.resistor2.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.resistor2.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.resistor2.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -227,7 +227,7 @@ package 'SinglePhaseTransformerWithHysteresis2'
     Real 'transformer.core.MagRel'(fixed = true, start = 0.0, max = 1.0, min = -1.0, unit = "1", quantity = "Relative magnetization") "Relative magnetization at initialization (-1..1)";
     Real 'transformer.core.LossPowerStat'(unit = "W", quantity = "Power") "Ferromagnetic (static) hysteresis losses";
     Real 'transformer.core.LossPowerEddy'(unit = "W", quantity = "Power") "Eddy current losses (dynamic hysteresis losses)";
-    Real 'transformer.core.derHstat'(start = 0.0, unit = "A/(m.s)") = der('transformer.core.Hstat');
+    Real 'transformer.core.derHstat'(start = 0.0, unit = "A/(m.s)");
     parameter Real 'transformer.core.eddyCurrentFactor'(unit = "S.m") = 0.04583333333333333;
     Boolean 'transformer.core.asc'(start = true) "True when der(Hstat)>0";
     Real 'transformer.core.hystR'(unit = "T", quantity = "MagneticFluxDensity") "Rising branch of limiting hysteresis loop";
@@ -250,6 +250,11 @@ package 'SinglePhaseTransformerWithHysteresis2'
     'transformer.core.B' = ('transformer.core.hystR' + 'transformer.core.hystF') / 2.0 + 'transformer.core.MagRel' * 'transformer.core.diffHyst' / 2.0;
     'transformer.core.derHstat' = 0.0;
   equation
+    'transformer.resistor1.heatPort.T' = 'transformer.resistor1.T_heatPort';
+    'transformer.resistor1.heatPort.Q_flow' = -'transformer.resistor1.LossPower';
+    'transformer.resistor2.heatPort.T' = 'transformer.resistor2.T_heatPort';
+    'transformer.resistor2.heatPort.Q_flow' = -'transformer.resistor2.LossPower';
+    'transformer.core.derHstat' = der('transformer.core.Hstat');
     'transformer.winding2.port_n.V_m' = 'transformer.ground.port.V_m';
     'transformer.winding2.port_n.V_m' = 'transformer.winding1.port_n.V_m';
     'transformer.resistor1.n.v' = 'transformer.winding1.p.v';

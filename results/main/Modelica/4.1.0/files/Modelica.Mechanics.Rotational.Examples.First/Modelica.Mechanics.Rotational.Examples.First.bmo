@@ -13,8 +13,8 @@ package 'First'
     parameter Boolean 'torque.useSupport' = true "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     Real 'torque.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'torque.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
-    Real 'torque.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'torque.phi_support' "Absolute rotation angle of flange";
-    Real 'torque.support.tau'(unit = "N.m", quantity = "Torque") = -'torque.flange.tau' "Cut torque in the flange";
+    Real 'torque.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'torque.support.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'torque.phi_support'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute angle of support flange";
     Real 'torque.tau'(unit = "N.m") "Accelerating torque acting at flange (= -flange.tau)";
     Real 'inertia1.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
@@ -31,8 +31,8 @@ package 'First'
     Real 'idealGear.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'idealGear.flange_b.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'idealGear.flange_b.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
-    Real 'idealGear.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'idealGear.phi_support' "Absolute rotation angle of flange";
-    Real 'idealGear.support.tau'(unit = "N.m", quantity = "Torque") = -('idealGear.flange_a.tau' + 'idealGear.flange_b.tau') "Cut torque in the flange";
+    Real 'idealGear.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'idealGear.support.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'idealGear.phi_support'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute angle of support flange";
     parameter Real 'idealGear.ratio'(start = 1.0) = 10.0 "Transmission ratio (flange_a.phi/flange_b.phi)";
     Real 'idealGear.phi_a'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Angle between left shaft flange and support";
@@ -84,6 +84,10 @@ package 'First'
     parameter Real 'sine.offset' = 0.0 "Offset of output signal y";
     parameter Real 'sine.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
   equation
+    'torque.support.phi' = 'torque.phi_support';
+    'torque.support.tau' = -'torque.flange.tau';
+    'idealGear.support.phi' = 'idealGear.phi_support';
+    'idealGear.support.tau' = -('idealGear.flange_a.tau' + 'idealGear.flange_b.tau');
     'inertia1.flange_b.phi' = 'idealGear.flange_a.phi';
     'idealGear.flange_b.phi' = 'inertia2.flange_a.phi';
     'damper.flange_a.phi' = 'inertia2.flange_b.phi';

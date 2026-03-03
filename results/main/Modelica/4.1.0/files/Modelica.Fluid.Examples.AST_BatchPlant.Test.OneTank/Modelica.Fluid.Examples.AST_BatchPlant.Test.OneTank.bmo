@@ -532,7 +532,7 @@ package 'OneTank'
     parameter Real 'tank.p_ambient'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'tank.T_ambient'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'tank.level_start'(min = 0.0, unit = "m", quantity = "Length") = 0.8 "Start value of tank level";
-    Real 'tank.fluidVolume'(unit = "m3", quantity = "Volume") = 'tank.V' "Volume";
+    Real 'tank.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -554,8 +554,8 @@ package 'OneTank'
     Real 'tank.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'tank.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'tank.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'tank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'tank.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'tank.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'tank.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'tank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'tank.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'tank.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'tank.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'tank.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -577,8 +577,8 @@ package 'OneTank'
     Real 'tank.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
     parameter Boolean 'tank.use_HeatTransfer' = false "= true, if HeatTransfer model is used";
     parameter Integer 'tank.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'tank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'tank.medium.state.p' "Absolute pressure of medium";
-    Real 'tank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'tank.medium.state.T' "Temperature of medium";
+    Real 'tank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'tank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'tank.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'tank.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'tank.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -617,8 +617,8 @@ package 'OneTank'
     Real 'flowSource.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'flowSource.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'flowSource.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'flowSource.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'flowSource.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'flowSource.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'flowSource.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'flowSource.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'flowSource.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'flowSource.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate from the connection point into the component";
     Real 'flowSource.ports[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
     Real 'flowSource.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
@@ -664,8 +664,8 @@ package 'OneTank'
     Real 'ambient_fixed.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'ambient_fixed.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'ambient_fixed.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'ambient_fixed.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'ambient_fixed.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'ambient_fixed.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'ambient_fixed.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'ambient_fixed.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'ambient_fixed.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'ambient_fixed.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate from the connection point into the component";
     Real 'ambient_fixed.ports[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
     Real 'ambient_fixed.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
@@ -755,7 +755,7 @@ package 'OneTank'
     parameter Boolean 'pipe.flowModel.constantPressureLossCoefficient' = false "= true, if the pressure loss does not depend on fluid states" annotation(Evaluate = true);
     parameter Boolean 'pipe.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'pipe.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 995.586, 995.586, 0.001, 0.001, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]') "Pressure loss for nominal conditions";
+    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
     parameter Real 'timeTable.table[1,1]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
     parameter Real 'timeTable.table[1,2]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
     parameter Real 'timeTable.table[2,1]' = 10.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
@@ -798,6 +798,16 @@ package 'OneTank'
     'pipe.flowModel.dp_nominal' = 1000.0 * 'pipe.flowModel.dp_small';
     'pipe.flowModel.dp_small' = 1.0;
   equation
+    'tank.fluidVolume' = 'tank.V';
+    'tank.medium.T_degC' = 'tank.medium.T' - 273.15;
+    'tank.medium.p_bar' = 'tank.medium.p' / 1e5;
+    'tank.heatTransfer.states[1].p' = 'tank.medium.state.p';
+    'tank.heatTransfer.states[1].T' = 'tank.medium.state.T';
+    'flowSource.medium.T_degC' = 'flowSource.medium.T' - 273.15;
+    'flowSource.medium.p_bar' = 'flowSource.medium.p' / 1e5;
+    'ambient_fixed.medium.T_degC' = 'ambient_fixed.medium.T' - 273.15;
+    'ambient_fixed.medium.p_bar' = 'ambient_fixed.medium.p' / 1e5;
+    'pipe.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 995.586, 995.586, 0.001, 0.001, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]');
     'tank.portsData_diameter[1]' = 'tank.portsData_diameter2[1]';
     'tank.portsData_height[1]' = 'tank.portsData_height2[1]';
     'flowSource.m_flow_in' = 'flowSource.m_flow_in_internal';

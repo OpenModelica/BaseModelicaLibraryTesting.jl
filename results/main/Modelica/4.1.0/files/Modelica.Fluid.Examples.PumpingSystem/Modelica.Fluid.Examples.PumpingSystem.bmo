@@ -2320,6 +2320,12 @@ package 'PumpingSystem'
 
   type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
 
+  type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
+
+  type 'Modelica.Fluid.Types.CheckValveHomotopyType' = enumeration('Open', 'Closed', 'NoHomotopy');
+
+  type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
+
   record 'Modelica.Media.Common.IF97BaseTwoPhase'
     Integer 'phase'(start = 0);
     Integer 'region'(max = 5, min = 1);
@@ -2338,12 +2344,6 @@ package 'PumpingSystem'
     Real 'x';
     Real 'dpT';
   end 'Modelica.Media.Common.IF97BaseTwoPhase';
-
-  type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
-
-  type 'Modelica.Fluid.Types.CheckValveHomotopyType' = enumeration('Open', 'Closed', 'NoHomotopy');
-
-  type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 
   record 'pipe.flowModel.Medium.ThermodynamicState'
     Integer 'phase'(max = 2, min = 0);
@@ -2479,8 +2479,8 @@ package 'PumpingSystem'
     Real 'source.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'source.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'source.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'source.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'source.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'source.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'source.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'source.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'source.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'source.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'source.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'source.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -2524,16 +2524,16 @@ package 'PumpingSystem'
     parameter Real 'pipe.m_flow_start'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") = 0.0 "Start value for mass flow rate" annotation(Evaluate = true);
     parameter Boolean 'pipe.flowModel.from_dp' = true "= true, use m_flow = f(dp), otherwise dp = f(m_flow)" annotation(Evaluate = true);
     parameter Integer 'pipe.flowModel.n' = 2 "Number of discrete flow volumes";
-    Integer 'pipe.flowModel.states[1].phase'(max = 2, min = 0) = 0 "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
-    Real 'pipe.flowModel.states[1].h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'pumps.port_b.h_outflow' "Specific enthalpy";
-    Real 'pipe.flowModel.states[1].d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'Modelica.Media.Water.IF97_Utilities.rho_props_ph'('pipe.port_a.p', 'pumps.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pipe.port_a.p', 'pumps.port_b.h_outflow', 0, 0)) "Density";
-    Real 'pipe.flowModel.states[1].T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('pipe.port_a.p', 'pumps.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pipe.port_a.p', 'pumps.port_b.h_outflow', 0, 0)) "Temperature";
-    Real 'pipe.flowModel.states[1].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pipe.port_a.p' "Pressure";
-    Integer 'pipe.flowModel.states[2].phase'(max = 2, min = 0) = 0 "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
-    Real 'pipe.flowModel.states[2].h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'reservoir.ports[1].h_outflow' "Specific enthalpy";
-    Real 'pipe.flowModel.states[2].d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'Modelica.Media.Water.IF97_Utilities.rho_props_ph'('pipe.port_b.p', 'reservoir.ports[1].h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pipe.port_b.p', 'reservoir.ports[1].h_outflow', 0, 0)) "Density";
-    Real 'pipe.flowModel.states[2].T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('pipe.port_b.p', 'reservoir.ports[1].h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pipe.port_b.p', 'reservoir.ports[1].h_outflow', 0, 0)) "Temperature";
-    Real 'pipe.flowModel.states[2].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pipe.port_b.p' "Pressure";
+    Integer 'pipe.flowModel.states[1].phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'pipe.flowModel.states[1].h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'pipe.flowModel.states[1].d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'pipe.flowModel.states[1].T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'pipe.flowModel.states[1].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    Integer 'pipe.flowModel.states[2].phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'pipe.flowModel.states[2].h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'pipe.flowModel.states[2].d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'pipe.flowModel.states[2].T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'pipe.flowModel.states[2].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     Real 'pipe.flowModel.vs[1]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
     Real 'pipe.flowModel.vs[2]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
     parameter Real 'pipe.flowModel.nParallel' = 1.0 "Number of identical parallel flow devices";
@@ -2581,7 +2581,7 @@ package 'PumpingSystem'
     parameter Boolean 'pipe.flowModel.constantPressureLossCoefficient' = false "= true, if the pressure loss does not depend on fluid states" annotation(Evaluate = true);
     parameter Boolean 'pipe.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'pipe.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.PumpingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 998.2060924679472, 998.2060924679472, 0.0010016053256479086, 0.0010016053256479086, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]') "Pressure loss for nominal conditions";
+    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
     parameter Boolean 'pumps.allowFlowReversal' = true "= true to allow flow reversal, false restricts to design direction (port_a -> port_b)" annotation(Evaluate = true);
     Real 'pumps.port_a.m_flow'(start = 0.0, max = 1e5, min = 0.0, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
     Real 'pumps.port_a.p'(nominal = 1e6, start = 101325.0, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
@@ -2604,7 +2604,7 @@ package 'PumpingSystem'
     parameter Boolean 'pumps.use_powerCharacteristic' = false "Use powerCharacteristic (vs. efficiencyCharacteristic)" annotation(Evaluate = true);
     parameter Boolean 'pumps.checkValve' = true "= true to prevent reverse flow" annotation(Evaluate = true);
     parameter Real 'pumps.V'(displayUnit = "l", unit = "m3", quantity = "Volume") = 0.05 "Volume inside the pump" annotation(Evaluate = true);
-    Real 'pumps.fluidVolume'(unit = "m3", quantity = "Volume") = 0.05 "Volume";
+    Real 'pumps.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'pumps.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'pumps.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'pumps.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -2629,8 +2629,8 @@ package 'PumpingSystem'
     Real 'pumps.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'pumps.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'pumps.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'pumps.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'pumps.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'pumps.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'pumps.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'pumps.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'pumps.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'pumps.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'pumps.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'pumps.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -2643,11 +2643,11 @@ package 'PumpingSystem'
     parameter Boolean 'pumps.initialize_p' = true "= true to set up initial equations for pressure";
     parameter Boolean 'pumps.use_HeatTransfer' = false "= true to use a HeatTransfer model, e.g., for a housing";
     parameter Integer 'pumps.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Integer 'pumps.heatTransfer.states[1].phase'(max = 2, min = 0) = 'pumps.medium.state.phase' "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
-    Real 'pumps.heatTransfer.states[1].h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'pumps.medium.state.h' "Specific enthalpy";
-    Real 'pumps.heatTransfer.states[1].d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'pumps.medium.state.d' "Density";
-    Real 'pumps.heatTransfer.states[1].T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pumps.medium.state.T' "Temperature";
-    Real 'pumps.heatTransfer.states[1].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pumps.medium.state.p' "Pressure";
+    Integer 'pumps.heatTransfer.states[1].phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'pumps.heatTransfer.states[1].h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'pumps.heatTransfer.states[1].d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'pumps.heatTransfer.states[1].T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'pumps.heatTransfer.states[1].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     Real 'pumps.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'pumps.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'pumps.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -2657,29 +2657,29 @@ package 'PumpingSystem'
     Real 'pumps.heatTransfer.heatPorts[1].Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'pumps.heatTransfer.Ts[1]'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperatures defined by fluid states";
     parameter Real 'pumps.g'(unit = "m/s2", quantity = "Acceleration") = 9.80665 "Constant gravity acceleration";
-    Real 'pumps.rho'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'pumps.medium.d';
-    Real 'pumps.dp_pump'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pumps.port_b.p' - 'pumps.port_a.p' "Pressure change";
-    Real 'pumps.head'(unit = "m", quantity = "Length") = 'pumps.dp_pump' / ('pumps.rho' * 9.80665) "Pump head";
-    Real 'pumps.m_flow'(unit = "kg/s", quantity = "MassFlowRate") = 'pumps.port_a.m_flow' "Mass flow rate (total)";
-    Real 'pumps.m_flow_single'(unit = "kg/s", quantity = "MassFlowRate") = 'pumps.m_flow' "Mass flow rate (single pump)";
+    Real 'pumps.rho'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'pumps.dp_pump'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure change";
+    Real 'pumps.head'(unit = "m", quantity = "Length") "Pump head";
+    Real 'pumps.m_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flow rate (total)";
+    Real 'pumps.m_flow_single'(unit = "kg/s", quantity = "MassFlowRate") "Mass flow rate (single pump)";
     Real 'pumps.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate (total)";
     Real 'pumps.V_flow_single'(start = 0.0, unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate (single pump)";
     Real 'pumps.N'(start = 1200.0, unit = "rev/min", quantity = "AngularVelocity") "Shaft rotational speed";
     Real 'pumps.W_single'(unit = "W", quantity = "Power") "Power Consumption (single pump)";
-    Real 'pumps.W_total'(unit = "W", quantity = "Power") = 'pumps.W_single' "Power Consumption (total)";
+    Real 'pumps.W_total'(unit = "W", quantity = "Power") "Power Consumption (total)";
     Real 'pumps.eta' "Global Efficiency";
     constant Real 'pumps.unit_m_flow'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") = 1.0;
     Real 'pumps.s'(start = 0.0) "Curvilinear abscissa for the flow curve in parametric form (either mass flow rate or head)";
-    Integer 'pumps.monitoring.state_in.phase'(max = 2, min = 0) = 0 "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
-    Real 'pumps.monitoring.state_in.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'source.ports[1].h_outflow' "Specific enthalpy";
-    Real 'pumps.monitoring.state_in.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'Modelica.Media.Water.IF97_Utilities.rho_props_ph'('pumps.port_a.p', 'source.ports[1].h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pumps.port_a.p', 'source.ports[1].h_outflow', 0, 0)) "Density";
-    Real 'pumps.monitoring.state_in.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('pumps.port_a.p', 'source.ports[1].h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pumps.port_a.p', 'source.ports[1].h_outflow', 0, 0)) "Temperature";
-    Real 'pumps.monitoring.state_in.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pumps.port_a.p' "Pressure";
-    Integer 'pumps.monitoring.state.phase'(max = 2, min = 0) = 'pumps.medium.state.phase' "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
-    Real 'pumps.monitoring.state.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'pumps.medium.state.h' "Specific enthalpy";
-    Real 'pumps.monitoring.state.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'pumps.medium.state.d' "Density";
-    Real 'pumps.monitoring.state.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pumps.medium.state.T' "Temperature";
-    Real 'pumps.monitoring.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pumps.medium.state.p' "Pressure";
+    Integer 'pumps.monitoring.state_in.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'pumps.monitoring.state_in.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'pumps.monitoring.state_in.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'pumps.monitoring.state_in.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'pumps.monitoring.state_in.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    Integer 'pumps.monitoring.state.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'pumps.monitoring.state.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'pumps.monitoring.state.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'pumps.monitoring.state.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'pumps.monitoring.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     constant Real 'pumps.unitHead'(unit = "m", quantity = "Length") = 1.0;
     constant Real 'pumps.unitMassFlowRate'(unit = "kg/s", quantity = "MassFlowRate") = 1.0;
     parameter Boolean 'pumps.use_N_in' = true "Get the rotational speed from the input connector";
@@ -2693,7 +2693,7 @@ package 'PumpingSystem'
     parameter Real 'reservoir.p_ambient'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'reservoir.T_ambient'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'reservoir.level_start'(min = 0.0, unit = "m", quantity = "Length") = 2.2 "Start value of tank level";
-    Real 'reservoir.fluidVolume'(unit = "m3", quantity = "Volume") = 'reservoir.V' "Volume";
+    Real 'reservoir.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'reservoir.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'reservoir.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'reservoir.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -2718,8 +2718,8 @@ package 'PumpingSystem'
     Real 'reservoir.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'reservoir.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'reservoir.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'reservoir.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'reservoir.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'reservoir.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'reservoir.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'reservoir.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'reservoir.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'reservoir.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'reservoir.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'reservoir.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -2761,11 +2761,11 @@ package 'PumpingSystem'
     Real 'reservoir.ports_H_flow[3]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'reservoir.use_HeatTransfer' = false "= true to use the HeatTransfer model";
     parameter Integer 'reservoir.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Integer 'reservoir.heatTransfer.states[1].phase'(max = 2, min = 0) = 'reservoir.medium.state.phase' "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
-    Real 'reservoir.heatTransfer.states[1].h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'reservoir.medium.state.h' "Specific enthalpy";
-    Real 'reservoir.heatTransfer.states[1].d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'reservoir.medium.state.d' "Density";
-    Real 'reservoir.heatTransfer.states[1].T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'reservoir.medium.state.T' "Temperature";
-    Real 'reservoir.heatTransfer.states[1].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'reservoir.medium.state.p' "Pressure";
+    Integer 'reservoir.heatTransfer.states[1].phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'reservoir.heatTransfer.states[1].h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'reservoir.heatTransfer.states[1].d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'reservoir.heatTransfer.states[1].T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'reservoir.heatTransfer.states[1].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     Real 'reservoir.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'reservoir.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'reservoir.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -2799,7 +2799,7 @@ package 'PumpingSystem'
     Real 'reservoir.m_flow_turbulent[1]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'reservoir.m_flow_turbulent[2]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'reservoir.m_flow_turbulent[3]'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'reservoir.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") = 'reservoir.level' "Level of fluid in the vessel for treating heights of ports";
+    Real 'reservoir.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") "Level of fluid in the vessel for treating heights of ports";
     parameter Real 'reservoir.fluidLevel_max'(min = 0.0, unit = "m", quantity = "Length") = 3.0 "Maximum level of fluid in the vessel";
     parameter Real 'reservoir.vesselArea'(unit = "m2", quantity = "Area") = 50.0 "Area of the vessel used to relate to cross flow area of ports";
     Real 'reservoir.portsData_diameter_internal[1]';
@@ -2850,9 +2850,9 @@ package 'PumpingSystem'
     parameter Boolean 'userValve.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'userValve.m_flow'(start = 0.0, max = 1e5, min = 0.0, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate in design flow direction";
     Real 'userValve.dp'(start = 1013.25, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'userValve.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'userValve.m_flow' / 'Modelica.Fluid.Utilities.regStep'('userValve.m_flow', 'userValve.state_a.d', 'userValve.state_b.d', 0.01) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'userValve.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('userValve.port_a.m_flow', 'userValve.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('userValve.port_a.p', 'userValve.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('userValve.port_a.p', 'userValve.port_a.h_outflow', 0, 0)), 0.01) "Temperature close to port_a, if show_T = true";
-    Real 'userValve.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('userValve.port_b.m_flow', 'userValve.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('userValve.port_b.p', 'userValve.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('userValve.port_b.p', 'userValve.port_b.h_outflow', 0, 0)), 0.01) "Temperature close to port_b, if show_T = true";
+    Real 'userValve.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'userValve.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'userValve.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Integer 'userValve.state_a.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'userValve.state_a.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'userValve.state_a.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2883,8 +2883,8 @@ package 'PumpingSystem'
     Real 'sink.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'sink.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'sink.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'sink.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'sink.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'sink.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'sink.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'sink.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'sink.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'sink.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'sink.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'sink.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -2967,6 +2967,57 @@ package 'PumpingSystem'
     pre('controller.y') = false;
     'PT1.y' = 0.0;
   equation
+    'source.medium.T_degC' = 'source.medium.T' - 273.15;
+    'source.medium.p_bar' = 'source.medium.p' / 1e5;
+    'pipe.flowModel.states[1].phase' = 0;
+    'pipe.flowModel.states[1].h' = 'pumps.port_b.h_outflow';
+    'pipe.flowModel.states[1].d' = 'Modelica.Media.Water.IF97_Utilities.rho_props_ph'('pipe.port_a.p', 'pumps.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pipe.port_a.p', 'pumps.port_b.h_outflow', 0, 0));
+    'pipe.flowModel.states[1].T' = 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('pipe.port_a.p', 'pumps.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pipe.port_a.p', 'pumps.port_b.h_outflow', 0, 0));
+    'pipe.flowModel.states[1].p' = 'pipe.port_a.p';
+    'pipe.flowModel.states[2].phase' = 0;
+    'pipe.flowModel.states[2].h' = 'reservoir.ports[1].h_outflow';
+    'pipe.flowModel.states[2].d' = 'Modelica.Media.Water.IF97_Utilities.rho_props_ph'('pipe.port_b.p', 'reservoir.ports[1].h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pipe.port_b.p', 'reservoir.ports[1].h_outflow', 0, 0));
+    'pipe.flowModel.states[2].T' = 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('pipe.port_b.p', 'reservoir.ports[1].h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pipe.port_b.p', 'reservoir.ports[1].h_outflow', 0, 0));
+    'pipe.flowModel.states[2].p' = 'pipe.port_b.p';
+    'pipe.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.PumpingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 998.2060924679472, 998.2060924679472, 0.0010016053256479086, 0.0010016053256479086, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]');
+    'pumps.fluidVolume' = 0.05;
+    'pumps.medium.T_degC' = 'pumps.medium.T' - 273.15;
+    'pumps.medium.p_bar' = 'pumps.medium.p' / 1e5;
+    'pumps.heatTransfer.states[1].phase' = 'pumps.medium.state.phase';
+    'pumps.heatTransfer.states[1].h' = 'pumps.medium.state.h';
+    'pumps.heatTransfer.states[1].d' = 'pumps.medium.state.d';
+    'pumps.heatTransfer.states[1].T' = 'pumps.medium.state.T';
+    'pumps.heatTransfer.states[1].p' = 'pumps.medium.state.p';
+    'pumps.rho' = 'pumps.medium.d';
+    'pumps.dp_pump' = 'pumps.port_b.p' - 'pumps.port_a.p';
+    'pumps.head' = 'pumps.dp_pump' / ('pumps.rho' * 9.80665);
+    'pumps.m_flow' = 'pumps.port_a.m_flow';
+    'pumps.m_flow_single' = 'pumps.m_flow';
+    'pumps.W_total' = 'pumps.W_single';
+    'pumps.monitoring.state_in.phase' = 0;
+    'pumps.monitoring.state_in.h' = 'source.ports[1].h_outflow';
+    'pumps.monitoring.state_in.d' = 'Modelica.Media.Water.IF97_Utilities.rho_props_ph'('pumps.port_a.p', 'source.ports[1].h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pumps.port_a.p', 'source.ports[1].h_outflow', 0, 0));
+    'pumps.monitoring.state_in.T' = 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('pumps.port_a.p', 'source.ports[1].h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pumps.port_a.p', 'source.ports[1].h_outflow', 0, 0));
+    'pumps.monitoring.state_in.p' = 'pumps.port_a.p';
+    'pumps.monitoring.state.phase' = 'pumps.medium.state.phase';
+    'pumps.monitoring.state.h' = 'pumps.medium.state.h';
+    'pumps.monitoring.state.d' = 'pumps.medium.state.d';
+    'pumps.monitoring.state.T' = 'pumps.medium.state.T';
+    'pumps.monitoring.state.p' = 'pumps.medium.state.p';
+    'reservoir.fluidVolume' = 'reservoir.V';
+    'reservoir.medium.T_degC' = 'reservoir.medium.T' - 273.15;
+    'reservoir.medium.p_bar' = 'reservoir.medium.p' / 1e5;
+    'reservoir.heatTransfer.states[1].phase' = 'reservoir.medium.state.phase';
+    'reservoir.heatTransfer.states[1].h' = 'reservoir.medium.state.h';
+    'reservoir.heatTransfer.states[1].d' = 'reservoir.medium.state.d';
+    'reservoir.heatTransfer.states[1].T' = 'reservoir.medium.state.T';
+    'reservoir.heatTransfer.states[1].p' = 'reservoir.medium.state.p';
+    'reservoir.fluidLevel' = 'reservoir.level';
+    'userValve.V_flow' = 'userValve.m_flow' / 'Modelica.Fluid.Utilities.regStep'('userValve.m_flow', 'userValve.state_a.d', 'userValve.state_b.d', 0.01);
+    'userValve.port_a_T' = 'Modelica.Fluid.Utilities.regStep'('userValve.port_a.m_flow', 'userValve.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('userValve.port_a.p', 'userValve.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('userValve.port_a.p', 'userValve.port_a.h_outflow', 0, 0)), 0.01);
+    'userValve.port_b_T' = 'Modelica.Fluid.Utilities.regStep'('userValve.port_b.m_flow', 'userValve.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('userValve.port_b.p', 'userValve.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('userValve.port_b.p', 'userValve.port_b.h_outflow', 0, 0)), 0.01);
+    'sink.medium.T_degC' = 'sink.medium.T' - 273.15;
+    'sink.medium.p_bar' = 'sink.medium.p' / 1e5;
     'pumps.N_in' = 'pumps.N_in_internal';
     'reservoir.portsData_diameter[1]' = 'reservoir.portsData_diameter_internal[1]';
     'reservoir.portsData_diameter[2]' = 'reservoir.portsData_diameter_internal[2]';

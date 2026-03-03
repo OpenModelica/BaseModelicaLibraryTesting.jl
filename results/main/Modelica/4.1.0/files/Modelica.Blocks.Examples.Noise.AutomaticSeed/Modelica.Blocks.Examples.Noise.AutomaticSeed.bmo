@@ -82,9 +82,9 @@ package 'AutomaticSeed'
   model 'AutomaticSeed' "Demonstrates noise with startTime and automatic local seed for UniformNoise"
     parameter Real 'startTime'(unit = "s", quantity = "Time") = 0.5 "Start time of noise";
     parameter Real 'y_off' = -1.0 "Output of block before startTime";
-    output Real 'manualSeed1_y' = 'manualSeed1.y';
-    output Real 'manualSeed2_y' = 'manualSeed2.y';
-    output Real 'manualSeed3_y' = 'manualSeed3.y';
+    output Real 'manualSeed1_y';
+    output Real 'manualSeed2_y';
+    output Real 'manualSeed3_y';
     parameter Boolean 'globalSeed.enableNoise' = true "= true, if noise blocks generate noise as output; = false, if they generate a constant output";
     parameter Boolean 'globalSeed.useAutomaticSeed' = false "= true, choose a seed by system time and process id; = false, use fixedSeed";
     parameter Integer 'globalSeed.fixedSeed' = 67867967 "Fixed global seed for random number generators (if useAutomaticSeed = false)";
@@ -250,6 +250,10 @@ package 'AutomaticSeed'
     pre('manualSeed3.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed3.localSeed', 'manualSeed3.actualGlobalSeed', 4))[4];
     'manualSeed3.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('manualSeed3.state'));
   equation
+    'manualSeed1_y' = 'manualSeed1.y';
+    'manualSeed2_y' = 'manualSeed2.y';
+    'manualSeed3_y' = 'manualSeed3.y';
+
     when sample(0.5, 0.01) then
       'automaticSeed1.r' = 'automaticSeed1.r_raw' * 4.0 - 1.0;
     end when;

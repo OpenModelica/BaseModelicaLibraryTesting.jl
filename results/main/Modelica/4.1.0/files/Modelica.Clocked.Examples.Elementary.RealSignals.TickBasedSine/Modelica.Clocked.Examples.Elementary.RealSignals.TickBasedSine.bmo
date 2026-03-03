@@ -15,7 +15,7 @@ package 'TickBasedSine'
     parameter Integer 'sine.periodOffset' = 2 "Number of periods the sine signal is offset";
     parameter Integer 'sine.startTick'(min = 1) = 4 "Output = offset for clock tick < startTick";
     constant Real 'sine.pi' = 3.141592653589793;
-    Real 'sine.Ts' = interval('sine.y') "Sample time (periodic or non-periodic)";
+    Real 'sine.Ts' "Sample time (periodic or non-periodic)";
     Integer 'sine.counter'(start = 0);
     Boolean 'sine.startOutput'(start = false) "Flag whether counter >= startTick reached once";
     parameter Real 'sineRef.amplitude' = 1.0 "Amplitude of sine wave";
@@ -26,6 +26,7 @@ package 'TickBasedSine'
     parameter Real 'sineRef.offset' = 0.0 "Offset of output signal y";
     parameter Real 'sineRef.startTime'(unit = "s", quantity = "Time") = 0.3 "Output y = offset for time < startTime";
   equation
+    'sine.Ts' = interval('sine.y');
     'periodicClock1.y' = 'assignClock1.clock';
     'sine.y' = 'assignClock1.u';
 

@@ -39,12 +39,13 @@ package 'ClockedWithDiscreteController'
     parameter Real 'PI.k' = 110.0 "Gain of continuous PI controller";
     parameter Real 'PI.T'(min = 2.2250738585072014e-308) = 0.1 "Time constant of continuous PI controller";
     Real 'PI.x'(fixed = true, start = 0.0) "Discrete PI state";
-    Real 'PI.Ts' = interval('PI.u') "Sample time (periodic or non-periodic)";
+    Real 'PI.Ts' "Sample time (periodic or non-periodic)";
     parameter Real 'periodicClock.period'(unit = "s", quantity = "Time") = 0.1 "Period of clock (defined as Real number)" annotation(Evaluate = true);
     parameter Boolean 'periodicClock.useSolver' = false "= true, if solverMethod shall be explicitly defined" annotation(Evaluate = true);
     parameter String 'periodicClock.solverMethod' = "ExplicitEuler" "Integration method used for discretized continuous-time partitions";
     Clock 'periodicClock.y';
   equation
+    'PI.Ts' = interval('PI.u');
     'speed.flange.phi' = 'load.flange_b.phi';
     'torque.flange.phi' = 'load.flange_a.phi';
     'ramp.y' = 'sample2.u';

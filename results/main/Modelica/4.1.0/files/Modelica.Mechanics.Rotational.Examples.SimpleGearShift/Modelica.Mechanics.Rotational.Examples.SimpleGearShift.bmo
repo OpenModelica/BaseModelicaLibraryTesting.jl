@@ -47,9 +47,9 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
   type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
 
   model 'SimpleGearShift' "Simple Gearshift"
-    output Real 'wEngine'(unit = "rad/s", quantity = "AngularVelocity") = 'engine.w' "Speed of engine";
-    output Real 'wLoad'(unit = "rad/s", quantity = "AngularVelocity") = 'load.w' "Speed of load";
-    output Real 'gearRatio' = 'wLoad' / max('wEngine', 1e-6) "Gear ratio load/engine";
+    output Real 'wEngine'(unit = "rad/s", quantity = "AngularVelocity") "Speed of engine";
+    output Real 'wLoad'(unit = "rad/s", quantity = "AngularVelocity") "Speed of load";
+    output Real 'gearRatio' "Gear ratio load/engine";
     parameter Boolean 'torqueStep.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     Real 'torqueStep.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'torqueStep.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
@@ -191,6 +191,9 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'ramp.offset' = 0.0 "Offset of output signal y";
     parameter Real 'ramp.startTime'(unit = "s", quantity = "Time") = 2.0 "Output y = offset for time < startTime";
   equation
+    'wEngine' = 'engine.w';
+    'wLoad' = 'load.w';
+    'gearRatio' = 'wLoad' / max('wEngine', 1e-6);
     'torqueStep.flange.phi' = 'engine.flange_a.phi';
     'quadraticSpeedDependentTorque.flange.phi' = 'load.flange_b.phi';
     'feedback.y' = 'brake.f_normalized';

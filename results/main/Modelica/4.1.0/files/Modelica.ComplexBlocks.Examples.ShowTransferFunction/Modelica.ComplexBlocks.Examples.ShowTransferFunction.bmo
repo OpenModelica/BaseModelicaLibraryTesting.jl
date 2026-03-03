@@ -40,9 +40,9 @@ package 'ShowTransferFunction'
     parameter Real 'a[3]' = 0.1 "Unitless denominator polynomial coefficients {m,d,c} of the transfer function";
     parameter Real 'wMin' = 0.01 "Lower bound for frequency sweep";
     parameter Real 'wMax' = 100.0 "Upper bound for frequency sweep";
-    Real 'lg_w' = log10('logFrequencySweep.y') "Logarithm of frequency";
-    Real 'dB' = 20.0 * log10('complexToPolar.len') "Magnitude of the transfer function in decibel";
-    Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'complexToPolar.phi' "Argument of the transfer function";
+    Real 'lg_w' "Logarithm of frequency";
+    Real 'dB' "Magnitude of the transfer function in decibel";
+    Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of the transfer function";
     Real 'logFrequencySweep.y' "Connector of Real output signal";
     parameter Real 'logFrequencySweep.wMin'(min = 2.220446049250313e-16) = 0.01 "Start frequency";
     parameter Real 'logFrequencySweep.wMax'(min = 2.220446049250313e-16) = 100.0 "End frequency";
@@ -57,8 +57,8 @@ package 'ShowTransferFunction'
     Real 'transferFunction.y.re' "Real part of complex number";
     Real 'transferFunction.y.im' "Imaginary part of complex number";
     parameter Boolean 'transferFunction.useConjugateInput' = false "If true, input is processed conjugate complex";
-    Real 'transferFunction.uInternal.re' = 'transferFunction.u.re' "Real part of complex number";
-    Real 'transferFunction.uInternal.im' = 'transferFunction.u.im' "Imaginary part of complex number";
+    Real 'transferFunction.uInternal.re' "Real part of complex number";
+    Real 'transferFunction.uInternal.im' "Imaginary part of complex number";
     parameter Real 'transferFunction.b[1]' = -0.2 "Numerator coefficients of transfer function (e.g., 2*(jw)+3 is specified as {2,3})";
     parameter Real 'transferFunction.a[1]' = 0.2 "Denominator coefficients of transfer function (e.g., 5*(jw)+6 is specified as {5,6})";
     parameter Real 'transferFunction.a[2]' = 0.01 "Denominator coefficients of transfer function (e.g., 5*(jw)+6 is specified as {5,6})";
@@ -82,6 +82,11 @@ package 'ShowTransferFunction'
     Real 'complexToPolar.u.im' "Imaginary part of complex number";
     parameter Boolean 'complexToPolar.useConjugateInput' = false "If true, input is processed conjugate complex";
   equation
+    'lg_w' = log10('logFrequencySweep.y');
+    'dB' = 20.0 * log10('complexToPolar.len');
+    'phi' = 'complexToPolar.phi';
+    'transferFunction.uInternal.re' = 'transferFunction.u.re';
+    'transferFunction.uInternal.im' = 'transferFunction.u.im';
     'const.y.re' = 'transferFunction.u.re';
     'const.y.im' = 'transferFunction.u.im';
     'logFrequencySweep.y' = 'transferFunction.w';

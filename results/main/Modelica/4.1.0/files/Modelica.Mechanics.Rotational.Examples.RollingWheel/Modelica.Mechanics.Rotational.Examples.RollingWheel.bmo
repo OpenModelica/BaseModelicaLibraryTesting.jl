@@ -7,11 +7,11 @@ package 'RollingWheel'
     Real 'idealRollingWheel.flangeR.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'idealRollingWheel.flangeT.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'idealRollingWheel.flangeT.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
-    Real 'idealRollingWheel.internalSupportR.tau'(unit = "N.m", quantity = "Torque") = -'idealRollingWheel.flangeR.tau' "External support torque (must be computed via torque balance in model where InternalSupport is used; = flange.tau)";
+    Real 'idealRollingWheel.internalSupportR.tau'(unit = "N.m", quantity = "Torque") "External support torque (must be computed via torque balance in model where InternalSupport is used; = flange.tau)";
     Real 'idealRollingWheel.internalSupportR.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "External support angle (= flange.phi)";
     Real 'idealRollingWheel.internalSupportR.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'idealRollingWheel.internalSupportR.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
-    Real 'idealRollingWheel.internalSupportT.f'(unit = "N", quantity = "Force") = -'idealRollingWheel.flangeT.f' "External support force (must be computed via force balance in model where InternalSupport is used; = flange.f)";
+    Real 'idealRollingWheel.internalSupportT.f'(unit = "N", quantity = "Force") "External support force (must be computed via force balance in model where InternalSupport is used; = flange.f)";
     Real 'idealRollingWheel.internalSupportT.s'(unit = "m", quantity = "Length") "External support position (= flange.s)";
     Real 'idealRollingWheel.internalSupportT.flange.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'idealRollingWheel.internalSupportT.flange.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
@@ -61,6 +61,8 @@ package 'RollingWheel'
     parameter Real 'quadraticSpeedDependentForce.v_nominal'(min = 2.220446049250313e-16, unit = "m/s", quantity = "Velocity") = 5.0 "Nominal speed";
     Real 'quadraticSpeedDependentForce.v'(unit = "m/s", quantity = "Velocity") "Velocity of flange with respect to support (= der(s))";
   equation
+    'idealRollingWheel.internalSupportR.tau' = -'idealRollingWheel.flangeR.tau';
+    'idealRollingWheel.internalSupportT.f' = -'idealRollingWheel.flangeT.f';
     'idealRollingWheel.internalSupportR.flange.phi' = 'idealRollingWheel.fixedR.flange.phi';
     'idealRollingWheel.fixedT.flange.s' = 'idealRollingWheel.internalSupportT.flange.s';
     'torqueStep.flange.phi' = 'inertia.flange_a.phi';

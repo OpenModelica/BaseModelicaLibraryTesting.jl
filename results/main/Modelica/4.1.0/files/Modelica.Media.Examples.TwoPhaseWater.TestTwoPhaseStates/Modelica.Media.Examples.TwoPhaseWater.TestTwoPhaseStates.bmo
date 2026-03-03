@@ -1839,8 +1839,8 @@ package 'TestTwoPhaseStates'
     Real 'medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'medium.p_bar'(unit = "bar", quantity = "Pressure") = 'medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -1882,6 +1882,8 @@ package 'TestTwoPhaseStates'
     parameter Real 'dh'(displayUnit = "kJ/(kg.s)", unit = "J/(kg.s)") = 8e4 "Derivative of specific enthalpy of medium";
     parameter Real 'dp'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope") = 1e6 "Derivative of pressure of medium";
   equation
+    'medium.T_degC' = 'medium.T' - 273.15;
+    'medium.p_bar' = 'medium.p' / 1e5;
     'medium.eta' = if 'medium.phase' == 1 then 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity'('medium.state.d', 'medium.state.T', 'medium.state.p', 'medium.state.phase', true) else 1.0 / ('medium.x' / 'medium.eta_d' + (1.0 - 'medium.x') / 'medium.eta_b');
     'medium.dew.phase' = 1;
     'medium.dew.h' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hvl_p'('medium.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('medium.sat.psat'));

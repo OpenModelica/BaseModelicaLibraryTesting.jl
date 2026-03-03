@@ -1932,6 +1932,12 @@ package 'DrumBoiler'
 
   type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
 
+  type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
+
+  type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
+
+  type 'Modelica.Blocks.Types.LimiterHomotopy' = enumeration('NoHomotopy', 'Linear', 'UpperLimit', 'LowerLimit');
+
   record 'Modelica.Media.Common.IF97PhaseBoundaryProperties'
     Boolean 'region3boundary';
     Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
@@ -1947,12 +1953,6 @@ package 'DrumBoiler'
     Real 'vt'(unit = "m3/(kg.K)");
     Real 'vp'(unit = "m3/(kg.Pa)");
   end 'Modelica.Media.Common.IF97PhaseBoundaryProperties';
-
-  type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
-
-  type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
-
-  type 'Modelica.Blocks.Types.LimiterHomotopy' = enumeration('NoHomotopy', 'Linear', 'UpperLimit', 'LowerLimit');
 
   record 'Modelica.Media.Common.IF97BaseTwoPhase'
     Integer 'phase'(start = 0);
@@ -2070,18 +2070,18 @@ package 'DrumBoiler'
     Real 'evaporator.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature inside drum boiler";
     Real 'evaporator.V_v'(unit = "m3", quantity = "Volume") "Volume of vapour phase";
     Real 'evaporator.V_l'(stateSelect = StateSelect.prefer, start = 67.0, unit = "m3", quantity = "Volume") "Volumes of liquid phase";
-    Real 'evaporator.h_v'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hvl_p'('evaporator.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('evaporator.sat.psat')) "Specific enthalpy of vapour";
-    Real 'evaporator.h_l'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hvl_p'('evaporator.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('evaporator.sat.psat')) "Specific enthalpy of liquid";
-    Real 'evaporator.rho_v'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhovl_p'('evaporator.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('evaporator.sat.psat')) "Density in vapour phase";
-    Real 'evaporator.rho_l'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhovl_p'('evaporator.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('evaporator.sat.psat')) "Density in liquid phase";
+    Real 'evaporator.h_v'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of vapour";
+    Real 'evaporator.h_l'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of liquid";
+    Real 'evaporator.rho_v'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density in vapour phase";
+    Real 'evaporator.rho_l'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density in liquid phase";
     Real 'evaporator.m'(min = 0.0, unit = "kg", quantity = "Mass") "Total mass of drum boiler";
     Real 'evaporator.U'(unit = "J", quantity = "Energy") "Internal energy";
-    Real 'evaporator.T_D'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'evaporator.heatPort.T' "Temperature of drum";
-    Real 'evaporator.q_F'(unit = "W", quantity = "Power") = 'evaporator.heatPort.Q_flow' "Heat flow rate from furnace";
-    Real 'evaporator.h_W'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'pump.ports[1].h_outflow' "Feed water enthalpy (specific enthalpy close to feedwater port when mass flows in to the boiler)";
-    Real 'evaporator.h_S'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'massFlowRate.port_a.h_outflow' "Steam enthalpy (specific enthalpy close to steam port when mass flows in to the boiler)";
-    Real 'evaporator.qm_W'(unit = "kg/s", quantity = "MassFlowRate") = 'evaporator.port_a.m_flow' "Feed water mass flow rate";
-    Real 'evaporator.qm_S'(unit = "kg/s", quantity = "MassFlowRate") = 'evaporator.port_b.m_flow' "Steam mass flow rate";
+    Real 'evaporator.T_D'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of drum";
+    Real 'evaporator.q_F'(unit = "W", quantity = "Power") "Heat flow rate from furnace";
+    Real 'evaporator.h_W'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Feed water enthalpy (specific enthalpy close to feedwater port when mass flows in to the boiler)";
+    Real 'evaporator.h_S'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Steam enthalpy (specific enthalpy close to steam port when mass flows in to the boiler)";
+    Real 'evaporator.qm_W'(unit = "kg/s", quantity = "MassFlowRate") "Feed water mass flow rate";
+    Real 'evaporator.qm_S'(unit = "kg/s", quantity = "MassFlowRate") "Steam mass flow rate";
     parameter Real 'furnace.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Reference temperature";
     parameter Real 'furnace.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of heat flow rate";
     Real 'furnace.Q_flow'(unit = "W");
@@ -2103,8 +2103,8 @@ package 'DrumBoiler'
     Real 'sink.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'sink.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'sink.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'sink.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'sink.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'sink.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'sink.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'sink.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'sink.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'sink.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'sink.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'sink.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -2169,8 +2169,8 @@ package 'DrumBoiler'
     Real 'pump.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'pump.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'pump.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'pump.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'pump.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'pump.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'pump.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'pump.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'pump.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'pump.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'pump.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'pump.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -2230,9 +2230,9 @@ package 'DrumBoiler'
     parameter Boolean 'SteamValve.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'SteamValve.m_flow'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate in design flow direction";
     Real 'SteamValve.dp'(start = 1013.25, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'SteamValve.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'SteamValve.m_flow' / 'Modelica.Fluid.Utilities.regStep'('SteamValve.m_flow', 'SteamValve.state_a.d', 'SteamValve.state_b.d', 0.01) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'SteamValve.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('SteamValve.port_a.m_flow', 'SteamValve.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('SteamValve.port_a.p', 'SteamValve.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_a.p', 'SteamValve.port_a.h_outflow', 0, 0)), 0.01) "Temperature close to port_a, if show_T = true";
-    Real 'SteamValve.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('SteamValve.port_b.m_flow', 'SteamValve.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('SteamValve.port_b.p', 'SteamValve.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_b.p', 'SteamValve.port_b.h_outflow', 0, 0)), 0.01) "Temperature close to port_b, if show_T = true";
+    Real 'SteamValve.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'SteamValve.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'SteamValve.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Integer 'SteamValve.state_a.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'SteamValve.state_a.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'SteamValve.state_a.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2303,6 +2303,23 @@ package 'DrumBoiler'
     'evaporator.V_l' = 67.0;
     'controller.x' = 0.0;
   equation
+    'evaporator.h_v' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hvl_p'('evaporator.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('evaporator.sat.psat'));
+    'evaporator.h_l' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hvl_p'('evaporator.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('evaporator.sat.psat'));
+    'evaporator.rho_v' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhovl_p'('evaporator.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('evaporator.sat.psat'));
+    'evaporator.rho_l' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhovl_p'('evaporator.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('evaporator.sat.psat'));
+    'evaporator.T_D' = 'evaporator.heatPort.T';
+    'evaporator.q_F' = 'evaporator.heatPort.Q_flow';
+    'evaporator.h_W' = 'pump.ports[1].h_outflow';
+    'evaporator.h_S' = 'massFlowRate.port_a.h_outflow';
+    'evaporator.qm_W' = 'evaporator.port_a.m_flow';
+    'evaporator.qm_S' = 'evaporator.port_b.m_flow';
+    'sink.medium.T_degC' = 'sink.medium.T' - 273.15;
+    'sink.medium.p_bar' = 'sink.medium.p' / 1e5;
+    'pump.medium.T_degC' = 'pump.medium.T' - 273.15;
+    'pump.medium.p_bar' = 'pump.medium.p' / 1e5;
+    'SteamValve.V_flow' = 'SteamValve.m_flow' / 'Modelica.Fluid.Utilities.regStep'('SteamValve.m_flow', 'SteamValve.state_a.d', 'SteamValve.state_b.d', 0.01);
+    'SteamValve.port_a_T' = 'Modelica.Fluid.Utilities.regStep'('SteamValve.port_a.m_flow', 'SteamValve.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('SteamValve.port_a.p', 'SteamValve.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_a.p', 'SteamValve.port_a.h_outflow', 0, 0)), 0.01);
+    'SteamValve.port_b_T' = 'Modelica.Fluid.Utilities.regStep'('SteamValve.port_b.m_flow', 'SteamValve.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('SteamValve.port_b.p', 'SteamValve.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_b.p', 'SteamValve.port_b.h_outflow', 0, 0)), 0.01);
     'pump.m_flow_in' = 'pump.m_flow_in_internal';
     'furnace.port.T' = 'evaporator.heatPort.T';
     'controller.u' = 'feedback.y';

@@ -142,7 +142,7 @@ package 'ClockedWith_AD_DA_Effects'
     parameter Real 'PI.k' = 110.0 "Gain of continuous PI controller";
     parameter Real 'PI.T'(min = 2.2250738585072014e-308) = 0.1 "Time constant of continuous PI controller";
     Real 'PI.x'(start = 0.0) "Discrete PI state";
-    Real 'PI.Ts' = interval('PI.u') "Sample time (periodic or non-periodic)";
+    Real 'PI.Ts' "Sample time (periodic or non-periodic)";
     Real 'assignClock1.u' "Connector of clocked, Real input signal";
     Real 'assignClock1.y' "Connector of clocked, Real output signal";
     Clock 'assignClock1.clock';
@@ -151,6 +151,7 @@ package 'ClockedWith_AD_DA_Effects'
     parameter String 'periodicClock.solverMethod' = "ExplicitEuler" "Integration method used for discretized continuous-time partitions";
     Clock 'periodicClock.y';
   equation
+    'PI.Ts' = interval('PI.u');
     'sample2.sample1.y' = 'sample2.y1';
     'sample2.sample1.y' = 'sample2.uFeedthrough1';
     'sample2.sample1.y' = 'sample2.y2';

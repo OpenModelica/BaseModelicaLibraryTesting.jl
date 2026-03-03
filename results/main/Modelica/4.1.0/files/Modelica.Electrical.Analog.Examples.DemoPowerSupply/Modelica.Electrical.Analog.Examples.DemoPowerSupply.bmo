@@ -7,9 +7,9 @@ package 'DemoPowerSupply'
     parameter Real 'dcPowerSupply.Rcv'(min = 2.220446049250313e-16, unit = "Ohm", quantity = "Resistance") = 0.001 "Inner resistance in constant voltage region";
     parameter Real 'dcPowerSupply.Gcc'(min = 2.220446049250313e-16, unit = "S", quantity = "Conductance") = 0.001 "Inner conductance in constant current region";
     parameter Real 'dcPowerSupply.iBack'(unit = "A", quantity = "ElectricCurrent") = 0.001 "Allowed back current";
-    Real 'dcPowerSupply.v'(start = 60.0, unit = "V", quantity = "ElectricPotential") = 'dcPowerSupply.p.v' - 'dcPowerSupply.n.v' "Terminal voltage";
-    Real 'dcPowerSupply.i'(unit = "A", quantity = "ElectricCurrent") = 'dcPowerSupply.p.i' "Current (delivered < 0)";
-    Real 'dcPowerSupply.P'(unit = "W", quantity = "Power") = 'dcPowerSupply.v' * 'dcPowerSupply.i' "Power (delivered < 0)";
+    Real 'dcPowerSupply.v'(start = 60.0, unit = "V", quantity = "ElectricPotential") "Terminal voltage";
+    Real 'dcPowerSupply.i'(unit = "A", quantity = "ElectricCurrent") "Current (delivered < 0)";
+    Real 'dcPowerSupply.P'(unit = "W", quantity = "Power") "Power (delivered < 0)";
     Real 'dcPowerSupply.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'dcPowerSupply.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'dcPowerSupply.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -45,6 +45,9 @@ package 'DemoPowerSupply'
     parameter Real 'power10.base' = 10.0 "Base of power" annotation(Evaluate = true);
     parameter Boolean 'power10.useExp' = true "Use exp function in implementation" annotation(Evaluate = true);
   equation
+    'dcPowerSupply.v' = 'dcPowerSupply.p.v' - 'dcPowerSupply.n.v';
+    'dcPowerSupply.i' = 'dcPowerSupply.p.i';
+    'dcPowerSupply.P' = 'dcPowerSupply.v' * 'dcPowerSupply.i';
     'ground.p.v' = 'conductor.n.v';
     'ground.p.v' = 'dcPowerSupply.n.v';
     'dcPowerSupply.p.v' = 'conductor.p.v';

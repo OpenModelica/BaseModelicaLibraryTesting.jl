@@ -595,7 +595,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'core.MagRel'(fixed = true, start = 0.5, max = 1.0, min = -1.0, unit = "1", quantity = "Relative magnetization") "Relative magnetization at initialization (-1..1)";
     Real 'core.LossPowerStat'(unit = "W", quantity = "Power") "Ferromagnetic (static) hysteresis losses";
     Real 'core.LossPowerEddy'(unit = "W", quantity = "Power") "Eddy current losses (dynamic hysteresis losses)";
-    Real 'core.derHstat'(start = 0.0, unit = "A/(m.s)") = der('core.Hstat');
+    Real 'core.derHstat'(start = 0.0, unit = "A/(m.s)");
     parameter Real 'core.eddyCurrentFactor'(unit = "S.m") = 0.04583333333333333;
     Boolean 'core.asc'(fixed = false, start = true) "True when der(Hstat)>0";
     Real 'core.hystR'(unit = "T", quantity = "MagneticFluxDensity") "Rising branch of limiting hysteresis loop";
@@ -1048,6 +1048,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'core.B' = ('core.hystR' + 'core.hystF') / 2.0 + 'core.MagRel' * 'core.diffHyst' / 2.0;
     'core.derHstat' = 0.0;
   equation
+    'core.derHstat' = der('core.Hstat');
     'winding2.port_n.V_m' = 'mag_ground.port.V_m';
     'winding2.port_n.V_m' = 'winding1.port_n.V_m';
     'vSource.p.v' = 'resistor1.p.v';

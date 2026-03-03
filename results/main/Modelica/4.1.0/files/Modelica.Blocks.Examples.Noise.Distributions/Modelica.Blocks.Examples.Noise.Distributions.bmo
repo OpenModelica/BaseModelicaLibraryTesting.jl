@@ -267,9 +267,9 @@ package 'Distributions'
     parameter Integer 'globalSeed.fixedSeed' = 67867967 "Fixed global seed for random number generators (if useAutomaticSeed = false)";
     parameter Integer 'globalSeed.seed'(fixed = false) "Actually used global seed";
     parameter Integer 'globalSeed.id_impure'(fixed = false) "ID for impure random number generators Modelica.Math.Random.Utilities.impureXXX";
-    output Real 'uniformNoise_y' = 'uniformNoise.y';
-    output Real 'truncatedNormalNoise_y' = 'truncatedNormalNoise.y';
-    Integer 'n' = if time < 0.5 then 12 else 2;
+    output Real 'uniformNoise_y';
+    output Real 'truncatedNormalNoise_y';
+    Integer 'n';
     Real 'uniformNoise.y' "Connector of Real output signal";
     parameter Real 'uniformNoise.samplePeriod'(start = 0.01, unit = "s", quantity = "Time") = 0.02 "Period for sampling the raw random numbers";
     parameter Boolean 'uniformNoise.enableNoise' = true "= true: y = noise, otherwise y = y_off";
@@ -328,6 +328,10 @@ package 'Distributions'
     pre('truncatedNormalNoise.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('truncatedNormalNoise.localSeed', 'truncatedNormalNoise.actualGlobalSeed', 4))[4];
     'truncatedNormalNoise.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('truncatedNormalNoise.state'));
   equation
+    'uniformNoise_y' = 'uniformNoise.y';
+    'truncatedNormalNoise_y' = 'truncatedNormalNoise.y';
+    'n' = if time < 0.5 then 12 else 2;
+
     when sample(0.0, 0.02) then
       'uniformNoise.r' = 'uniformNoise.r_raw' * 4.0 - 1.0;
     end when;

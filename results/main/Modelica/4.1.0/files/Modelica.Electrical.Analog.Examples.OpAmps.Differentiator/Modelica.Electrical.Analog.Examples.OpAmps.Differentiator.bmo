@@ -63,12 +63,12 @@ package 'Differentiator'
     parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'der_.opAmp.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'NoHomotopy' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
     Real 'der_.opAmp.vps'(unit = "V", quantity = "ElectricPotential") "Positive supply voltage";
     Real 'der_.opAmp.vns'(unit = "V", quantity = "ElectricPotential") "Negative supply voltage";
-    Real 'der_.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") = 'der_.opAmp.in_p.v' - 'der_.opAmp.in_n.v' "Input voltage difference";
-    Real 'der_.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") = 'der_.opAmp.out.v' "Output voltage to ground";
-    Real 'der_.opAmp.p_in'(unit = "W", quantity = "Power") = 'der_.opAmp.in_p.v' * 'der_.opAmp.in_p.i' + 'der_.opAmp.in_n.v' * 'der_.opAmp.in_n.i' "Input power";
-    Real 'der_.opAmp.p_out'(unit = "W", quantity = "Power") = 'der_.opAmp.out.v' * 'der_.opAmp.out.i' "Output power";
-    Real 'der_.opAmp.p_s'(unit = "W", quantity = "Power") = -('der_.opAmp.p_in' + 'der_.opAmp.p_out') "Supply power";
-    Real 'der_.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") = 'der_.opAmp.p_s' / ('der_.opAmp.vps' - 'der_.opAmp.vns') "Supply current";
+    Real 'der_.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") "Input voltage difference";
+    Real 'der_.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") "Output voltage to ground";
+    Real 'der_.opAmp.p_in'(unit = "W", quantity = "Power") "Input power";
+    Real 'der_.opAmp.p_out'(unit = "W", quantity = "Power") "Output power";
+    Real 'der_.opAmp.p_s'(unit = "W", quantity = "Power") "Supply power";
+    Real 'der_.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") "Supply current";
     Real 'der_.opAmp.in_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'der_.opAmp.in_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'der_.opAmp.in_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -80,7 +80,7 @@ package 'Differentiator'
     parameter Real 'der_.f'(unit = "Hz", quantity = "Frequency") = 10.0 "Frequency";
     parameter Real 'der_.R'(unit = "Ohm", quantity = "Resistance") = 1000.0 "Resistance at output of OpAmp";
     parameter Real 'der_.C'(min = 0.0, unit = "F", quantity = "Capacitance") = 3.183098861837907e-5 "Calculated capacitance to reach desired amplification k";
-    Real 'der_.v'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential") = 'der_.c.v' "Capacitor voltage = state";
+    Real 'der_.v'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential") "Capacitor voltage = state";
     Real 'der_.c.v'(start = 0.0, unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
     Real 'der_.c.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'der_.c.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
@@ -103,6 +103,13 @@ package 'Differentiator'
     Real 'der_.r.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'der_.r.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
   equation
+    'der_.opAmp.v_in' = 'der_.opAmp.in_p.v' - 'der_.opAmp.in_n.v';
+    'der_.opAmp.v_out' = 'der_.opAmp.out.v';
+    'der_.opAmp.p_in' = 'der_.opAmp.in_p.v' * 'der_.opAmp.in_p.i' + 'der_.opAmp.in_n.v' * 'der_.opAmp.in_n.i';
+    'der_.opAmp.p_out' = 'der_.opAmp.out.v' * 'der_.opAmp.out.i';
+    'der_.opAmp.p_s' = -('der_.opAmp.p_in' + 'der_.opAmp.p_out');
+    'der_.opAmp.i_s' = 'der_.opAmp.p_s' / ('der_.opAmp.vps' - 'der_.opAmp.vns');
+    'der_.v' = 'der_.c.v';
     'der_.n1.v' = 'der_.opAmp.in_p.v';
     'der_.n1.v' = 'der_.n2.v';
     'der_.opAmp.in_p.i' - 'der_.n1.i' - 'der_.n2.i' = 0.0;

@@ -97,9 +97,9 @@ package 'PolyphaseTwoLevel_RL'
     Real 'inverter.dc_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'inverter.dc_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'inverter.dc_n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'inverter.vDC'(unit = "V", quantity = "ElectricPotential") = 'inverter.dc_p.v' - 'inverter.dc_n.v' "DC voltage";
-    Real 'inverter.iDC'(unit = "A", quantity = "ElectricCurrent") = 'inverter.dc_p.i' "DC current";
-    Real 'inverter.powerDC'(unit = "W", quantity = "Power") = 'inverter.vDC' * 'inverter.iDC' "DC power";
+    Real 'inverter.vDC'(unit = "V", quantity = "ElectricPotential") "DC voltage";
+    Real 'inverter.iDC'(unit = "A", quantity = "ElectricCurrent") "DC current";
+    Real 'inverter.powerDC'(unit = "W", quantity = "Power") "DC power";
     parameter Integer 'inverter.ac.m'(min = 1) = 6 "Number of phases" annotation(Evaluate = true);
     Real 'inverter.ac.pin[1].v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'inverter.ac.pin[1].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
@@ -131,7 +131,7 @@ package 'PolyphaseTwoLevel_RL'
     Real 'inverter.powerAC[4]'(unit = "W", quantity = "Power") "AC power";
     Real 'inverter.powerAC[5]'(unit = "W", quantity = "Power") "AC power";
     Real 'inverter.powerAC[6]'(unit = "W", quantity = "Power") "AC power";
-    Real 'inverter.powerTotalAC'(unit = "W", quantity = "Power") = 'inverter.powerAC[1]' + 'inverter.powerAC[2]' + 'inverter.powerAC[3]' + 'inverter.powerAC[4]' + 'inverter.powerAC[5]' + 'inverter.powerAC[6]' "AC total power";
+    Real 'inverter.powerTotalAC'(unit = "W", quantity = "Power") "AC total power";
     parameter Boolean 'inverter.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'inverter.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
     Real 'inverter.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
@@ -2292,6 +2292,10 @@ package 'PolyphaseTwoLevel_RL'
     'inductor.i[4]' = 0.0;
     'inductor.i[5]' = 0.0;
   equation
+    'inverter.vDC' = 'inverter.dc_p.v' - 'inverter.dc_n.v';
+    'inverter.iDC' = 'inverter.dc_p.i';
+    'inverter.powerDC' = 'inverter.vDC' * 'inverter.iDC';
+    'inverter.powerTotalAC' = 'inverter.powerAC[1]' + 'inverter.powerAC[2]' + 'inverter.powerAC[3]' + 'inverter.powerAC[4]' + 'inverter.powerAC[5]' + 'inverter.powerAC[6]';
     'inverter.enableLogic.internalEnable[1]' = 'inverter.enableLogic.booleanReplicator.y[1]';
     'inverter.enableLogic.internalEnable[2]' = 'inverter.enableLogic.booleanReplicator.y[2]';
     'inverter.enableLogic.internalEnable[3]' = 'inverter.enableLogic.booleanReplicator.y[3]';

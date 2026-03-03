@@ -1801,6 +1801,8 @@ package 'MomentumBalanceFittings'
 
   type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
 
+  type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
+
   record 'Modelica.Media.Common.IF97BaseTwoPhase'
     Integer 'phase'(start = 0);
     Integer 'region'(max = 5, min = 1);
@@ -1819,8 +1821,6 @@ package 'MomentumBalanceFittings'
     Real 'x';
     Real 'dpT';
   end 'Modelica.Media.Common.IF97BaseTwoPhase';
-
-  type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
 
   record 'Modelica.Fluid.Fittings.BaseClasses.QuadraticTurbulent.LossFactorData'
     Real 'diameter_a'(min = 0.0, unit = "m", quantity = "Length");
@@ -1953,8 +1953,8 @@ package 'MomentumBalanceFittings'
     Real 'leftBoundary1.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'leftBoundary1.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'leftBoundary1.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'leftBoundary1.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'leftBoundary1.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'leftBoundary1.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'leftBoundary1.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'leftBoundary1.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'leftBoundary1.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'leftBoundary1.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'leftBoundary1.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'leftBoundary1.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -1988,8 +1988,8 @@ package 'MomentumBalanceFittings'
     Real 'rightBoundary1.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'rightBoundary1.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'rightBoundary1.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'rightBoundary1.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'rightBoundary1.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'rightBoundary1.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'rightBoundary1.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'rightBoundary1.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'rightBoundary1.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'rightBoundary1.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'rightBoundary1.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'rightBoundary1.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -2024,9 +2024,9 @@ package 'MomentumBalanceFittings'
     parameter Boolean 'suddenExpansion1.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'suddenExpansion1.m_flow'(stateSelect = StateSelect.default, start = 60.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate in design flow direction";
     Real 'suddenExpansion1.dp'(start = 4.572952473401439, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'suddenExpansion1.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'suddenExpansion1.m_flow' / 'Modelica.Fluid.Utilities.regStep'('suddenExpansion1.m_flow', 'suddenExpansion1.state_a.d', 'suddenExpansion1.state_b.d', 0.01) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'suddenExpansion1.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('suddenExpansion1.port_a.m_flow', 'suddenExpansion1.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('suddenExpansion1.port_a.p', 'suddenExpansion1.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('suddenExpansion1.port_a.p', 'suddenExpansion1.port_a.h_outflow', 0, 0)), 0.01) "Temperature close to port_a, if show_T = true";
-    Real 'suddenExpansion1.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('suddenExpansion1.port_b.m_flow', 'suddenExpansion1.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('suddenExpansion1.port_b.p', 'suddenExpansion1.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('suddenExpansion1.port_b.p', 'suddenExpansion1.port_b.h_outflow', 0, 0)), 0.01) "Temperature close to port_b, if show_T = true";
+    Real 'suddenExpansion1.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'suddenExpansion1.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'suddenExpansion1.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Integer 'suddenExpansion1.state_a.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'suddenExpansion1.state_a.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'suddenExpansion1.state_a.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2037,7 +2037,7 @@ package 'MomentumBalanceFittings'
     Real 'suddenExpansion1.state_b.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
     Real 'suddenExpansion1.state_b.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
     Real 'suddenExpansion1.state_b.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
-    Real 'suddenExpansion1.pathLength'(unit = "m", quantity = "Length") = 0.0 "Length flow path";
+    Real 'suddenExpansion1.pathLength'(unit = "m", quantity = "Length") "Length flow path";
     parameter 'Modelica.Fluid.Types.Dynamics' 'suddenExpansion1.momentumDynamics' = 'Modelica.Fluid.Types.Dynamics'.'SteadyState' "Formulation of momentum balance" annotation(Evaluate = true);
     Real 'suddenExpansion1.I'(unit = "kg.m/s", quantity = "Momentum") "Momenta of flow segments";
     Real 'suddenExpansion1.Ib_flow'(unit = "N", quantity = "Force") "Flow of momentum across boundaries";
@@ -2065,13 +2065,13 @@ package 'MomentumBalanceFittings'
     parameter Real 'suddenExpansion1.dp_small'(nominal = 1e6, start = 5e6, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0 "Regularization of zero flow if |dp| < dp_small";
     parameter Boolean 'suddenExpansion1.show_Re' = false "= true, if Reynolds number is included for plotting" annotation(Evaluate = true);
     parameter Boolean 'suddenExpansion1.show_totalPressures' = true "= true, if total pressures are included for plotting" annotation(Evaluate = true);
-    Real 'suddenExpansion1.p_total_a'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'suddenExpansion1.port_a.p' + 0.5 * 'suddenExpansion1.m_flow' ^ 2.0 / ((0.7853981633974483 * 'suddenExpansion1.data.diameter_a' ^ 2.0) ^ 2.0 * noEvent(if 'suddenExpansion1.port_a.m_flow' > 0.0 then 'suddenExpansion1.state_a.d' else 'suddenExpansion1.state_b.d')) "Total pressure at port_a";
-    Real 'suddenExpansion1.p_total_b'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'suddenExpansion1.port_b.p' + 0.5 * 'suddenExpansion1.m_flow' ^ 2.0 / ((0.7853981633974483 * 'suddenExpansion1.data.diameter_b' ^ 2.0) ^ 2.0 * noEvent(if 'suddenExpansion1.port_b.m_flow' > 0.0 then 'suddenExpansion1.state_b.d' else 'suddenExpansion1.state_a.d')) "Total pressure at port_a";
+    Real 'suddenExpansion1.p_total_a'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Total pressure at port_a";
+    Real 'suddenExpansion1.p_total_b'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Total pressure at port_a";
     parameter Boolean 'suddenExpansion1.show_portVelocities' = true "= true, if port velocities are included for plotting" annotation(Evaluate = true);
-    Real 'suddenExpansion1.v_a'(unit = "m/s", quantity = "Velocity") = 'suddenExpansion1.port_a.m_flow' / (0.7853981633974483 * 'suddenExpansion1.data.diameter_a' ^ 2.0 * noEvent(if 'suddenExpansion1.port_a.m_flow' > 0.0 then 'suddenExpansion1.state_a.d' else 'suddenExpansion1.state_b.d')) "Fluid velocity into port_a";
-    Real 'suddenExpansion1.v_b'(unit = "m/s", quantity = "Velocity") = 'suddenExpansion1.port_b.m_flow' / (0.7853981633974483 * 'suddenExpansion1.data.diameter_b' ^ 2.0 * noEvent(if 'suddenExpansion1.port_b.m_flow' > 0.0 then 'suddenExpansion1.state_b.d' else 'suddenExpansion1.state_a.d')) "Fluid velocity into port_b";
+    Real 'suddenExpansion1.v_a'(unit = "m/s", quantity = "Velocity") "Fluid velocity into port_a";
+    Real 'suddenExpansion1.v_b'(unit = "m/s", quantity = "Velocity") "Fluid velocity into port_b";
     Real 'suddenExpansion1.dp_fg'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss due to friction and gravity";
-    Real 'suddenExpansion1.A_mean'(unit = "m2", quantity = "Area") = 0.7853981633974483 * ('suddenExpansion1.data.diameter_a' ^ 2.0 + 'suddenExpansion1.data.diameter_b' ^ 2.0) / 2.0 "Mean cross flow area";
+    Real 'suddenExpansion1.A_mean'(unit = "m2", quantity = "Area") "Mean cross flow area";
     Integer 'suddenExpansion1.state_b_des.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'suddenExpansion1.state_b_des.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'suddenExpansion1.state_b_des.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2100,8 +2100,8 @@ package 'MomentumBalanceFittings'
     Real 'leftBoundary2.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'leftBoundary2.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'leftBoundary2.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'leftBoundary2.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'leftBoundary2.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'leftBoundary2.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'leftBoundary2.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'leftBoundary2.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'leftBoundary2.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'leftBoundary2.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'leftBoundary2.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'leftBoundary2.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -2135,8 +2135,8 @@ package 'MomentumBalanceFittings'
     Real 'rightBoundary2.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'rightBoundary2.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'rightBoundary2.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'rightBoundary2.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'rightBoundary2.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'rightBoundary2.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'rightBoundary2.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'rightBoundary2.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'rightBoundary2.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'rightBoundary2.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'rightBoundary2.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'rightBoundary2.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -2171,9 +2171,9 @@ package 'MomentumBalanceFittings'
     parameter Boolean 'suddenExpansion2.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'suddenExpansion2.m_flow'(stateSelect = StateSelect.default, start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate in design flow direction";
     Real 'suddenExpansion2.dp'(start = 4.572952473401439, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'suddenExpansion2.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'suddenExpansion2.m_flow' / 'Modelica.Fluid.Utilities.regStep'('suddenExpansion2.m_flow', 'suddenExpansion2.state_a.d', 'suddenExpansion2.state_b.d', 0.01) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'suddenExpansion2.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('suddenExpansion2.port_a.m_flow', 'suddenExpansion2.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('suddenExpansion2.port_a.p', 'suddenExpansion2.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('suddenExpansion2.port_a.p', 'suddenExpansion2.port_a.h_outflow', 0, 0)), 0.01) "Temperature close to port_a, if show_T = true";
-    Real 'suddenExpansion2.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('suddenExpansion2.port_b.m_flow', 'suddenExpansion2.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('suddenExpansion2.port_b.p', 'suddenExpansion2.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('suddenExpansion2.port_b.p', 'suddenExpansion2.port_b.h_outflow', 0, 0)), 0.01) "Temperature close to port_b, if show_T = true";
+    Real 'suddenExpansion2.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'suddenExpansion2.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'suddenExpansion2.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Integer 'suddenExpansion2.state_a.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'suddenExpansion2.state_a.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'suddenExpansion2.state_a.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2184,7 +2184,7 @@ package 'MomentumBalanceFittings'
     Real 'suddenExpansion2.state_b.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
     Real 'suddenExpansion2.state_b.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
     Real 'suddenExpansion2.state_b.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
-    Real 'suddenExpansion2.pathLength'(unit = "m", quantity = "Length") = 0.0 "Length flow path";
+    Real 'suddenExpansion2.pathLength'(unit = "m", quantity = "Length") "Length flow path";
     parameter 'Modelica.Fluid.Types.Dynamics' 'suddenExpansion2.momentumDynamics' = 'Modelica.Fluid.Types.Dynamics'.'SteadyState' "Formulation of momentum balance" annotation(Evaluate = true);
     Real 'suddenExpansion2.I'(unit = "kg.m/s", quantity = "Momentum") "Momenta of flow segments";
     Real 'suddenExpansion2.Ib_flow'(unit = "N", quantity = "Force") "Flow of momentum across boundaries";
@@ -2212,13 +2212,13 @@ package 'MomentumBalanceFittings'
     parameter Real 'suddenExpansion2.dp_small'(nominal = 1e6, start = 5e6, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0 "Regularization of zero flow if |dp| < dp_small";
     parameter Boolean 'suddenExpansion2.show_Re' = false "= true, if Reynolds number is included for plotting" annotation(Evaluate = true);
     parameter Boolean 'suddenExpansion2.show_totalPressures' = true "= true, if total pressures are included for plotting" annotation(Evaluate = true);
-    Real 'suddenExpansion2.p_total_a'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'suddenExpansion2.port_a.p' + 0.5 * 'suddenExpansion2.m_flow' ^ 2.0 / ((0.7853981633974483 * 'suddenExpansion2.data.diameter_a' ^ 2.0) ^ 2.0 * noEvent(if 'suddenExpansion2.port_a.m_flow' > 0.0 then 'suddenExpansion2.state_a.d' else 'suddenExpansion2.state_b.d')) "Total pressure at port_a";
-    Real 'suddenExpansion2.p_total_b'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'suddenExpansion2.port_b.p' + 0.5 * 'suddenExpansion2.m_flow' ^ 2.0 / ((0.7853981633974483 * 'suddenExpansion2.data.diameter_b' ^ 2.0) ^ 2.0 * noEvent(if 'suddenExpansion2.port_b.m_flow' > 0.0 then 'suddenExpansion2.state_b.d' else 'suddenExpansion2.state_a.d')) "Total pressure at port_a";
+    Real 'suddenExpansion2.p_total_a'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Total pressure at port_a";
+    Real 'suddenExpansion2.p_total_b'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Total pressure at port_a";
     parameter Boolean 'suddenExpansion2.show_portVelocities' = true "= true, if port velocities are included for plotting" annotation(Evaluate = true);
-    Real 'suddenExpansion2.v_a'(unit = "m/s", quantity = "Velocity") = 'suddenExpansion2.port_a.m_flow' / (0.7853981633974483 * 'suddenExpansion2.data.diameter_a' ^ 2.0 * noEvent(if 'suddenExpansion2.port_a.m_flow' > 0.0 then 'suddenExpansion2.state_a.d' else 'suddenExpansion2.state_b.d')) "Fluid velocity into port_a";
-    Real 'suddenExpansion2.v_b'(unit = "m/s", quantity = "Velocity") = 'suddenExpansion2.port_b.m_flow' / (0.7853981633974483 * 'suddenExpansion2.data.diameter_b' ^ 2.0 * noEvent(if 'suddenExpansion2.port_b.m_flow' > 0.0 then 'suddenExpansion2.state_b.d' else 'suddenExpansion2.state_a.d')) "Fluid velocity into port_b";
+    Real 'suddenExpansion2.v_a'(unit = "m/s", quantity = "Velocity") "Fluid velocity into port_a";
+    Real 'suddenExpansion2.v_b'(unit = "m/s", quantity = "Velocity") "Fluid velocity into port_b";
     Real 'suddenExpansion2.dp_fg'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss due to friction and gravity";
-    Real 'suddenExpansion2.A_mean'(unit = "m2", quantity = "Area") = 0.7853981633974483 * ('suddenExpansion2.data.diameter_a' ^ 2.0 + 'suddenExpansion2.data.diameter_b' ^ 2.0) / 2.0 "Mean cross flow area";
+    Real 'suddenExpansion2.A_mean'(unit = "m2", quantity = "Area") "Mean cross flow area";
     Integer 'suddenExpansion2.state_b_des.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'suddenExpansion2.state_b_des.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'suddenExpansion2.state_b_des.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2248,9 +2248,9 @@ package 'MomentumBalanceFittings'
     parameter Boolean 'leftAdaptor.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'leftAdaptor.m_flow'(stateSelect = StateSelect.default, start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate in design flow direction";
     Real 'leftAdaptor.dp'(start = 8.129693286047003, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'leftAdaptor.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'leftAdaptor.m_flow' / 'Modelica.Fluid.Utilities.regStep'('leftAdaptor.m_flow', 'leftAdaptor.state_a.d', 'leftAdaptor.state_b.d', 0.01) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'leftAdaptor.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('leftAdaptor.port_a.m_flow', 'leftAdaptor.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('leftAdaptor.port_a.p', 'leftAdaptor.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('leftAdaptor.port_a.p', 'leftAdaptor.port_a.h_outflow', 0, 0)), 0.01) "Temperature close to port_a, if show_T = true";
-    Real 'leftAdaptor.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('leftAdaptor.port_b.m_flow', 'leftAdaptor.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('leftAdaptor.port_b.p', 'leftAdaptor.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('leftAdaptor.port_b.p', 'leftAdaptor.port_b.h_outflow', 0, 0)), 0.01) "Temperature close to port_b, if show_T = true";
+    Real 'leftAdaptor.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'leftAdaptor.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'leftAdaptor.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Integer 'leftAdaptor.state_a.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'leftAdaptor.state_a.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'leftAdaptor.state_a.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2261,7 +2261,7 @@ package 'MomentumBalanceFittings'
     Real 'leftAdaptor.state_b.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
     Real 'leftAdaptor.state_b.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
     Real 'leftAdaptor.state_b.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
-    Real 'leftAdaptor.pathLength'(unit = "m", quantity = "Length") = 0.0 "Length flow path";
+    Real 'leftAdaptor.pathLength'(unit = "m", quantity = "Length") "Length flow path";
     parameter 'Modelica.Fluid.Types.Dynamics' 'leftAdaptor.momentumDynamics' = 'Modelica.Fluid.Types.Dynamics'.'SteadyState' "Formulation of momentum balance" annotation(Evaluate = true);
     Real 'leftAdaptor.I'(unit = "kg.m/s", quantity = "Momentum") "Momenta of flow segments";
     Real 'leftAdaptor.Ib_flow'(unit = "N", quantity = "Force") "Flow of momentum across boundaries";
@@ -2291,7 +2291,7 @@ package 'MomentumBalanceFittings'
     parameter Boolean 'leftAdaptor.show_totalPressures' = false "= true, if total pressures are included for plotting" annotation(Evaluate = true);
     parameter Boolean 'leftAdaptor.show_portVelocities' = false "= true, if port velocities are included for plotting" annotation(Evaluate = true);
     Real 'leftAdaptor.dp_fg'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss due to friction and gravity";
-    Real 'leftAdaptor.A_mean'(unit = "m2", quantity = "Area") = 0.7853981633974483 * ('leftAdaptor.data.diameter_a' ^ 2.0 + 'leftAdaptor.data.diameter_b' ^ 2.0) / 2.0 "Mean cross flow area";
+    Real 'leftAdaptor.A_mean'(unit = "m2", quantity = "Area") "Mean cross flow area";
     Integer 'leftAdaptor.state_b_des.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'leftAdaptor.state_b_des.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'leftAdaptor.state_b_des.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2321,9 +2321,9 @@ package 'MomentumBalanceFittings'
     parameter Boolean 'rightAdaptor.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'rightAdaptor.m_flow'(stateSelect = StateSelect.default, start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate in design flow direction";
     Real 'rightAdaptor.dp'(start = 0.5081058303779377, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'rightAdaptor.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'rightAdaptor.m_flow' / 'Modelica.Fluid.Utilities.regStep'('rightAdaptor.m_flow', 'rightAdaptor.state_a.d', 'rightAdaptor.state_b.d', 0.01) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'rightAdaptor.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('rightAdaptor.port_a.m_flow', 'rightAdaptor.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('rightAdaptor.port_a.p', 'rightAdaptor.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('rightAdaptor.port_a.p', 'rightAdaptor.port_a.h_outflow', 0, 0)), 0.01) "Temperature close to port_a, if show_T = true";
-    Real 'rightAdaptor.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('rightAdaptor.port_b.m_flow', 'rightAdaptor.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('rightAdaptor.port_b.p', 'rightAdaptor.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('rightAdaptor.port_b.p', 'rightAdaptor.port_b.h_outflow', 0, 0)), 0.01) "Temperature close to port_b, if show_T = true";
+    Real 'rightAdaptor.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'rightAdaptor.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'rightAdaptor.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Integer 'rightAdaptor.state_a.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'rightAdaptor.state_a.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'rightAdaptor.state_a.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2334,7 +2334,7 @@ package 'MomentumBalanceFittings'
     Real 'rightAdaptor.state_b.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
     Real 'rightAdaptor.state_b.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
     Real 'rightAdaptor.state_b.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
-    Real 'rightAdaptor.pathLength'(unit = "m", quantity = "Length") = 0.0 "Length flow path";
+    Real 'rightAdaptor.pathLength'(unit = "m", quantity = "Length") "Length flow path";
     parameter 'Modelica.Fluid.Types.Dynamics' 'rightAdaptor.momentumDynamics' = 'Modelica.Fluid.Types.Dynamics'.'SteadyState' "Formulation of momentum balance" annotation(Evaluate = true);
     Real 'rightAdaptor.I'(unit = "kg.m/s", quantity = "Momentum") "Momenta of flow segments";
     Real 'rightAdaptor.Ib_flow'(unit = "N", quantity = "Force") "Flow of momentum across boundaries";
@@ -2364,7 +2364,7 @@ package 'MomentumBalanceFittings'
     parameter Boolean 'rightAdaptor.show_totalPressures' = false "= true, if total pressures are included for plotting" annotation(Evaluate = true);
     parameter Boolean 'rightAdaptor.show_portVelocities' = false "= true, if port velocities are included for plotting" annotation(Evaluate = true);
     Real 'rightAdaptor.dp_fg'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss due to friction and gravity";
-    Real 'rightAdaptor.A_mean'(unit = "m2", quantity = "Area") = 0.7853981633974483 * ('rightAdaptor.data.diameter_a' ^ 2.0 + 'rightAdaptor.data.diameter_b' ^ 2.0) / 2.0 "Mean cross flow area";
+    Real 'rightAdaptor.A_mean'(unit = "m2", quantity = "Area") "Mean cross flow area";
     Integer 'rightAdaptor.state_b_des.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
     Real 'rightAdaptor.state_b_des.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
     Real 'rightAdaptor.state_b_des.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
@@ -2395,6 +2395,42 @@ package 'MomentumBalanceFittings'
     parameter Real 'system.dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0 "Default small pressure drop for regularization of laminar and zero flow";
     parameter Real 'system.m_flow_small'(min = 0.0, unit = "kg/s", quantity = "MassFlowRate") = 0.01 "Default small mass flow rate for regularization of laminar and zero flow";
   equation
+    'leftBoundary1.medium.T_degC' = 'leftBoundary1.medium.T' - 273.15;
+    'leftBoundary1.medium.p_bar' = 'leftBoundary1.medium.p' / 1e5;
+    'rightBoundary1.medium.T_degC' = 'rightBoundary1.medium.T' - 273.15;
+    'rightBoundary1.medium.p_bar' = 'rightBoundary1.medium.p' / 1e5;
+    'suddenExpansion1.V_flow' = 'suddenExpansion1.m_flow' / 'Modelica.Fluid.Utilities.regStep'('suddenExpansion1.m_flow', 'suddenExpansion1.state_a.d', 'suddenExpansion1.state_b.d', 0.01);
+    'suddenExpansion1.port_a_T' = 'Modelica.Fluid.Utilities.regStep'('suddenExpansion1.port_a.m_flow', 'suddenExpansion1.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('suddenExpansion1.port_a.p', 'suddenExpansion1.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('suddenExpansion1.port_a.p', 'suddenExpansion1.port_a.h_outflow', 0, 0)), 0.01);
+    'suddenExpansion1.port_b_T' = 'Modelica.Fluid.Utilities.regStep'('suddenExpansion1.port_b.m_flow', 'suddenExpansion1.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('suddenExpansion1.port_b.p', 'suddenExpansion1.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('suddenExpansion1.port_b.p', 'suddenExpansion1.port_b.h_outflow', 0, 0)), 0.01);
+    'suddenExpansion1.pathLength' = 0.0;
+    'suddenExpansion1.p_total_a' = 'suddenExpansion1.port_a.p' + 0.5 * 'suddenExpansion1.m_flow' ^ 2.0 / ((0.7853981633974483 * 'suddenExpansion1.data.diameter_a' ^ 2.0) ^ 2.0 * noEvent(if 'suddenExpansion1.port_a.m_flow' > 0.0 then 'suddenExpansion1.state_a.d' else 'suddenExpansion1.state_b.d'));
+    'suddenExpansion1.p_total_b' = 'suddenExpansion1.port_b.p' + 0.5 * 'suddenExpansion1.m_flow' ^ 2.0 / ((0.7853981633974483 * 'suddenExpansion1.data.diameter_b' ^ 2.0) ^ 2.0 * noEvent(if 'suddenExpansion1.port_b.m_flow' > 0.0 then 'suddenExpansion1.state_b.d' else 'suddenExpansion1.state_a.d'));
+    'suddenExpansion1.v_a' = 'suddenExpansion1.port_a.m_flow' / (0.7853981633974483 * 'suddenExpansion1.data.diameter_a' ^ 2.0 * noEvent(if 'suddenExpansion1.port_a.m_flow' > 0.0 then 'suddenExpansion1.state_a.d' else 'suddenExpansion1.state_b.d'));
+    'suddenExpansion1.v_b' = 'suddenExpansion1.port_b.m_flow' / (0.7853981633974483 * 'suddenExpansion1.data.diameter_b' ^ 2.0 * noEvent(if 'suddenExpansion1.port_b.m_flow' > 0.0 then 'suddenExpansion1.state_b.d' else 'suddenExpansion1.state_a.d'));
+    'suddenExpansion1.A_mean' = 0.7853981633974483 * ('suddenExpansion1.data.diameter_a' ^ 2.0 + 'suddenExpansion1.data.diameter_b' ^ 2.0) / 2.0;
+    'leftBoundary2.medium.T_degC' = 'leftBoundary2.medium.T' - 273.15;
+    'leftBoundary2.medium.p_bar' = 'leftBoundary2.medium.p' / 1e5;
+    'rightBoundary2.medium.T_degC' = 'rightBoundary2.medium.T' - 273.15;
+    'rightBoundary2.medium.p_bar' = 'rightBoundary2.medium.p' / 1e5;
+    'suddenExpansion2.V_flow' = 'suddenExpansion2.m_flow' / 'Modelica.Fluid.Utilities.regStep'('suddenExpansion2.m_flow', 'suddenExpansion2.state_a.d', 'suddenExpansion2.state_b.d', 0.01);
+    'suddenExpansion2.port_a_T' = 'Modelica.Fluid.Utilities.regStep'('suddenExpansion2.port_a.m_flow', 'suddenExpansion2.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('suddenExpansion2.port_a.p', 'suddenExpansion2.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('suddenExpansion2.port_a.p', 'suddenExpansion2.port_a.h_outflow', 0, 0)), 0.01);
+    'suddenExpansion2.port_b_T' = 'Modelica.Fluid.Utilities.regStep'('suddenExpansion2.port_b.m_flow', 'suddenExpansion2.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('suddenExpansion2.port_b.p', 'suddenExpansion2.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('suddenExpansion2.port_b.p', 'suddenExpansion2.port_b.h_outflow', 0, 0)), 0.01);
+    'suddenExpansion2.pathLength' = 0.0;
+    'suddenExpansion2.p_total_a' = 'suddenExpansion2.port_a.p' + 0.5 * 'suddenExpansion2.m_flow' ^ 2.0 / ((0.7853981633974483 * 'suddenExpansion2.data.diameter_a' ^ 2.0) ^ 2.0 * noEvent(if 'suddenExpansion2.port_a.m_flow' > 0.0 then 'suddenExpansion2.state_a.d' else 'suddenExpansion2.state_b.d'));
+    'suddenExpansion2.p_total_b' = 'suddenExpansion2.port_b.p' + 0.5 * 'suddenExpansion2.m_flow' ^ 2.0 / ((0.7853981633974483 * 'suddenExpansion2.data.diameter_b' ^ 2.0) ^ 2.0 * noEvent(if 'suddenExpansion2.port_b.m_flow' > 0.0 then 'suddenExpansion2.state_b.d' else 'suddenExpansion2.state_a.d'));
+    'suddenExpansion2.v_a' = 'suddenExpansion2.port_a.m_flow' / (0.7853981633974483 * 'suddenExpansion2.data.diameter_a' ^ 2.0 * noEvent(if 'suddenExpansion2.port_a.m_flow' > 0.0 then 'suddenExpansion2.state_a.d' else 'suddenExpansion2.state_b.d'));
+    'suddenExpansion2.v_b' = 'suddenExpansion2.port_b.m_flow' / (0.7853981633974483 * 'suddenExpansion2.data.diameter_b' ^ 2.0 * noEvent(if 'suddenExpansion2.port_b.m_flow' > 0.0 then 'suddenExpansion2.state_b.d' else 'suddenExpansion2.state_a.d'));
+    'suddenExpansion2.A_mean' = 0.7853981633974483 * ('suddenExpansion2.data.diameter_a' ^ 2.0 + 'suddenExpansion2.data.diameter_b' ^ 2.0) / 2.0;
+    'leftAdaptor.V_flow' = 'leftAdaptor.m_flow' / 'Modelica.Fluid.Utilities.regStep'('leftAdaptor.m_flow', 'leftAdaptor.state_a.d', 'leftAdaptor.state_b.d', 0.01);
+    'leftAdaptor.port_a_T' = 'Modelica.Fluid.Utilities.regStep'('leftAdaptor.port_a.m_flow', 'leftAdaptor.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('leftAdaptor.port_a.p', 'leftAdaptor.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('leftAdaptor.port_a.p', 'leftAdaptor.port_a.h_outflow', 0, 0)), 0.01);
+    'leftAdaptor.port_b_T' = 'Modelica.Fluid.Utilities.regStep'('leftAdaptor.port_b.m_flow', 'leftAdaptor.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('leftAdaptor.port_b.p', 'leftAdaptor.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('leftAdaptor.port_b.p', 'leftAdaptor.port_b.h_outflow', 0, 0)), 0.01);
+    'leftAdaptor.pathLength' = 0.0;
+    'leftAdaptor.A_mean' = 0.7853981633974483 * ('leftAdaptor.data.diameter_a' ^ 2.0 + 'leftAdaptor.data.diameter_b' ^ 2.0) / 2.0;
+    'rightAdaptor.V_flow' = 'rightAdaptor.m_flow' / 'Modelica.Fluid.Utilities.regStep'('rightAdaptor.m_flow', 'rightAdaptor.state_a.d', 'rightAdaptor.state_b.d', 0.01);
+    'rightAdaptor.port_a_T' = 'Modelica.Fluid.Utilities.regStep'('rightAdaptor.port_a.m_flow', 'rightAdaptor.state_a.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('rightAdaptor.port_a.p', 'rightAdaptor.port_a.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('rightAdaptor.port_a.p', 'rightAdaptor.port_a.h_outflow', 0, 0)), 0.01);
+    'rightAdaptor.port_b_T' = 'Modelica.Fluid.Utilities.regStep'('rightAdaptor.port_b.m_flow', 'rightAdaptor.state_b.T', 'Modelica.Media.Water.IF97_Utilities.T_props_ph'('rightAdaptor.port_b.p', 'rightAdaptor.port_b.h_outflow', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('rightAdaptor.port_b.p', 'rightAdaptor.port_b.h_outflow', 0, 0)), 0.01);
+    'rightAdaptor.pathLength' = 0.0;
+    'rightAdaptor.A_mean' = 0.7853981633974483 * ('rightAdaptor.data.diameter_a' ^ 2.0 + 'rightAdaptor.data.diameter_b' ^ 2.0) / 2.0;
     'leftBoundary1.ports[1].p' = 'suddenExpansion1.port_a.p';
     'suddenExpansion1.port_b.p' = 'rightBoundary1.ports[1].p';
     'leftAdaptor.port_b.p' = 'leftBoundary2.ports[1].p';

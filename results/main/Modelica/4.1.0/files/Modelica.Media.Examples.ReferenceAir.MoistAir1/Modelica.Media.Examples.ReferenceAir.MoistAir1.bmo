@@ -2636,8 +2636,8 @@ package 'MoistAir1'
     Real 'volume.medium.state.X[2]'(nominal = 0.1, start = 0.99, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fractions (= (component mass)/total mass  m_i/m)";
     parameter Boolean 'volume.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'volume.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'volume.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'volume.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'volume.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'volume.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'volume.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'volume.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'volume.medium.x_water' "Mass of total water/mass of dry air";
     Real 'volume.medium.phi' "Relative humidity";
     Real 'volume.medium.X_liquid'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fraction of liquid or solid water";
@@ -2671,8 +2671,8 @@ package 'MoistAir1'
     Real 'fixedMassFlowRate.medium.state.X[2]'(nominal = 0.1, start = 0.99, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fractions (= (component mass)/total mass  m_i/m)";
     parameter Boolean 'fixedMassFlowRate.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'fixedMassFlowRate.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'fixedMassFlowRate.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'fixedMassFlowRate.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'fixedMassFlowRate.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'fixedMassFlowRate.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'fixedMassFlowRate.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'fixedMassFlowRate.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'fixedMassFlowRate.medium.x_water' "Mass of total water/mass of dry air";
     Real 'fixedMassFlowRate.medium.phi' "Relative humidity";
     Real 'fixedMassFlowRate.medium.X_liquid'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fraction of liquid or solid water";
@@ -2711,8 +2711,8 @@ package 'MoistAir1'
     Real 'ambient.medium.state.X[2]'(nominal = 0.1, start = 0.99, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fractions (= (component mass)/total mass  m_i/m)";
     parameter Boolean 'ambient.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'ambient.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'ambient.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'ambient.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'ambient.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'ambient.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'ambient.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'ambient.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'ambient.medium.x_water' "Mass of total water/mass of dry air";
     Real 'ambient.medium.phi' "Relative humidity";
     Real 'ambient.medium.X_liquid'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fraction of liquid or solid water";
@@ -2748,6 +2748,12 @@ package 'MoistAir1'
     'volume.medium.T' = 293.15;
     'volume.medium.Xi[1]' = 0.01;
   equation
+    'volume.medium.T_degC' = 'volume.medium.T' - 273.15;
+    'volume.medium.p_bar' = 'volume.medium.p' / 1e5;
+    'fixedMassFlowRate.medium.T_degC' = 'fixedMassFlowRate.medium.T' - 273.15;
+    'fixedMassFlowRate.medium.p_bar' = 'fixedMassFlowRate.medium.p' / 1e5;
+    'ambient.medium.T_degC' = 'ambient.medium.T' - 273.15;
+    'ambient.medium.p_bar' = 'ambient.medium.p' / 1e5;
     'volume.port.Xi[1]' = 'shortPipe.port_a.Xi[1]';
     'volume.port.Xi[1]' = 'fixedMassFlowRate.port.Xi[1]';
     'volume.port.h' = 'shortPipe.port_a.h';

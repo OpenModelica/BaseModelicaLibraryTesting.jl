@@ -79,7 +79,7 @@ package 'ImpureGenerator'
   end 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState';
 
   model 'ImpureGenerator' "Demonstrates the usage of the impure random number generator"
-    output Real 'impureRandom_y' = 'impureRandom.y';
+    output Real 'impureRandom_y';
     parameter Boolean 'globalSeed.enableNoise' = true "= true, if noise blocks generate noise as output; = false, if they generate a constant output";
     parameter Boolean 'globalSeed.useAutomaticSeed' = false "= true, choose a seed by system time and process id; = false, use fixedSeed";
     parameter Integer 'globalSeed.fixedSeed' = 67867967 "Fixed global seed for random number generators (if useAutomaticSeed = false)";
@@ -91,6 +91,8 @@ package 'ImpureGenerator'
     'globalSeed.seed' = 67867967;
     'globalSeed.id_impure' = 'Modelica.Math.Random.Utilities.initializeImpureRandom'('globalSeed.seed');
   equation
+    'impureRandom_y' = 'impureRandom.y';
+
     when {initial(), sample(0.01, 0.01)} then
       'impureRandom.y' = 'Modelica.Math.Random.Utilities.impureRandom'('globalSeed.id_impure');
     end when;

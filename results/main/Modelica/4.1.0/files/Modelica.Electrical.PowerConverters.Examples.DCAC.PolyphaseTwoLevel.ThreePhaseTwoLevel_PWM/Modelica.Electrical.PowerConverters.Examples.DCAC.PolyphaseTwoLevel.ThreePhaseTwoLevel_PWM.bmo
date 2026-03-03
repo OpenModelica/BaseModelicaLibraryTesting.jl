@@ -176,9 +176,9 @@ package 'ThreePhaseTwoLevel_PWM'
     Real 'multiPhase2Level.dc_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'multiPhase2Level.dc_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'multiPhase2Level.dc_n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'multiPhase2Level.vDC'(unit = "V", quantity = "ElectricPotential") = 'multiPhase2Level.dc_p.v' - 'multiPhase2Level.dc_n.v' "DC voltage";
-    Real 'multiPhase2Level.iDC'(unit = "A", quantity = "ElectricCurrent") = 'multiPhase2Level.dc_p.i' "DC current";
-    Real 'multiPhase2Level.powerDC'(unit = "W", quantity = "Power") = 'multiPhase2Level.vDC' * 'multiPhase2Level.iDC' "DC power";
+    Real 'multiPhase2Level.vDC'(unit = "V", quantity = "ElectricPotential") "DC voltage";
+    Real 'multiPhase2Level.iDC'(unit = "A", quantity = "ElectricCurrent") "DC current";
+    Real 'multiPhase2Level.powerDC'(unit = "W", quantity = "Power") "DC power";
     parameter Integer 'multiPhase2Level.ac.m'(min = 1) = 3 "Number of phases" annotation(Evaluate = true);
     Real 'multiPhase2Level.ac.pin[1].v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'multiPhase2Level.ac.pin[1].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
@@ -195,7 +195,7 @@ package 'ThreePhaseTwoLevel_PWM'
     Real 'multiPhase2Level.powerAC[1]'(unit = "W", quantity = "Power") "AC power";
     Real 'multiPhase2Level.powerAC[2]'(unit = "W", quantity = "Power") "AC power";
     Real 'multiPhase2Level.powerAC[3]'(unit = "W", quantity = "Power") "AC power";
-    Real 'multiPhase2Level.powerTotalAC'(unit = "W", quantity = "Power") = 'multiPhase2Level.powerAC[1]' + 'multiPhase2Level.powerAC[2]' + 'multiPhase2Level.powerAC[3]' "AC total power";
+    Real 'multiPhase2Level.powerTotalAC'(unit = "W", quantity = "Power") "AC total power";
     parameter Boolean 'multiPhase2Level.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'multiPhase2Level.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
     Real 'multiPhase2Level.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
@@ -799,6 +799,10 @@ package 'ThreePhaseTwoLevel_PWM'
     'filter[2].y' = 0.0;
     der('filter[2].x[1]') = 0.0;
   equation
+    'multiPhase2Level.vDC' = 'multiPhase2Level.dc_p.v' - 'multiPhase2Level.dc_n.v';
+    'multiPhase2Level.iDC' = 'multiPhase2Level.dc_p.i';
+    'multiPhase2Level.powerDC' = 'multiPhase2Level.vDC' * 'multiPhase2Level.iDC';
+    'multiPhase2Level.powerTotalAC' = 'multiPhase2Level.powerAC[1]' + 'multiPhase2Level.powerAC[2]' + 'multiPhase2Level.powerAC[3]';
     'pwm.u[1]' = 'pwm.svPWM.u[1]';
     'pwm.u[2]' = 'pwm.svPWM.u[2]';
     'pwm.svPWM.fire_p[1]' = 'pwm.fire_p[1]';

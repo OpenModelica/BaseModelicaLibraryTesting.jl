@@ -1861,8 +1861,8 @@ package 'WaterIF97'
     Real 'medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'medium.p_bar'(unit = "bar", quantity = "Pressure") = 'medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -1886,6 +1886,8 @@ package 'WaterIF97'
     Real 'der_p';
     Real 'der_T';
   equation
+    'medium.T_degC' = 'medium.T' - 273.15;
+    'medium.p_bar' = 'medium.p' / 1e5;
     'medium.MM' = 0.018015268;
     'medium.phase' = if ('medium.h' < 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hvl_p'('medium.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('medium.sat.psat')) or 'medium.h' > 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hvl_p'('medium.sat.psat', 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('medium.sat.psat'))) or 'medium.p' > 2.2064e7 then 1 else 2;
     'medium.d' = 'Modelica.Media.Water.IF97_Utilities.rho_props_ph'('medium.p', 'medium.h', 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.p', 'medium.h', 'medium.phase', 0));

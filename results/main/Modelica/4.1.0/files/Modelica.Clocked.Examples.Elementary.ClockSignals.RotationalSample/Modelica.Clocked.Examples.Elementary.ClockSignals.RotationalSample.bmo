@@ -15,7 +15,7 @@ package 'RotationalSample'
     Real 'trigger_interval_input.y' "Connector of Real output signal";
     parameter Real 'trigger_interval_input.offset' = 1.0 "Offset of output signal y";
     parameter Real 'trigger_interval_input.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
-    Real 'trigger_interval_input.T_width'(unit = "s", quantity = "Time") = 0.5;
+    Real 'trigger_interval_input.T_width'(unit = "s", quantity = "Time");
     Real 'trigger_interval_input.T_start'(unit = "s", quantity = "Time") "Start time of current period";
     Integer 'trigger_interval_input.count' "Period count";
     parameter Boolean 'rotationalClock.useSolver' = false "= true, if solverMethod shall be explicitly defined" annotation(Evaluate = true);
@@ -64,6 +64,7 @@ package 'RotationalSample'
     Real 'sample_angle.y' "Connector of clocked, Real output signal";
     Clock 'sample_angle.clock' "Output signal y is associated with this clock input";
   equation
+    'trigger_interval_input.T_width' = 0.5;
     'rotationalClock.angle' = 'rotationalClock.sub.u1';
     'rotationalClock.angle' = 'rotationalClock.update_offset.u';
     'rotationalClock.update_offset.y' = 'rotationalClock.angular_offset.u';

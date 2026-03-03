@@ -1,11 +1,11 @@
 //! base 0.1.0
 package 'WaterPump'
   model 'WaterPump' "Water pumping station"
-    output Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'volumeFlowSensor.y' "Volume flow rate";
-    output Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pressureSensor.y' "Pressure at pump outlet";
-    output Real 'w'(displayUnit = "1/min", unit = "rad/s", quantity = "AngularVelocity") = 'multiSensor.w' "Pump speed";
-    output Real 'tau'(unit = "N.m", quantity = "Torque") = 'multiSensor.tau' "Pump torque";
-    output Real 'power'(unit = "W", quantity = "Power") = 'multiSensor.power' "Pump power";
+    output Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate";
+    output Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure at pump outlet";
+    output Real 'w'(displayUnit = "1/min", unit = "rad/s", quantity = "AngularVelocity") "Pump speed";
+    output Real 'tau'(unit = "N.m", quantity = "Torque") "Pump torque";
+    output Real 'power'(unit = "W", quantity = "Power") "Pump power";
     parameter Real 'trapezoid.amplitude' = 1.2 "Amplitude of trapezoid";
     parameter Real 'trapezoid.rising'(min = 0.0, unit = "s", quantity = "Time") = 0.6 "Rising duration of trapezoid";
     parameter Real 'trapezoid.width'(min = 0.0, unit = "s", quantity = "Time") = 0.6 "Width duration of trapezoid";
@@ -106,7 +106,7 @@ package 'WaterPump'
     parameter Real 'idealPump.wNominal'(start = 1.0, displayUnit = "rev/min", unit = "rad/s", quantity = "AngularVelocity") = 104.71975511966 "Nominal speed";
     parameter Real 'idealPump.dp0'(start = 2.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 5e5 "Max. pressure increase @ V_flow=0";
     parameter Real 'idealPump.V_flow0'(start = 2.0, unit = "m3/s", quantity = "VolumeFlowRate") = 0.18 "Max. volume flow rate @ dp=0";
-    Real 'idealPump.w'(unit = "rad/s", quantity = "AngularVelocity") = der('idealPump.flange_a.phi') "Speed";
+    Real 'idealPump.w'(unit = "rad/s", quantity = "AngularVelocity") "Speed";
     Real 'idealPump.dp1'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'idealPump.V_flow1'(unit = "m3/s", quantity = "VolumeFlowRate");
     Real 'idealPump.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
@@ -285,6 +285,12 @@ package 'WaterPump'
     Real 'ambient2.pAmbient'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'ambient2.TAmbient'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
   equation
+    'V_flow' = 'volumeFlowSensor.y';
+    'p' = 'pressureSensor.y';
+    'w' = 'multiSensor.w';
+    'tau' = 'multiSensor.tau';
+    'power' = 'multiSensor.power';
+    'idealPump.w' = der('idealPump.flange_a.phi');
     'idealPump.flowPort_a.h' = 'ambient1.flowPort.h';
     assert(abs('idealPump.flowPort_a.medium.rho' - 'ambient1.flowPort.medium.rho') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
     assert(abs('idealPump.flowPort_a.medium.cp' - 'ambient1.flowPort.medium.cp') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);

@@ -1837,8 +1837,8 @@ package 'R134a1'
     Real 'volume.medium.state.p'(nominal = 1e6, start = 101325.0, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'volume.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'volume.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'volume.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'volume.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'volume.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'volume.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'volume.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'volume.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'volume.medium.sat.psat'(nominal = 1e6, start = 3e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'volume.medium.sat.Tsat'(nominal = 350.0, start = 273.0, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'volume.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -1865,8 +1865,8 @@ package 'R134a1'
     Real 'fixedMassFlowRate.medium.state.p'(nominal = 1e6, start = 101325.0, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'fixedMassFlowRate.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'fixedMassFlowRate.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'fixedMassFlowRate.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'fixedMassFlowRate.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'fixedMassFlowRate.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'fixedMassFlowRate.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'fixedMassFlowRate.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'fixedMassFlowRate.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'fixedMassFlowRate.medium.sat.psat'(nominal = 1e6, start = 3e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'fixedMassFlowRate.medium.sat.Tsat'(nominal = 350.0, start = 273.0, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'fixedMassFlowRate.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -1897,8 +1897,8 @@ package 'R134a1'
     Real 'ambient.medium.state.p'(nominal = 1e6, start = 101325.0, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
     parameter Boolean 'ambient.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'ambient.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'ambient.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'ambient.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'ambient.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'ambient.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'ambient.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'ambient.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'ambient.medium.sat.psat'(nominal = 1e6, start = 3e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
     Real 'ambient.medium.sat.Tsat'(nominal = 350.0, start = 273.0, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
     Integer 'ambient.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
@@ -1923,6 +1923,12 @@ package 'R134a1'
     'volume.medium.p' = 101325.0;
     'volume.medium.h' = 107390.0;
   equation
+    'volume.medium.T_degC' = 'volume.medium.T' - 273.15;
+    'volume.medium.p_bar' = 'volume.medium.p' / 1e5;
+    'fixedMassFlowRate.medium.T_degC' = 'fixedMassFlowRate.medium.T' - 273.15;
+    'fixedMassFlowRate.medium.p_bar' = 'fixedMassFlowRate.medium.p' / 1e5;
+    'ambient.medium.T_degC' = 'ambient.medium.T' - 273.15;
+    'ambient.medium.p_bar' = 'ambient.medium.p' / 1e5;
     'volume.port.h' = 'shortPipe.port_a.h';
     'volume.port.h' = 'fixedMassFlowRate.port.h';
     'volume.port.p' = 'shortPipe.port_a.p';

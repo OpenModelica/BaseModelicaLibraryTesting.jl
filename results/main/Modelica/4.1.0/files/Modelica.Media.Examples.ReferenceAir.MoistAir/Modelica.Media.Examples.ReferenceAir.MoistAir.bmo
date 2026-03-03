@@ -2525,8 +2525,8 @@ package 'MoistAir'
     Real 'medium.state.X[2]'(nominal = 0.1, start = 0.99, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fractions (= (component mass)/total mass  m_i/m)";
     parameter Boolean 'medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'medium.p_bar'(unit = "bar", quantity = "Pressure") = 'medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'medium.x_water' "Mass of total water/mass of dry air";
     Real 'medium.phi' "Relative humidity";
     Real 'medium.X_liquid'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fraction of liquid or solid water";
@@ -2537,7 +2537,7 @@ package 'MoistAir'
     Real 'medium.p_steam_sat'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Partial saturation pressure of steam";
     parameter Real 'MMx[1]'(nominal = 0.032, max = 0.25, min = 0.001, unit = "kg/mol", quantity = "MolarMass") = 0.0289586 "Vector of molar masses (consisting of dry air and of steam)";
     parameter Real 'MMx[2]'(nominal = 0.032, max = 0.25, min = 0.001, unit = "kg/mol", quantity = "MolarMass") = 0.018015268 "Vector of molar masses (consisting of dry air and of steam)";
-    Real 'MM'(nominal = 0.032, max = 0.25, min = 0.001, unit = "kg/mol", quantity = "MolarMass") = 1.0 / ((1.0 - 'medium.X[1]') / 0.0289586 + 'medium.X[1]' / 0.018015268) "Molar mass of gas part of mixture";
+    Real 'MM'(nominal = 0.032, max = 0.25, min = 0.001, unit = "kg/mol", quantity = "MolarMass") "Molar mass of gas part of mixture";
     Real 'state1.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'state1.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'state1.X[1]'(nominal = 0.1, start = 0.01, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fractions (= (component mass)/total mass  m_i/m)";
@@ -2563,6 +2563,9 @@ package 'MoistAir'
     parameter Real 'T02'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 340.0 "state2.T at time 0";
     parameter Real 'Trate2'(unit = "K/s", quantity = "TemperatureSlope") = -20.0 "state2.T rate of change";
   equation
+    'medium.T_degC' = 'medium.T' - 273.15;
+    'medium.p_bar' = 'medium.p' / 1e5;
+    'MM' = 1.0 / ((1.0 - 'medium.X[1]') / 0.0289586 + 'medium.X[1]' / 0.018015268);
     assert('medium.T' >= 143.15 and 'medium.T' <= 2000.0, "Temperature T is not in the allowed range 143.15 K <= (T =" + String('medium.T') + " K) <= 2000 K required from medium model \"" + "Moist air" + "\".", AssertionLevel.error);
     'medium.MM' = 1.0 / ('medium.Xi[1]' / 0.018015268 + (1.0 - 'medium.Xi[1]') / 0.0289586);
     'medium.p_steam_sat' = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.pds_pT'('medium.p', 'medium.T');

@@ -54,8 +54,8 @@ package 'SimpleLiquidWater'
     Real 'medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'medium.p_bar'(unit = "bar", quantity = "Pressure") = 'medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'medium2.p'(stateSelect = StateSelect.default, nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'medium2.h'(unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
     Real 'medium2.d'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density of medium";
@@ -68,8 +68,8 @@ package 'SimpleLiquidWater'
     Real 'medium2.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'medium2.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'medium2.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'medium2.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'medium2.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'medium2.p_bar'(unit = "bar", quantity = "Pressure") = 'medium2.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'medium2.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'medium2.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'state.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'm_flow_ext2';
@@ -78,9 +78,15 @@ package 'SimpleLiquidWater'
     Real 'm'(start = 1.0, min = 0.0, unit = "kg", quantity = "Mass");
     Real 'U'(unit = "J", quantity = "Energy");
     Real 'm_flow_ext'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater");
-    Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 'Modelica.Media.Examples.SimpleLiquidWater.Medium.dynamicViscosity'('state');
-    Real 'cv'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificHeatCapacityCv'('state');
+    Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'cv'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
   equation
+    'medium.T_degC' = 'medium.T' - 273.15;
+    'medium.p_bar' = 'medium.p' / 1e5;
+    'medium2.T_degC' = 'medium2.T' - 273.15;
+    'medium2.p_bar' = 'medium2.p' / 1e5;
+    'eta' = 'Modelica.Media.Examples.SimpleLiquidWater.Medium.dynamicViscosity'('state');
+    'cv' = 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificHeatCapacityCv'('state');
     assert('medium.T' >= 272.15 and 'medium.T' <= 403.15, "\nTemperature T (= " + String('medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
     'medium.h' = 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificEnthalpy_pTX'('medium.p', 'medium.T', {'medium.X[1]'});
     'medium.u' = 4184.0 * ('medium.T' - 273.15);

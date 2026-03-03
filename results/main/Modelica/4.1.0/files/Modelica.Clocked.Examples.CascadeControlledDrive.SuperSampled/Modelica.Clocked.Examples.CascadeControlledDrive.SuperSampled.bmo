@@ -18,7 +18,7 @@ package 'SuperSampled'
     parameter Real 'PI.k' = 100.0 "Gain of continuous PI controller";
     parameter Real 'PI.T'(min = 2.2250738585072014e-308) = 0.5 "Time constant of continuous PI controller";
     Real 'PI.x'(fixed = true, start = 0.0) "Discrete PI state";
-    Real 'PI.Ts' = interval('PI.u') "Sample time (periodic or non-periodic)";
+    Real 'PI.Ts' "Sample time (periodic or non-periodic)";
     Real 'feedback2.u1' "Commanded input";
     Real 'feedback2.u2' "Feedback input";
     Real 'feedback2.y';
@@ -95,6 +95,7 @@ package 'SuperSampled'
     parameter String 'periodicRealClock.solverMethod' = "ExplicitEuler" "Integration method used for discretized continuous-time partitions";
     Clock 'periodicRealClock.y';
   equation
+    'PI.Ts' = interval('PI.u');
     'angle.flange.phi' = 'load.flange_b.phi';
     'angle.flange.phi' = 'speed.flange.phi';
     'feedback2.y' = 'PI.u';

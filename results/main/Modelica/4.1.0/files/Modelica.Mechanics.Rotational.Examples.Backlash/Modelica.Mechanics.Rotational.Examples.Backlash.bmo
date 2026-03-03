@@ -53,7 +53,7 @@ package 'Backlash'
     parameter Real 'elastoBacklash.bMin'(displayUnit = "deg", unit = "rad", quantity = "Angle") = -0.39269908169872414 "Backlash in range bMin <= phi_rel - phi_rel0 <= bMax";
     Real 'elastoBacklash.tau_c'(unit = "N.m", quantity = "Torque");
     Real 'elastoBacklash.tau_d'(unit = "N.m", quantity = "Torque");
-    Real 'elastoBacklash.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'elastoBacklash.phi_rel';
+    Real 'elastoBacklash.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     constant Real 'elastoBacklash.bEps'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 1e-10 "Minimum backlash";
     Real 'inertia2.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'inertia2.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
@@ -87,7 +87,7 @@ package 'Backlash'
     parameter Real 'elastoBacklash2.bMin'(displayUnit = "deg", unit = "rad", quantity = "Angle") = -0.392699081698725 "Backlash in range bMin <= phi_rel - phi_rel0 <= bMax";
     Real 'elastoBacklash2.tau_c'(unit = "N.m", quantity = "Torque");
     Real 'elastoBacklash2.tau_d'(unit = "N.m", quantity = "Torque");
-    Real 'elastoBacklash2.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'elastoBacklash2.phi_rel';
+    Real 'elastoBacklash2.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     constant Real 'elastoBacklash2.bEps'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 1e-10 "Minimum backlash";
     Real 'inertia3.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'inertia3.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
@@ -99,6 +99,8 @@ package 'Backlash'
     Real 'inertia3.w'(stateSelect = StateSelect.default, fixed = true, start = 0.0, unit = "rad/s", quantity = "AngularVelocity") "Absolute angular velocity of component (= der(phi))";
     Real 'inertia3.a'(unit = "rad/s2", quantity = "AngularAcceleration") "Absolute angular acceleration of component (= der(w))";
   equation
+    'elastoBacklash.phi_diff' = 'elastoBacklash.phi_rel';
+    'elastoBacklash2.phi_diff' = 'elastoBacklash2.phi_rel';
     'springDamper.flange_b.phi' = 'inertia1.flange_a.phi';
     'elastoBacklash.flange_b.phi' = 'inertia2.flange_a.phi';
     'fixed1.flange.phi' = 'springDamper.flange_a.phi';

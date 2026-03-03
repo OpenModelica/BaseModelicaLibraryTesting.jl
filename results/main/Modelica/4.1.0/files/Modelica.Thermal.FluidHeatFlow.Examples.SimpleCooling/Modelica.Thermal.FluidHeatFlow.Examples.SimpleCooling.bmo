@@ -7,9 +7,9 @@ package 'SimpleCooling'
     parameter Real 'medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
     parameter Real 'medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
     parameter Real 'TAmb'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Ambient temperature";
-    output Real 'dTSource'(unit = "K", quantity = "ThermodynamicTemperature") = 'prescribedHeatFlow.port.T' - 293.15;
-    output Real 'dTtoPipe'(unit = "K", quantity = "ThermodynamicTemperature") = 'prescribedHeatFlow.port.T' - 'pipe.T_q';
-    output Real 'dTCoolant'(unit = "K", quantity = "ThermodynamicTemperature") = 'pipe.dT';
+    output Real 'dTSource'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTtoPipe'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTCoolant'(unit = "K", quantity = "ThermodynamicTemperature");
     parameter Real 'ambient1.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'ambient1.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
     parameter Real 'ambient1.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
@@ -74,7 +74,7 @@ package 'SimpleCooling'
     Real 'pump.flowPort_b.H_flow'(unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'pump.useVolumeFlowInput' = true "Enable / disable volume flow input" annotation(Evaluate = true);
     parameter Real 'pump.constantVolumeFlow'(start = 1.0, unit = "m3/s", quantity = "VolumeFlowRate") = 1.0 "Volume flow rate";
-    Real 'pump.volumeFlow'(unit = "m3/s") = 'pump.internalVolumeFlow';
+    Real 'pump.volumeFlow'(unit = "m3/s");
     Real 'pump.internalVolumeFlow'(unit = "m3/s", quantity = "VolumeFlowRate");
     parameter Real 'pipe.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'pipe.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
@@ -125,8 +125,8 @@ package 'SimpleCooling'
     parameter Boolean 'pipe.useHeatPort' = true "= true, if HeatPort is enabled" annotation(Evaluate = true);
     parameter Real 'pipe.h_g'(start = 0.0, unit = "m", quantity = "Length") = 0.0 "Geodetic height (height difference from flowPort_a to flowPort_b)";
     parameter Real 'pipe.g'(min = 0.0, unit = "m/s2", quantity = "Acceleration") = 9.80665 "Gravitation";
-    Real 'pipe.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pipe.T_q' "Port temperature";
-    Real 'pipe.heatPort.Q_flow'(unit = "W", quantity = "Power") = 'pipe.Q_flowHeatPort' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'pipe.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'pipe.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'pipe.Q_flowHeatPort'(unit = "W", quantity = "Power") "Heat flow at conditional heatPort";
     parameter Real 'ambient2.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'ambient2.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
@@ -178,6 +178,12 @@ package 'SimpleCooling'
     parameter Real 'thermalConductance.k'(start = 1.0) = 1.0 "Constant output value";
     Real 'thermalConductance.y' "Connector of Real output signal";
   equation
+    'dTSource' = 'prescribedHeatFlow.port.T' - 293.15;
+    'dTtoPipe' = 'prescribedHeatFlow.port.T' - 'pipe.T_q';
+    'dTCoolant' = 'pipe.dT';
+    'pump.volumeFlow' = 'pump.internalVolumeFlow';
+    'pipe.heatPort.T' = 'pipe.T_q';
+    'pipe.heatPort.Q_flow' = 'pipe.Q_flowHeatPort';
     'ambient1.flowPort.h' = 'pump.flowPort_a.h';
     assert(abs('ambient1.flowPort.medium.rho' - 'pump.flowPort_a.medium.rho') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
     assert(abs('ambient1.flowPort.medium.cp' - 'pump.flowPort_a.medium.cp') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);

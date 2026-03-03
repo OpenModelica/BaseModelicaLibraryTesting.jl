@@ -3,7 +3,7 @@ package 'ControlledTemperature'
   model 'ControlledTemperature' "Control temperature of a resistor"
     parameter Real 'TAmb'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Ambient temperature";
     parameter Real 'TDif'(unit = "K", quantity = "ThermodynamicTemperature") = 2.0;
-    output Real 'TRes'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'resistor.T_heatPort' "Resulting temperature";
+    output Real 'TRes'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Resulting temperature";
     Real 'ground.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'ground.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     parameter Real 'constantVoltage.V'(start = 1.0, unit = "V", quantity = "ElectricPotential") = 10.0 "Value of constant voltage";
@@ -29,8 +29,8 @@ package 'ControlledTemperature'
     Real 'resistor.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'resistor.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'resistor.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'resistor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'resistor.T_heatPort' "Port temperature";
-    Real 'resistor.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'resistor.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'resistor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'resistor.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'resistor.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'resistor.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'resistor.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -79,6 +79,9 @@ package 'ControlledTemperature'
   initial equation
     pre('onOffController.y') = false;
   equation
+    'TRes' = 'resistor.T_heatPort';
+    'resistor.heatPort.T' = 'resistor.T_heatPort';
+    'resistor.heatPort.Q_flow' = -'resistor.LossPower';
     'constantVoltage.n.v' = 'ground.p.v';
     'constantVoltage.n.v' = 'resistor.n.v';
     'thermalConductor.port_b.T' = 'fixedTemperature.port.T';

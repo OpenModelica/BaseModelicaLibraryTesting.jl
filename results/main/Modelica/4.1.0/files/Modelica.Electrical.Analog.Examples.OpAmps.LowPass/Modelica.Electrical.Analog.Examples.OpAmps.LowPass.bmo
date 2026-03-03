@@ -36,12 +36,12 @@ package 'LowPass'
     parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'firstOrder.opAmp.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'NoHomotopy' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
     Real 'firstOrder.opAmp.vps'(unit = "V", quantity = "ElectricPotential") "Positive supply voltage";
     Real 'firstOrder.opAmp.vns'(unit = "V", quantity = "ElectricPotential") "Negative supply voltage";
-    Real 'firstOrder.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") = 'firstOrder.opAmp.in_p.v' - 'firstOrder.opAmp.in_n.v' "Input voltage difference";
-    Real 'firstOrder.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") = 'firstOrder.opAmp.out.v' "Output voltage to ground";
-    Real 'firstOrder.opAmp.p_in'(unit = "W", quantity = "Power") = 'firstOrder.opAmp.in_p.v' * 'firstOrder.opAmp.in_p.i' + 'firstOrder.opAmp.in_n.v' * 'firstOrder.opAmp.in_n.i' "Input power";
-    Real 'firstOrder.opAmp.p_out'(unit = "W", quantity = "Power") = 'firstOrder.opAmp.out.v' * 'firstOrder.opAmp.out.i' "Output power";
-    Real 'firstOrder.opAmp.p_s'(unit = "W", quantity = "Power") = -('firstOrder.opAmp.p_in' + 'firstOrder.opAmp.p_out') "Supply power";
-    Real 'firstOrder.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") = 'firstOrder.opAmp.p_s' / ('firstOrder.opAmp.vps' - 'firstOrder.opAmp.vns') "Supply current";
+    Real 'firstOrder.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") "Input voltage difference";
+    Real 'firstOrder.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") "Output voltage to ground";
+    Real 'firstOrder.opAmp.p_in'(unit = "W", quantity = "Power") "Input power";
+    Real 'firstOrder.opAmp.p_out'(unit = "W", quantity = "Power") "Output power";
+    Real 'firstOrder.opAmp.p_s'(unit = "W", quantity = "Power") "Supply power";
+    Real 'firstOrder.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") "Supply current";
     Real 'firstOrder.opAmp.in_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'firstOrder.opAmp.in_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'firstOrder.opAmp.in_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -54,7 +54,7 @@ package 'LowPass'
     parameter Real 'firstOrder.R2'(unit = "Ohm", quantity = "Resistance") = 1000.0 "Calculated resistance to reach k";
     parameter Real 'firstOrder.T'(unit = "s", quantity = "Time") = 0.15915494309189535 "Time constant";
     parameter Real 'firstOrder.C'(min = 0.0, unit = "F", quantity = "Capacitance") = 1.5915494309189535e-4 "Calculated capacitance to reach T";
-    Real 'firstOrder.v'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential") = 'firstOrder.c.v' "Capacitor voltage = state";
+    Real 'firstOrder.v'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential") "Capacitor voltage = state";
     parameter Real 'firstOrder.r1.R'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 1000.0 "Resistance at temperature T_ref";
     parameter Real 'firstOrder.r1.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Reference temperature";
     parameter Real 'firstOrder.r1.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -119,6 +119,13 @@ package 'LowPass'
     parameter Real 'vIn.offset'(unit = "V", quantity = "ElectricPotential") = 0.0 "Voltage offset";
     parameter Real 'vIn.startTime'(unit = "s", quantity = "Time") = -0.035 "Time offset";
   equation
+    'firstOrder.opAmp.v_in' = 'firstOrder.opAmp.in_p.v' - 'firstOrder.opAmp.in_n.v';
+    'firstOrder.opAmp.v_out' = 'firstOrder.opAmp.out.v';
+    'firstOrder.opAmp.p_in' = 'firstOrder.opAmp.in_p.v' * 'firstOrder.opAmp.in_p.i' + 'firstOrder.opAmp.in_n.v' * 'firstOrder.opAmp.in_n.i';
+    'firstOrder.opAmp.p_out' = 'firstOrder.opAmp.out.v' * 'firstOrder.opAmp.out.i';
+    'firstOrder.opAmp.p_s' = -('firstOrder.opAmp.p_in' + 'firstOrder.opAmp.p_out');
+    'firstOrder.opAmp.i_s' = 'firstOrder.opAmp.p_s' / ('firstOrder.opAmp.vps' - 'firstOrder.opAmp.vns');
+    'firstOrder.v' = 'firstOrder.c.v';
     'firstOrder.n1.v' = 'firstOrder.opAmp.in_p.v';
     'firstOrder.n1.v' = 'firstOrder.n2.v';
     'firstOrder.opAmp.in_p.i' - 'firstOrder.n1.i' - 'firstOrder.n2.i' = 0.0;

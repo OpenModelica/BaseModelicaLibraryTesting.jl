@@ -22,7 +22,7 @@ package 'LogicalSample'
     Real 'trigger_interval_input.y' "Connector of Real output signal";
     parameter Real 'trigger_interval_input.offset' = 1.0 "Offset of output signal y";
     parameter Real 'trigger_interval_input.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
-    Real 'trigger_interval_input.T_width'(unit = "s", quantity = "Time") = 0.5;
+    Real 'trigger_interval_input.T_width'(unit = "s", quantity = "Time");
     Real 'trigger_interval_input.T_start'(unit = "s", quantity = "Time") "Start time of current period";
     Integer 'trigger_interval_input.count' "Period count";
     parameter Boolean 'rotational_clock_1.useSolver' = false "= true, if solverMethod shall be explicitly defined" annotation(Evaluate = true);
@@ -333,6 +333,7 @@ package 'LogicalSample'
     pre('disjunctiveClock.input_memory[2].pre.u') = true;
     pre('disjunctiveClock.reset_ticked.input_ticked.u') = false;
   equation
+    'trigger_interval_input.T_width' = 0.5;
     'rotational_clock_1.angle' = 'rotational_clock_1.sub.u1';
     'rotational_clock_1.angle' = 'rotational_clock_1.update_offset.u';
     'rotational_clock_1.update_offset.y' = 'rotational_clock_1.angular_offset.u';

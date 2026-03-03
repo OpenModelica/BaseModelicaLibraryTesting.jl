@@ -30,16 +30,16 @@ package 'ChopperStepDown_R'
     Real 'chopperStepDown.dc_p1.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'chopperStepDown.dc_n1.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'chopperStepDown.dc_n1.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'chopperStepDown.vDC1'(unit = "V", quantity = "ElectricPotential") = 'chopperStepDown.dc_p1.v' - 'chopperStepDown.dc_n1.v' "DC voltage side 1";
-    Real 'chopperStepDown.iDC1'(unit = "A", quantity = "ElectricCurrent") = 'chopperStepDown.dc_p1.i' "DC current side 1";
-    Real 'chopperStepDown.powerDC1'(unit = "W", quantity = "Power") = 'chopperStepDown.vDC1' * 'chopperStepDown.iDC1' "DC power side 1";
+    Real 'chopperStepDown.vDC1'(unit = "V", quantity = "ElectricPotential") "DC voltage side 1";
+    Real 'chopperStepDown.iDC1'(unit = "A", quantity = "ElectricCurrent") "DC current side 1";
+    Real 'chopperStepDown.powerDC1'(unit = "W", quantity = "Power") "DC power side 1";
     Real 'chopperStepDown.dc_p2.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'chopperStepDown.dc_p2.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'chopperStepDown.dc_n2.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'chopperStepDown.dc_n2.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'chopperStepDown.vDC2'(unit = "V", quantity = "ElectricPotential") = 'chopperStepDown.dc_p2.v' - 'chopperStepDown.dc_n2.v' "DC voltages side 2";
-    Real 'chopperStepDown.iDC2'(unit = "A", quantity = "ElectricCurrent") = 'chopperStepDown.dc_p2.i' "DC current side 2";
-    Real 'chopperStepDown.powerDC2'(unit = "W", quantity = "Power") = 'chopperStepDown.vDC2' * 'chopperStepDown.iDC2' "DC power side 2";
+    Real 'chopperStepDown.vDC2'(unit = "V", quantity = "ElectricPotential") "DC voltages side 2";
+    Real 'chopperStepDown.iDC2'(unit = "A", quantity = "ElectricCurrent") "DC current side 2";
+    Real 'chopperStepDown.powerDC2'(unit = "W", quantity = "Power") "DC power side 2";
     parameter Boolean 'chopperStepDown.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'chopperStepDown.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
     Real 'chopperStepDown.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
@@ -211,6 +211,12 @@ package 'ChopperStepDown_R'
     'meanVoltage.x' = 0.0;
     'meanVoltage.y_last' = 0.0;
   equation
+    'chopperStepDown.vDC1' = 'chopperStepDown.dc_p1.v' - 'chopperStepDown.dc_n1.v';
+    'chopperStepDown.iDC1' = 'chopperStepDown.dc_p1.i';
+    'chopperStepDown.powerDC1' = 'chopperStepDown.vDC1' * 'chopperStepDown.iDC1';
+    'chopperStepDown.vDC2' = 'chopperStepDown.dc_p2.v' - 'chopperStepDown.dc_n2.v';
+    'chopperStepDown.iDC2' = 'chopperStepDown.dc_p2.i';
+    'chopperStepDown.powerDC2' = 'chopperStepDown.vDC2' * 'chopperStepDown.iDC2';
     'chopperStepDown.enableLogic.internalEnable[1]' = 'chopperStepDown.enableLogic.booleanReplicator.y[1]';
     'chopperStepDown.enableLogic.enableConstantSource.y' = 'chopperStepDown.enableLogic.booleanReplicator.u';
     'chopperStepDown.transistor.n.v' = 'chopperStepDown.dc_p2.v';

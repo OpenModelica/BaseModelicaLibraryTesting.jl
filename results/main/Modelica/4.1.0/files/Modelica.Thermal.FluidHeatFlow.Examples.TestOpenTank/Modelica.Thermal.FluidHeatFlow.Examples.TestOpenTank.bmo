@@ -75,9 +75,9 @@ package 'TestOpenTank'
 end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
 
   model 'TestOpenTank' "Test the OpenTank model"
-    output Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'volumeFlow.V_flow' "Volume flow rate to tank";
-    output Real 'level'(unit = "m", quantity = "Length") = 'openTank.level' "Level in tank";
-    output Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'openTank.TTank' "Temperature in tank";
+    output Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate to tank";
+    output Real 'level'(unit = "m", quantity = "Length") "Level in tank";
+    output Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature in tank";
     parameter Real 'openTank.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'openTank.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
     parameter Real 'openTank.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
@@ -172,7 +172,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'volumeFlow.flowPort_b.H_flow'(unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'volumeFlow.useVolumeFlowInput' = true "Enable / disable volume flow input" annotation(Evaluate = true);
     parameter Real 'volumeFlow.constantVolumeFlow'(start = 1.0, unit = "m3/s", quantity = "VolumeFlowRate") = 1.0 "Volume flow rate";
-    Real 'volumeFlow.volumeFlow'(unit = "m3/s") = 'volumeFlow.internalVolumeFlow';
+    Real 'volumeFlow.volumeFlow'(unit = "m3/s");
     Real 'volumeFlow.internalVolumeFlow'(unit = "m3/s", quantity = "VolumeFlowRate");
     parameter Integer 'combiTimeTable.nout'(min = 1) = 1 "Number of outputs";
     Real 'combiTimeTable.y[1]' "Connector of Real output signals";
@@ -218,6 +218,10 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'combiTimeTable.timeScaled' "Scaled time";
     parameter Boolean 'combiTimeTable.isCsvExt' = false;
   equation
+    'V_flow' = 'volumeFlow.V_flow';
+    'level' = 'openTank.level';
+    'T' = 'openTank.TTank';
+    'volumeFlow.volumeFlow' = 'volumeFlow.internalVolumeFlow';
     'combiTimeTable.y[1]' = 'volumeFlow.volumeFlow';
     'openTank.flowPort.h' = 'volumeFlow.flowPort_b.h';
     assert(abs('openTank.flowPort.medium.rho' - 'volumeFlow.flowPort_b.medium.rho') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);

@@ -15,13 +15,13 @@ package 'EddyCurrentBrake'
     Real 'eddyCurrentForce.f'(unit = "N", quantity = "Force") "Accelerating force acting at flange (= flange.f)";
     parameter Boolean 'eddyCurrentForce.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'eddyCurrentForce.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'eddyCurrentForce.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'eddyCurrentForce.TheatPort' "Port temperature";
-    Real 'eddyCurrentForce.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'eddyCurrentForce.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'eddyCurrentForce.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'eddyCurrentForce.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'eddyCurrentForce.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'eddyCurrentForce.TheatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'eddyCurrentForce.v'(unit = "m/s", quantity = "Velocity") "Velocity of flange with respect to support (= der(s))";
     Real 'eddyCurrentForce.v_normalized' "Relative speed v/v_nominal";
-    Real 'eddyCurrentForce.excitation' = 'eddyCurrentForce.excitationInternal' "Excitation";
+    Real 'eddyCurrentForce.excitation' "Excitation";
     Real 'eddyCurrentForce.excitationInternal' "Excitation";
     parameter Real 'mass.m'(start = 1.0, min = 0.0, unit = "kg", quantity = "Mass") = 1.0 "Mass of the sliding mass";
     parameter StateSelect 'mass.stateSelect' = StateSelect.default "Priority to use s and v as states";
@@ -44,6 +44,9 @@ package 'EddyCurrentBrake'
     parameter Real 'ramp.offset' = 0.0 "Offset of output signal y";
     parameter Real 'ramp.startTime'(unit = "s", quantity = "Time") = 0.1 "Output y = offset for time < startTime";
   equation
+    'eddyCurrentForce.heatPort.T' = 'eddyCurrentForce.TheatPort';
+    'eddyCurrentForce.heatPort.Q_flow' = -'eddyCurrentForce.lossPower';
+    'eddyCurrentForce.excitation' = 'eddyCurrentForce.excitationInternal';
     'eddyCurrentForce.flange.s' = 'mass.flange_a.s';
     'eddyCurrentForce.heatPort.T' = 'heatCapacitor.port.T';
     'ramp.y' = 'eddyCurrentForce.excitation';

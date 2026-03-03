@@ -39,7 +39,7 @@ package 'SuperCapDischargeCharge'
     Real 'superCap.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'superCap.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'superCap.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'superCap.i'(unit = "A", quantity = "ElectricCurrent") = 'superCap.p.i' "Current into the supercap";
+    Real 'superCap.i'(unit = "A", quantity = "ElectricCurrent") "Current into the supercap";
     parameter Real 'superCap.Vnom'(unit = "V", quantity = "ElectricPotential") = 48.0 "Nominal voltage";
     parameter Real 'superCap.V0'(unit = "V", quantity = "ElectricPotential") = 48.0 "Initial voltage";
     parameter Real 'superCap.C'(min = 0.0, unit = "F", quantity = "Capacitance") = 500.0 "Capacitance";
@@ -66,8 +66,8 @@ package 'SuperCapDischargeCharge'
     Real 'superCap.resistor.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'superCap.resistor.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'superCap.resistor.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'superCap.resistor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'superCap.resistor.T_heatPort' "Port temperature";
-    Real 'superCap.resistor.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'superCap.resistor.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'superCap.resistor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'superCap.resistor.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'superCap.resistor.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'superCap.resistor.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'superCap.resistor.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -82,8 +82,8 @@ package 'SuperCapDischargeCharge'
     Real 'superCap.conductor.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'superCap.conductor.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'superCap.conductor.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'superCap.conductor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'superCap.conductor.T_heatPort' "Port temperature";
-    Real 'superCap.conductor.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'superCap.conductor.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'superCap.conductor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'superCap.conductor.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'superCap.conductor.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'superCap.conductor.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'superCap.conductor.G_actual'(unit = "S", quantity = "Conductance") "Actual conductance = G_ref/(1 + alpha*(T_heatPort - T_ref))";
@@ -139,6 +139,11 @@ package 'SuperCapDischargeCharge'
   initial equation
     'energy.y' = 0.0;
   equation
+    'superCap.i' = 'superCap.p.i';
+    'superCap.resistor.heatPort.T' = 'superCap.resistor.T_heatPort';
+    'superCap.resistor.heatPort.Q_flow' = -'superCap.resistor.LossPower';
+    'superCap.conductor.heatPort.T' = 'superCap.conductor.T_heatPort';
+    'superCap.conductor.heatPort.Q_flow' = -'superCap.conductor.LossPower';
     'superCap.p.v' = 'superCap.resistor.p.v';
     'superCap.resistor.p.i' - 'superCap.p.i' = 0.0;
     'superCap.capacitor.p.v' = 'superCap.conductor.p.v';

@@ -71,8 +71,8 @@ package 'HeatingMOSInverter'
     parameter Real 'H_PMOS.kk2' = 6.2e-4 "Fitting parameter for K2";
     parameter Boolean 'H_PMOS.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'H_PMOS.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'H_PMOS.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'H_PMOS.T_heatPort' "Port temperature";
-    Real 'H_PMOS.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'H_PMOS.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'H_PMOS.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'H_PMOS.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'H_PMOS.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'H_PMOS.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'H_PMOS.v';
@@ -109,8 +109,8 @@ package 'HeatingMOSInverter'
     parameter Real 'H_NMOS.kk2' = 6e-4 "Fitting parameter for K2";
     parameter Boolean 'H_NMOS.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'H_NMOS.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'H_NMOS.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'H_NMOS.T_heatPort' "Port temperature";
-    Real 'H_NMOS.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'H_NMOS.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'H_NMOS.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'H_NMOS.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'H_NMOS.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'H_NMOS.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'H_NMOS.v';
@@ -159,6 +159,10 @@ package 'HeatingMOSInverter'
   initial equation
     'HeatCapacitor1.T' = 293.15;
   equation
+    'H_PMOS.heatPort.T' = 'H_PMOS.T_heatPort';
+    'H_PMOS.heatPort.Q_flow' = -'H_PMOS.LossPower';
+    'H_NMOS.heatPort.T' = 'H_NMOS.T_heatPort';
+    'H_NMOS.heatPort.Q_flow' = -'H_NMOS.LossPower';
     'V.n.v' = 'G.p.v';
     'V.n.v' = 'H_NMOS.S.v';
     'V.n.v' = 'H_NMOS.B.v';

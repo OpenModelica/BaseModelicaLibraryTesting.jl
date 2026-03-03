@@ -7,9 +7,9 @@ package 'PumpAndValve'
     parameter Real 'medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
     parameter Real 'medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
     parameter Real 'TAmb'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Ambient temperature";
-    output Real 'dTSource'(unit = "K", quantity = "ThermodynamicTemperature") = 'prescribedHeatFlow.port.T' - 293.15;
-    output Real 'dTtoPipe'(unit = "K", quantity = "ThermodynamicTemperature") = 'prescribedHeatFlow.port.T' - 'pipe.T_q';
-    output Real 'dTCoolant'(unit = "K", quantity = "ThermodynamicTemperature") = 'pipe.dT';
+    output Real 'dTSource'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTtoPipe'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTCoolant'(unit = "K", quantity = "ThermodynamicTemperature");
     parameter Real 'ambient1.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'ambient1.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
     parameter Real 'ambient1.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
@@ -75,7 +75,7 @@ package 'PumpAndValve'
     parameter Real 'idealPump.wNominal'(start = 1.0, displayUnit = "rad/s", unit = "rad/s", quantity = "AngularVelocity") = 1.0 "Nominal speed";
     parameter Real 'idealPump.dp0'(start = 2.0, displayUnit = "Pa", unit = "Pa", quantity = "Pressure") = 2.0 "Max. pressure increase @ V_flow=0";
     parameter Real 'idealPump.V_flow0'(start = 2.0, unit = "m3/s", quantity = "VolumeFlowRate") = 2.0 "Max. volume flow rate @ dp=0";
-    Real 'idealPump.w'(unit = "rad/s", quantity = "AngularVelocity") = der('idealPump.flange_a.phi') "Speed";
+    Real 'idealPump.w'(unit = "rad/s", quantity = "AngularVelocity") "Speed";
     Real 'idealPump.dp1'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'idealPump.V_flow1'(unit = "m3/s", quantity = "VolumeFlowRate");
     Real 'idealPump.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
@@ -127,7 +127,7 @@ package 'PumpAndValve'
     constant Real 'valve.small' = 2.2250738585072014e-308;
     constant Real 'valve.smallVolumeFlowRate'(unit = "m3/s", quantity = "VolumeFlowRate") = 2.220446049250313e-16;
     constant Real 'valve.eps' = 2.220446049250313e-16;
-    Real 'valve.yLim' = max(min('valve.y', 1.0), 0.0) "Limited valve opening";
+    Real 'valve.yLim' "Limited valve opening";
     Real 'valve.Kv'(unit = "m3/s", quantity = "VolumeFlowRate") "Standard flow rate";
     Real 'valve.y';
     parameter Real 'pipe.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -179,8 +179,8 @@ package 'PumpAndValve'
     parameter Boolean 'pipe.useHeatPort' = true "= true, if HeatPort is enabled" annotation(Evaluate = true);
     parameter Real 'pipe.h_g'(start = 0.0, unit = "m", quantity = "Length") = 0.0 "Geodetic height (height difference from flowPort_a to flowPort_b)";
     parameter Real 'pipe.g'(min = 0.0, unit = "m/s2", quantity = "Acceleration") = 9.80665 "Gravitation";
-    Real 'pipe.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pipe.T_q' "Port temperature";
-    Real 'pipe.heatPort.Q_flow'(unit = "W", quantity = "Power") = 'pipe.Q_flowHeatPort' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'pipe.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'pipe.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'pipe.Q_flowHeatPort'(unit = "W", quantity = "Power") "Heat flow at conditional heatPort";
     parameter Real 'ambient2.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'ambient2.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
@@ -251,6 +251,13 @@ package 'PumpAndValve'
     parameter Real 'valveRamp.offset' = 0.5 "Offset of output signal y";
     parameter Real 'valveRamp.startTime'(unit = "s", quantity = "Time") = 0.9 "Output y = offset for time < startTime";
   equation
+    'dTSource' = 'prescribedHeatFlow.port.T' - 293.15;
+    'dTtoPipe' = 'prescribedHeatFlow.port.T' - 'pipe.T_q';
+    'dTCoolant' = 'pipe.dT';
+    'idealPump.w' = der('idealPump.flange_a.phi');
+    'valve.yLim' = max(min('valve.y', 1.0), 0.0);
+    'pipe.heatPort.T' = 'pipe.T_q';
+    'pipe.heatPort.Q_flow' = 'pipe.Q_flowHeatPort';
     'pipe.flowPort_b.h' = 'ambient2.flowPort.h';
     assert(abs('pipe.flowPort_b.medium.rho' - 'ambient2.flowPort.medium.rho') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
     assert(abs('pipe.flowPort_b.medium.cp' - 'ambient2.flowPort.medium.cp') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);

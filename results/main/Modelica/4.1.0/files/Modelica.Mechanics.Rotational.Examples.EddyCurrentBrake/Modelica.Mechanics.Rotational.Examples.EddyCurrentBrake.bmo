@@ -14,14 +14,14 @@ package 'EddyCurrentBrake'
     Real 'eddyCurrentTorque.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Angle of flange with respect to support (= flange.phi - support.phi)";
     parameter Boolean 'eddyCurrentTorque.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'eddyCurrentTorque.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'eddyCurrentTorque.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'eddyCurrentTorque.TheatPort' "Port temperature";
-    Real 'eddyCurrentTorque.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'eddyCurrentTorque.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'eddyCurrentTorque.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'eddyCurrentTorque.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'eddyCurrentTorque.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'eddyCurrentTorque.TheatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'eddyCurrentTorque.tau'(unit = "N.m", quantity = "Torque") "Accelerating torque acting at flange (= flange.tau)";
     Real 'eddyCurrentTorque.w'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of flange with respect to support (= der(phi))";
     Real 'eddyCurrentTorque.w_normalized' "Relative speed w/w_nominal";
-    Real 'eddyCurrentTorque.excitation' = 'eddyCurrentTorque.excitationInternal' "Excitation";
+    Real 'eddyCurrentTorque.excitation' "Excitation";
     Real 'eddyCurrentTorque.excitationInternal' "Excitation";
     Real 'inertia.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'inertia.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
@@ -43,6 +43,9 @@ package 'EddyCurrentBrake'
     parameter Real 'ramp.offset' = 0.0 "Offset of output signal y";
     parameter Real 'ramp.startTime'(unit = "s", quantity = "Time") = 0.1 "Output y = offset for time < startTime";
   equation
+    'eddyCurrentTorque.heatPort.T' = 'eddyCurrentTorque.TheatPort';
+    'eddyCurrentTorque.heatPort.Q_flow' = -'eddyCurrentTorque.lossPower';
+    'eddyCurrentTorque.excitation' = 'eddyCurrentTorque.excitationInternal';
     'eddyCurrentTorque.flange.phi' = 'inertia.flange_a.phi';
     'eddyCurrentTorque.heatPort.T' = 'heatCapacitor.port.T';
     'ramp.y' = 'eddyCurrentTorque.excitation';
