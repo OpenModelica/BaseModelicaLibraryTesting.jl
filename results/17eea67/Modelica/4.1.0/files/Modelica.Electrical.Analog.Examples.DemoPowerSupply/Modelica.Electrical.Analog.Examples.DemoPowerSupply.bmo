@@ -1,0 +1,114 @@
+//! base 0.1.0
+package 'DemoPowerSupply'
+  function 'Modelica.Math.exp' "Exponential, base e"
+    input Real 'u';
+    output Real 'y';
+  algorithm
+    'y' := exp('u');
+    annotation(Inline = true);
+  end 'Modelica.Math.exp';
+
+  model 'DemoPowerSupply' "Demonstrate behaviour of DC Power Supply"
+    parameter Real 'dcPowerSupply.V0'(min = 2.220446049250313e-16, unit = "V", quantity = "ElectricPotential") = 60.0 "No-load voltage";
+    parameter Real 'dcPowerSupply.I0'(min = 2.220446049250313e-16, unit = "A", quantity = "ElectricCurrent") = 50.0 "Short-circuit current";
+    parameter Real 'dcPowerSupply.P0'(min = 2.220446049250313e-16, unit = "W", quantity = "Power") = 1200.0 "Maximum power";
+    parameter Real 'dcPowerSupply.Rcv'(min = 2.220446049250313e-16, unit = "Ohm", quantity = "Resistance") = 0.001 "Inner resistance in constant voltage region";
+    parameter Real 'dcPowerSupply.Gcc'(min = 2.220446049250313e-16, unit = "S", quantity = "Conductance") = 0.001 "Inner conductance in constant current region";
+    parameter Real 'dcPowerSupply.iBack'(unit = "A", quantity = "ElectricCurrent") = 0.001 "Allowed back current";
+    Real 'dcPowerSupply.v'(start = 60.0, unit = "V", quantity = "ElectricPotential") "Terminal voltage";
+    Real 'dcPowerSupply.i'(unit = "A", quantity = "ElectricCurrent") "Current (delivered < 0)";
+    Real 'dcPowerSupply.P'(unit = "W", quantity = "Power") "Power (delivered < 0)";
+    Real 'dcPowerSupply.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'dcPowerSupply.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'dcPowerSupply.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'dcPowerSupply.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    parameter Real 'dcPowerSupply.vLim'(fixed = false, unit = "V", quantity = "ElectricPotential") "Voltage limit for cc";
+    parameter Real 'dcPowerSupply.iLim'(fixed = false, unit = "A", quantity = "ElectricCurrent") "Current limit for cv";
+    parameter Boolean 'dcPowerSupply.cp'(fixed = false) "Is cp present?";
+    Boolean 'dcPowerSupply.cv'(start = true) "Operation in cv, otherwise cc (or cp)";
+    Boolean 'dcPowerSupply.cc'(start = false) "Operation in cc, otherwise cv (or cp)";
+    Real 'ground.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'ground.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    parameter Real 'conductor.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Reference temperature";
+    parameter Real 'conductor.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of conductance (G_actual = G/(1 + alpha*(T_heatPort - T_ref))";
+    Real 'conductor.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
+    Real 'conductor.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'conductor.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'conductor.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'conductor.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'conductor.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
+    parameter Boolean 'conductor.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
+    parameter Real 'conductor.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Fixed device temperature if useHeatPort = false";
+    Real 'conductor.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
+    Real 'conductor.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
+    Real 'conductor.G_actual'(unit = "S", quantity = "Conductance") "Actual conductance = G/(1 + alpha*(T_heatPort - T_ref))";
+    Real 'conductor.G'(unit = "S");
+    parameter Real 'ramp.height' = 6.0 "Height of ramp";
+    parameter Real 'ramp.duration'(start = 2.0, min = 0.0, unit = "s", quantity = "Time") = 1.0 "Duration of ramp (= 0.0 gives a Step)";
+    Real 'ramp.y' "Connector of Real output signal";
+    parameter Real 'ramp.offset' = -3.0 "Offset of output signal y";
+    parameter Real 'ramp.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    Real 'power10.u' "Connector of Real input signal";
+    Real 'power10.y' "Connector of Real output signal";
+    parameter Real 'power10.base' = 10.0 "Base of power" annotation(Evaluate = true);
+    parameter Boolean 'power10.useExp' = true "Use exp function in implementation" annotation(Evaluate = true);
+  equation
+    'dcPowerSupply.v' = 'dcPowerSupply.p.v' - 'dcPowerSupply.n.v';
+    'dcPowerSupply.i' = 'dcPowerSupply.p.i';
+    'dcPowerSupply.P' = 'dcPowerSupply.v' * 'dcPowerSupply.i';
+    'ground.p.v' = 'conductor.n.v';
+    'ground.p.v' = 'dcPowerSupply.n.v';
+    'dcPowerSupply.p.v' = 'conductor.p.v';
+    'power10.y' = 'conductor.G';
+    'ramp.y' = 'power10.u';
+    'conductor.p.i' + 'dcPowerSupply.p.i' = 0.0;
+    'conductor.n.i' + 'ground.p.i' + 'dcPowerSupply.n.i' = 0.0;
+    'dcPowerSupply.p.i' + 'dcPowerSupply.n.i' = 0.0;
+    assert('dcPowerSupply.v' >= 0.0, "Only voltage >= 0 allowed", AssertionLevel.error);
+    assert('dcPowerSupply.i' <= 0.001, "Back current exceeded!", AssertionLevel.error);
+    'dcPowerSupply.cv' = (-'dcPowerSupply.i') <= 'dcPowerSupply.iLim';
+    'dcPowerSupply.cc' = 'dcPowerSupply.v' <= 'dcPowerSupply.vLim';
+
+    if 'dcPowerSupply.cp' then
+      if 'dcPowerSupply.cv' then
+        'dcPowerSupply.v' = 60.0 - 0.001 * (-'dcPowerSupply.i');
+      elseif 'dcPowerSupply.cc' then
+        -'dcPowerSupply.i' = 50.0 - 0.001 * 'dcPowerSupply.v';
+      elseif true then
+        1200.0 = 'dcPowerSupply.v' * (-'dcPowerSupply.i');
+      end if;
+    elseif true then
+      if 'dcPowerSupply.cv' then
+        'dcPowerSupply.v' = 60.0 - 0.001 * (-'dcPowerSupply.i');
+      elseif true then
+        -'dcPowerSupply.i' = 50.0 - 0.001 * 'dcPowerSupply.v';
+      end if;
+    end if;
+
+    'ground.p.v' = 0.0;
+    'conductor.G_actual' = 'conductor.G';
+    'conductor.i' = 'conductor.G_actual' * 'conductor.v';
+    'conductor.LossPower' = 'conductor.v' * 'conductor.i';
+    'conductor.T_heatPort' = 300.15;
+    0.0 = 'conductor.p.i' + 'conductor.n.i';
+    'conductor.i' = 'conductor.p.i';
+    'conductor.v' = 'conductor.p.v' - 'conductor.n.v';
+    'ramp.y' = (if time < 0.0 then 0.0 else if time < 1.0 then time * 6.0 else 6.0) - 3.0;
+    'power10.y' = 'Modelica.Math.exp'('power10.u' * 2.302585092994046);
+  initial algorithm
+    assert(true, "Rcv too high!", AssertionLevel.error);
+    assert(true, "Gcc too high!", AssertionLevel.error);
+    'dcPowerSupply.vLim' := 59.95005995005995;
+    'dcPowerSupply.iLim' := 49.94004994004994;
+    'dcPowerSupply.cp' := false;
+
+    if 'dcPowerSupply.vLim' * 'dcPowerSupply.iLim' > 1200.0 then
+      'dcPowerSupply.cp' := true;
+      assert(true, "Rcv too high!", AssertionLevel.error);
+      assert(true, "Gcc too high!", AssertionLevel.error);
+      'dcPowerSupply.vLim' := 24.01153107248888;
+      'dcPowerSupply.iLim' := 20.006671114817465;
+    end if;
+    annotation(experiment(Interval = 1e-4, Tolerance = 1e-6, StartTime = 0, StopTime = 1));
+  end 'DemoPowerSupply';
+end 'DemoPowerSupply';

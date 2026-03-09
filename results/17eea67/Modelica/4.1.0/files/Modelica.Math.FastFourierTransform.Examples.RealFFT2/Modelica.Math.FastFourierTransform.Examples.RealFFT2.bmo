@@ -1,0 +1,456 @@
+//! base 0.1.0
+package 'RealFFT2'
+  function 'Modelica.Math.cos' "Cosine"
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    output Real 'y';
+  algorithm
+    'y' := cos('u');
+    annotation(Inline = true);
+  end 'Modelica.Math.cos';
+
+  function 'Modelica.Math.sin' "Sine"
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    output Real 'y';
+  algorithm
+    'y' := sin('u');
+    annotation(Inline = true);
+  end 'Modelica.Math.sin';
+
+  function 'Modelica.Math.FastFourierTransform.realFFT' "Return amplitude and phase vectors for a real FFT"
+    input Real[:] 'u';
+    input Integer 'nfi';
+    output Integer 'info';
+    output Real['nfi'] 'amplitudes';
+    output Real['nfi'] 'phases';
+    Integer 'nu' = size('u', 1);
+    Integer 'nf' = div(size('u', 1), 2) + 1;
+    Real 'u_DC';
+    Real[size('u', 1)] 'u2';
+    Real[div(size('u', 1), 2) + 1] 'A';
+    Real[div(size('u', 1), 2) + 1] 'Phi';
+    Real 'Aeps';
+  algorithm
+    assert('nfi' > 0 and 'nfi' <= div(size('u', 1), 2) + 1, "Argument nfi is out of range", AssertionLevel.error);
+    'u_DC' := sum('u') / 'nu';
+    'u2' := 'u' - fill('u_DC', 'nu');
+    ('info', 'A', 'Phi') := 'Modelica.Math.FastFourierTransform.Internal.rawRealFFT'('u2');
+    'amplitudes' := 'A'[1:'nfi'];
+    'phases' := 'Modelica.Units.Conversions.to_deg'('Phi'[(1:'nfi')[1:'nfi']]);
+    'Aeps' := 1e-4 * max('amplitudes');
+    'amplitudes'[1] := 'u_DC';
+    'phases'[1] := 0.0;
+
+    for 'i' in 2:'nfi' loop
+      if 'amplitudes'['i'] < 'Aeps' then
+        'phases'['i'] := 0.0;
+      end if;
+    end for;
+  end 'Modelica.Math.FastFourierTransform.realFFT';
+
+  function 'Modelica.Math.FastFourierTransform.realFFTwriteToFile' "Write real FFT computation to file"
+    input Real 't_computed';
+    input String 'fileName';
+    input Real 'f_max'(unit = "Hz", quantity = "Frequency");
+    input Real[:] 'amplitudes';
+    input Real[:] 'phases' = fill(0.0, 0);
+    input String 'format' = "4";
+    output Boolean 'success';
+    Integer 'nA' = size('amplitudes', 1);
+    Real[3 * size('amplitudes', 1), if size('phases', 1) == 0 then 2 else 3] 'fA';
+    Real 'f';
+  algorithm
+    assert(size('phases', 1) == 0 or size('phases', 1) == size('amplitudes', 1), "Input vector phases has the wrong size", AssertionLevel.error);
+    'Modelica.Utilities.Files.removeFile'('fileName');
+
+    if size('phases', 1) == size('amplitudes', 1) then
+      for 'i' in 1:'nA' loop
+        'f' := 'f_max' * ('i' - 1) / ('nA' - 1);
+        'fA'[1 + 3 * ('i' - 1):1 + 3 * ('i' - 1) + 2,:] := {{'f', 0.0, 0.0}, {'f', 'amplitudes'['i'], 'phases'['i']}, {'f', 0.0, 0.0}};
+      end for;
+    elseif true then
+      for 'i' in 1:'nA' loop
+        'f' := 'f_max' * ('i' - 1) / ('nA' - 1);
+        'fA'[1 + 3 * ('i' - 1):1 + 3 * ('i' - 1) + 2,:] := {{'f', 0.0}, {'f', 'amplitudes'['i']}, {'f', 0.0}};
+      end for;
+    end if;
+
+    'success' := 'Modelica.Utilities.Streams.writeRealMatrix'('fileName', "FFT", 'fA', false, 'format');
+
+    if 'success' then
+      'Modelica.Utilities.Streams.print'("... FFT result computed at time = " + String('t_computed') + " s stored on file: " + 'Modelica.Utilities.Files.fullPathName'('fileName'), "");
+    end if;
+  end 'Modelica.Math.FastFourierTransform.realFFTwriteToFile';
+
+  function 'Modelica.Math.FastFourierTransform.Internal.rawRealFFT' "Compute raw Fast Fourier Transform for real signal vector"
+    input Real[:] 'u';
+    output Integer 'info';
+    output Real[div(size('u', 1), 2) + 1] 'amplitudes';
+    output Real[div(size('u', 1), 2) + 1] 'phases';
+    Real[3 * size('u', 1) + 2 * (div(size('u', 1), 2) + 1)] 'work';
+  external "C" 'info' = ModelicaFFT_kiss_fftr('u', size('u', 1), 'work', size('work', 1), 'amplitudes', 'phases') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.FastFourierTransform.Internal.rawRealFFT';
+
+  function 'Modelica.Units.Conversions.to_deg' "Convert from radian to degree"
+    input Real 'radian'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    output Real 'degree'(unit = "deg", quantity = "Angle");
+  algorithm
+    'degree' := 57.29577951308232 * 'radian';
+    annotation(Inline = true);
+  end 'Modelica.Units.Conversions.to_deg';
+
+  function 'Modelica.Utilities.Files.fullPathName' "Get full path name of file or directory name"
+    input String 'name';
+    output String 'fullName';
+  external "C" 'fullName' = ModelicaInternal_fullPathName('name') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaInternal.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Files.fullPathName';
+
+  function 'Modelica.Utilities.Files.removeFile' "Remove file (ignore call, if it does not exist)"
+    input String 'fileName';
+    'Modelica.Utilities.Types.FileType' 'fileType' = 'Modelica.Utilities.Internal.FileSystem.stat'('fileName');
+  algorithm
+    if 'fileType' == 'Modelica.Utilities.Types.FileType'.'RegularFile' then
+      'Modelica.Utilities.Streams.close'('fileName');
+      'Modelica.Utilities.Internal.FileSystem.removeFile'('fileName');
+    elseif 'fileType' == 'Modelica.Utilities.Types.FileType'.'Directory' then
+      'Modelica.Utilities.Streams.error'("File \"" + 'fileName' + "\" should be removed.\n" + "This is not possible, because it is a directory");
+    elseif 'fileType' == 'Modelica.Utilities.Types.FileType'.'SpecialFile' then
+      'Modelica.Utilities.Streams.error'("File \"" + 'fileName' + "\" should be removed.\n" + "This is not possible, because it is a special file (pipe, device, etc.)");
+    end if;
+  end 'Modelica.Utilities.Files.removeFile';
+
+  function 'Modelica.Utilities.Internal.FileSystem.removeFile' "Remove existing file (C function 'remove')"
+    input String 'fileName';
+  external "C" ModelicaInternal_removeFile('fileName') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaInternal.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Internal.FileSystem.removeFile';
+
+  function 'Modelica.Utilities.Internal.FileSystem.stat' "Inquire file information (POSIX function 'stat')"
+    input String 'name';
+    output 'Modelica.Utilities.Types.FileType' 'fileType';
+  external "C" 'fileType' = ModelicaInternal_stat('name') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaInternal.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Internal.FileSystem.stat';
+
+  function 'Modelica.Utilities.Streams.close' "Close file"
+    input String 'fileName';
+  external "C" ModelicaStreams_closeFile('fileName') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaInternal.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Streams.close';
+
+  function 'Modelica.Utilities.Streams.error' "Print error message and cancel all actions - in case of an unrecoverable error"
+    input String 'string';
+  algorithm
+    assert(false, 'string', AssertionLevel.error);
+  end 'Modelica.Utilities.Streams.error';
+
+  function 'Modelica.Utilities.Streams.print' "Print string to terminal or file"
+    input String 'string' = "";
+    input String 'fileName' = "";
+  external "C" ModelicaInternal_print('string', 'fileName') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaInternal.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Streams.print';
+
+  function 'Modelica.Utilities.Streams.writeRealMatrix' "Write Real matrix to a MATLAB MAT file"
+    input String 'fileName';
+    input String 'matrixName';
+    input Real[:, :] 'matrix';
+    input Boolean 'append' = false;
+    input String 'format' = "4";
+    output Boolean 'success';
+  external "C" 'success' = ModelicaIO_writeRealMatrix('fileName', 'matrixName', 'matrix', size('matrix', 1), size('matrix', 2), 'append', 'format') annotation(Library = {"ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaIO.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Streams.writeRealMatrix';
+
+  type 'Modelica.Utilities.Types.FileType' = enumeration('NoFile', 'RegularFile', 'Directory', 'SpecialFile');
+
+  model 'RealFFT2' "Example demonstrating the use of an FFT calculation during simulation (and storing only amplitudes on file)"
+    parameter Real 'f_max'(unit = "Hz", quantity = "Frequency") = 4.0 "Maximum frequency of interest";
+    parameter Real 'f_resolution'(unit = "Hz", quantity = "Frequency") = 0.2 "Frequency resolution";
+    parameter Real 'f1'(unit = "Hz", quantity = "Frequency") = 2.0 "Frequency of sine";
+    parameter Real 'f2'(unit = "Hz", quantity = "Frequency") = 3.0 "Frequency of cosine";
+    parameter String 'FFT_resultFileName' = "RealFFT2_resultFFT.mat" "File where FFT will be stored as [f,A,Phi], with f in [Hz] and A the amplitudes and Phi the phases in [rad]";
+    parameter Integer 'nfi' = 21 "Number of frequency points of the interested frequency range (only up to f_max)";
+    parameter Real 'fi[1]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[2]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[3]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[4]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[5]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[6]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[7]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[8]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[9]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[10]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[11]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[12]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[13]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[14]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[15]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[16]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[17]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[18]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[19]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[20]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    parameter Real 'fi[21]'(fixed = false, unit = "Hz", quantity = "Frequency") "FFT frequencies of interested frequency points";
+    Real 'y'(fixed = true, start = 0.0) "Signal from which FFT is computed";
+    output Real 'Ai[1]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[2]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[3]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[4]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[5]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[6]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[7]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[8]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[9]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[10]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[11]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[12]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[13]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[14]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[15]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[16]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[17]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[18]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[19]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[20]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Real 'Ai[21]'(fixed = true, start = 0.0) "FFT amplitudes of interested frequency points";
+    output Integer 'info'(fixed = true, start = 0) "Information flag from FFT computation; = 0: FFT successfully computed";
+    parameter Integer 'ns' = 200;
+    parameter Real 'f_max_FFT'(unit = "Hz", quantity = "Frequency") = 20.0 "Maximum frequency used by FFT";
+    parameter Integer 'nf' = 101 "Number of frequency points";
+    parameter Real 'Ts'(unit = "s", quantity = "Time") = 0.025 "Sample period";
+    parameter Real 'T'(unit = "s", quantity = "Time") = 4.9750000000000005 "Simulation time for one FFT calculation";
+    Integer 'iTick'(fixed = true, start = 0);
+    Real 'y_buf[1]'(fixed = true, start = 6.5);
+    Real 'y_buf[2]'(fixed = true, start = 0.0);
+    Real 'y_buf[3]'(fixed = true, start = 0.0);
+    Real 'y_buf[4]'(fixed = true, start = 0.0);
+    Real 'y_buf[5]'(fixed = true, start = 0.0);
+    Real 'y_buf[6]'(fixed = true, start = 0.0);
+    Real 'y_buf[7]'(fixed = true, start = 0.0);
+    Real 'y_buf[8]'(fixed = true, start = 0.0);
+    Real 'y_buf[9]'(fixed = true, start = 0.0);
+    Real 'y_buf[10]'(fixed = true, start = 0.0);
+    Real 'y_buf[11]'(fixed = true, start = 0.0);
+    Real 'y_buf[12]'(fixed = true, start = 0.0);
+    Real 'y_buf[13]'(fixed = true, start = 0.0);
+    Real 'y_buf[14]'(fixed = true, start = 0.0);
+    Real 'y_buf[15]'(fixed = true, start = 0.0);
+    Real 'y_buf[16]'(fixed = true, start = 0.0);
+    Real 'y_buf[17]'(fixed = true, start = 0.0);
+    Real 'y_buf[18]'(fixed = true, start = 0.0);
+    Real 'y_buf[19]'(fixed = true, start = 0.0);
+    Real 'y_buf[20]'(fixed = true, start = 0.0);
+    Real 'y_buf[21]'(fixed = true, start = 0.0);
+    Real 'y_buf[22]'(fixed = true, start = 0.0);
+    Real 'y_buf[23]'(fixed = true, start = 0.0);
+    Real 'y_buf[24]'(fixed = true, start = 0.0);
+    Real 'y_buf[25]'(fixed = true, start = 0.0);
+    Real 'y_buf[26]'(fixed = true, start = 0.0);
+    Real 'y_buf[27]'(fixed = true, start = 0.0);
+    Real 'y_buf[28]'(fixed = true, start = 0.0);
+    Real 'y_buf[29]'(fixed = true, start = 0.0);
+    Real 'y_buf[30]'(fixed = true, start = 0.0);
+    Real 'y_buf[31]'(fixed = true, start = 0.0);
+    Real 'y_buf[32]'(fixed = true, start = 0.0);
+    Real 'y_buf[33]'(fixed = true, start = 0.0);
+    Real 'y_buf[34]'(fixed = true, start = 0.0);
+    Real 'y_buf[35]'(fixed = true, start = 0.0);
+    Real 'y_buf[36]'(fixed = true, start = 0.0);
+    Real 'y_buf[37]'(fixed = true, start = 0.0);
+    Real 'y_buf[38]'(fixed = true, start = 0.0);
+    Real 'y_buf[39]'(fixed = true, start = 0.0);
+    Real 'y_buf[40]'(fixed = true, start = 0.0);
+    Real 'y_buf[41]'(fixed = true, start = 0.0);
+    Real 'y_buf[42]'(fixed = true, start = 0.0);
+    Real 'y_buf[43]'(fixed = true, start = 0.0);
+    Real 'y_buf[44]'(fixed = true, start = 0.0);
+    Real 'y_buf[45]'(fixed = true, start = 0.0);
+    Real 'y_buf[46]'(fixed = true, start = 0.0);
+    Real 'y_buf[47]'(fixed = true, start = 0.0);
+    Real 'y_buf[48]'(fixed = true, start = 0.0);
+    Real 'y_buf[49]'(fixed = true, start = 0.0);
+    Real 'y_buf[50]'(fixed = true, start = 0.0);
+    Real 'y_buf[51]'(fixed = true, start = 0.0);
+    Real 'y_buf[52]'(fixed = true, start = 0.0);
+    Real 'y_buf[53]'(fixed = true, start = 0.0);
+    Real 'y_buf[54]'(fixed = true, start = 0.0);
+    Real 'y_buf[55]'(fixed = true, start = 0.0);
+    Real 'y_buf[56]'(fixed = true, start = 0.0);
+    Real 'y_buf[57]'(fixed = true, start = 0.0);
+    Real 'y_buf[58]'(fixed = true, start = 0.0);
+    Real 'y_buf[59]'(fixed = true, start = 0.0);
+    Real 'y_buf[60]'(fixed = true, start = 0.0);
+    Real 'y_buf[61]'(fixed = true, start = 0.0);
+    Real 'y_buf[62]'(fixed = true, start = 0.0);
+    Real 'y_buf[63]'(fixed = true, start = 0.0);
+    Real 'y_buf[64]'(fixed = true, start = 0.0);
+    Real 'y_buf[65]'(fixed = true, start = 0.0);
+    Real 'y_buf[66]'(fixed = true, start = 0.0);
+    Real 'y_buf[67]'(fixed = true, start = 0.0);
+    Real 'y_buf[68]'(fixed = true, start = 0.0);
+    Real 'y_buf[69]'(fixed = true, start = 0.0);
+    Real 'y_buf[70]'(fixed = true, start = 0.0);
+    Real 'y_buf[71]'(fixed = true, start = 0.0);
+    Real 'y_buf[72]'(fixed = true, start = 0.0);
+    Real 'y_buf[73]'(fixed = true, start = 0.0);
+    Real 'y_buf[74]'(fixed = true, start = 0.0);
+    Real 'y_buf[75]'(fixed = true, start = 0.0);
+    Real 'y_buf[76]'(fixed = true, start = 0.0);
+    Real 'y_buf[77]'(fixed = true, start = 0.0);
+    Real 'y_buf[78]'(fixed = true, start = 0.0);
+    Real 'y_buf[79]'(fixed = true, start = 0.0);
+    Real 'y_buf[80]'(fixed = true, start = 0.0);
+    Real 'y_buf[81]'(fixed = true, start = 0.0);
+    Real 'y_buf[82]'(fixed = true, start = 0.0);
+    Real 'y_buf[83]'(fixed = true, start = 0.0);
+    Real 'y_buf[84]'(fixed = true, start = 0.0);
+    Real 'y_buf[85]'(fixed = true, start = 0.0);
+    Real 'y_buf[86]'(fixed = true, start = 0.0);
+    Real 'y_buf[87]'(fixed = true, start = 0.0);
+    Real 'y_buf[88]'(fixed = true, start = 0.0);
+    Real 'y_buf[89]'(fixed = true, start = 0.0);
+    Real 'y_buf[90]'(fixed = true, start = 0.0);
+    Real 'y_buf[91]'(fixed = true, start = 0.0);
+    Real 'y_buf[92]'(fixed = true, start = 0.0);
+    Real 'y_buf[93]'(fixed = true, start = 0.0);
+    Real 'y_buf[94]'(fixed = true, start = 0.0);
+    Real 'y_buf[95]'(fixed = true, start = 0.0);
+    Real 'y_buf[96]'(fixed = true, start = 0.0);
+    Real 'y_buf[97]'(fixed = true, start = 0.0);
+    Real 'y_buf[98]'(fixed = true, start = 0.0);
+    Real 'y_buf[99]'(fixed = true, start = 0.0);
+    Real 'y_buf[100]'(fixed = true, start = 0.0);
+    Real 'y_buf[101]'(fixed = true, start = 0.0);
+    Real 'y_buf[102]'(fixed = true, start = 0.0);
+    Real 'y_buf[103]'(fixed = true, start = 0.0);
+    Real 'y_buf[104]'(fixed = true, start = 0.0);
+    Real 'y_buf[105]'(fixed = true, start = 0.0);
+    Real 'y_buf[106]'(fixed = true, start = 0.0);
+    Real 'y_buf[107]'(fixed = true, start = 0.0);
+    Real 'y_buf[108]'(fixed = true, start = 0.0);
+    Real 'y_buf[109]'(fixed = true, start = 0.0);
+    Real 'y_buf[110]'(fixed = true, start = 0.0);
+    Real 'y_buf[111]'(fixed = true, start = 0.0);
+    Real 'y_buf[112]'(fixed = true, start = 0.0);
+    Real 'y_buf[113]'(fixed = true, start = 0.0);
+    Real 'y_buf[114]'(fixed = true, start = 0.0);
+    Real 'y_buf[115]'(fixed = true, start = 0.0);
+    Real 'y_buf[116]'(fixed = true, start = 0.0);
+    Real 'y_buf[117]'(fixed = true, start = 0.0);
+    Real 'y_buf[118]'(fixed = true, start = 0.0);
+    Real 'y_buf[119]'(fixed = true, start = 0.0);
+    Real 'y_buf[120]'(fixed = true, start = 0.0);
+    Real 'y_buf[121]'(fixed = true, start = 0.0);
+    Real 'y_buf[122]'(fixed = true, start = 0.0);
+    Real 'y_buf[123]'(fixed = true, start = 0.0);
+    Real 'y_buf[124]'(fixed = true, start = 0.0);
+    Real 'y_buf[125]'(fixed = true, start = 0.0);
+    Real 'y_buf[126]'(fixed = true, start = 0.0);
+    Real 'y_buf[127]'(fixed = true, start = 0.0);
+    Real 'y_buf[128]'(fixed = true, start = 0.0);
+    Real 'y_buf[129]'(fixed = true, start = 0.0);
+    Real 'y_buf[130]'(fixed = true, start = 0.0);
+    Real 'y_buf[131]'(fixed = true, start = 0.0);
+    Real 'y_buf[132]'(fixed = true, start = 0.0);
+    Real 'y_buf[133]'(fixed = true, start = 0.0);
+    Real 'y_buf[134]'(fixed = true, start = 0.0);
+    Real 'y_buf[135]'(fixed = true, start = 0.0);
+    Real 'y_buf[136]'(fixed = true, start = 0.0);
+    Real 'y_buf[137]'(fixed = true, start = 0.0);
+    Real 'y_buf[138]'(fixed = true, start = 0.0);
+    Real 'y_buf[139]'(fixed = true, start = 0.0);
+    Real 'y_buf[140]'(fixed = true, start = 0.0);
+    Real 'y_buf[141]'(fixed = true, start = 0.0);
+    Real 'y_buf[142]'(fixed = true, start = 0.0);
+    Real 'y_buf[143]'(fixed = true, start = 0.0);
+    Real 'y_buf[144]'(fixed = true, start = 0.0);
+    Real 'y_buf[145]'(fixed = true, start = 0.0);
+    Real 'y_buf[146]'(fixed = true, start = 0.0);
+    Real 'y_buf[147]'(fixed = true, start = 0.0);
+    Real 'y_buf[148]'(fixed = true, start = 0.0);
+    Real 'y_buf[149]'(fixed = true, start = 0.0);
+    Real 'y_buf[150]'(fixed = true, start = 0.0);
+    Real 'y_buf[151]'(fixed = true, start = 0.0);
+    Real 'y_buf[152]'(fixed = true, start = 0.0);
+    Real 'y_buf[153]'(fixed = true, start = 0.0);
+    Real 'y_buf[154]'(fixed = true, start = 0.0);
+    Real 'y_buf[155]'(fixed = true, start = 0.0);
+    Real 'y_buf[156]'(fixed = true, start = 0.0);
+    Real 'y_buf[157]'(fixed = true, start = 0.0);
+    Real 'y_buf[158]'(fixed = true, start = 0.0);
+    Real 'y_buf[159]'(fixed = true, start = 0.0);
+    Real 'y_buf[160]'(fixed = true, start = 0.0);
+    Real 'y_buf[161]'(fixed = true, start = 0.0);
+    Real 'y_buf[162]'(fixed = true, start = 0.0);
+    Real 'y_buf[163]'(fixed = true, start = 0.0);
+    Real 'y_buf[164]'(fixed = true, start = 0.0);
+    Real 'y_buf[165]'(fixed = true, start = 0.0);
+    Real 'y_buf[166]'(fixed = true, start = 0.0);
+    Real 'y_buf[167]'(fixed = true, start = 0.0);
+    Real 'y_buf[168]'(fixed = true, start = 0.0);
+    Real 'y_buf[169]'(fixed = true, start = 0.0);
+    Real 'y_buf[170]'(fixed = true, start = 0.0);
+    Real 'y_buf[171]'(fixed = true, start = 0.0);
+    Real 'y_buf[172]'(fixed = true, start = 0.0);
+    Real 'y_buf[173]'(fixed = true, start = 0.0);
+    Real 'y_buf[174]'(fixed = true, start = 0.0);
+    Real 'y_buf[175]'(fixed = true, start = 0.0);
+    Real 'y_buf[176]'(fixed = true, start = 0.0);
+    Real 'y_buf[177]'(fixed = true, start = 0.0);
+    Real 'y_buf[178]'(fixed = true, start = 0.0);
+    Real 'y_buf[179]'(fixed = true, start = 0.0);
+    Real 'y_buf[180]'(fixed = true, start = 0.0);
+    Real 'y_buf[181]'(fixed = true, start = 0.0);
+    Real 'y_buf[182]'(fixed = true, start = 0.0);
+    Real 'y_buf[183]'(fixed = true, start = 0.0);
+    Real 'y_buf[184]'(fixed = true, start = 0.0);
+    Real 'y_buf[185]'(fixed = true, start = 0.0);
+    Real 'y_buf[186]'(fixed = true, start = 0.0);
+    Real 'y_buf[187]'(fixed = true, start = 0.0);
+    Real 'y_buf[188]'(fixed = true, start = 0.0);
+    Real 'y_buf[189]'(fixed = true, start = 0.0);
+    Real 'y_buf[190]'(fixed = true, start = 0.0);
+    Real 'y_buf[191]'(fixed = true, start = 0.0);
+    Real 'y_buf[192]'(fixed = true, start = 0.0);
+    Real 'y_buf[193]'(fixed = true, start = 0.0);
+    Real 'y_buf[194]'(fixed = true, start = 0.0);
+    Real 'y_buf[195]'(fixed = true, start = 0.0);
+    Real 'y_buf[196]'(fixed = true, start = 0.0);
+    Real 'y_buf[197]'(fixed = true, start = 0.0);
+    Real 'y_buf[198]'(fixed = true, start = 0.0);
+    Real 'y_buf[199]'(fixed = true, start = 0.0);
+    Real 'y_buf[200]'(fixed = true, start = 0.0);
+  initial equation
+    'fi[1]' = 0.0;
+    'fi[2]' = 0.2;
+    'fi[3]' = 0.4;
+    'fi[4]' = 0.6000000000000001;
+    'fi[5]' = 0.8;
+    'fi[6]' = 1.0;
+    'fi[7]' = 1.2000000000000002;
+    'fi[8]' = 1.4000000000000001;
+    'fi[9]' = 1.6;
+    'fi[10]' = 1.8;
+    'fi[11]' = 2.0;
+    'fi[12]' = 2.2;
+    'fi[13]' = 2.4000000000000004;
+    'fi[14]' = 2.6;
+    'fi[15]' = 2.8000000000000003;
+    'fi[16]' = 3.0;
+    'fi[17]' = 3.2;
+    'fi[18]' = 3.4000000000000004;
+    'fi[19]' = 3.6;
+    'fi[20]' = 3.8000000000000003;
+    'fi[21]' = 4.0;
+  algorithm
+    when sample(0.0, 0.025) then
+      'iTick' := pre('iTick') + 1;
+      'y' := 5.0 + 3.0 * 'Modelica.Math.sin'(12.566370614359172 * time) + 1.5 * 'Modelica.Math.cos'(18.84955592153876 * time);
+
+      if 'iTick' >= 1 and 'iTick' <= 200 then
+        'y_buf['iTick']' := 'y';
+      end if;
+
+      if 'iTick' == 200 then
+        ('info', 'Ai') := 'Modelica.Math.FastFourierTransform.realFFT'('y_buf', 21);
+        'Modelica.Math.FastFourierTransform.realFFTwriteToFile'(time, "RealFFT2_resultFFT.mat", 4.0, 'Ai', fill(0.0, 0), "4");
+      end if;
+    end when;
+    annotation(experiment(StopTime = 6));
+  end 'RealFFT2';
+end 'RealFFT2';

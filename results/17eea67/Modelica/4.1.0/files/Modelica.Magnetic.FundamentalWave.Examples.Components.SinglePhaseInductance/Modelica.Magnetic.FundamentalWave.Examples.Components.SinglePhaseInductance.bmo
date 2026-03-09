@@ -1,0 +1,361 @@
+//! base 0.1.0
+package 'SinglePhaseInductance'
+  function 'Complex.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Complex.\'*\'.multiply';
+
+  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Complex.\'constructor\'.fromReal';
+
+  function 'Modelica.ComplexMath.abs' "Absolute value of complex number"
+    input 'Complex' 'c';
+    output Real 'result';
+  algorithm
+    'result' := sqrt('c'.'re' ^ 2.0 + 'c'.'im' ^ 2.0);
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.abs';
+
+  function 'Modelica.ComplexMath.arg' "Phase angle of complex number"
+    input 'Complex' 'c';
+    input Real 'phi0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'phi' := 'Modelica.Math.atan3'('c'.'im', 'c'.'re', 'phi0');
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.arg';
+
+  function 'Modelica.ComplexMath.real' "Real part of complex number"
+    input 'Complex' 'c';
+    output Real 'r';
+  algorithm
+    'r' := 'c'.'re';
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.real';
+
+  function 'Modelica.Math.atan2' "Four quadrant inverse tangent"
+    input Real 'u1';
+    input Real 'u2';
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'y' := atan2('u1', 'u2');
+    annotation(Inline = true);
+  end 'Modelica.Math.atan2';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
+  function 'Modelica.Math.sin' "Sine"
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    output Real 'y';
+  algorithm
+    'y' := sin('u');
+    annotation(Inline = true);
+  end 'Modelica.Math.sin';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'+\'' "Add two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'+\'';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract' "Subtract two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
+
+  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
+
+  record 'Modelica.Units.SI.ComplexMagneticFlux'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticFlux';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
+
+  record 'Modelica.Units.SI.ComplexMagneticPotential'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticPotential';
+
+  model 'SinglePhaseInductance' "Single-phase inductance"
+    parameter Real 'f'(unit = "Hz", quantity = "Frequency") = 1.0 "Supply frequency";
+    parameter Real 'VRMS'(unit = "V", quantity = "ElectricPotential") = 100.0 "RMS supply voltage";
+    parameter Real 'R'(unit = "Ohm", quantity = "Resistance") = 0.1 "Leader cable resistance";
+    parameter Real 'L'(unit = "H", quantity = "Inductance") = 1.0 "Load inductance";
+    parameter Real 'effectiveTurns' = 5.0 "Effective number of turns";
+    parameter Real 'R_m'(unit = "H-1", quantity = "Reluctance") = 25.0 "Equivalent magnetic reluctance";
+    Real 'ground_e.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'ground_e.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'ground_m.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'ground_m.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    parameter Real 'voltageSource_e.V'(start = 1.0, unit = "V", quantity = "ElectricPotential") = 141.4213562373095 "Amplitude of sine wave";
+    parameter Real 'voltageSource_e.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 1.5707963267948966 "Phase of sine wave";
+    parameter Real 'voltageSource_e.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 1.0 "Frequency of sine wave";
+    Real 'voltageSource_e.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
+    Real 'voltageSource_e.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'voltageSource_e.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'voltageSource_e.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'voltageSource_e.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'voltageSource_e.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
+    parameter Real 'voltageSource_e.signalSource.amplitude' = 141.4213562373095 "Amplitude of sine wave";
+    parameter Real 'voltageSource_e.signalSource.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 1.0 "Frequency of sine wave";
+    parameter Real 'voltageSource_e.signalSource.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 1.5707963267948966 "Phase of sine wave";
+    parameter Boolean 'voltageSource_e.signalSource.continuous' = false "Make output continuous by starting at offset + amplitude*sin(phase)" annotation(Evaluate = true);
+    Real 'voltageSource_e.signalSource.y' "Connector of Real output signal";
+    parameter Real 'voltageSource_e.signalSource.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'voltageSource_e.signalSource.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'voltageSource_e.offset'(unit = "V", quantity = "ElectricPotential") = 0.0 "Voltage offset";
+    parameter Real 'voltageSource_e.startTime'(unit = "s", quantity = "Time") = 0.0 "Time offset";
+    parameter Real 'voltageSource_m.V'(start = 1.0, unit = "V", quantity = "ElectricPotential") = 141.4213562373095 "Amplitude of sine wave";
+    parameter Real 'voltageSource_m.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 1.5707963267948966 "Phase of sine wave";
+    parameter Real 'voltageSource_m.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 1.0 "Frequency of sine wave";
+    Real 'voltageSource_m.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
+    Real 'voltageSource_m.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'voltageSource_m.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'voltageSource_m.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'voltageSource_m.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'voltageSource_m.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
+    parameter Real 'voltageSource_m.signalSource.amplitude' = 141.4213562373095 "Amplitude of sine wave";
+    parameter Real 'voltageSource_m.signalSource.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 1.0 "Frequency of sine wave";
+    parameter Real 'voltageSource_m.signalSource.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 1.5707963267948966 "Phase of sine wave";
+    parameter Boolean 'voltageSource_m.signalSource.continuous' = false "Make output continuous by starting at offset + amplitude*sin(phase)" annotation(Evaluate = true);
+    Real 'voltageSource_m.signalSource.y' "Connector of Real output signal";
+    parameter Real 'voltageSource_m.signalSource.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'voltageSource_m.signalSource.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'voltageSource_m.offset'(unit = "V", quantity = "ElectricPotential") = 0.0 "Voltage offset";
+    parameter Real 'voltageSource_m.startTime'(unit = "s", quantity = "Time") = 0.0 "Time offset";
+    parameter Real 'resistor_e.R'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 0.1 "Resistance at temperature T_ref";
+    parameter Real 'resistor_e.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Reference temperature";
+    parameter Real 'resistor_e.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R*(1 + alpha*(T_heatPort - T_ref))";
+    Real 'resistor_e.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
+    Real 'resistor_e.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'resistor_e.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'resistor_e.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'resistor_e.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'resistor_e.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
+    parameter Boolean 'resistor_e.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
+    parameter Real 'resistor_e.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Fixed device temperature if useHeatPort = false";
+    Real 'resistor_e.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
+    Real 'resistor_e.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
+    Real 'resistor_e.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
+    parameter Real 'resistor_m.R'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 0.1 "Resistance at temperature T_ref";
+    parameter Real 'resistor_m.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Reference temperature";
+    parameter Real 'resistor_m.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R*(1 + alpha*(T_heatPort - T_ref))";
+    Real 'resistor_m.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
+    Real 'resistor_m.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'resistor_m.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'resistor_m.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'resistor_m.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'resistor_m.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
+    parameter Boolean 'resistor_m.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
+    parameter Real 'resistor_m.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Fixed device temperature if useHeatPort = false";
+    Real 'resistor_m.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
+    Real 'resistor_m.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
+    Real 'resistor_m.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
+    Real 'inductor_e.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
+    Real 'inductor_e.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'inductor_e.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'inductor_e.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'inductor_e.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'inductor_e.i'(start = 0.0, unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
+    parameter Real 'inductor_e.L'(start = 1.0, unit = "H", quantity = "Inductance") = 1.0 "Inductance";
+    Real 'converter_m.pin_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'converter_m.pin_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'converter_m.pin_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'converter_m.pin_n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'converter_m.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'converter_m.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'converter_m.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'converter_m.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'converter_m.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'converter_m.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'converter_m.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'converter_m.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    parameter Real 'converter_m.effectiveTurns' = 5.0 "Effective number of turns" annotation(Evaluate = true);
+    parameter Real 'converter_m.orientation'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Orientation of the resulting fundamental wave V_m phasor" annotation(Evaluate = true);
+    Real 'converter_m.v'(unit = "V", quantity = "ElectricPotential") "Voltage";
+    Real 'converter_m.i'(unit = "A", quantity = "ElectricCurrent") "Current";
+    Real 'converter_m.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'converter_m.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'converter_m.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'converter_m.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'converter_m.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'converter_m.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'converter_m.abs_Phi'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic flux";
+    Real 'converter_m.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
+    parameter Real 'converter_m.N.re' = 5.0 "Real part of complex number";
+    parameter Real 'converter_m.N.im' = 0.0 "Imaginary part of complex number";
+    Real 'reluctance_m.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'reluctance_m.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'reluctance_m.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'reluctance_m.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'reluctance_m.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'reluctance_m.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'reluctance_m.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'reluctance_m.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'reluctance_m.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'reluctance_m.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'reluctance_m.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'reluctance_m.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'reluctance_m.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'reluctance_m.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'reluctance_m.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'reluctance_m.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
+    parameter Real 'reluctance_m.R_m.d'(start = 1.0, unit = "H-1", quantity = "Reluctance") = 25.0 "Component of d (direct) axis, aligned to real part";
+    parameter Real 'reluctance_m.R_m.q'(start = 1.0, unit = "H-1", quantity = "Reluctance") = 25.0 "Component of q (quadrature) axis, aligned to imaginary part";
+    Real 'groundM_m.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'groundM_m.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'groundM_m.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'groundM_m.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+  initial equation
+    'resistor_e.i' = 0.0;
+    'resistor_m.i' = 0.0;
+  equation
+    'converter_m.abs_V_m' = 'Modelica.ComplexMath.abs'('converter_m.V_m');
+    'converter_m.arg_V_m' = 'Modelica.ComplexMath.arg'('converter_m.V_m', 0.0);
+    'converter_m.abs_Phi' = 'Modelica.ComplexMath.abs'('converter_m.Phi');
+    'converter_m.arg_Phi' = 'Modelica.ComplexMath.arg'('converter_m.Phi', 0.0);
+    'reluctance_m.abs_V_m' = 'Modelica.ComplexMath.abs'('reluctance_m.V_m');
+    'reluctance_m.arg_V_m' = 'Modelica.ComplexMath.arg'('reluctance_m.V_m', 0.0);
+    'reluctance_m.Phi.re' = 'reluctance_m.port_p.Phi.re';
+    'reluctance_m.Phi.im' = 'reluctance_m.port_p.Phi.im';
+    'reluctance_m.abs_Phi' = 'Modelica.ComplexMath.abs'('reluctance_m.Phi');
+    'reluctance_m.arg_Phi' = 'Modelica.ComplexMath.arg'('reluctance_m.Phi', 0.0);
+    'converter_m.port_p.V_m.re' = 'reluctance_m.port_p.V_m.re';
+    'converter_m.port_p.V_m.im' = 'reluctance_m.port_p.V_m.im';
+    'converter_m.port_n.V_m.re' = 'groundM_m.port_p.V_m.re';
+    'converter_m.port_n.V_m.re' = 'reluctance_m.port_n.V_m.re';
+    'converter_m.port_n.V_m.im' = 'groundM_m.port_p.V_m.im';
+    'converter_m.port_n.V_m.im' = 'reluctance_m.port_n.V_m.im';
+    'voltageSource_e.n.v' = 'ground_e.p.v';
+    'voltageSource_e.n.v' = 'inductor_e.n.v';
+    'voltageSource_m.n.v' = 'ground_m.p.v';
+    'voltageSource_m.n.v' = 'converter_m.pin_n.v';
+    'voltageSource_e.p.v' = 'resistor_e.p.v';
+    'resistor_e.n.v' = 'inductor_e.p.v';
+    'voltageSource_m.p.v' = 'resistor_m.p.v';
+    'resistor_m.n.v' = 'converter_m.pin_p.v';
+    'resistor_e.p.i' + 'voltageSource_e.p.i' = 0.0;
+    'resistor_m.p.i' + 'voltageSource_m.p.i' = 0.0;
+    'inductor_e.p.i' + 'resistor_e.n.i' = 0.0;
+    'converter_m.pin_p.i' + 'resistor_m.n.i' = 0.0;
+    'inductor_e.n.i' + 'voltageSource_e.n.i' + 'ground_e.p.i' = 0.0;
+    'converter_m.pin_n.i' + 'voltageSource_m.n.i' + 'ground_m.p.i' = 0.0;
+    'reluctance_m.port_p.Phi.re' + 'converter_m.port_p.Phi.re' = 0.0;
+    'reluctance_m.port_p.Phi.im' + 'converter_m.port_p.Phi.im' = 0.0;
+    'groundM_m.port_p.Phi.re' + 'reluctance_m.port_n.Phi.re' + 'converter_m.port_n.Phi.re' = 0.0;
+    'groundM_m.port_p.Phi.im' + 'reluctance_m.port_n.Phi.im' + 'converter_m.port_n.Phi.im' = 0.0;
+    'ground_e.p.v' = 0.0;
+    'ground_m.p.v' = 0.0;
+    'voltageSource_e.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time + 1.5707963267948966);
+    'voltageSource_e.v' = 'voltageSource_e.signalSource.y';
+    0.0 = 'voltageSource_e.p.i' + 'voltageSource_e.n.i';
+    'voltageSource_e.i' = 'voltageSource_e.p.i';
+    'voltageSource_e.v' = 'voltageSource_e.p.v' - 'voltageSource_e.n.v';
+    'voltageSource_m.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time + 1.5707963267948966);
+    'voltageSource_m.v' = 'voltageSource_m.signalSource.y';
+    0.0 = 'voltageSource_m.p.i' + 'voltageSource_m.n.i';
+    'voltageSource_m.i' = 'voltageSource_m.p.i';
+    'voltageSource_m.v' = 'voltageSource_m.p.v' - 'voltageSource_m.n.v';
+    'resistor_e.R_actual' = 0.1;
+    'resistor_e.v' = 'resistor_e.R_actual' * 'resistor_e.i';
+    'resistor_e.LossPower' = 'resistor_e.v' * 'resistor_e.i';
+    'resistor_e.T_heatPort' = 300.15;
+    0.0 = 'resistor_e.p.i' + 'resistor_e.n.i';
+    'resistor_e.i' = 'resistor_e.p.i';
+    'resistor_e.v' = 'resistor_e.p.v' - 'resistor_e.n.v';
+    'resistor_m.R_actual' = 0.1;
+    'resistor_m.v' = 'resistor_m.R_actual' * 'resistor_m.i';
+    'resistor_m.LossPower' = 'resistor_m.v' * 'resistor_m.i';
+    'resistor_m.T_heatPort' = 300.15;
+    0.0 = 'resistor_m.p.i' + 'resistor_m.n.i';
+    'resistor_m.i' = 'resistor_m.p.i';
+    'resistor_m.v' = 'resistor_m.p.v' - 'resistor_m.n.v';
+    der('inductor_e.i') = 'inductor_e.v';
+    0.0 = 'inductor_e.p.i' + 'inductor_e.n.i';
+    'inductor_e.i' = 'inductor_e.p.i';
+    'inductor_e.v' = 'inductor_e.p.v' - 'inductor_e.n.v';
+    'converter_m.port_p.Phi.re' = 'converter_m.Phi.re';
+    'converter_m.port_p.Phi.im' = 'converter_m.Phi.im';
+    ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('converter_m.port_p.Phi', 'converter_m.port_n.Phi')).re = 0.0;
+    ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('converter_m.port_p.Phi', 'converter_m.port_n.Phi')).im = 0.0;
+    ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('converter_m.port_p.V_m', 'converter_m.port_n.V_m')).re = 'converter_m.V_m.re';
+    ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('converter_m.port_p.V_m', 'converter_m.port_n.V_m')).im = 'converter_m.V_m.im';
+    'converter_m.v' = 'converter_m.pin_p.v' - 'converter_m.pin_n.v';
+    'converter_m.i' = 'converter_m.pin_p.i';
+    'converter_m.pin_p.i' + 'converter_m.pin_n.i' = 0.0;
+    'converter_m.V_m.re' = ('Complex.\'*\'.multiply'('Complex'(3.183098861837907, 0.0), 'Complex.\'constructor\'.fromReal'('converter_m.i', 0.0))).re;
+    'converter_m.V_m.im' = ('Complex.\'*\'.multiply'('Complex'(3.183098861837907, 0.0), 'Complex.\'constructor\'.fromReal'('converter_m.i', 0.0))).im;
+    -'converter_m.v' = 'Modelica.ComplexMath.real'('Complex.\'*\'.multiply'('Complex'(5.0, 0.0), 'Complex.\'constructor\'.fromReal'(der('converter_m.Phi.re'), der('converter_m.Phi.im'))));
+    'reluctance_m.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('reluctance_m.port_p.V_m', 'reluctance_m.port_n.V_m')).re;
+    'reluctance_m.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('reluctance_m.port_p.V_m', 'reluctance_m.port_n.V_m')).im;
+    1.5707963267948966 * 'reluctance_m.V_m.re' = 25.0 * 'reluctance_m.Phi.re';
+    1.5707963267948966 * 'reluctance_m.V_m.im' = 25.0 * 'reluctance_m.Phi.im';
+    ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('reluctance_m.port_p.Phi', 'reluctance_m.port_n.Phi')).re = 0.0;
+    ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('reluctance_m.port_p.Phi', 'reluctance_m.port_n.Phi')).im = 0.0;
+    'groundM_m.port_p.V_m.re' = 0.0;
+    'groundM_m.port_p.V_m.im' = 0.0;
+    annotation(experiment(StopTime = 100, Interval = 0.01));
+  end 'SinglePhaseInductance';
+end 'SinglePhaseInductance';

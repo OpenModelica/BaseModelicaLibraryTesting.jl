@@ -1,0 +1,147 @@
+//! base 0.1.0
+package 'RealNetwork1'
+  function 'Modelica.Math.sin' "Sine"
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    output Real 'y';
+  algorithm
+    'y' := sin('u');
+    annotation(Inline = true);
+  end 'Modelica.Math.sin';
+
+  function 'Modelica.Math.BooleanVectors.firstTrueIndex' "Returns the index of the first true element of a Boolean vector"
+    input Boolean[:] 'b';
+    output Integer 'index';
+  algorithm
+    'index' := 0;
+
+    for 'i' in 1:size('b', 1) loop
+      if 'b'['i'] then
+        'index' := 'i';
+        return;
+      end if;
+    end for;
+  end 'Modelica.Math.BooleanVectors.firstTrueIndex';
+
+  model 'RealNetwork1' "Demonstrates the usage of blocks from Modelica.Blocks.Math"
+    parameter Integer 'add.significantDigits'(min = 1) = 3 "Number of significant digits to be shown in dynamic diagram layer for y";
+    parameter Integer 'add.nu'(min = 0) = 2 "Number of input connections";
+    Real 'add.u[1]';
+    Real 'add.u[2]';
+    Real 'add.y';
+    parameter Real 'add.k[1]' = 1.0 "Input gains";
+    parameter Real 'add.k[2]' = 1.0 "Input gains";
+    parameter Real 'sine.amplitude' = 3.0 "Amplitude of sine wave";
+    parameter Real 'sine.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 0.1 "Frequency of sine wave";
+    parameter Real 'sine.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of sine wave";
+    parameter Boolean 'sine.continuous' = false "Make output continuous by starting at offset + amplitude*sin(phase)" annotation(Evaluate = true);
+    Real 'sine.y' "Connector of Real output signal";
+    parameter Real 'sine.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'sine.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'integerStep.height' = 3.0 "Height of step";
+    Real 'integerStep.y' "Connector of Real output signal";
+    parameter Real 'integerStep.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'integerStep.startTime'(unit = "s", quantity = "Time") = 2.0 "Output y = offset for time < startTime";
+    parameter Real 'integerConstant.k'(start = 1.0) = 1.0 "Constant output value";
+    Real 'integerConstant.y' "Connector of Real output signal";
+    parameter Boolean 'showValue.use_numberPort' = true "= true, if numberPort enabled" annotation(Evaluate = true);
+    Real 'showValue.number' "Number to visualize if use_numberPort=false (time varying)";
+    parameter Integer 'showValue.significantDigits'(min = 1) = 2 "Number of significant digits to be shown";
+    Real 'showValue.numberPort' "Number to be shown in diagram layer if use_numberPort = true";
+    Real 'showValue.showNumber';
+    parameter Integer 'product.significantDigits'(min = 1) = 3 "Number of significant digits to be shown in dynamic diagram layer for y";
+    parameter Integer 'product.nu'(min = 0) = 2 "Number of input connections";
+    Real 'product.u[1]';
+    Real 'product.u[2]';
+    Real 'product.y';
+    parameter Boolean 'showValue1.use_numberPort' = true "= true, if numberPort enabled" annotation(Evaluate = true);
+    Real 'showValue1.number' "Number to visualize if use_numberPort=false (time varying)";
+    parameter Integer 'showValue1.significantDigits'(min = 1) = 2 "Number of significant digits to be shown";
+    Real 'showValue1.numberPort' "Number to be shown in diagram layer if use_numberPort = true";
+    Real 'showValue1.showNumber';
+    parameter Real 'booleanPulse1.width'(max = 100.0, min = 2.2250738585072014e-308) = 50.0 "Width of pulse in % of period";
+    parameter Real 'booleanPulse1.period'(start = 1.0, min = 2.2250738585072014e-308, unit = "s", quantity = "Time") = 1.0 "Time for one period";
+    parameter Real 'booleanPulse1.startTime'(unit = "s", quantity = "Time") = 0.0 "Time instant of first pulse";
+    Boolean 'booleanPulse1.y' "Connector of Boolean output signal";
+    parameter Real 'booleanPulse1.Twidth'(unit = "s", quantity = "Time") = 0.5 "Width of one pulse";
+    discrete Real 'booleanPulse1.pulseStart'(unit = "s", quantity = "Time") "Start time of pulse";
+    Real 'multiSwitch.expr[1]' "y = if u[i] then expr[i] else y_default (time varying)";
+    Real 'multiSwitch.expr[2]' "y = if u[i] then expr[i] else y_default (time varying)";
+    parameter Real 'multiSwitch.y_default' = 2.0 "Default value of output y if all u[i] = false";
+    parameter Integer 'multiSwitch.nu'(min = 0) = 2 "Number of input connections";
+    parameter Integer 'multiSwitch.precision'(min = 0) = 3 "Number of significant digits to be shown in dynamic diagram layer for y";
+    Boolean 'multiSwitch.u[1]' "Set y = expr[i], if u[i] = true";
+    Boolean 'multiSwitch.u[2]' "Set y = expr[i], if u[i] = true";
+    Real 'multiSwitch.y' "Output depending on expression";
+    Integer 'multiSwitch.firstActiveIndex';
+    parameter Real 'booleanPulse2.width'(max = 100.0, min = 2.2250738585072014e-308) = 80.0 "Width of pulse in % of period";
+    parameter Real 'booleanPulse2.period'(start = 1.0, min = 2.2250738585072014e-308, unit = "s", quantity = "Time") = 2.0 "Time for one period";
+    parameter Real 'booleanPulse2.startTime'(unit = "s", quantity = "Time") = 0.0 "Time instant of first pulse";
+    Boolean 'booleanPulse2.y' "Connector of Boolean output signal";
+    parameter Real 'booleanPulse2.Twidth'(unit = "s", quantity = "Time") = 1.6 "Width of one pulse";
+    discrete Real 'booleanPulse2.pulseStart'(unit = "s", quantity = "Time") "Start time of pulse";
+    parameter Boolean 'showValue3.use_numberPort' = false "= true, if numberPort enabled" annotation(Evaluate = true);
+    Real 'showValue3.number' "Number to visualize if use_numberPort=false (time varying)";
+    parameter Integer 'showValue3.significantDigits'(min = 1) = 1 "Number of significant digits to be shown";
+    Real 'showValue3.showNumber';
+    Real 'linearDependency1.u1' "Connector of Real input signal 1";
+    Real 'linearDependency1.u2' "Connector of Real input signal 2";
+    Real 'linearDependency1.y' "Connector of Real output signal";
+    parameter Real 'linearDependency1.y0' = 1.0 "Initial value";
+    parameter Real 'linearDependency1.k1' = 2.0 "Gain of u1";
+    parameter Real 'linearDependency1.k2' = 3.0 "Gain of u2";
+    parameter Integer 'minMax.nu'(min = 0) = 2 "Number of input connections";
+    Real 'minMax.u[1]';
+    Real 'minMax.u[2]';
+    Real 'minMax.yMax';
+    Real 'minMax.yMin';
+  initial equation
+    'booleanPulse1.pulseStart' = 0.0;
+    pre('multiSwitch.u[1]') = false;
+    pre('multiSwitch.u[2]') = false;
+    'booleanPulse2.pulseStart' = 0.0;
+  equation
+    'showValue.number' = 0.0;
+    'showValue1.number' = 0.0;
+    'showValue3.number' = 'multiSwitch.y';
+    'showValue.numberPort' = 'showValue.showNumber';
+    'showValue1.numberPort' = 'showValue1.showNumber';
+    'booleanPulse1.y' = 'multiSwitch.u[1]';
+    'booleanPulse2.y' = 'multiSwitch.u[2]';
+    'sine.y' = 'add.u[1]';
+    'integerStep.y' = 'product.u[1]';
+    'integerStep.y' = 'add.u[2]';
+    'integerConstant.y' = 'product.u[2]';
+    'add.y' = 'minMax.u[1]';
+    'add.y' = 'linearDependency1.u1';
+    'add.y' = 'showValue.numberPort';
+    'product.y' = 'minMax.u[2]';
+    'product.y' = 'linearDependency1.u2';
+    'product.y' = 'showValue1.numberPort';
+    'add.y' = 'add.u[1]' + 'add.u[2]';
+    'sine.y' = if time < 0.0 then 0.0 else 3.0 * 'Modelica.Math.sin'(0.6283185307179586 * time);
+    'integerStep.y' = if time < 2.0 then 0.0 else 3.0;
+    'integerConstant.y' = 1.0;
+    'product.y' = 'product.u[1]' * 'product.u[2]';
+
+    when sample(0.0, 1.0) then
+      'booleanPulse1.pulseStart' = time;
+    end when;
+
+    'booleanPulse1.y' = time >= 'booleanPulse1.pulseStart' and time < 'booleanPulse1.pulseStart' + 0.5;
+    'multiSwitch.expr[1]' = 4.0;
+    'multiSwitch.expr[2]' = 6.0;
+    'multiSwitch.firstActiveIndex' = 'Modelica.Math.BooleanVectors.firstTrueIndex'({'multiSwitch.u[1]', 'multiSwitch.u[2]'});
+    'multiSwitch.y' = if 'multiSwitch.firstActiveIndex' == 0 then 2.0 else 'multiSwitch.expr['multiSwitch.firstActiveIndex']';
+
+    when sample(0.0, 2.0) then
+      'booleanPulse2.pulseStart' = time;
+    end when;
+
+    'booleanPulse2.y' = time >= 'booleanPulse2.pulseStart' and time < 'booleanPulse2.pulseStart' + 1.6;
+    'showValue3.showNumber' = 'showValue3.number';
+    'linearDependency1.y' = 1.0 + 2.0 * 'linearDependency1.u1' + 3.0 * 'linearDependency1.u2';
+    'minMax.yMax' = max({'minMax.u[1]', 'minMax.u[2]'});
+    'minMax.yMin' = min({'minMax.u[1]', 'minMax.u[2]'});
+    annotation(experiment(StopTime = 10));
+  end 'RealNetwork1';
+end 'RealNetwork1';

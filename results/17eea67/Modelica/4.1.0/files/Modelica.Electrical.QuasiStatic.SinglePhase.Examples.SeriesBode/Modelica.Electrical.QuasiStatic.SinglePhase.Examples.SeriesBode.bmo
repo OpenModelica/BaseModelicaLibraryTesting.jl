@@ -1,0 +1,524 @@
+//! base 0.1.0
+package 'SeriesBode'
+  function 'Complex.\'/\'' "Divide two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'(('c1'.'re' * 'c2'.'re' + 'c1'.'im' * 'c2'.'im') / ('c2'.'re' * 'c2'.'re' + 'c2'.'im' * 'c2'.'im'), ('c1'.'im' * 'c2'.'re' - 'c1'.'re' * 'c2'.'im') / ('c2'.'re' * 'c2'.'re' + 'c2'.'im' * 'c2'.'im'));
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Complex.\'/\'';
+
+  function 'Complex.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Complex.\'*\'.multiply';
+
+  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Complex.\'constructor\'.fromReal';
+
+  function 'Modelica.ComplexMath.abs' "Absolute value of complex number"
+    input 'Complex' 'c';
+    output Real 'result';
+  algorithm
+    'result' := sqrt('c'.'re' ^ 2.0 + 'c'.'im' ^ 2.0);
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.abs';
+
+  function 'Modelica.ComplexMath.arg' "Phase angle of complex number"
+    input 'Complex' 'c';
+    input Real 'phi0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'phi' := 'Modelica.Math.atan3'('c'.'im', 'c'.'re', 'phi0');
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.arg';
+
+  function 'Modelica.ComplexMath.conj' "Conjugate of complex number"
+    input 'Complex' 'c1';
+    output 'Complex' 'c2';
+  algorithm
+    'c2' := 'Complex.\'constructor\'.fromReal'('c1'.'re', -'c1'.'im');
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.conj';
+
+  function 'Modelica.ComplexMath.imag' "Imaginary part of complex number"
+    input 'Complex' 'c';
+    output Real 'r';
+  algorithm
+    'r' := 'c'.'im';
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.imag';
+
+  function 'Modelica.ComplexMath.real' "Real part of complex number"
+    input 'Complex' 'c';
+    output Real 'r';
+  algorithm
+    'r' := 'c'.'re';
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.real';
+
+  function 'Modelica.Math.atan2' "Four quadrant inverse tangent"
+    input Real 'u1';
+    input Real 'u2';
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'y' := atan2('u1', 'u2');
+    annotation(Inline = true);
+  end 'Modelica.Math.atan2';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
+  function 'Modelica.Math.log10' "Base 10 logarithm (u shall be > 0)"
+    input Real 'u';
+    output Real 'y';
+  algorithm
+    'y' := log10('u');
+    annotation(Inline = true);
+  end 'Modelica.Math.log10';
+
+  function 'Modelica.Units.SI.ComplexCurrent.\'+\'' "Add two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexCurrent.\'+\'';
+
+  function 'Modelica.Units.SI.ComplexCurrent.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexCurrent.\'*\'.multiply';
+
+  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract' "Subtract two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract';
+
+  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexVoltage.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexVoltage.\'*\'.multiply';
+
+  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
+
+  type 'Modelica.Blocks.Types.LimiterHomotopy' = enumeration('NoHomotopy', 'Linear', 'UpperLimit', 'LowerLimit');
+
+  record 'Modelica.Units.SI.ComplexVoltage'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexVoltage';
+
+  record 'Modelica.Units.SI.ComplexCurrent'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexCurrent';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
+
+  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
+    Real 're';
+    Real 'im';
+  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
+
+  record 'Modelica.Units.SI.ComplexElectricPotential'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexElectricPotential';
+
+  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
+    Real 're';
+    Real 'im';
+  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
+
+  model 'SeriesBode' "Series circuit with Bode analysis"
+    output Real 'abs_y' "Magnitude of voltage ratio";
+    output Real 'dB_y'(unit = "dB", quantity = "AmplitudeLevelDifference") "Log10 of magnitude of voltage ratio";
+    output Real 'arg_y'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Angle of voltage ratio";
+    Real 'frequencySweep.y' "Connector of Real output signal";
+    parameter Real 'frequencySweep.wMin'(min = 2.220446049250313e-16) = 0.01 "Start frequency";
+    parameter Real 'frequencySweep.wMax'(min = 2.220446049250313e-16) = 100.0 "End frequency";
+    parameter Real 'frequencySweep.startTime'(unit = "s", quantity = "Time") = 0.0 "Start time of frequency sweep";
+    parameter Real 'frequencySweep.duration'(start = 1.0, min = 0.0, unit = "s", quantity = "Time") = 1.0 "Duration of ramp (= 0.0 gives a Step)";
+    Real 'voltageSource.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
+    Real 'voltageSource.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'voltageSource.pin_p.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'voltageSource.pin_p.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'voltageSource.pin_p.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'voltageSource.pin_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'voltageSource.pin_n.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'voltageSource.pin_n.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'voltageSource.pin_n.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'voltageSource.pin_n.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'voltageSource.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'voltageSource.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'voltageSource.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'voltageSource.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'voltageSource.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
+    Real 'voltageSource.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'voltageSource.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'voltageSource.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'voltageSource.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'voltageSource.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'voltageSource.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'voltageSource.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'voltageSource.pf' "Power factor";
+    Real 'voltageSource.gamma'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'voltageSource.f'(unit = "Hz");
+    Real 'voltageSource.V.re' "Real part of complex number";
+    Real 'voltageSource.V.im' "Imaginary part of complex number";
+    Real 'ground.pin.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'ground.pin.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'ground.pin.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'ground.pin.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'ground.pin.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'resistor.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
+    Real 'resistor.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'resistor.pin_p.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'resistor.pin_p.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'resistor.pin_p.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'resistor.pin_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'resistor.pin_n.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'resistor.pin_n.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'resistor.pin_n.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'resistor.pin_n.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'resistor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'resistor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'resistor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'resistor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'resistor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
+    Real 'resistor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'resistor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'resistor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'resistor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'resistor.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'resistor.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'resistor.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'resistor.pf' "Power factor";
+    parameter Real 'resistor.R_ref'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 1.0 "Reference resistance at T_ref";
+    parameter Real 'resistor.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Reference temperature";
+    parameter Real 'resistor.alpha_ref'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R_ref*(1 + alpha_ref*(heatPort.T - T_ref))";
+    parameter Boolean 'resistor.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
+    parameter Real 'resistor.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
+    Real 'resistor.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
+    Real 'resistor.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
+    Real 'resistor.R_actual'(unit = "Ohm", quantity = "Resistance") "Resistance = R_ref*(1 + alpha_ref*(heatPort.T - T_ref))";
+    Real 'inductor.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
+    Real 'inductor.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'inductor.pin_p.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'inductor.pin_p.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'inductor.pin_p.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'inductor.pin_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'inductor.pin_n.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'inductor.pin_n.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'inductor.pin_n.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'inductor.pin_n.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'inductor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'inductor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'inductor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'inductor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'inductor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
+    Real 'inductor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'inductor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'inductor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'inductor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'inductor.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'inductor.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'inductor.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'inductor.pf' "Power factor";
+    parameter Real 'inductor.L'(start = 1.0, unit = "H", quantity = "Inductance") = 0.15915494309189535 "Inductance";
+    parameter Real 'complexConst.k.re'(start = 1.0) = 1.0 "Real part of complex number";
+    parameter Real 'complexConst.k.im'(start = 0.0) = 0.0 "Imaginary part of complex number";
+    Real 'complexConst.y.re' "Real part of complex number";
+    Real 'complexConst.y.im' "Imaginary part of complex number";
+    Real 'currentSensor.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
+    Real 'currentSensor.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'currentSensor.pin_p.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'currentSensor.pin_p.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'currentSensor.pin_p.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'currentSensor.pin_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'currentSensor.pin_n.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'currentSensor.pin_n.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'currentSensor.pin_n.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'currentSensor.pin_n.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'currentSensor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'currentSensor.i.re'(unit = "A") "Real part of complex number";
+    Real 'currentSensor.i.im'(unit = "A") "Imaginary part of complex number";
+    Real 'currentSensor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'currentSensor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'currentSensor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'currentSensor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'voltageSensor.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
+    Real 'voltageSensor.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'voltageSensor.pin_p.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'voltageSensor.pin_p.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'voltageSensor.pin_p.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'voltageSensor.pin_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'voltageSensor.pin_n.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'voltageSensor.pin_n.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'voltageSensor.pin_n.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'voltageSensor.pin_n.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'voltageSensor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'voltageSensor.v.re'(unit = "V") "Real part of complex number";
+    Real 'voltageSensor.v.im'(unit = "V") "Imaginary part of complex number";
+    Real 'voltageSensor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'voltageSensor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
+    Real 'voltageSensor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'voltageSensor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    parameter Boolean 'bode.useDivisor' = true "Use divisor input, if true" annotation(Evaluate = true);
+    constant Real 'bode.dB'(unit = "dB", quantity = "AmplitudeLevelDifference") = 20.0 "Amplitude level difference";
+    Real 'bode.u.re' "Real part of complex number";
+    Real 'bode.u.im' "Imaginary part of complex number";
+    Real 'bode.divisor.re' "Real part of complex number";
+    Real 'bode.divisor.im' "Imaginary part of complex number";
+    Real 'bode.abs_y' "Absolute value of ratio u / divisor";
+    Real 'bode.arg_y'(unit = "rad") "Angle of ratio u / divisor";
+    Real 'bode.y.re' "Real part of complex number";
+    Real 'bode.y.im' "Imaginary part of complex number";
+    Real 'bode.division.u1.re' "Real part of complex number";
+    Real 'bode.division.u1.im' "Imaginary part of complex number";
+    Real 'bode.division.u2.re' "Real part of complex number";
+    Real 'bode.division.u2.im' "Imaginary part of complex number";
+    Real 'bode.division.y.re' "Real part of complex number";
+    Real 'bode.division.y.im' "Imaginary part of complex number";
+    parameter Boolean 'bode.division.useConjugateInput1' = false "If true, input 1 is processed conjugate complex";
+    parameter Boolean 'bode.division.useConjugateInput2' = false "If true, input 2 is processed conjugate complex";
+    Real 'bode.division.u1Internal.re' "Real part of complex number";
+    Real 'bode.division.u1Internal.im' "Imaginary part of complex number";
+    Real 'bode.division.u2Internal.re' "Real part of complex number";
+    Real 'bode.division.u2Internal.im' "Imaginary part of complex number";
+    Real 'bode.complexToPolar.len';
+    Real 'bode.complexToPolar.phi'(unit = "rad");
+    Real 'bode.complexToPolar.u.re' "Real part of complex number";
+    Real 'bode.complexToPolar.u.im' "Imaginary part of complex number";
+    parameter Boolean 'bode.complexToPolar.useConjugateInput' = false "If true, input is processed conjugate complex";
+    Real 'bode.dB_y'(unit = "dB") "Log10 of absolute value of ratio u / divisor";
+    Real 'bode.log10_y.u' "Connector of Real input signal";
+    Real 'bode.log10_y.y' "Connector of Real output signal";
+    parameter Real 'bode.gain.k'(start = 1.0) = 20.0 "Gain value multiplied with input signal";
+    Real 'bode.gain.u' "Input signal connector";
+    Real 'bode.gain.y' "Output signal connector";
+    parameter Real 'bode.limiter.uMax'(start = 1.0) = 1e60 "Upper limits of input signals";
+    parameter Real 'bode.limiter.uMin' = 2.220446049250313e-16 "Lower limits of input signals";
+    parameter Boolean 'bode.limiter.strict' = false "= true, if strict limits with noEvent(..)" annotation(Evaluate = true);
+    parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'bode.limiter.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'Linear' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
+    Real 'bode.limiter.u' "Connector of Real input signal";
+    Real 'bode.limiter.y' "Connector of Real output signal";
+    Real 'bode.limiter.simplifiedExpr' "Simplified expression for homotopy-based initialization";
+  equation
+    'abs_y' = 'bode.abs_y';
+    'dB_y' = 'bode.dB_y';
+    'arg_y' = 'bode.arg_y';
+    'voltageSource.abs_v' = 'Modelica.ComplexMath.abs'('voltageSource.v');
+    'voltageSource.arg_v' = 'Modelica.ComplexMath.arg'('voltageSource.v', 0.0);
+    'voltageSource.abs_i' = 'Modelica.ComplexMath.abs'('voltageSource.i');
+    'voltageSource.arg_i' = 'Modelica.ComplexMath.arg'('voltageSource.i', 0.0);
+    'voltageSource.P' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v', 'Modelica.ComplexMath.conj'('voltageSource.i')));
+    'voltageSource.Q' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v', 'Modelica.ComplexMath.conj'('voltageSource.i')));
+    'voltageSource.S' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v', 'Modelica.ComplexMath.conj'('voltageSource.i')));
+    'voltageSource.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P', 'voltageSource.Q'), 0.0));
+    'voltageSource.gamma' = 'voltageSource.pin_p.reference.gamma';
+    'resistor.abs_v' = 'Modelica.ComplexMath.abs'('resistor.v');
+    'resistor.arg_v' = 'Modelica.ComplexMath.arg'('resistor.v', 0.0);
+    'resistor.abs_i' = 'Modelica.ComplexMath.abs'('resistor.i');
+    'resistor.arg_i' = 'Modelica.ComplexMath.arg'('resistor.i', 0.0);
+    'resistor.P' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v', 'Modelica.ComplexMath.conj'('resistor.i')));
+    'resistor.Q' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v', 'Modelica.ComplexMath.conj'('resistor.i')));
+    'resistor.S' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v', 'Modelica.ComplexMath.conj'('resistor.i')));
+    'resistor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor.P', 'resistor.Q'), 0.0));
+    'inductor.abs_v' = 'Modelica.ComplexMath.abs'('inductor.v');
+    'inductor.arg_v' = 'Modelica.ComplexMath.arg'('inductor.v', 0.0);
+    'inductor.abs_i' = 'Modelica.ComplexMath.abs'('inductor.i');
+    'inductor.arg_i' = 'Modelica.ComplexMath.arg'('inductor.i', 0.0);
+    'inductor.P' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v', 'Modelica.ComplexMath.conj'('inductor.i')));
+    'inductor.Q' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v', 'Modelica.ComplexMath.conj'('inductor.i')));
+    'inductor.S' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v', 'Modelica.ComplexMath.conj'('inductor.i')));
+    'inductor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor.P', 'inductor.Q'), 0.0));
+    'currentSensor.abs_i' = 'Modelica.ComplexMath.abs'('currentSensor.i');
+    'currentSensor.arg_i' = 'Modelica.ComplexMath.arg'('currentSensor.i', 0.0);
+    'voltageSensor.abs_v' = 'Modelica.ComplexMath.abs'('voltageSensor.v');
+    'voltageSensor.arg_v' = 'Modelica.ComplexMath.arg'('voltageSensor.v', 0.0);
+    'bode.division.u1Internal.re' = 'bode.division.u1.re';
+    'bode.division.u1Internal.im' = 'bode.division.u1.im';
+    'bode.division.u2Internal.re' = 'bode.division.u2.re';
+    'bode.division.u2Internal.im' = 'bode.division.u2.im';
+    'bode.divisor.re' = 'bode.division.u2.re';
+    'bode.divisor.im' = 'bode.division.u2.im';
+    'bode.division.u1.re' = 'bode.u.re';
+    'bode.division.u1.im' = 'bode.u.im';
+    'bode.complexToPolar.u.re' = 'bode.y.re';
+    'bode.complexToPolar.u.re' = 'bode.division.y.re';
+    'bode.complexToPolar.u.im' = 'bode.y.im';
+    'bode.complexToPolar.u.im' = 'bode.division.y.im';
+    'bode.complexToPolar.phi' = 'bode.arg_y';
+    'bode.complexToPolar.len' = 'bode.limiter.u';
+    'bode.complexToPolar.len' = 'bode.abs_y';
+    'bode.log10_y.y' = 'bode.gain.u';
+    'bode.gain.y' = 'bode.dB_y';
+    'bode.limiter.y' = 'bode.log10_y.u';
+    'frequencySweep.y' = 'voltageSource.f';
+    'ground.pin.v.re' = 'inductor.pin_n.v.re';
+    'ground.pin.v.re' = 'voltageSource.pin_n.v.re';
+    'ground.pin.v.im' = 'inductor.pin_n.v.im';
+    'ground.pin.v.im' = 'voltageSource.pin_n.v.im';
+    'voltageSensor.pin_n.v.re' = 'inductor.pin_p.v.re';
+    'voltageSensor.pin_n.v.re' = 'resistor.pin_n.v.re';
+    'voltageSensor.pin_n.v.im' = 'inductor.pin_p.v.im';
+    'voltageSensor.pin_n.v.im' = 'resistor.pin_n.v.im';
+    'bode.divisor.re' = 'complexConst.y.re';
+    'bode.divisor.re' = 'voltageSource.V.re';
+    'bode.divisor.im' = 'complexConst.y.im';
+    'bode.divisor.im' = 'voltageSource.V.im';
+    'currentSensor.pin_n.reference.gamma' = 'resistor.pin_p.reference.gamma';
+    'currentSensor.pin_n.reference.gamma' = 'voltageSensor.pin_p.reference.gamma';
+    'currentSensor.pin_n.v.re' = 'resistor.pin_p.v.re';
+    'currentSensor.pin_n.v.re' = 'voltageSensor.pin_p.v.re';
+    'currentSensor.pin_n.v.im' = 'resistor.pin_p.v.im';
+    'currentSensor.pin_n.v.im' = 'voltageSensor.pin_p.v.im';
+    'voltageSensor.pin_n.reference.gamma' = 'inductor.pin_p.reference.gamma';
+    'ground.pin.reference.gamma' = 'inductor.pin_n.reference.gamma';
+    'bode.u.re' = 'voltageSensor.v.re';
+    'bode.u.im' = 'voltageSensor.v.im';
+    'currentSensor.pin_p.reference.gamma' = 'voltageSource.pin_p.reference.gamma';
+    'currentSensor.pin_p.v.re' = 'voltageSource.pin_p.v.re';
+    'currentSensor.pin_p.v.im' = 'voltageSource.pin_p.v.im';
+    'inductor.pin_n.i.re' + 'ground.pin.i.re' + 'voltageSource.pin_n.i.re' = 0.0;
+    'inductor.pin_n.i.im' + 'ground.pin.i.im' + 'voltageSource.pin_n.i.im' = 0.0;
+    'voltageSensor.pin_n.i.re' + 'inductor.pin_p.i.re' + 'resistor.pin_n.i.re' = 0.0;
+    'voltageSensor.pin_n.i.im' + 'inductor.pin_p.i.im' + 'resistor.pin_n.i.im' = 0.0;
+    'currentSensor.pin_p.i.re' + 'voltageSource.pin_p.i.re' = 0.0;
+    'currentSensor.pin_p.i.im' + 'voltageSource.pin_p.i.im' = 0.0;
+    'voltageSensor.pin_p.i.re' + 'currentSensor.pin_n.i.re' + 'resistor.pin_p.i.re' = 0.0;
+    'voltageSensor.pin_p.i.im' + 'currentSensor.pin_n.i.im' + 'resistor.pin_p.i.im' = 0.0;
+    'frequencySweep.y' = if time < 0.0 then 0.01 else if time < 1.0 then 0.01 * 1e4 ^ min(1.0, time) else 100.0;
+    'voltageSource.omega' = 6.283185307179586 * 'voltageSource.f';
+    'voltageSource.v.re' = 'voltageSource.V.re';
+    'voltageSource.v.im' = 'voltageSource.V.im';
+    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.pin_p.i', 'voltageSource.pin_n.i')).re = 0.0;
+    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.pin_p.i', 'voltageSource.pin_n.i')).im = 0.0;
+    'voltageSource.v.re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.pin_p.v', 'voltageSource.pin_n.v')).re;
+    'voltageSource.v.im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.pin_p.v', 'voltageSource.pin_n.v')).im;
+    'voltageSource.i.re' = 'voltageSource.pin_p.i.re';
+    'voltageSource.i.im' = 'voltageSource.pin_p.i.im';
+    'voltageSource.pin_p.reference.gamma' = 'voltageSource.pin_n.reference.gamma';
+    'voltageSource.omega' = der('voltageSource.pin_p.reference.gamma');
+    'ground.pin.v.re' = 0.0;
+    'ground.pin.v.im' = 0.0;
+    'resistor.R_actual' = 1.0;
+    'resistor.v.re' = ('Modelica.Units.SI.ComplexCurrent.\'*\'.multiply'('Complex.\'constructor\'.fromReal'('resistor.R_actual', 0.0), 'resistor.i')).re;
+    'resistor.v.im' = ('Modelica.Units.SI.ComplexCurrent.\'*\'.multiply'('Complex.\'constructor\'.fromReal'('resistor.R_actual', 0.0), 'resistor.i')).im;
+    'resistor.LossPower' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v', 'Modelica.ComplexMath.conj'('resistor.i')));
+    'resistor.T_heatPort' = 293.15;
+    ('Modelica.Units.SI.ComplexCurrent.\'+\''('resistor.pin_p.i', 'resistor.pin_n.i')).re = 0.0;
+    ('Modelica.Units.SI.ComplexCurrent.\'+\''('resistor.pin_p.i', 'resistor.pin_n.i')).im = 0.0;
+    'resistor.v.re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('resistor.pin_p.v', 'resistor.pin_n.v')).re;
+    'resistor.v.im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('resistor.pin_p.v', 'resistor.pin_n.v')).im;
+    'resistor.i.re' = 'resistor.pin_p.i.re';
+    'resistor.i.im' = 'resistor.pin_p.i.im';
+    'resistor.pin_p.reference.gamma' = 'resistor.pin_n.reference.gamma';
+    'resistor.omega' = der('resistor.pin_p.reference.gamma');
+    'inductor.v.re' = ('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex'(0.0, 1.0), 'Complex.\'constructor\'.fromReal'('inductor.omega', 0.0)), 'Complex'(0.15915494309189535, 0.0)), 'inductor.i')).re;
+    'inductor.v.im' = ('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex'(0.0, 1.0), 'Complex.\'constructor\'.fromReal'('inductor.omega', 0.0)), 'Complex'(0.15915494309189535, 0.0)), 'inductor.i')).im;
+    ('Modelica.Units.SI.ComplexCurrent.\'+\''('inductor.pin_p.i', 'inductor.pin_n.i')).re = 0.0;
+    ('Modelica.Units.SI.ComplexCurrent.\'+\''('inductor.pin_p.i', 'inductor.pin_n.i')).im = 0.0;
+    'inductor.v.re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('inductor.pin_p.v', 'inductor.pin_n.v')).re;
+    'inductor.v.im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('inductor.pin_p.v', 'inductor.pin_n.v')).im;
+    'inductor.i.re' = 'inductor.pin_p.i.re';
+    'inductor.i.im' = 'inductor.pin_p.i.im';
+    'inductor.pin_p.reference.gamma' = 'inductor.pin_n.reference.gamma';
+    'inductor.omega' = der('inductor.pin_p.reference.gamma');
+    'complexConst.y.re' = 1.0;
+    'complexConst.y.im' = 0.0;
+    'currentSensor.i.re' = 'currentSensor.pin_p.i.re';
+    'currentSensor.i.im' = 'currentSensor.pin_p.i.im';
+    'currentSensor.v.re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentSensor.pin_p.v', 'currentSensor.pin_n.v')).re;
+    'currentSensor.v.im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentSensor.pin_p.v', 'currentSensor.pin_n.v')).im;
+    'currentSensor.v.re' = 0.0;
+    'currentSensor.v.im' = 0.0;
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('currentSensor.pin_p.i', 'currentSensor.pin_n.i')).re "Current balance";
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('currentSensor.pin_p.i', 'currentSensor.pin_n.i')).im "Current balance";
+    'currentSensor.pin_p.reference.gamma' = 'currentSensor.pin_n.reference.gamma';
+    'currentSensor.omega' = der('currentSensor.pin_p.reference.gamma');
+    'voltageSensor.v.re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSensor.pin_p.v', 'voltageSensor.pin_n.v')).re;
+    'voltageSensor.v.im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSensor.pin_p.v', 'voltageSensor.pin_n.v')).im;
+    'voltageSensor.i.re' = 'voltageSensor.pin_p.i.re';
+    'voltageSensor.i.im' = 'voltageSensor.pin_p.i.im';
+    'voltageSensor.i.re' = 0.0;
+    'voltageSensor.i.im' = 0.0;
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSensor.pin_p.i', 'voltageSensor.pin_n.i')).re "Current balance";
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSensor.pin_p.i', 'voltageSensor.pin_n.i')).im "Current balance";
+    'voltageSensor.pin_p.reference.gamma' = 'voltageSensor.pin_n.reference.gamma';
+    'voltageSensor.omega' = der('voltageSensor.pin_p.reference.gamma');
+    'bode.division.y.re' = ('Complex.\'/\''('bode.division.u1', 'bode.division.u2')).re;
+    'bode.division.y.im' = ('Complex.\'/\''('bode.division.u1', 'bode.division.u2')).im;
+    'bode.complexToPolar.len' = sqrt('bode.complexToPolar.u.re' ^ 2.0 + 'bode.complexToPolar.u.im' ^ 2.0);
+    'bode.complexToPolar.phi' = 'Modelica.Math.atan2'('bode.complexToPolar.u.im', 'bode.complexToPolar.u.re');
+    'bode.log10_y.y' = 'Modelica.Math.log10'('bode.log10_y.u');
+    'bode.gain.y' = 20.0 * 'bode.gain.u';
+    'bode.limiter.simplifiedExpr' = 'bode.limiter.u';
+    'bode.limiter.y' = homotopy(smooth(0, if 'bode.limiter.u' > 1e60 then 1e60 else if 'bode.limiter.u' < 2.220446049250313e-16 then 2.220446049250313e-16 else 'bode.limiter.u'), 'bode.limiter.simplifiedExpr');
+    annotation(experiment(StopTime = 1.0, Interval = 0.001));
+  end 'SeriesBode';
+end 'SeriesBode';

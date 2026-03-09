@@ -1,0 +1,84 @@
+//! base 0.1.0
+package 'Densities'
+  function 'Modelica.Math.exp' "Exponential, base e"
+    input Real 'u';
+    output Real 'y';
+  algorithm
+    'y' := exp('u');
+    annotation(Inline = true);
+  end 'Modelica.Math.exp';
+
+  function 'Modelica.Math.Distributions.Normal.density' "Density of normal distribution"
+    input Real 'u';
+    input Real 'mu' = 0.0;
+    input Real 'sigma' = 1.0;
+    output Real 'y';
+  algorithm
+    'y' := 'Modelica.Math.exp'(-('u' - 'mu') ^ 2.0 / (2.0 * 'sigma' ^ 2.0)) / ('sigma' * 2.5066282746310002);
+    annotation(Inline = true);
+  end 'Modelica.Math.Distributions.Normal.density';
+
+  function 'Modelica.Math.Distributions.Uniform.density' "Density of uniform distribution"
+    input Real 'u';
+    input Real 'u_min' = 0.0;
+    input Real 'u_max' = 1.0;
+    output Real 'y';
+  algorithm
+    'y' := if 'u' < 'u_min' or 'u' > 'u_max' then 0.0 else 1.0 / ('u_max' - 'u_min');
+    annotation(Inline = true);
+  end 'Modelica.Math.Distributions.Uniform.density';
+
+  function 'Modelica.Math.Distributions.Weibull.density' "Density of Weibull distribution"
+    input Real 'u';
+    input Real 'lambda'(min = 0.0) = 1.0;
+    input Real 'k'(min = 0.0);
+    output Real 'y';
+  algorithm
+    'y' := if 'u' >= 0.0 then 'k' / 'lambda' * ('u' / 'lambda') ^ ('k' - 1.0) * 'Modelica.Math.exp'(-('u' / 'lambda') ^ 'k') else 0.0;
+    annotation(Inline = true);
+  end 'Modelica.Math.Distributions.Weibull.density';
+
+  model 'Densities' "Demonstrates how to compute distribution densities (= Probability Density Function)"
+    output Real 'uniformDensity_y';
+    output Real 'normalDensity_y';
+    output Real 'weibullDensity_y';
+    parameter Real 'uniformDensity.u_min' = -4.0 "Lower limit of u";
+    parameter Real 'uniformDensity.u_max' = 4.0 "Upper limit of u";
+    Real 'uniformDensity.u' "Real input signal";
+    Real 'uniformDensity.y' "Density of the input signal according to the uniform probability density function";
+    Real 'clock.y' "Connector of Real output signal";
+    parameter Real 'clock.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'clock.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'const.k'(start = 1.0) = -10.0 "Constant output value";
+    Real 'const.y' "Connector of Real output signal";
+    Real 'add.u1' "Connector of Real input signal 1";
+    Real 'add.u2' "Connector of Real input signal 2";
+    Real 'add.y' "Connector of Real output signal";
+    parameter Real 'add.k1' = 1.0 "Gain of input signal 1";
+    parameter Real 'add.k2' = 1.0 "Gain of input signal 2";
+    parameter Real 'normalDensity.mu' = 0.0 "Expectation (mean) value of the normal distribution";
+    parameter Real 'normalDensity.sigma' = 2.0 "Standard deviation of the normal distribution";
+    Real 'normalDensity.u' "Real input signal";
+    Real 'normalDensity.y' "Density of the input signal according to the normal probability density function";
+    parameter Real 'weibullDensity.lambda'(min = 0.0) = 3.0 "Scale parameter of the Weibull distribution";
+    parameter Real 'weibullDensity.k'(min = 0.0) = 1.5 "Shape parameter of the Weibull distribution";
+    Real 'weibullDensity.u' "Real input signal";
+    Real 'weibullDensity.y' "Density of the input signal according to the Weibull probability density function";
+  equation
+    'uniformDensity_y' = 'uniformDensity.y';
+    'normalDensity_y' = 'normalDensity.y';
+    'weibullDensity_y' = 'weibullDensity.y';
+    'clock.y' = 'add.u1';
+    'const.y' = 'add.u2';
+    'add.y' = 'weibullDensity.u';
+    'add.y' = 'normalDensity.u';
+    'add.y' = 'uniformDensity.u';
+    'uniformDensity.y' = 'Modelica.Math.Distributions.Uniform.density'('uniformDensity.u', -4.0, 4.0);
+    'clock.y' = smooth(0, if time < 0.0 then 0.0 else time);
+    'const.y' = -10.0;
+    'add.y' = 'add.u1' + 'add.u2';
+    'normalDensity.y' = 'Modelica.Math.Distributions.Normal.density'('normalDensity.u', 0.0, 2.0);
+    'weibullDensity.y' = 'Modelica.Math.Distributions.Weibull.density'('weibullDensity.u', 3.0, 1.5);
+    annotation(experiment(StopTime = 20, Interval = 2e-2));
+  end 'Densities';
+end 'Densities';

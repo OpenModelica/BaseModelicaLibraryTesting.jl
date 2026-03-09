@@ -1,0 +1,754 @@
+//! base 0.1.0
+package 'ToroidalCoreQuadraticCrossSection'
+  function 'Complex.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Complex.\'*\'.multiply';
+
+  function 'Complex.\'-\'.negate' "Unary minus (multiply complex number by -1)"
+    input 'Complex' 'c1';
+    output 'Complex' 'c2';
+  algorithm
+    'c2' := 'Complex.\'constructor\'.fromReal'(-'c1'.'re', -'c1'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Complex.\'-\'.negate';
+
+  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Complex.\'constructor\'.fromReal';
+
+  function 'Modelica.ComplexMath.abs' "Absolute value of complex number"
+    input 'Complex' 'c';
+    output Real 'result';
+  algorithm
+    'result' := sqrt('c'.'re' ^ 2.0 + 'c'.'im' ^ 2.0);
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.abs';
+
+  function 'Modelica.ComplexMath.arg' "Phase angle of complex number"
+    input 'Complex' 'c';
+    input Real 'phi0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'phi' := 'Modelica.Math.atan3'('c'.'im', 'c'.'re', 'phi0');
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.arg';
+
+  function 'Modelica.ComplexMath.conj' "Conjugate of complex number"
+    input 'Complex' 'c1';
+    output 'Complex' 'c2';
+  algorithm
+    'c2' := 'Complex.\'constructor\'.fromReal'('c1'.'re', -'c1'.'im');
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.conj';
+
+  function 'Modelica.ComplexMath.imag' "Imaginary part of complex number"
+    input 'Complex' 'c';
+    output Real 'r';
+  algorithm
+    'r' := 'c'.'im';
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.imag';
+
+  function 'Modelica.ComplexMath.real' "Real part of complex number"
+    input 'Complex' 'c';
+    output Real 'r';
+  algorithm
+    'r' := 'c'.'re';
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.real';
+
+  function 'Modelica.Math.atan2' "Four quadrant inverse tangent"
+    input Real 'u1';
+    input Real 'u2';
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'y' := atan2('u1', 'u2');
+    annotation(Inline = true);
+  end 'Modelica.Math.atan2';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
+  function 'Modelica.Units.SI.ComplexCurrent.\'+\'' "Add two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexCurrent.\'+\'';
+
+  function 'Modelica.Units.SI.ComplexCurrent.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexCurrent.\'*\'.multiply';
+
+  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract' "Subtract two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract';
+
+  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticFieldStrength.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticFieldStrength.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'+\'' "Add two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'+\'';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'/\'' "Divide two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'(('c1'.'re' * 'c2'.'re' + 'c1'.'im' * 'c2'.'im') / ('c2'.'re' * 'c2'.'re' + 'c2'.'im' * 'c2'.'im'), ('c1'.'im' * 'c2'.'re' - 'c1'.'re' * 'c2'.'im') / ('c2'.'re' * 'c2'.'re' + 'c2'.'im' * 'c2'.'im'));
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'/\'';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'/\'' "Divide two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'(('c1'.'re' * 'c2'.'re' + 'c1'.'im' * 'c2'.'im') / ('c2'.'re' * 'c2'.'re' + 'c2'.'im' * 'c2'.'im'), ('c1'.'im' * 'c2'.'re' - 'c1'.'re' * 'c2'.'im') / ('c2'.'re' * 'c2'.'re' + 'c2'.'im' * 'c2'.'im'));
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'/\'';
+
+  function 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract' "Subtract two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexVoltage.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexVoltage.\'*\'.multiply';
+
+  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
+
+  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
+
+  record 'Modelica.Units.SI.ComplexMagneticFlux'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticFlux';
+
+  record 'Modelica.Units.SI.ComplexMagneticFluxDensity'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticFluxDensity';
+
+  record 'Modelica.Units.SI.ComplexMagneticFieldStrength'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticFieldStrength';
+
+  record 'Modelica.Units.SI.ComplexVoltage'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexVoltage';
+
+  record 'Modelica.Units.SI.ComplexCurrent'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexCurrent';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
+
+  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
+    Real 're';
+    Real 'im';
+  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
+
+  record 'Modelica.Units.SI.ComplexElectricPotential'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexElectricPotential';
+
+  record 'Modelica.Units.SI.ComplexMagneticPotential'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticPotential';
+
+  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
+    Real 're';
+    Real 'im';
+  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
+
+  model 'ToroidalCoreQuadraticCrossSection' "Educational example: iron core with airgap"
+    parameter Real 'r_o'(unit = "m", quantity = "Length") = 0.055 "Outer radius of iron core";
+    parameter Real 'r_i'(unit = "m", quantity = "Length") = 0.045 "Inner radius of iron core";
+    parameter Real 'l'(unit = "m", quantity = "Length") = 0.01 "Length of rectangular cross section";
+    parameter Real 'mu_r'(unit = "1", quantity = "RelativePermeability") = 1000.0 "Relative permeability of core";
+    parameter Real 'delta'(unit = "m", quantity = "Length") = 0.001 "Length of airgap";
+    parameter Real 'alpha'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 6.263185307179587 "Section angle of toroidal core";
+    parameter Integer 'N' = 500 "Number of exciting coil turns";
+    parameter Real 'I'(unit = "A", quantity = "ElectricCurrent") = 1.5 "Maximum exciting current";
+    constant Real 'excitingCoil.j.re' = 0.0 "Real part of complex number";
+    constant Real 'excitingCoil.j.im' = 1.0 "Imaginary part of complex number";
+    Real 'excitingCoil.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'excitingCoil.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'excitingCoil.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'excitingCoil.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'excitingCoil.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'excitingCoil.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'excitingCoil.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'excitingCoil.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'excitingCoil.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'excitingCoil.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'excitingCoil.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'excitingCoil.pin_p.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'excitingCoil.pin_p.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'excitingCoil.pin_p.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'excitingCoil.pin_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'excitingCoil.pin_n.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'excitingCoil.pin_n.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'excitingCoil.pin_n.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'excitingCoil.pin_n.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'excitingCoil.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'excitingCoil.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'excitingCoil.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'excitingCoil.i.re'(stateSelect = StateSelect.prefer, start = 0.0, unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'excitingCoil.i.im'(stateSelect = StateSelect.prefer, start = 0.0, unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'excitingCoil.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'excitingCoil.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'excitingCoil.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'excitingCoil.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'excitingCoil.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Real 'excitingCoil.N' = 500.0 "Number of turns";
+    Real 'excitingCoil.Psi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'excitingCoil.Psi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'excitingCoil.L_stat'(unit = "H", quantity = "Inductance") "Static inductance abs(Psi/i) for information only";
+    Real 'excitingCoil.eps';
+    Real 'core.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'core.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'core.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'core.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'core.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'core.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'core.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'core.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'core.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'core.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'core.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'core.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'core.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'core.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'core.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'core.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'core.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'core.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
+    Real 'core.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Real 'core.mu_rConst'(unit = "1", quantity = "RelativePermeability") = 1000.0 "Constant relative permeability";
+    Real 'core.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
+    Real 'core.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
+    Real 'core.B.re'(unit = "T", quantity = "MagneticFluxDensity") "Real part of complex number";
+    Real 'core.B.im'(unit = "T", quantity = "MagneticFluxDensity") "Imaginary part of complex number";
+    Real 'core.abs_B'(unit = "T", quantity = "MagneticFluxDensity") "Magnitude of complex magnetic flux density";
+    Real 'core.arg_B'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux density";
+    Real 'core.A'(unit = "m2", quantity = "Area") "Area of cross section penetrated by magnetic flux";
+    Real 'core.H.re'(unit = "A/m", quantity = "MagneticFieldStrength") "Real part of complex number";
+    Real 'core.H.im'(unit = "A/m", quantity = "MagneticFieldStrength") "Imaginary part of complex number";
+    Real 'core.abs_H'(unit = "A/m", quantity = "MagneticFieldStrength") "Magnitude of complex magnetic field strength";
+    Real 'core.arg_H'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic field strength";
+    Real 'core.mu_r'(unit = "1", quantity = "RelativePermeability") "Relative magnetic permeability";
+    parameter Real 'core.l'(unit = "m", quantity = "Length") = 0.01 "Width (orthogonal to flux direction)";
+    parameter Real 'core.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.045 "Inner radius of hollow cylinder";
+    parameter Real 'core.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.055 "Outer radius of hollow cylinder";
+    parameter Real 'core.alpha'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 6.263185307179587 "Angle of cylinder section";
+    Real 'airGap.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'airGap.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'airGap.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'airGap.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'airGap.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'airGap.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'airGap.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'airGap.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'airGap.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'airGap.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'airGap.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'airGap.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'airGap.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'airGap.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'airGap.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'airGap.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'airGap.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'airGap.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
+    Real 'airGap.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Real 'airGap.mu_rConst'(unit = "1", quantity = "RelativePermeability") = 1.0 "Constant relative permeability";
+    Real 'airGap.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
+    Real 'airGap.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
+    Real 'airGap.B.re'(unit = "T", quantity = "MagneticFluxDensity") "Real part of complex number";
+    Real 'airGap.B.im'(unit = "T", quantity = "MagneticFluxDensity") "Imaginary part of complex number";
+    Real 'airGap.abs_B'(unit = "T", quantity = "MagneticFluxDensity") "Magnitude of complex magnetic flux density";
+    Real 'airGap.arg_B'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux density";
+    Real 'airGap.A'(unit = "m2", quantity = "Area") "Area of cross section penetrated by magnetic flux";
+    Real 'airGap.H.re'(unit = "A/m", quantity = "MagneticFieldStrength") "Real part of complex number";
+    Real 'airGap.H.im'(unit = "A/m", quantity = "MagneticFieldStrength") "Imaginary part of complex number";
+    Real 'airGap.abs_H'(unit = "A/m", quantity = "MagneticFieldStrength") "Magnitude of complex magnetic field strength";
+    Real 'airGap.arg_H'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic field strength";
+    Real 'airGap.mu_r'(unit = "1", quantity = "RelativePermeability") "Relative magnetic permeability";
+    parameter Real 'airGap.l'(unit = "m", quantity = "Length") = 0.01 "Width (orthogonal to flux direction)";
+    parameter Real 'airGap.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.045 "Inner radius of hollow cylinder";
+    parameter Real 'airGap.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.055 "Outer radius of hollow cylinder";
+    parameter Real 'airGap.alpha'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.019999999999999574 "Angle of cylinder section";
+    constant Real 'measuringCoil.j.re' = 0.0 "Real part of complex number";
+    constant Real 'measuringCoil.j.im' = 1.0 "Imaginary part of complex number";
+    Real 'measuringCoil.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'measuringCoil.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'measuringCoil.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'measuringCoil.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'measuringCoil.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'measuringCoil.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'measuringCoil.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'measuringCoil.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'measuringCoil.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'measuringCoil.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'measuringCoil.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'measuringCoil.pin_p.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'measuringCoil.pin_p.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'measuringCoil.pin_p.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'measuringCoil.pin_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'measuringCoil.pin_n.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'measuringCoil.pin_n.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'measuringCoil.pin_n.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'measuringCoil.pin_n.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'measuringCoil.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'measuringCoil.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'measuringCoil.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'measuringCoil.i.re'(stateSelect = StateSelect.prefer, start = 0.0, unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'measuringCoil.i.im'(stateSelect = StateSelect.prefer, start = 0.0, unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'measuringCoil.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'measuringCoil.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'measuringCoil.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'measuringCoil.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'measuringCoil.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Real 'measuringCoil.N' = 1.0 "Number of turns";
+    Real 'measuringCoil.Psi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'measuringCoil.Psi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'measuringCoil.L_stat'(unit = "H", quantity = "Inductance") "Static inductance abs(Psi/i) for information only";
+    Real 'measuringCoil.eps';
+    Real 'magneticGround.port.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'magneticGround.port.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'magneticGround.port.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'magneticGround.port.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'magneticGround.port.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'electricGround1.pin.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'electricGround1.pin.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'electricGround1.pin.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'electricGround1.pin.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'electricGround1.pin.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'currentSource.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
+    Real 'currentSource.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'currentSource.pin_p.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'currentSource.pin_p.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'currentSource.pin_p.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'currentSource.pin_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'currentSource.pin_n.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'currentSource.pin_n.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'currentSource.pin_n.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'currentSource.pin_n.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'currentSource.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'currentSource.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'currentSource.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'currentSource.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'currentSource.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
+    Real 'currentSource.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'currentSource.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'currentSource.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'currentSource.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'currentSource.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'currentSource.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'currentSource.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'currentSource.pf' "Power factor";
+    Real 'currentSource.gamma'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'currentSource.f'(unit = "Hz");
+    Real 'currentSource.I.re' "Real part of complex number";
+    Real 'currentSource.I.im' "Imaginary part of complex number";
+    Real 'magFluxSensor.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'magFluxSensor.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'magFluxSensor.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'magFluxSensor.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'magFluxSensor.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'magFluxSensor.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'magFluxSensor.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'magFluxSensor.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'magFluxSensor.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'magFluxSensor.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'magFluxSensor.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'magFluxSensor.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'magFluxSensor.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'magFluxSensor.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'magFluxSensor.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'magFluxSensor.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'magFluxSensor.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'magFluxSensor.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
+    Real 'magFluxSensor.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    Real 'magFluxSensor.y.re' "Real part of complex number";
+    Real 'magFluxSensor.y.im' "Imaginary part of complex number";
+    Real 'electricGround2.pin.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'electricGround2.pin.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'electricGround2.pin.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'electricGround2.pin.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'electricGround2.pin.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'voltageSensor.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
+    Real 'voltageSensor.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'voltageSensor.pin_p.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'voltageSensor.pin_p.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'voltageSensor.pin_p.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'voltageSensor.pin_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'voltageSensor.pin_n.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'voltageSensor.pin_n.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'voltageSensor.pin_n.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'voltageSensor.pin_n.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'voltageSensor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'voltageSensor.v.re'(unit = "V") "Real part of complex number";
+    Real 'voltageSensor.v.im'(unit = "V") "Imaginary part of complex number";
+    Real 'voltageSensor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'voltageSensor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
+    Real 'voltageSensor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'voltageSensor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    parameter Real 'const.k'(start = 1.0) = 50.0 "Constant output value";
+    Real 'const.y' "Connector of Real output signal";
+    Real 'complexRamp.y.re' "Real part of complex number";
+    Real 'complexRamp.y.im' "Imaginary part of complex number";
+    parameter Real 'complexRamp.magnitude1'(start = 1.0, min = 0.0) = 0.0 "Magnitude of complex phasor at startTime";
+    parameter Real 'complexRamp.magnitude2'(start = 1.0, min = 0.0) = 1.5 "Magnitude of complex phasor at startTime+duration";
+    parameter Boolean 'complexRamp.useLogRamp' = false "Ramp appears linear on a logarithmic scale, if true";
+    parameter Real 'complexRamp.phi'(start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Angle of complex phasor";
+    parameter Real 'complexRamp.startTime'(unit = "s", quantity = "Time") = 0.01 "Start time of frequency sweep";
+    parameter Real 'complexRamp.duration'(start = 1.0, min = 0.0, unit = "s", quantity = "Time") = 0.015 "Duration of ramp (= 0.0 gives a Step)";
+    Real 'complexRamp.magnitude' "Actual magnitude of complex phasor";
+  equation
+    'excitingCoil.eps' = 2.220446049250313e-14;
+    'core.abs_V_m' = 'Modelica.ComplexMath.abs'('core.V_m');
+    'core.arg_V_m' = 'Modelica.ComplexMath.arg'('core.V_m', 0.0);
+    'core.abs_Phi' = 'Modelica.ComplexMath.abs'('core.Phi');
+    'core.arg_Phi' = 'Modelica.ComplexMath.arg'('core.Phi', 0.0);
+    'core.abs_B' = 'Modelica.ComplexMath.abs'('core.B');
+    'core.arg_B' = 'Modelica.ComplexMath.arg'('core.B', 0.0);
+    'core.abs_H' = 'Modelica.ComplexMath.abs'('core.H');
+    'core.arg_H' = 'Modelica.ComplexMath.arg'('core.H', 0.0);
+    'airGap.abs_V_m' = 'Modelica.ComplexMath.abs'('airGap.V_m');
+    'airGap.arg_V_m' = 'Modelica.ComplexMath.arg'('airGap.V_m', 0.0);
+    'airGap.abs_Phi' = 'Modelica.ComplexMath.abs'('airGap.Phi');
+    'airGap.arg_Phi' = 'Modelica.ComplexMath.arg'('airGap.Phi', 0.0);
+    'airGap.abs_B' = 'Modelica.ComplexMath.abs'('airGap.B');
+    'airGap.arg_B' = 'Modelica.ComplexMath.arg'('airGap.B', 0.0);
+    'airGap.abs_H' = 'Modelica.ComplexMath.abs'('airGap.H');
+    'airGap.arg_H' = 'Modelica.ComplexMath.arg'('airGap.H', 0.0);
+    'measuringCoil.eps' = 2.220446049250313e-14;
+    'currentSource.abs_v' = 'Modelica.ComplexMath.abs'('currentSource.v');
+    'currentSource.arg_v' = 'Modelica.ComplexMath.arg'('currentSource.v', 0.0);
+    'currentSource.abs_i' = 'Modelica.ComplexMath.abs'('currentSource.i');
+    'currentSource.arg_i' = 'Modelica.ComplexMath.arg'('currentSource.i', 0.0);
+    'currentSource.P' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('currentSource.v', 'Modelica.ComplexMath.conj'('currentSource.i')));
+    'currentSource.Q' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('currentSource.v', 'Modelica.ComplexMath.conj'('currentSource.i')));
+    'currentSource.S' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('currentSource.v', 'Modelica.ComplexMath.conj'('currentSource.i')));
+    'currentSource.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('currentSource.P', 'currentSource.Q'), 0.0));
+    'currentSource.gamma' = 'currentSource.pin_p.reference.gamma';
+    'magFluxSensor.abs_V_m' = 'Modelica.ComplexMath.abs'('magFluxSensor.V_m');
+    'magFluxSensor.arg_V_m' = 'Modelica.ComplexMath.arg'('magFluxSensor.V_m', 0.0);
+    'magFluxSensor.abs_Phi' = 'Modelica.ComplexMath.abs'('magFluxSensor.Phi');
+    'magFluxSensor.arg_Phi' = 'Modelica.ComplexMath.arg'('magFluxSensor.Phi', 0.0);
+    'voltageSensor.abs_v' = 'Modelica.ComplexMath.abs'('voltageSensor.v');
+    'voltageSensor.arg_v' = 'Modelica.ComplexMath.arg'('voltageSensor.v', 0.0);
+    'excitingCoil.port_n.V_m.re' = 'magFluxSensor.port_n.V_m.re';
+    'excitingCoil.port_n.V_m.im' = 'magFluxSensor.port_n.V_m.im';
+    'magneticGround.port.V_m.re' = 'airGap.port_n.V_m.re';
+    'magneticGround.port.V_m.re' = 'magFluxSensor.port_p.V_m.re';
+    'magneticGround.port.V_m.im' = 'airGap.port_n.V_m.im';
+    'magneticGround.port.V_m.im' = 'magFluxSensor.port_p.V_m.im';
+    'magneticGround.port.reference.gamma' = 'airGap.port_n.reference.gamma';
+    'magneticGround.port.reference.gamma' = 'magFluxSensor.port_p.reference.gamma';
+    'excitingCoil.port_p.V_m.re' = 'core.port_p.V_m.re';
+    'excitingCoil.port_p.V_m.im' = 'core.port_p.V_m.im';
+    'excitingCoil.port_p.reference.gamma' = 'core.port_p.reference.gamma';
+    'currentSource.pin_n.v.re' = 'excitingCoil.pin_p.v.re';
+    'currentSource.pin_n.v.im' = 'excitingCoil.pin_p.v.im';
+    'electricGround1.pin.reference.gamma' = 'excitingCoil.pin_n.reference.gamma';
+    'electricGround1.pin.reference.gamma' = 'currentSource.pin_p.reference.gamma';
+    'electricGround1.pin.v.re' = 'excitingCoil.pin_n.v.re';
+    'electricGround1.pin.v.re' = 'currentSource.pin_p.v.re';
+    'electricGround1.pin.v.im' = 'excitingCoil.pin_n.v.im';
+    'electricGround1.pin.v.im' = 'currentSource.pin_p.v.im';
+    'measuringCoil.pin_n.v.re' = 'electricGround2.pin.v.re';
+    'measuringCoil.pin_n.v.re' = 'voltageSensor.pin_n.v.re';
+    'measuringCoil.pin_n.v.im' = 'electricGround2.pin.v.im';
+    'measuringCoil.pin_n.v.im' = 'voltageSensor.pin_n.v.im';
+    'const.y' = 'currentSource.f';
+    'complexRamp.y.re' = 'currentSource.I.re';
+    'complexRamp.y.im' = 'currentSource.I.im';
+    'measuringCoil.pin_n.reference.gamma' = 'electricGround2.pin.reference.gamma';
+    'measuringCoil.pin_p.reference.gamma' = 'voltageSensor.pin_p.reference.gamma';
+    'measuringCoil.pin_p.v.re' = 'voltageSensor.pin_p.v.re';
+    'measuringCoil.pin_p.v.im' = 'voltageSensor.pin_p.v.im';
+    'core.port_n.V_m.re' = 'measuringCoil.port_p.V_m.re';
+    'core.port_n.V_m.im' = 'measuringCoil.port_p.V_m.im';
+    'core.port_n.reference.gamma' = 'measuringCoil.port_p.reference.gamma';
+    'airGap.port_p.V_m.re' = 'measuringCoil.port_n.V_m.re';
+    'airGap.port_p.V_m.im' = 'measuringCoil.port_n.V_m.im';
+    'airGap.port_p.reference.gamma' = 'measuringCoil.port_n.reference.gamma';
+    'core.port_p.Phi.re' + 'excitingCoil.port_p.Phi.re' = 0.0;
+    'core.port_p.Phi.im' + 'excitingCoil.port_p.Phi.im' = 0.0;
+    'magFluxSensor.port_n.Phi.re' + 'excitingCoil.port_n.Phi.re' = 0.0;
+    'magFluxSensor.port_n.Phi.im' + 'excitingCoil.port_n.Phi.im' = 0.0;
+    'measuringCoil.port_p.Phi.re' + 'core.port_n.Phi.re' = 0.0;
+    'measuringCoil.port_p.Phi.im' + 'core.port_n.Phi.im' = 0.0;
+    'measuringCoil.port_n.Phi.re' + 'airGap.port_p.Phi.re' = 0.0;
+    'measuringCoil.port_n.Phi.im' + 'airGap.port_p.Phi.im' = 0.0;
+    'voltageSensor.pin_p.i.re' + 'measuringCoil.pin_p.i.re' = 0.0;
+    'voltageSensor.pin_p.i.im' + 'measuringCoil.pin_p.i.im' = 0.0;
+    'currentSource.pin_p.i.re' + 'electricGround1.pin.i.re' + 'excitingCoil.pin_n.i.re' = 0.0;
+    'currentSource.pin_p.i.im' + 'electricGround1.pin.i.im' + 'excitingCoil.pin_n.i.im' = 0.0;
+    'currentSource.pin_n.i.re' + 'excitingCoil.pin_p.i.re' = 0.0;
+    'currentSource.pin_n.i.im' + 'excitingCoil.pin_p.i.im' = 0.0;
+    'magFluxSensor.port_p.Phi.re' + 'magneticGround.port.Phi.re' + 'airGap.port_n.Phi.re' = 0.0;
+    'magFluxSensor.port_p.Phi.im' + 'magneticGround.port.Phi.im' + 'airGap.port_n.Phi.im' = 0.0;
+    'voltageSensor.pin_n.i.re' + 'electricGround2.pin.i.re' + 'measuringCoil.pin_n.i.re' = 0.0;
+    'voltageSensor.pin_n.i.im' + 'electricGround2.pin.i.im' + 'measuringCoil.pin_n.i.im' = 0.0;
+    'excitingCoil.v.re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('excitingCoil.pin_p.v', 'excitingCoil.pin_n.v')).re;
+    'excitingCoil.v.im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('excitingCoil.pin_p.v', 'excitingCoil.pin_n.v')).im;
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('excitingCoil.pin_p.i', 'excitingCoil.pin_n.i')).re;
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('excitingCoil.pin_p.i', 'excitingCoil.pin_n.i')).im;
+    'excitingCoil.i.re' = 'excitingCoil.pin_p.i.re';
+    'excitingCoil.i.im' = 'excitingCoil.pin_p.i.im';
+    'excitingCoil.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('excitingCoil.port_p.V_m', 'excitingCoil.port_n.V_m')).re;
+    'excitingCoil.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('excitingCoil.port_p.V_m', 'excitingCoil.port_n.V_m')).im;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('excitingCoil.port_p.Phi', 'excitingCoil.port_n.Phi')).re;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('excitingCoil.port_p.Phi', 'excitingCoil.port_n.Phi')).im;
+    'excitingCoil.Phi.re' = 'excitingCoil.port_p.Phi.re';
+    'excitingCoil.Phi.im' = 'excitingCoil.port_p.Phi.im';
+    'excitingCoil.v.re' = ('Complex.\'-\'.negate'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex'(0.0, 1.0), 'Complex.\'constructor\'.fromReal'('excitingCoil.omega', 0.0)), 'Complex'(500.0, 0.0)), 'excitingCoil.Phi'))).re;
+    'excitingCoil.v.im' = ('Complex.\'-\'.negate'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex'(0.0, 1.0), 'Complex.\'constructor\'.fromReal'('excitingCoil.omega', 0.0)), 'Complex'(500.0, 0.0)), 'excitingCoil.Phi'))).im;
+    'excitingCoil.V_m.re' = ('Modelica.Units.SI.ComplexCurrent.\'*\'.multiply'('Complex'(500.0, 0.0), 'excitingCoil.i')).re;
+    'excitingCoil.V_m.im' = ('Modelica.Units.SI.ComplexCurrent.\'*\'.multiply'('Complex'(500.0, 0.0), 'excitingCoil.i')).im;
+    'excitingCoil.Psi.re' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('Complex'(500.0, 0.0), 'excitingCoil.Phi')).re;
+    'excitingCoil.Psi.im' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('Complex'(500.0, 0.0), 'excitingCoil.Phi')).im;
+    'excitingCoil.L_stat' = noEvent(if 'Modelica.ComplexMath.abs'('excitingCoil.i') > 'excitingCoil.eps' then 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('excitingCoil.Psi', 'excitingCoil.i')) else 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('excitingCoil.Psi', 'Complex.\'constructor\'.fromReal'('excitingCoil.eps', 0.0))));
+    'excitingCoil.omega' = der('excitingCoil.port_p.reference.gamma');
+    'excitingCoil.port_p.reference.gamma' = 'excitingCoil.port_n.reference.gamma';
+    'excitingCoil.pin_p.reference.gamma' = 'excitingCoil.pin_n.reference.gamma';
+    'excitingCoil.port_p.reference.gamma' = 'excitingCoil.pin_p.reference.gamma';
+    'core.A' = 1.0000000000000002e-4;
+    'core.G_m' = 1.25663706212e-6 * 'core.mu_r' * 'core.A' / 0.31315926535897937;
+    'core.mu_r' = 1000.0;
+    'core.R_m' = 1.0 / 'core.G_m';
+    'core.V_m.re' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('core.Phi', 'Complex.\'constructor\'.fromReal'('core.R_m', 0.0))).re;
+    'core.V_m.im' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('core.Phi', 'Complex.\'constructor\'.fromReal'('core.R_m', 0.0))).im;
+    'core.B.re' = ('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('core.Phi', 'Complex.\'constructor\'.fromReal'('core.A', 0.0))).re;
+    'core.B.im' = ('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('core.Phi', 'Complex.\'constructor\'.fromReal'('core.A', 0.0))).im;
+    'core.H.re' = ('Modelica.Units.SI.ComplexMagneticFluxDensity.\'/\''('core.B', 'Complex.\'constructor\'.fromReal'(1.25663706212e-6 * 'core.mu_r', 0.0))).re;
+    'core.H.im' = ('Modelica.Units.SI.ComplexMagneticFluxDensity.\'/\''('core.B', 'Complex.\'constructor\'.fromReal'(1.25663706212e-6 * 'core.mu_r', 0.0))).im;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('core.port_p.Phi', 'core.port_n.Phi')).re;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('core.port_p.Phi', 'core.port_n.Phi')).im;
+    'core.port_p.reference.gamma' = 'core.port_n.reference.gamma';
+    'core.omega' = der('core.port_p.reference.gamma');
+    'core.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('core.port_p.V_m', 'core.port_n.V_m')).re;
+    'core.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('core.port_p.V_m', 'core.port_n.V_m')).im;
+    'core.Phi.re' = 'core.port_p.Phi.re';
+    'core.Phi.im' = 'core.port_p.Phi.im';
+    'airGap.A' = 1.0000000000000002e-4;
+    'airGap.G_m' = 1.25663706212e-6 * 'airGap.mu_r' * 'airGap.A' / 9.999999999999788e-4;
+    'airGap.mu_r' = 1.0;
+    'airGap.R_m' = 1.0 / 'airGap.G_m';
+    'airGap.V_m.re' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('airGap.Phi', 'Complex.\'constructor\'.fromReal'('airGap.R_m', 0.0))).re;
+    'airGap.V_m.im' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('airGap.Phi', 'Complex.\'constructor\'.fromReal'('airGap.R_m', 0.0))).im;
+    'airGap.B.re' = ('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('airGap.Phi', 'Complex.\'constructor\'.fromReal'('airGap.A', 0.0))).re;
+    'airGap.B.im' = ('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('airGap.Phi', 'Complex.\'constructor\'.fromReal'('airGap.A', 0.0))).im;
+    'airGap.H.re' = ('Modelica.Units.SI.ComplexMagneticFluxDensity.\'/\''('airGap.B', 'Complex.\'constructor\'.fromReal'(1.25663706212e-6 * 'airGap.mu_r', 0.0))).re;
+    'airGap.H.im' = ('Modelica.Units.SI.ComplexMagneticFluxDensity.\'/\''('airGap.B', 'Complex.\'constructor\'.fromReal'(1.25663706212e-6 * 'airGap.mu_r', 0.0))).im;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('airGap.port_p.Phi', 'airGap.port_n.Phi')).re;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('airGap.port_p.Phi', 'airGap.port_n.Phi')).im;
+    'airGap.port_p.reference.gamma' = 'airGap.port_n.reference.gamma';
+    'airGap.omega' = der('airGap.port_p.reference.gamma');
+    'airGap.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('airGap.port_p.V_m', 'airGap.port_n.V_m')).re;
+    'airGap.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('airGap.port_p.V_m', 'airGap.port_n.V_m')).im;
+    'airGap.Phi.re' = 'airGap.port_p.Phi.re';
+    'airGap.Phi.im' = 'airGap.port_p.Phi.im';
+    'measuringCoil.v.re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('measuringCoil.pin_p.v', 'measuringCoil.pin_n.v')).re;
+    'measuringCoil.v.im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('measuringCoil.pin_p.v', 'measuringCoil.pin_n.v')).im;
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('measuringCoil.pin_p.i', 'measuringCoil.pin_n.i')).re;
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('measuringCoil.pin_p.i', 'measuringCoil.pin_n.i')).im;
+    'measuringCoil.i.re' = 'measuringCoil.pin_p.i.re';
+    'measuringCoil.i.im' = 'measuringCoil.pin_p.i.im';
+    'measuringCoil.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('measuringCoil.port_p.V_m', 'measuringCoil.port_n.V_m')).re;
+    'measuringCoil.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('measuringCoil.port_p.V_m', 'measuringCoil.port_n.V_m')).im;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('measuringCoil.port_p.Phi', 'measuringCoil.port_n.Phi')).re;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('measuringCoil.port_p.Phi', 'measuringCoil.port_n.Phi')).im;
+    'measuringCoil.Phi.re' = 'measuringCoil.port_p.Phi.re';
+    'measuringCoil.Phi.im' = 'measuringCoil.port_p.Phi.im';
+    'measuringCoil.v.re' = ('Complex.\'-\'.negate'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex'(0.0, 1.0), 'Complex.\'constructor\'.fromReal'('measuringCoil.omega', 0.0)), 'Complex'(1.0, 0.0)), 'measuringCoil.Phi'))).re;
+    'measuringCoil.v.im' = ('Complex.\'-\'.negate'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex'(0.0, 1.0), 'Complex.\'constructor\'.fromReal'('measuringCoil.omega', 0.0)), 'Complex'(1.0, 0.0)), 'measuringCoil.Phi'))).im;
+    'measuringCoil.V_m.re' = ('Modelica.Units.SI.ComplexCurrent.\'*\'.multiply'('Complex'(1.0, 0.0), 'measuringCoil.i')).re;
+    'measuringCoil.V_m.im' = ('Modelica.Units.SI.ComplexCurrent.\'*\'.multiply'('Complex'(1.0, 0.0), 'measuringCoil.i')).im;
+    'measuringCoil.Psi.re' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('Complex'(1.0, 0.0), 'measuringCoil.Phi')).re;
+    'measuringCoil.Psi.im' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('Complex'(1.0, 0.0), 'measuringCoil.Phi')).im;
+    'measuringCoil.L_stat' = noEvent(if 'Modelica.ComplexMath.abs'('measuringCoil.i') > 'measuringCoil.eps' then 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('measuringCoil.Psi', 'measuringCoil.i')) else 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('measuringCoil.Psi', 'Complex.\'constructor\'.fromReal'('measuringCoil.eps', 0.0))));
+    'measuringCoil.omega' = der('measuringCoil.port_p.reference.gamma');
+    'measuringCoil.port_p.reference.gamma' = 'measuringCoil.port_n.reference.gamma';
+    'measuringCoil.pin_p.reference.gamma' = 'measuringCoil.pin_n.reference.gamma';
+    'measuringCoil.port_p.reference.gamma' = 'measuringCoil.pin_p.reference.gamma';
+    'magneticGround.port.V_m.re' = 0.0;
+    'magneticGround.port.V_m.im' = 0.0;
+    'electricGround1.pin.v.re' = 0.0;
+    'electricGround1.pin.v.im' = 0.0;
+    'currentSource.omega' = 6.283185307179586 * 'currentSource.f';
+    'currentSource.i.re' = 'currentSource.I.re';
+    'currentSource.i.im' = 'currentSource.I.im';
+    ('Modelica.Units.SI.ComplexCurrent.\'+\''('currentSource.pin_p.i', 'currentSource.pin_n.i')).re = 0.0;
+    ('Modelica.Units.SI.ComplexCurrent.\'+\''('currentSource.pin_p.i', 'currentSource.pin_n.i')).im = 0.0;
+    'currentSource.v.re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentSource.pin_p.v', 'currentSource.pin_n.v')).re;
+    'currentSource.v.im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentSource.pin_p.v', 'currentSource.pin_n.v')).im;
+    'currentSource.i.re' = 'currentSource.pin_p.i.re';
+    'currentSource.i.im' = 'currentSource.pin_p.i.im';
+    'currentSource.pin_p.reference.gamma' = 'currentSource.pin_n.reference.gamma';
+    'currentSource.omega' = der('currentSource.pin_p.reference.gamma');
+    'magFluxSensor.V_m.re' = 0.0;
+    'magFluxSensor.V_m.im' = 0.0;
+    'magFluxSensor.y.re' = 'magFluxSensor.Phi.re';
+    'magFluxSensor.y.im' = 'magFluxSensor.Phi.im';
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('magFluxSensor.port_p.Phi', 'magFluxSensor.port_n.Phi')).re;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('magFluxSensor.port_p.Phi', 'magFluxSensor.port_n.Phi')).im;
+    'magFluxSensor.port_p.reference.gamma' = 'magFluxSensor.port_n.reference.gamma';
+    'magFluxSensor.omega' = der('magFluxSensor.port_p.reference.gamma');
+    'magFluxSensor.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('magFluxSensor.port_p.V_m', 'magFluxSensor.port_n.V_m')).re;
+    'magFluxSensor.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('magFluxSensor.port_p.V_m', 'magFluxSensor.port_n.V_m')).im;
+    'magFluxSensor.Phi.re' = 'magFluxSensor.port_p.Phi.re';
+    'magFluxSensor.Phi.im' = 'magFluxSensor.port_p.Phi.im';
+    'electricGround2.pin.v.re' = 0.0;
+    'electricGround2.pin.v.im' = 0.0;
+    'voltageSensor.v.re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSensor.pin_p.v', 'voltageSensor.pin_n.v')).re;
+    'voltageSensor.v.im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSensor.pin_p.v', 'voltageSensor.pin_n.v')).im;
+    'voltageSensor.i.re' = 'voltageSensor.pin_p.i.re';
+    'voltageSensor.i.im' = 'voltageSensor.pin_p.i.im';
+    'voltageSensor.i.re' = 0.0;
+    'voltageSensor.i.im' = 0.0;
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSensor.pin_p.i', 'voltageSensor.pin_n.i')).re "Current balance";
+    0.0 = ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSensor.pin_p.i', 'voltageSensor.pin_n.i')).im "Current balance";
+    'voltageSensor.pin_p.reference.gamma' = 'voltageSensor.pin_n.reference.gamma';
+    'voltageSensor.omega' = der('voltageSensor.pin_p.reference.gamma');
+    'const.y' = 50.0;
+    'complexRamp.magnitude' = if time < 0.01 then 0.0 else if time < 0.025 then (time - 0.01) * 1.5 / 0.015 else 1.5;
+    'complexRamp.y.re' = ('Complex.\'*\'.multiply'('Complex.\'constructor\'.fromReal'('complexRamp.magnitude', 0.0), 'Complex'(1.0, 0.0))).re;
+    'complexRamp.y.im' = ('Complex.\'*\'.multiply'('Complex.\'constructor\'.fromReal'('complexRamp.magnitude', 0.0), 'Complex'(1.0, 0.0))).im;
+    annotation(experiment(StopTime = 0.05, Interval = 0.0001));
+  end 'ToroidalCoreQuadraticCrossSection';
+end 'ToroidalCoreQuadraticCrossSection';

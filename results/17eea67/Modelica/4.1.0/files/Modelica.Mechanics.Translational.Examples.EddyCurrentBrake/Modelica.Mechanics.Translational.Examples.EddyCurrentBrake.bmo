@@ -1,0 +1,95 @@
+//! base 0.1.0
+package 'EddyCurrentBrake'
+  function 'Modelica.Electrical.Machines.Thermal.convertAlpha' "Converts alpha from temperature 1 (default 20 degC) to temperature 2"
+    input Real 'alpha1'(unit = "1/K", quantity = "LinearTemperatureCoefficient");
+    input Real 'T2'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'T1'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15;
+    output Real 'alpha2'(unit = "1/K", quantity = "LinearTemperatureCoefficient");
+  algorithm
+    'alpha2' := 'alpha1' / (1.0 + 'alpha1' * ('T2' - 'T1'));
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.Thermal.convertAlpha';
+
+  function 'Modelica.Electrical.Machines.Thermal.linearTemperatureDependency' "Converts a value (e.g. resistance) from reference temperature to an actual temperature"
+    input Real 'RRef';
+    input Real 'TRef'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'alpha20'(unit = "1/K", quantity = "LinearTemperatureCoefficient");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'R';
+  algorithm
+    'R' := 'RRef' * (1.0 + 'Modelica.Electrical.Machines.Thermal.convertAlpha'('alpha20', 'TRef', 293.15) * ('T' - 'TRef'));
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.Thermal.linearTemperatureDependency';
+
+  model 'EddyCurrentBrake' "Demonstrate the usage of the translational eddy current brake"
+    parameter Boolean 'eddyCurrentForce.useExcitationInput' = true "Enable signal input for excitation";
+    parameter Real 'eddyCurrentForce.constantExcitation' = 1.0 "Excitation=1 to reach maximum force";
+    parameter Real 'eddyCurrentForce.f_nominal'(unit = "N", quantity = "Force") = 100.0 "Constant maximum force (always braking)";
+    parameter Real 'eddyCurrentForce.v_nominal'(min = 2.220446049250313e-16, unit = "m/s", quantity = "Velocity") = 10.0 "Nominal speed (leads to maximum force) at reference temperature";
+    parameter Real 'eddyCurrentForce.TRef'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Reference temperature";
+    parameter Real 'eddyCurrentForce.alpha20'(start = 0.0, displayUnit = "1/K", unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.00392 "Temperature coefficient of material";
+    parameter Boolean 'eddyCurrentForce.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
+    Real 'eddyCurrentForce.s'(unit = "m", quantity = "Length") "Distance between flange and support (= flange.s - support.s)";
+    Real 'eddyCurrentForce.flange.s'(unit = "m", quantity = "Length") "Absolute position of flange";
+    Real 'eddyCurrentForce.flange.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
+    Real 'eddyCurrentForce.s_support'(unit = "m", quantity = "Length") "Absolute position of support flange";
+    Real 'eddyCurrentForce.f'(unit = "N", quantity = "Force") "Accelerating force acting at flange (= flange.f)";
+    parameter Boolean 'eddyCurrentForce.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
+    parameter Real 'eddyCurrentForce.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
+    Real 'eddyCurrentForce.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'eddyCurrentForce.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'eddyCurrentForce.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
+    Real 'eddyCurrentForce.TheatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
+    Real 'eddyCurrentForce.v'(unit = "m/s", quantity = "Velocity") "Velocity of flange with respect to support (= der(s))";
+    Real 'eddyCurrentForce.v_normalized' "Relative speed v/v_nominal";
+    Real 'eddyCurrentForce.excitation' "Excitation";
+    Real 'eddyCurrentForce.excitationInternal' "Excitation";
+    parameter Real 'mass.m'(start = 1.0, min = 0.0, unit = "kg", quantity = "Mass") = 1.0 "Mass of the sliding mass";
+    parameter StateSelect 'mass.stateSelect' = StateSelect.default "Priority to use s and v as states";
+    Real 'mass.s'(stateSelect = StateSelect.default, fixed = true, start = 0.0, unit = "m", quantity = "Length") "Absolute position of center of component (s = flange_a.s + L/2 = flange_b.s - L/2)";
+    parameter Real 'mass.L'(start = 0.0, unit = "m", quantity = "Length") = 0.0 "Length of component, from left flange to right flange (= flange_b.s - flange_a.s)";
+    Real 'mass.flange_a.s'(unit = "m", quantity = "Length") "Absolute position of flange";
+    Real 'mass.flange_a.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
+    Real 'mass.flange_b.s'(unit = "m", quantity = "Length") "Absolute position of flange";
+    Real 'mass.flange_b.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
+    Real 'mass.v'(stateSelect = StateSelect.default, fixed = true, start = 20.0, unit = "m/s", quantity = "Velocity") "Absolute velocity of component";
+    Real 'mass.a'(start = 0.0, unit = "m/s2", quantity = "Acceleration") "Absolute acceleration of component";
+    parameter Real 'heatCapacitor.C'(unit = "J/K", quantity = "HeatCapacity") = 1.0 "Heat capacity of element (= cp*m)";
+    Real 'heatCapacitor.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of element";
+    Real 'heatCapacitor.der_T'(start = 0.0, unit = "K/s", quantity = "TemperatureSlope") "Time derivative of temperature (= der(T))";
+    Real 'heatCapacitor.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'heatCapacitor.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+    parameter Real 'ramp.height' = 1.0 "Height of ramp";
+    parameter Real 'ramp.duration'(start = 2.0, min = 0.0, unit = "s", quantity = "Time") = 0.1 "Duration of ramp (= 0.0 gives a Step)";
+    Real 'ramp.y' "Connector of Real output signal";
+    parameter Real 'ramp.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'ramp.startTime'(unit = "s", quantity = "Time") = 0.1 "Output y = offset for time < startTime";
+  equation
+    'eddyCurrentForce.heatPort.T' = 'eddyCurrentForce.TheatPort';
+    'eddyCurrentForce.heatPort.Q_flow' = -'eddyCurrentForce.lossPower';
+    'eddyCurrentForce.excitation' = 'eddyCurrentForce.excitationInternal';
+    'eddyCurrentForce.flange.s' = 'mass.flange_a.s';
+    'eddyCurrentForce.heatPort.T' = 'heatCapacitor.port.T';
+    'ramp.y' = 'eddyCurrentForce.excitation';
+    'mass.flange_a.f' + 'eddyCurrentForce.flange.f' = 0.0;
+    'heatCapacitor.port.Q_flow' + 'eddyCurrentForce.heatPort.Q_flow' = 0.0;
+    'mass.flange_b.f' = 0.0;
+    'eddyCurrentForce.v' = der('eddyCurrentForce.s');
+    'eddyCurrentForce.v_normalized' = 'eddyCurrentForce.v' / (10.0 * 'Modelica.Electrical.Machines.Thermal.linearTemperatureDependency'(1.0, 293.15, 0.00392, 'eddyCurrentForce.TheatPort'));
+    'eddyCurrentForce.f' = 200.0 * 'eddyCurrentForce.excitationInternal' ^ 2.0 * 'eddyCurrentForce.v_normalized' / (1.0 + 'eddyCurrentForce.v_normalized' * 'eddyCurrentForce.v_normalized');
+    'eddyCurrentForce.lossPower' = 'eddyCurrentForce.f' * 'eddyCurrentForce.v';
+    'eddyCurrentForce.f' = 'eddyCurrentForce.flange.f';
+    'eddyCurrentForce.s' = 'eddyCurrentForce.flange.s' - 'eddyCurrentForce.s_support';
+    'eddyCurrentForce.s_support' = 0.0;
+    'mass.v' = der('mass.s');
+    'mass.a' = der('mass.v');
+    'mass.a' = 'mass.flange_a.f' + 'mass.flange_b.f';
+    'mass.flange_a.s' = 'mass.s';
+    'mass.flange_b.s' = 'mass.s';
+    'heatCapacitor.T' = 'heatCapacitor.port.T';
+    'heatCapacitor.der_T' = der('heatCapacitor.T');
+    der('heatCapacitor.T') = 'heatCapacitor.port.Q_flow';
+    'ramp.y' = if time < 0.1 then 0.0 else if time < 0.2 then (time - 0.1) / 0.1 else 1.0;
+    annotation(experiment(StopTime = 1.0, Interval = 0.001));
+  end 'EddyCurrentBrake';
+end 'EddyCurrentBrake';

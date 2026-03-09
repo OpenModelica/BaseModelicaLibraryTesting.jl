@@ -1,0 +1,340 @@
+//! base 0.1.0
+package 'GeneralLeakage'
+  function 'Complex.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Complex.\'*\'.multiply';
+
+  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Complex.\'constructor\'.fromReal';
+
+  function 'Modelica.ComplexMath.abs' "Absolute value of complex number"
+    input 'Complex' 'c';
+    output Real 'result';
+  algorithm
+    'result' := sqrt('c'.'re' ^ 2.0 + 'c'.'im' ^ 2.0);
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.abs';
+
+  function 'Modelica.ComplexMath.arg' "Phase angle of complex number"
+    input 'Complex' 'c';
+    input Real 'phi0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'phi' := 'Modelica.Math.atan3'('c'.'im', 'c'.'re', 'phi0');
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.arg';
+
+  function 'Modelica.ComplexMath.conj' "Conjugate of complex number"
+    input 'Complex' 'c1';
+    output 'Complex' 'c2';
+  algorithm
+    'c2' := 'Complex.\'constructor\'.fromReal'('c1'.'re', -'c1'.'im');
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.conj';
+
+  function 'Modelica.ComplexMath.imag' "Imaginary part of complex number"
+    input 'Complex' 'c';
+    output Real 'r';
+  algorithm
+    'r' := 'c'.'im';
+    annotation(Inline = true);
+  end 'Modelica.ComplexMath.imag';
+
+  function 'Modelica.Math.atan2' "Four quadrant inverse tangent"
+    input Real 'u1';
+    input Real 'u2';
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'y' := atan2('u1', 'u2');
+    annotation(Inline = true);
+  end 'Modelica.Math.atan2';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'+\'' "Add two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'+\'';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply';
+
+  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract' "Subtract two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'*\'.multiply' "Multiply two complex numbers"
+    input 'Complex' 'c1';
+    input 'Complex' 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex.\'constructor\'.fromReal'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'*\'.multiply';
+
+  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
+    input Real 're';
+    input Real 'im' = 0.0;
+    output 'Complex' 'result';
+  algorithm
+    annotation(Inline = true);
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
+
+  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
+
+  record 'Modelica.Units.SI.ComplexMagneticFlux'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticFlux';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
+
+  record 'Modelica.Units.SI.ComplexMagneticPotential'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticPotential';
+
+  model 'GeneralLeakage' "Magnetic circuit with generic leakage mode"
+    Real 'constantReluctance.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'constantReluctance.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'constantReluctance.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'constantReluctance.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'constantReluctance.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'constantReluctance.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'constantReluctance.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'constantReluctance.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'constantReluctance.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'constantReluctance.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'constantReluctance.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'constantReluctance.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'constantReluctance.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'constantReluctance.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'constantReluctance.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'constantReluctance.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'constantReluctance.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'constantReluctance.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
+    Real 'constantReluctance.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Real 'constantReluctance.R_m'(unit = "H-1", quantity = "Reluctance") = 1e-5 "Magnetic reluctance";
+    Real 'leakageWithCoefficient.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'leakageWithCoefficient.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'leakageWithCoefficient.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'leakageWithCoefficient.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'leakageWithCoefficient.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'leakageWithCoefficient.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'leakageWithCoefficient.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'leakageWithCoefficient.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'leakageWithCoefficient.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'leakageWithCoefficient.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'leakageWithCoefficient.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'leakageWithCoefficient.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'leakageWithCoefficient.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'leakageWithCoefficient.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'leakageWithCoefficient.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'leakageWithCoefficient.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'leakageWithCoefficient.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'leakageWithCoefficient.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
+    Real 'leakageWithCoefficient.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    Real 'leakageWithCoefficient.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
+    Real 'leakageWithCoefficient.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
+    parameter Real 'leakageWithCoefficient.c_usefulFlux'(start = 0.7, max = 0.9999999999999998, min = 2.220446049250313e-16, unit = "1", quantity = "CouplingCoefficient") = 0.7 "Ratio useful flux/(leakage flux + useful flux) = useful flux/total flux";
+    Real 'leakageWithCoefficient.R_mUsefulTot'(unit = "H-1", quantity = "Reluctance");
+    constant Real 'eddyCurrent.j.re' = 0.0 "Real part of complex number";
+    constant Real 'eddyCurrent.j.im' = 1.0 "Imaginary part of complex number";
+    Real 'eddyCurrent.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'eddyCurrent.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'eddyCurrent.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'eddyCurrent.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'eddyCurrent.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'eddyCurrent.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'eddyCurrent.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'eddyCurrent.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'eddyCurrent.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'eddyCurrent.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'eddyCurrent.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'eddyCurrent.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'eddyCurrent.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'eddyCurrent.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'eddyCurrent.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'eddyCurrent.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'eddyCurrent.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'eddyCurrent.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
+    Real 'eddyCurrent.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    parameter Boolean 'eddyCurrent.useConductance' = true "Use conductance instead of geometry data and rho" annotation(Evaluate = true);
+    parameter Real 'eddyCurrent.G'(min = 0.0, unit = "S", quantity = "Conductance") = 1e4 "Equivalent loss conductance G=A/rho/l" annotation(Evaluate = true);
+    parameter Real 'eddyCurrent.rho'(unit = "Ohm.m", quantity = "Resistivity") = 9.8e-8 "Resistivity of flux tube material (default: Iron at 20degC)";
+    parameter Real 'eddyCurrent.l'(unit = "m", quantity = "Length") = 1.0 "Average length of eddy current path";
+    parameter Real 'eddyCurrent.A'(unit = "m2", quantity = "Area") = 1.0 "Cross sectional area of eddy current path";
+    parameter Real 'eddyCurrent.R'(unit = "Ohm", quantity = "Resistance") = 9.8e-8 "Electrical resistance of eddy current path";
+    parameter Boolean 'eddyCurrent.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
+    parameter Real 'eddyCurrent.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.15 "Fixed device temperature if useHeatPort = false";
+    Real 'eddyCurrent.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
+    Real 'eddyCurrent.TheatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
+    Real 'constantSource.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'constantSource.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'constantSource.port_p.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'constantSource.port_p.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'constantSource.port_p.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'constantSource.port_n.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'constantSource.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'constantSource.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'constantSource.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'constantSource.port_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'constantSource.omega'(unit = "rad/s", quantity = "AngularVelocity");
+    Real 'constantSource.gamma'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle");
+    parameter Real 'constantSource.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 50.0 "Frequency of the source";
+    parameter Real 'constantSource.V_m.re'(unit = "A", quantity = "MagneticPotential") = 100.0 "Real part of complex number";
+    parameter Real 'constantSource.V_m.im'(unit = "A", quantity = "MagneticPotential") = 0.0 "Imaginary part of complex number";
+    Real 'constantSource.Phi.re'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'constantSource.Phi.im'(start = 0.0, unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'ground.port.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'ground.port.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'ground.port.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'ground.port.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'ground.port.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  equation
+    'constantReluctance.abs_V_m' = 'Modelica.ComplexMath.abs'('constantReluctance.V_m');
+    'constantReluctance.arg_V_m' = 'Modelica.ComplexMath.arg'('constantReluctance.V_m', 0.0);
+    'constantReluctance.abs_Phi' = 'Modelica.ComplexMath.abs'('constantReluctance.Phi');
+    'constantReluctance.arg_Phi' = 'Modelica.ComplexMath.arg'('constantReluctance.Phi', 0.0);
+    'leakageWithCoefficient.abs_V_m' = 'Modelica.ComplexMath.abs'('leakageWithCoefficient.V_m');
+    'leakageWithCoefficient.arg_V_m' = 'Modelica.ComplexMath.arg'('leakageWithCoefficient.V_m', 0.0);
+    'leakageWithCoefficient.abs_Phi' = 'Modelica.ComplexMath.abs'('leakageWithCoefficient.Phi');
+    'leakageWithCoefficient.arg_Phi' = 'Modelica.ComplexMath.arg'('leakageWithCoefficient.Phi', 0.0);
+    'leakageWithCoefficient.R_mUsefulTot' = 1e-5;
+    'eddyCurrent.abs_V_m' = 'Modelica.ComplexMath.abs'('eddyCurrent.V_m');
+    'eddyCurrent.arg_V_m' = 'Modelica.ComplexMath.arg'('eddyCurrent.V_m', 0.0);
+    'eddyCurrent.abs_Phi' = 'Modelica.ComplexMath.abs'('eddyCurrent.Phi');
+    'eddyCurrent.arg_Phi' = 'Modelica.ComplexMath.arg'('eddyCurrent.Phi', 0.0);
+    'constantSource.gamma' = 'constantSource.port_p.reference.gamma';
+    'constantReluctance.port_p.V_m.re' = 'constantSource.port_p.V_m.re';
+    'constantReluctance.port_p.V_m.im' = 'constantSource.port_p.V_m.im';
+    'constantReluctance.port_n.V_m.re' = 'eddyCurrent.port_p.V_m.re';
+    'constantReluctance.port_n.V_m.im' = 'eddyCurrent.port_p.V_m.im';
+    'constantReluctance.port_n.reference.gamma' = 'eddyCurrent.port_p.reference.gamma';
+    'eddyCurrent.port_n.V_m.re' = 'leakageWithCoefficient.port_p.V_m.re';
+    'eddyCurrent.port_n.V_m.im' = 'leakageWithCoefficient.port_p.V_m.im';
+    'eddyCurrent.port_n.reference.gamma' = 'leakageWithCoefficient.port_p.reference.gamma';
+    'ground.port.V_m.re' = 'constantSource.port_n.V_m.re';
+    'ground.port.V_m.re' = 'leakageWithCoefficient.port_n.V_m.re';
+    'ground.port.V_m.im' = 'constantSource.port_n.V_m.im';
+    'ground.port.V_m.im' = 'leakageWithCoefficient.port_n.V_m.im';
+    'ground.port.reference.gamma' = 'constantSource.port_n.reference.gamma';
+    'ground.port.reference.gamma' = 'leakageWithCoefficient.port_n.reference.gamma';
+    'constantSource.port_p.Phi.re' + 'constantReluctance.port_p.Phi.re' = 0.0;
+    'constantSource.port_p.Phi.im' + 'constantReluctance.port_p.Phi.im' = 0.0;
+    'eddyCurrent.port_p.Phi.re' + 'constantReluctance.port_n.Phi.re' = 0.0;
+    'eddyCurrent.port_p.Phi.im' + 'constantReluctance.port_n.Phi.im' = 0.0;
+    'ground.port.Phi.re' + 'constantSource.port_n.Phi.re' + 'leakageWithCoefficient.port_n.Phi.re' = 0.0;
+    'ground.port.Phi.im' + 'constantSource.port_n.Phi.im' + 'leakageWithCoefficient.port_n.Phi.im' = 0.0;
+    'eddyCurrent.port_n.Phi.re' + 'leakageWithCoefficient.port_p.Phi.re' = 0.0;
+    'eddyCurrent.port_n.Phi.im' + 'leakageWithCoefficient.port_p.Phi.im' = 0.0;
+    'constantReluctance.V_m.re' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('constantReluctance.Phi', 'Complex'(1e-5, 0.0))).re;
+    'constantReluctance.V_m.im' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('constantReluctance.Phi', 'Complex'(1e-5, 0.0))).im;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('constantReluctance.port_p.Phi', 'constantReluctance.port_n.Phi')).re;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('constantReluctance.port_p.Phi', 'constantReluctance.port_n.Phi')).im;
+    'constantReluctance.port_p.reference.gamma' = 'constantReluctance.port_n.reference.gamma';
+    'constantReluctance.omega' = der('constantReluctance.port_p.reference.gamma');
+    'constantReluctance.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('constantReluctance.port_p.V_m', 'constantReluctance.port_n.V_m')).re;
+    'constantReluctance.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('constantReluctance.port_p.V_m', 'constantReluctance.port_n.V_m')).im;
+    'constantReluctance.Phi.re' = 'constantReluctance.port_p.Phi.re';
+    'constantReluctance.Phi.im' = 'constantReluctance.port_p.Phi.im';
+    0.30000000000000004 * 'leakageWithCoefficient.R_m' = 0.7 * 'leakageWithCoefficient.R_mUsefulTot';
+    'leakageWithCoefficient.V_m.re' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('leakageWithCoefficient.Phi', 'Complex.\'constructor\'.fromReal'('leakageWithCoefficient.R_m', 0.0))).re;
+    'leakageWithCoefficient.V_m.im' = ('Modelica.Units.SI.ComplexMagneticFlux.\'*\'.multiply'('leakageWithCoefficient.Phi', 'Complex.\'constructor\'.fromReal'('leakageWithCoefficient.R_m', 0.0))).im;
+    'leakageWithCoefficient.R_m' = 1.0 / 'leakageWithCoefficient.G_m';
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('leakageWithCoefficient.port_p.Phi', 'leakageWithCoefficient.port_n.Phi')).re;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('leakageWithCoefficient.port_p.Phi', 'leakageWithCoefficient.port_n.Phi')).im;
+    'leakageWithCoefficient.port_p.reference.gamma' = 'leakageWithCoefficient.port_n.reference.gamma';
+    'leakageWithCoefficient.omega' = der('leakageWithCoefficient.port_p.reference.gamma');
+    'leakageWithCoefficient.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('leakageWithCoefficient.port_p.V_m', 'leakageWithCoefficient.port_n.V_m')).re;
+    'leakageWithCoefficient.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('leakageWithCoefficient.port_p.V_m', 'leakageWithCoefficient.port_n.V_m')).im;
+    'leakageWithCoefficient.Phi.re' = 'leakageWithCoefficient.port_p.Phi.re';
+    'leakageWithCoefficient.Phi.im' = 'leakageWithCoefficient.port_p.Phi.im';
+    'eddyCurrent.lossPower' = 1.5707963267948966 * 'Modelica.ComplexMath.imag'('Complex.\'*\'.multiply'('Modelica.Units.SI.ComplexMagneticPotentialDifference.\'*\'.multiply'('Complex.\'constructor\'.fromReal'('eddyCurrent.omega', 0.0), 'eddyCurrent.V_m'), 'Modelica.ComplexMath.conj'('eddyCurrent.Phi')));
+    ('Modelica.Units.SI.ComplexMagneticPotentialDifference.\'*\'.multiply'('Complex'(1.5707963267948966, 0.0), 'eddyCurrent.V_m')).re = ('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex'(0.0, 1.0), 'Complex.\'constructor\'.fromReal'('eddyCurrent.omega', 0.0)), 'eddyCurrent.Phi'), 'Complex'(1e4, 0.0))).re;
+    ('Modelica.Units.SI.ComplexMagneticPotentialDifference.\'*\'.multiply'('Complex'(1.5707963267948966, 0.0), 'eddyCurrent.V_m')).im = ('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex.\'*\'.multiply'('Complex'(0.0, 1.0), 'Complex.\'constructor\'.fromReal'('eddyCurrent.omega', 0.0)), 'eddyCurrent.Phi'), 'Complex'(1e4, 0.0))).im;
+    'eddyCurrent.TheatPort' = 273.15;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('eddyCurrent.port_p.Phi', 'eddyCurrent.port_n.Phi')).re;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('eddyCurrent.port_p.Phi', 'eddyCurrent.port_n.Phi')).im;
+    'eddyCurrent.port_p.reference.gamma' = 'eddyCurrent.port_n.reference.gamma';
+    'eddyCurrent.omega' = der('eddyCurrent.port_p.reference.gamma');
+    'eddyCurrent.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('eddyCurrent.port_p.V_m', 'eddyCurrent.port_n.V_m')).re;
+    'eddyCurrent.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('eddyCurrent.port_p.V_m', 'eddyCurrent.port_n.V_m')).im;
+    'eddyCurrent.Phi.re' = 'eddyCurrent.port_p.Phi.re';
+    'eddyCurrent.Phi.im' = 'eddyCurrent.port_p.Phi.im';
+    'constantSource.omega' = 314.1592653589793;
+    'constantSource.V_m.re' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('constantSource.port_p.V_m', 'constantSource.port_n.V_m')).re;
+    'constantSource.V_m.im' = ('Modelica.Units.SI.ComplexMagneticPotential.\'-\'.subtract'('constantSource.port_p.V_m', 'constantSource.port_n.V_m')).im;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('constantSource.port_p.Phi', 'constantSource.port_n.Phi')).re;
+    0.0 = ('Modelica.Units.SI.ComplexMagneticFlux.\'+\''('constantSource.port_p.Phi', 'constantSource.port_n.Phi')).im;
+    'constantSource.Phi.re' = 'constantSource.port_p.Phi.re';
+    'constantSource.Phi.im' = 'constantSource.port_p.Phi.im';
+    'constantSource.port_p.reference.gamma' = 'constantSource.port_n.reference.gamma';
+    'constantSource.omega' = der('constantSource.port_p.reference.gamma');
+    'ground.port.V_m.re' = 0.0;
+    'ground.port.V_m.im' = 0.0;
+    annotation(experiment(StopTime = 1, Interval = 0.001));
+  end 'GeneralLeakage';
+end 'GeneralLeakage';

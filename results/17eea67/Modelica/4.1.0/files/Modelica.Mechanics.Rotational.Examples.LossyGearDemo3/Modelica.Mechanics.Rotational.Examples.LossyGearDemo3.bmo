@@ -1,0 +1,249 @@
+//! base 0.1.0
+package 'LossyGearDemo3'
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
+
+  function 'Modelica.Math.isEqual' "Determine if two Real scalars are numerically identical"
+    input Real 's1';
+    input Real 's2';
+    input Real 'eps'(min = 0.0) = 0.0;
+    output Boolean 'result';
+  algorithm
+    'result' := abs('s1' - 's2') <= 'eps';
+    annotation(Inline = true);
+  end 'Modelica.Math.isEqual';
+
+  type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
+
+  class 'Modelica.Blocks.Types.ExternalCombiTable1D'
+  extends ExternalObject;
+
+    function constructor "Initialize 1-dim. table defined by matrix"
+      input String 'tableName';
+      input String 'fileName';
+      input Real[:, :] 'table';
+      input Integer[:] 'columns';
+      input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
+      input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
+      input Boolean 'verboseRead' = true;
+      input String 'delimiter' = ",";
+      input Integer 'nHeaderLines' = 0;
+      output 'Modelica.Blocks.Types.ExternalCombiTable1D' 'externalCombiTable1D';
+    external "C" 'externalCombiTable1D' = ModelicaStandardTables_CombiTable1D_init3('fileName', 'tableName', 'table', size('table', 1), size('table', 2), 'columns', size('columns', 1), 'smoothness', 'extrapolation', 'verboseRead', 'delimiter', 'nHeaderLines') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    end constructor;
+
+    function destructor "Terminate 1-dim. table defined by matrix"
+      input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'externalCombiTable1D';
+    external "C" ModelicaStandardTables_CombiTable1D_close('externalCombiTable1D') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    end destructor;
+
+end 'Modelica.Blocks.Types.ExternalCombiTable1D';
+
+  type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
+
+  model 'LossyGearDemo3' "Example that failed in the previous version of the LossyGear version"
+    parameter Boolean 'gear.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
+    Real 'gear.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'gear.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    Real 'gear.flange_b.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'gear.flange_b.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    Real 'gear.phi_support'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute angle of support flange";
+    parameter Real 'gear.ratio'(start = 1.0) = 1.0 "Transmission ratio (flange_a.phi/flange_b.phi)";
+    parameter Real 'gear.lossTable[1,1]' = 0.0 "Array for mesh efficiencies and bearing friction depending on speed";
+    parameter Real 'gear.lossTable[1,2]' = 0.25 "Array for mesh efficiencies and bearing friction depending on speed";
+    parameter Real 'gear.lossTable[1,3]' = 0.25 "Array for mesh efficiencies and bearing friction depending on speed";
+    parameter Real 'gear.lossTable[1,4]' = 0.625 "Array for mesh efficiencies and bearing friction depending on speed";
+    parameter Real 'gear.lossTable[1,5]' = 2.5 "Array for mesh efficiencies and bearing friction depending on speed";
+    parameter 'Modelica.Blocks.Types.Smoothness' 'gear.smoothness' = 'Modelica.Blocks.Types.Smoothness'.'LinearSegments' "Smoothness of interpolation in lossTable table";
+    parameter Boolean 'gear.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
+    Real 'gear.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
+    Real 'gear.phi_a'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Angle between left shaft flange and support";
+    Real 'gear.phi_b'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Angle between right shaft flange and support";
+    Real 'gear.sa'(unit = "1") "Path parameter for acceleration and torque loss";
+    Real 'gear.w_a'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of flange_a with respect to support";
+    Real 'gear.a_a'(unit = "rad/s2", quantity = "AngularAcceleration") "Angular acceleration of flange_a with respect to support";
+    Real 'gear.interpolation_result[1,1]' "Result of interpolation in lossTable (= [eta_mf1, eta_mf2, tau_bf1, tau_bf2])";
+    Real 'gear.interpolation_result[1,2]' "Result of interpolation in lossTable (= [eta_mf1, eta_mf2, tau_bf1, tau_bf2])";
+    Real 'gear.interpolation_result[1,3]' "Result of interpolation in lossTable (= [eta_mf1, eta_mf2, tau_bf1, tau_bf2])";
+    Real 'gear.interpolation_result[1,4]' "Result of interpolation in lossTable (= [eta_mf1, eta_mf2, tau_bf1, tau_bf2])";
+    Real 'gear.eta_mf1'(unit = "1") "Mesh efficiency in case that flange_a is driving";
+    Real 'gear.eta_mf2'(unit = "1") "Mesh efficiency in case that flange_b is driving";
+    Real 'gear.tau_bf_a'(unit = "N.m", quantity = "Torque") "Bearing friction torque on flange_a side";
+    Real 'gear.tau_eta'(unit = "N.m", quantity = "Torque") "Torque that determines the driving side (= if forwardSliding then flange_a.tau-tau_bf_a else if backwardSliding then flange_a.tau+tau_bf_a else flange_a.tau)";
+    Real 'gear.tau_bf1'(unit = "N.m", quantity = "Torque") "Absolute resultant bearing friction torque with respect to flange_a in case that flange_a is driving (= |tau_bf_a*eta_mf1 + tau_bf_b/i|)";
+    Real 'gear.tau_bf2'(unit = "N.m", quantity = "Torque") "Absolute resultant bearing friction torque with respect to flange_a in case that flange_b is driving (= |tau_bf_a/eta_mf2 + tau_bf_b/i|)";
+    Real 'gear.quadrant1'(unit = "N.m", quantity = "Torque") "Torque loss if w_a > 0 and flange_a.tau >= 0";
+    Real 'gear.quadrant2'(unit = "N.m", quantity = "Torque") "Torque loss if w_a > 0 and flange_a.tau < 0";
+    Real 'gear.quadrant3'(unit = "N.m", quantity = "Torque") "Torque loss if w_a < 0 and flange_a.tau >= 0";
+    Real 'gear.quadrant4'(unit = "N.m", quantity = "Torque") "Torque loss if w_a < 0 and flange_a.tau < 0";
+    Real 'gear.quadrant1_p'(unit = "N.m", quantity = "Torque") "Torque loss at w_a = 0+ to determine driving side (flange_a.tau >= 0)";
+    Real 'gear.quadrant2_p'(unit = "N.m", quantity = "Torque") "Torque loss at w_a = 0+ to determine driving side (flange_a.tau < 0)";
+    Real 'gear.quadrant3_m'(unit = "N.m", quantity = "Torque") "Torque loss at w_a = 0- to determine driving side (flange_a.tau >=0)";
+    Real 'gear.quadrant4_m'(unit = "N.m", quantity = "Torque") "Torque loss at w_a = 0- to determine driving side (flange_a.tau < 0)";
+    Real 'gear.tauLoss'(unit = "N.m", quantity = "Torque") "Torque loss due to friction in the gear teeth and in the bearings";
+    Real 'gear.tauLossMax'(unit = "N.m", quantity = "Torque") "Torque loss for positive speed";
+    Real 'gear.tauLossMin'(unit = "N.m", quantity = "Torque") "Torque loss for negative speed";
+    Real 'gear.tauLossMax_p'(unit = "N.m", quantity = "Torque") "Torque loss for positive speed";
+    Real 'gear.tauLossMin_m'(unit = "N.m", quantity = "Torque") "Torque loss for negative speed";
+    Boolean 'gear.tau_aPos'(start = true) "Only for backwards compatibility (was previously: true, if torque of flange_a is not negative)";
+    Boolean 'gear.tau_etaPos'(start = true) "= true, if torque tau_eta is not negative";
+    Boolean 'gear.startForward'(start = false) "= true, if starting to roll forward";
+    Boolean 'gear.startBackward'(start = false) "= true, if starting to roll backward";
+    Boolean 'gear.locked'(start = false) "= true, if gear is locked";
+    Boolean 'gear.ideal' "= true, if losses are neglected (that is lossTable = [0, 1, 1, 0, 0])";
+    constant Integer 'gear.Unknown' = 3 "Value of mode is not known";
+    constant Integer 'gear.Free' = 2 "Element is not active";
+    constant Integer 'gear.Forward' = 1 "w_a > 0 (forward rolling)";
+    constant Integer 'gear.Stuck' = 0 "w_a = 0 (forward rolling, locked or backward rolling)";
+    constant Integer 'gear.Backward' = -1 "w_a < 0 (backward rolling)";
+    Integer 'gear.mode'(fixed = true, start = 2, max = 3, min = -1) "Mode of friction element (unknown, not active, forward/backward rolling, stuck)";
+    Real 'gear.tau_eta_p'(unit = "N.m", quantity = "Torque") "tau_eta assuming positive omega";
+    Real 'gear.tau_eta_m'(unit = "N.m", quantity = "Torque") "tau_eta assuming negative omega";
+    constant Real 'gear.unitAngularAcceleration'(unit = "rad/s2", quantity = "AngularAcceleration") = 1.0;
+    constant Real 'gear.unitTorque'(unit = "N.m", quantity = "Torque") = 1.0;
+    parameter Real 'gear.eta_mf1_0'(unit = "1") = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 1, 0.0);
+    parameter Real 'gear.eta_mf2_0'(unit = "1") = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 2, 0.0);
+    parameter Real 'gear.tau_bf1_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 3, 0.0));
+    parameter Real 'gear.tau_bf2_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 4, 0.0));
+    parameter Real 'gear.tau_bf_a_0'(unit = "N.m", quantity = "Torque") = if 'Modelica.Math.isEqual'('gear.eta_mf1_0', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('gear.eta_mf2_0', 1.0, 2.220446049250313e-16) then 'gear.tau_bf1_0' / 2.0 else ('gear.tau_bf1_0' - 'gear.tau_bf2_0') / ('gear.eta_mf1_0' - 1.0 / 'gear.eta_mf2_0');
+    parameter 'Modelica.Blocks.Types.ExternalCombiTable1D' 'gear.tableID' = 'Modelica.Blocks.Types.ExternalCombiTable1D'("NoName", "NoName", {{0.0, 0.25, 0.25, 0.625, 2.5}}, {2, 3, 4, 5}, 'Modelica.Blocks.Types.Smoothness'.'LinearSegments', 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints', false, ",", 0) "External table object for sliding friction coefficient";
+    Real 'Inertia1.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'Inertia1.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    Real 'Inertia1.flange_b.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'Inertia1.flange_b.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    parameter Real 'Inertia1.J'(start = 1.0, min = 0.0, unit = "kg.m2", quantity = "MomentOfInertia") = 0.001 "Moment of inertia";
+    parameter StateSelect 'Inertia1.stateSelect' = StateSelect.default "Priority to use phi and w as states";
+    Real 'Inertia1.phi'(stateSelect = StateSelect.default, displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of component";
+    Real 'Inertia1.w'(stateSelect = StateSelect.default, start = 10.0, unit = "rad/s", quantity = "AngularVelocity") "Absolute angular velocity of component (= der(phi))";
+    Real 'Inertia1.a'(unit = "rad/s2", quantity = "AngularAcceleration") "Absolute angular acceleration of component (= der(w))";
+    parameter Boolean 'torque1.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
+    Real 'torque1.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'torque1.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    Real 'torque1.phi_support'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute angle of support flange";
+    Real 'torque1.tau'(unit = "N.m") "Accelerating torque acting at flange (= -flange.tau)";
+    parameter Boolean 'torque2.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
+    Real 'torque2.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'torque2.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    Real 'torque2.phi_support'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute angle of support flange";
+    Real 'torque2.tau'(unit = "N.m") "Accelerating torque acting at flange (= -flange.tau)";
+    parameter Real 'step.height' = 0.0 "Height of step";
+    Real 'step.y' "Connector of Real output signal";
+    parameter Real 'step.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'step.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'step1.height' = 1.0 "Height of step";
+    Real 'step1.y' "Connector of Real output signal";
+    parameter Real 'step1.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'step1.startTime'(unit = "s", quantity = "Time") = 0.5 "Output y = offset for time < startTime";
+    Real 'Inertia2.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'Inertia2.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    Real 'Inertia2.flange_b.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'Inertia2.flange_b.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
+    parameter Real 'Inertia2.J'(start = 1.0, min = 0.0, unit = "kg.m2", quantity = "MomentOfInertia") = 0.001 "Moment of inertia";
+    parameter StateSelect 'Inertia2.stateSelect' = StateSelect.default "Priority to use phi and w as states";
+    Real 'Inertia2.phi'(stateSelect = StateSelect.default, fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of component";
+    Real 'Inertia2.w'(stateSelect = StateSelect.default, fixed = true, start = 10.0, unit = "rad/s", quantity = "AngularVelocity") "Absolute angular velocity of component (= der(phi))";
+    Real 'Inertia2.a'(unit = "rad/s2", quantity = "AngularAcceleration") "Absolute angular acceleration of component (= der(w))";
+  equation
+    'Inertia1.flange_b.phi' = 'gear.flange_a.phi';
+    'torque1.flange.phi' = 'Inertia1.flange_a.phi';
+    'step.y' = 'torque1.tau';
+    'gear.flange_b.phi' = 'Inertia2.flange_a.phi';
+    'Inertia2.flange_b.phi' = 'torque2.flange.phi';
+    'step1.y' = 'torque2.tau';
+    'Inertia2.flange_a.tau' + 'gear.flange_b.tau' = 0.0;
+    'Inertia1.flange_b.tau' + 'gear.flange_a.tau' = 0.0;
+    'torque1.flange.tau' + 'Inertia1.flange_a.tau' = 0.0;
+    'Inertia2.flange_b.tau' + 'torque2.flange.tau' = 0.0;
+    'gear.ideal' = false;
+
+    if 'gear.ideal' then
+      'gear.interpolation_result[1,1]' = 1.0;
+      'gear.interpolation_result[1,2]' = 1.0;
+      'gear.interpolation_result[1,3]' = 0.0;
+      'gear.interpolation_result[1,4]' = 0.0;
+      'gear.eta_mf1' = 1.0;
+      'gear.eta_mf2' = 1.0;
+      'gear.tau_bf1' = 0.0;
+      'gear.tau_bf2' = 0.0;
+    elseif true then
+      'gear.interpolation_result[1,1]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 1, noEvent(abs('gear.w_a')));
+      'gear.interpolation_result[1,2]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 2, noEvent(abs('gear.w_a')));
+      'gear.interpolation_result[1,3]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 3, noEvent(abs('gear.w_a')));
+      'gear.interpolation_result[1,4]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 4, noEvent(abs('gear.w_a')));
+      'gear.eta_mf1' = 'gear.interpolation_result[1,1]';
+      'gear.eta_mf2' = 'gear.interpolation_result[1,2]';
+      'gear.tau_bf1' = noEvent(abs('gear.interpolation_result[1,3]'));
+      'gear.tau_bf2' = noEvent(abs('gear.interpolation_result[1,4]'));
+    end if;
+
+    if 'Modelica.Math.isEqual'('gear.eta_mf1', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('gear.eta_mf2', 1.0, 2.220446049250313e-16) then
+      'gear.tau_bf_a' = 'gear.tau_bf1' / 2.0;
+    elseif true then
+      'gear.tau_bf_a' = ('gear.tau_bf1' - 'gear.tau_bf2') / ('gear.eta_mf1' - 1.0 / 'gear.eta_mf2');
+    end if;
+
+    'gear.phi_a' = 'gear.flange_a.phi' - 'gear.phi_support';
+    'gear.phi_b' = 'gear.flange_b.phi' - 'gear.phi_support';
+    'gear.phi_a' = 'gear.phi_b';
+    0.0 = 'gear.flange_b.tau' + 'gear.flange_a.tau' - 'gear.tauLoss';
+    'gear.w_a' = der('gear.phi_a');
+    'gear.a_a' = der('gear.w_a');
+    'gear.tau_eta_p' = 'gear.flange_a.tau' - 'gear.tau_bf_a_0';
+    'gear.tau_eta_m' = 'gear.flange_a.tau' + 'gear.tau_bf_a_0';
+    'gear.quadrant1_p' = (1.0 - 'gear.eta_mf1_0') * 'gear.flange_a.tau' + 'gear.tau_bf1_0';
+    'gear.quadrant2_p' = (1.0 - 1.0 / 'gear.eta_mf2_0') * 'gear.flange_a.tau' + 'gear.tau_bf2_0';
+    'gear.tauLossMax_p' = if noEvent('gear.tau_eta_p' > 0.0) then 'gear.quadrant1_p' else 'gear.quadrant2_p';
+    'gear.quadrant4_m' = (1.0 - 1.0 / 'gear.eta_mf2_0') * 'gear.flange_a.tau' - 'gear.tau_bf2_0';
+    'gear.quadrant3_m' = (1.0 - 'gear.eta_mf1_0') * 'gear.flange_a.tau' - 'gear.tau_bf1_0';
+    'gear.tauLossMin_m' = if noEvent('gear.tau_eta_m' > 0.0) then 'gear.quadrant4_m' else 'gear.quadrant3_m';
+    'gear.quadrant1' = (1.0 - 'gear.eta_mf1') * 'gear.flange_a.tau' + 'gear.tau_bf1';
+    'gear.quadrant2' = (1.0 - 1.0 / 'gear.eta_mf2') * 'gear.flange_a.tau' + 'gear.tau_bf2';
+    'gear.quadrant4' = (1.0 - 1.0 / 'gear.eta_mf2') * 'gear.flange_a.tau' - 'gear.tau_bf2';
+    'gear.quadrant3' = (1.0 - 'gear.eta_mf1') * 'gear.flange_a.tau' - 'gear.tau_bf1';
+    'gear.tau_eta' = if 'gear.ideal' then 'gear.flange_a.tau' else if 'gear.locked' then 'gear.flange_a.tau' else if 'gear.startForward' or pre('gear.mode') == 1 then 'gear.flange_a.tau' - 'gear.tau_bf_a' else 'gear.flange_a.tau' + 'gear.tau_bf_a';
+    'gear.tau_etaPos' = 'gear.tau_eta' >= 0.0;
+    'gear.tau_aPos' = 'gear.tau_etaPos';
+    'gear.tauLossMax' = if 'gear.tau_etaPos' then 'gear.quadrant1' else 'gear.quadrant2';
+    'gear.tauLossMin' = if 'gear.tau_etaPos' then 'gear.quadrant4' else 'gear.quadrant3';
+    'gear.startForward' = pre('gear.mode') == 0 and 'gear.sa' > 'gear.tauLossMax_p' or initial() and 'gear.w_a' > 0.0;
+    'gear.startBackward' = pre('gear.mode') == 0 and 'gear.sa' < 'gear.tauLossMin_m' or initial() and 'gear.w_a' < 0.0;
+    'gear.locked' = not (((('gear.ideal' or pre('gear.mode') == 1) or 'gear.startForward') or pre('gear.mode') == (-1)) or 'gear.startBackward');
+    'gear.tauLoss' = if 'gear.ideal' then 0.0 else if 'gear.locked' then 'gear.sa' else if 'gear.startForward' or pre('gear.mode') == 1 then 'gear.tauLossMax' else 'gear.tauLossMin';
+    'gear.a_a' = if 'gear.locked' then 0.0 else 'gear.sa' - 'gear.tauLoss';
+    'gear.mode' = if 'gear.ideal' then 2 else if (pre('gear.mode') == 1 or 'gear.startForward') and 'gear.w_a' > 0.0 then 1 else if (pre('gear.mode') == (-1) or 'gear.startBackward') and 'gear.w_a' < 0.0 then -1 else 0;
+    'gear.lossPower' = 'gear.tauLoss' * 'gear.w_a';
+    'gear.phi_support' = 0.0;
+    'Inertia1.phi' = 'Inertia1.flange_a.phi';
+    'Inertia1.phi' = 'Inertia1.flange_b.phi';
+    'Inertia1.w' = der('Inertia1.phi');
+    'Inertia1.a' = der('Inertia1.w');
+    0.001 * 'Inertia1.a' = 'Inertia1.flange_a.tau' + 'Inertia1.flange_b.tau';
+    'torque1.flange.tau' = -'torque1.tau';
+    'torque1.phi_support' = 0.0;
+    'torque2.flange.tau' = -'torque2.tau';
+    'torque2.phi_support' = 0.0;
+    'step.y' = 0.0;
+    'step1.y' = if time < 0.5 then 0.0 else 1.0;
+    'Inertia2.phi' = 'Inertia2.flange_a.phi';
+    'Inertia2.phi' = 'Inertia2.flange_b.phi';
+    'Inertia2.w' = der('Inertia2.phi');
+    'Inertia2.a' = der('Inertia2.w');
+    0.001 * 'Inertia2.a' = 'Inertia2.flange_a.tau' + 'Inertia2.flange_b.tau';
+    annotation(experiment(StopTime = 1.0, Interval = 0.001));
+  end 'LossyGearDemo3';
+end 'LossyGearDemo3';

@@ -1,0 +1,172 @@
+//! base 0.1.0
+package 'AD_DA_conversion'
+  function 'Modelica.Math.sin' "Sine"
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    output Real 'y';
+  algorithm
+    'y' := sin('u');
+    annotation(Inline = true);
+  end 'Modelica.Math.sin';
+
+  type 'Modelica.Electrical.Digital.Interfaces.Logic' = enumeration('\'U\'', '\'X\'', '\'0\'', '\'1\'', '\'Z\'', '\'W\'', '\'L\'', '\'H\'', '\'-\'');
+
+  model 'AD_DA_conversion' "Conversion circuit"
+    parameter Integer 'N' = 7 "Digital signal width";
+    Real 'aD_Converter.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'aD_Converter.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'aD_Converter.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'aD_Converter.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'aD_Converter.y[1]' "Digital output";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'aD_Converter.y[2]' "Digital output";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'aD_Converter.y[3]' "Digital output";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'aD_Converter.y[4]' "Digital output";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'aD_Converter.y[5]' "Digital output";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'aD_Converter.y[6]' "Digital output";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'aD_Converter.y[7]' "Digital output";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'aD_Converter.trig' "Trigger input";
+    parameter Integer 'aD_Converter.N'(start = 8, min = 1) = 7 "Resolution in bits - output signal width";
+    parameter Real 'aD_Converter.VRefHigh'(start = 10.0, unit = "V", quantity = "ElectricPotential") = 10.0 "High reference voltage";
+    parameter Real 'aD_Converter.VRefLow'(start = 0.0, max = 10.0, unit = "V", quantity = "ElectricPotential") = 0.0 "Low reference voltage";
+    parameter Real 'aD_Converter.Rin'(start = 1e6, unit = "Ohm", quantity = "Resistance") = 1e6 "Input resistance";
+    Integer 'aD_Converter.z'(fixed = true, start = 0);
+    Real 'aD_Converter.u';
+    parameter Real 'pulse.width'(start = 50.0, max = 100.0, min = 2.2250738585072014e-308) = 1.0 "Widths of pulses in % of periods";
+    parameter Real 'pulse.period'(start = 1.0, min = 2.2250738585072014e-308, unit = "s", quantity = "Time") = 0.001 "Time for one period";
+    parameter Real 'pulse.startTime'(start = 0.0, unit = "s", quantity = "Time") = 0.0 "Output = quiet for time < startTime";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'pulse.pulse'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'') = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Pulsed value";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'pulse.quiet'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'') = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Quiet value";
+    Real 'pulse.T0'(fixed = true, start = 0.0, unit = "s", quantity = "Time") "Start time of current period";
+    parameter Integer 'pulse.nperiod'(start = -1) = -1 "Number of periods (< 0 means infinite number of periods)";
+    Integer 'pulse.np'(fixed = true, start = 0);
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'pulse.y';
+    Boolean 'pulse.sampling';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dA_Converter.trig' "Trigger input";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dA_Converter.x[1]' "Digital input";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dA_Converter.x[2]' "Digital input";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dA_Converter.x[3]' "Digital input";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dA_Converter.x[4]' "Digital input";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dA_Converter.x[5]' "Digital input";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dA_Converter.x[6]' "Digital input";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dA_Converter.x[7]' "Digital input";
+    Real 'dA_Converter.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'dA_Converter.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'dA_Converter.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'dA_Converter.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'dA_Converter.vout'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential");
+    Real 'dA_Converter.y'(fixed = true, start = 0.0);
+    parameter Integer 'dA_Converter.N'(start = 8, min = 1) = 7 "Resolution - input signal width";
+    parameter Real 'dA_Converter.Vref'(start = 10.0, unit = "V", quantity = "ElectricPotential") = 10.0 "Reference voltage";
+    Real 'ground.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'ground.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    parameter Real 'sineVoltage.V'(start = 1.0, unit = "V", quantity = "ElectricPotential") = 5.0 "Amplitude of sine wave";
+    parameter Real 'sineVoltage.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of sine wave";
+    parameter Real 'sineVoltage.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 10.0 "Frequency of sine wave";
+    Real 'sineVoltage.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
+    Real 'sineVoltage.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'sineVoltage.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'sineVoltage.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'sineVoltage.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'sineVoltage.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
+    parameter Real 'sineVoltage.signalSource.amplitude' = 5.0 "Amplitude of sine wave";
+    parameter Real 'sineVoltage.signalSource.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 10.0 "Frequency of sine wave";
+    parameter Real 'sineVoltage.signalSource.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of sine wave";
+    parameter Boolean 'sineVoltage.signalSource.continuous' = false "Make output continuous by starting at offset + amplitude*sin(phase)" annotation(Evaluate = true);
+    Real 'sineVoltage.signalSource.y' "Connector of Real output signal";
+    parameter Real 'sineVoltage.signalSource.offset' = 5.0 "Offset of output signal y";
+    parameter Real 'sineVoltage.signalSource.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'sineVoltage.offset'(unit = "V", quantity = "ElectricPotential") = 5.0 "Voltage offset";
+    parameter Real 'sineVoltage.startTime'(unit = "s", quantity = "Time") = 0.0 "Time offset";
+    parameter Real 'resistor.R'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 1.0 "Resistance at temperature T_ref";
+    parameter Real 'resistor.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Reference temperature";
+    parameter Real 'resistor.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R*(1 + alpha*(T_heatPort - T_ref))";
+    Real 'resistor.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
+    Real 'resistor.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'resistor.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'resistor.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
+    Real 'resistor.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
+    Real 'resistor.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
+    parameter Boolean 'resistor.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
+    parameter Real 'resistor.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Fixed device temperature if useHeatPort = false";
+    Real 'resistor.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
+    Real 'resistor.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
+    Real 'resistor.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
+  equation
+    'dA_Converter.trig' = 'pulse.y';
+    'dA_Converter.trig' = 'aD_Converter.trig';
+    'sineVoltage.p.v' = 'resistor.p.v';
+    'sineVoltage.p.v' = 'aD_Converter.p.v';
+    'dA_Converter.n.v' = 'ground.p.v';
+    'dA_Converter.n.v' = 'sineVoltage.n.v';
+    'dA_Converter.n.v' = 'aD_Converter.n.v';
+    'aD_Converter.y[1]' = 'dA_Converter.x[1]';
+    'aD_Converter.y[2]' = 'dA_Converter.x[2]';
+    'aD_Converter.y[3]' = 'dA_Converter.x[3]';
+    'aD_Converter.y[4]' = 'dA_Converter.x[4]';
+    'aD_Converter.y[5]' = 'dA_Converter.x[5]';
+    'aD_Converter.y[6]' = 'dA_Converter.x[6]';
+    'aD_Converter.y[7]' = 'dA_Converter.x[7]';
+    'dA_Converter.p.v' = 'resistor.n.v';
+    'resistor.p.i' + 'sineVoltage.p.i' + 'aD_Converter.p.i' = 0.0;
+    'resistor.n.i' + 'dA_Converter.p.i' = 0.0;
+    'sineVoltage.n.i' + 'ground.p.i' + 'dA_Converter.n.i' + 'aD_Converter.n.i' = 0.0;
+    'aD_Converter.p.v' - 'aD_Converter.n.v' = 'aD_Converter.u';
+    'aD_Converter.p.i' * 1e6 = 'aD_Converter.u';
+    'aD_Converter.p.i' + 'aD_Converter.n.i' = 0.0;
+    'pulse.sampling' = true;
+
+    when 'pulse.sampling' and sample(0.0, 0.001) then
+      'pulse.T0' = time;
+      'pulse.np' = pre('pulse.np');
+    end when;
+
+    if 'pulse.sampling' then
+      'pulse.y' = if time < 0.0 or time >= 'pulse.T0' + 1e-5 then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' else 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'';
+    elseif true then
+      'pulse.y' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
+    end if;
+
+    'dA_Converter.p.v' - 'dA_Converter.n.v' = 'dA_Converter.vout';
+    'dA_Converter.p.i' + 'dA_Converter.n.i' = 0.0;
+    'ground.p.v' = 0.0;
+    'sineVoltage.signalSource.y' = 5.0 + (if time < 0.0 then 0.0 else 5.0 * 'Modelica.Math.sin'(62.83185307179586 * time));
+    'sineVoltage.v' = 'sineVoltage.signalSource.y';
+    0.0 = 'sineVoltage.p.i' + 'sineVoltage.n.i';
+    'sineVoltage.i' = 'sineVoltage.p.i';
+    'sineVoltage.v' = 'sineVoltage.p.v' - 'sineVoltage.n.v';
+    'resistor.R_actual' = 1.0;
+    'resistor.v' = 'resistor.R_actual' * 'resistor.i';
+    'resistor.LossPower' = 'resistor.v' * 'resistor.i';
+    'resistor.T_heatPort' = 300.15;
+    0.0 = 'resistor.p.i' + 'resistor.n.i';
+    'resistor.i' = 'resistor.p.i';
+    'resistor.v' = 'resistor.p.v' - 'resistor.n.v';
+  initial algorithm
+    'aD_Converter.y[1]' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+    'aD_Converter.y[2]' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+    'aD_Converter.y[3]' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+    'aD_Converter.y[4]' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+    'aD_Converter.y[5]' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+    'aD_Converter.y[6]' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+    'aD_Converter.y[7]' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+  algorithm
+    when 'aD_Converter.trig' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' or 'aD_Converter.trig' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'' then
+      'aD_Converter.z' := if 'aD_Converter.u' > 0.0 then integer('aD_Converter.u' / 10.0 * 127.0 + 0.5) else 0;
+
+      for 'i' in 1:7 loop
+        'aD_Converter.y['i']' := if mod('aD_Converter.z', 2) > 0 then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' else 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
+        'aD_Converter.z' := div('aD_Converter.z', 2);
+      end for;
+    end when;
+  algorithm
+    when 'dA_Converter.trig' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' or 'dA_Converter.trig' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'' then
+      'dA_Converter.y' := 0.0;
+
+      for 'i' in 1:7 loop
+        'dA_Converter.y' := if 'dA_Converter.x['i']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' or 'dA_Converter.x['i']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'' then 'dA_Converter.y' + 2.0 ^ ('i' - 1) else 'dA_Converter.y';
+      end for;
+
+      'dA_Converter.vout' := 'dA_Converter.y' * 10.0 / 127.0;
+    end when;
+    annotation(experiment(StopTime = 0.2));
+  end 'AD_DA_conversion';
+end 'AD_DA_conversion';
