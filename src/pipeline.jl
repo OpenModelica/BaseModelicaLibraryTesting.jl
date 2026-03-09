@@ -141,7 +141,7 @@ function main(;
     @info "Starting OMC session ($(omc_exe))..."
     omc = OMJulia.OMCSession(omc_exe)
 
-    omc_options = "--baseModelica --baseModelicaOptions=$(bm_options) -d=evaluateAllParameters"
+    omc_options = "--baseModelica --frontendInline --baseModelicaOptions=$(bm_options) -d=evaluateAllParameters"
     omc_version = "unknown"
     results = ModelResult[]
     try
