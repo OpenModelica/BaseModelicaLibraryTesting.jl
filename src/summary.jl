@@ -28,6 +28,7 @@ function write_summary(
         print(io, "  \"ref_root\":     \"$(_esc_json(info.ref_root))\",\n")
         print(io, "  \"omc_version\":  \"$(_esc_json(info.omc_version))\",\n")
         print(io, "  \"bm_version\":   \"$(_esc_json(info.bm_version))\",\n")
+        print(io, "  \"bm_sha\":       \"$(_esc_json(info.bm_sha))\",\n")
         print(io, "  \"cpu_model\":    \"$(_esc_json(info.cpu_model))\",\n")
         print(io, "  \"cpu_threads\":  $(info.cpu_threads),\n")
         print(io, "  \"ram_gb\":       $(@sprintf "%.2f" info.ram_gb),\n")
@@ -67,7 +68,8 @@ Parsed contents of a single `summary.json` file.
 - `results_root` — absolute path where results were written
 - `ref_root`     — absolute path to reference results, or `""` when unused
 - `omc_version`  — OMC version string
-- `bm_version`   — BaseModelica.jl version string (e.g. `"1.6.0"`)
+- `bm_version`   — BaseModelica.jl version string (e.g. `"1.6.0"` or `"main"`)
+- `bm_sha`       — git tree-SHA of the installed BaseModelica.jl, or `""`
 - `cpu_model`    — CPU model name
 - `cpu_threads`  — number of logical CPU threads
 - `ram_gb`       — total system RAM in GiB
@@ -85,6 +87,7 @@ struct RunSummary
     ref_root     :: String
     omc_version  :: String
     bm_version   :: String
+    bm_sha       :: String
     cpu_model    :: String
     cpu_threads  :: Int
     ram_gb       :: Float64
@@ -142,6 +145,7 @@ function load_summary(results_root::String)::Union{RunSummary,Nothing}
         _str("ref_root"),
         _str("omc_version"),
         _str("bm_version"),
+        _str("bm_sha"),
         _str("cpu_model"),
         _int("cpu_threads"),
         _float("ram_gb"),

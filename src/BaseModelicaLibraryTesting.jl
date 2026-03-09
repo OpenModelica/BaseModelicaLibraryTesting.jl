@@ -1,5 +1,6 @@
 module BaseModelicaLibraryTesting
 
+import Pkg
 import OMJulia
 import OMJulia: sendExpression
 import BaseModelica
