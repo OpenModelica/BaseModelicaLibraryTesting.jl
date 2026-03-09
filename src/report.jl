@@ -78,10 +78,13 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
       $(_cmp_cell(r, results_root))
     </tr>""" for r in results], "\n")
 
-    filter_row = isempty(info.filter)   ? "" : "<br>Filter: $(info.filter)"
-    ref_row    = isempty(info.ref_root) ? "" : "<br>Reference results: $(info.ref_root)"
-    ram_str    = @sprintf("%.1f", info.ram_gb)
-    time_str   = _format_duration(info.total_time_s)
+    bm_sha_link = isempty(info.bm_sha) ? "" :
+        """ (<a href="https://github.com/SciML/BaseModelica.jl/commit/$(info.bm_sha)">$(info.bm_sha)</a>)"""
+    basemodelica_jl_version = info.bm_version * bm_sha_link
+    var_filter              = isempty(info.filter)   ? "None" : "<code>$(info.filter)</code>"
+    ref_results             = isempty(info.ref_root) ? "None" : "$(info.ref_root)"
+    ram_str                 = @sprintf("%.1f", info.ram_gb)
+    time_str                = _format_duration(info.total_time_s)
 
     html = """<!DOCTYPE html>
 <html lang="en">
@@ -106,7 +109,9 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
 <p>Generated: $(now())<br>
 OpenModelica: $(info.omc_version)<br>
 OMC options: <code>$(info.omc_options)</code><br>
-BaseModelica.jl: $(info.bm_version)$(filter_row)$(ref_row)</p>
+BaseModelica.jl: $(basemodelica_jl_version)<br>
+Filter: $(var_filter)<br>
+Reference results: $(ref_results)</p>
 <p>CPU: $(info.cpu_model) ($(info.cpu_threads) threads)<br>
 RAM: $(ram_str) GiB<br>
 Total run time: $(time_str)</p>

@@ -1,3 +1,56 @@
+# ── BaseModelica.jl version helpers ────────────────────────────────────────────
+
+"""
+    _bm_sha() → String
+
+Return the first 7 characters of the git commit SHA for the installed
+BaseModelica.jl package by resolving the package's tree SHA against the
+cached git clone in the Julia depot. Falls back to the tree SHA when the
+clone cannot be found, and returns `""` for registry installs (no git
+metadata available) or when the SHA cannot be determined.
+"""
+function _bm_sha()::String
+    try
+        for (_, info) in Pkg.dependencies()
+            info.name == "BaseModelica" || continue
+            tree_sha = info.tree_hash
+            tree_sha === nothing && return ""
+
+            # Resolve the tree SHA to a commit SHA via the cached git clone.
+            git_source = info.git_source
+            if git_source !== nothing
+                for depot in Base.DEPOT_PATH
+                    clones_dir = joinpath(depot, "clones")
+                    @show clones_dir
+                    isdir(clones_dir) || continue
+                    for clone in readdir(clones_dir; join=true)
+                        isdir(clone) || continue
+                        try
+                            remote = strip(readchomp(`git -C $clone remote get-url origin`))
+                            (remote == git_source || remote * ".git" == git_source ||
+                             git_source * ".git" == remote) || continue
+                            fmt = "%H %T"
+                            log = readchomp(`git -C $clone log --all --format=$fmt`)
+                            for line in split(log, '\n')
+                                parts = split(strip(line))
+                                length(parts) == 2 && parts[2] == tree_sha || continue
+                                sha = parts[1]
+                                return sha[1:min(7, length(sha))]
+                            end
+                        catch
+                        end
+                    end
+                end
+            end
+
+            # Fall back to the tree SHA when no clone is found.
+            return tree_sha[1:min(7, length(tree_sha))]
+        end
+    catch
+    end
+    return ""
+end
+
 # ── Per-model orchestrator ─────────────────────────────────────────────────────
 
 """
@@ -69,8 +122,17 @@ function main(;
 )
     t0 = time()
 
+    # Set up working directory
+    bm_version = get(ENV, "BM_VERSION", string(pkgversion(BaseModelica)))
+    bm_sha     = _bm_sha()
+    @info "Testing BaseModelica.jl version $(bm_version) ($(bm_sha))"
+
     if isempty(results_root)
-        results_root = joinpath(library, version)
+        if bm_version == "main"
+            results_root = joinpath("results", bm_sha, library, version)
+        else
+            results_root = joinpath("results", bm_version, library, version)
+        end
     end
     results_root = abspath(results_root)
     mkpath(joinpath(results_root, "files"))
@@ -142,8 +204,6 @@ function main(;
     end
 
     cpu_info = Sys.cpu_info()
-    bm_ver_env = get(ENV, "BM_VERSION", "")
-    bm_version = isempty(bm_ver_env) ? string(pkgversion(BaseModelica)) : bm_ver_env
     info = RunInfo(
         library,
         version,
@@ -154,6 +214,7 @@ function main(;
         ref_root,
         omc_version,
         bm_version,
+        bm_sha,
         isempty(cpu_info) ? "unknown" : strip(cpu_info[1].model),
         length(cpu_info),
         Sys.total_memory() / 1024^3,

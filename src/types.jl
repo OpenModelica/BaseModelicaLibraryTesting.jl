@@ -50,7 +50,8 @@ Metadata about a single test run, collected by `main()` and written into both
 - `results_root` — absolute path where results are written
 - `ref_root`     — absolute path to reference results, or `""` when unused
 - `omc_version`  — version string returned by `getVersion()`, e.g. `"v1.23.0"`
-- `bm_version`   — BaseModelica.jl version string, e.g. `"1.6.0"`
+- `bm_version`   — BaseModelica.jl version string, e.g. `"1.6.0"` or `"main"`
+- `bm_sha`       — git tree-SHA of the installed BaseModelica.jl (first 7 chars), or `""`
 - `cpu_model`    — CPU model name from `Sys.cpu_info()`
 - `cpu_threads`  — number of logical CPU threads
 - `ram_gb`       — total system RAM in GiB
@@ -66,6 +67,7 @@ struct RunInfo
     ref_root     :: String   # "" when no reference root was given
     omc_version  :: String
     bm_version   :: String
+    bm_sha       :: String   # git tree-SHA (short), "" for registry installs
     cpu_model    :: String
     cpu_threads  :: Int
     ram_gb       :: Float64
