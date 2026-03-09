@@ -115,7 +115,7 @@ const TEST_OMC   = get(ENV, "OMC_EXE", "omc")
 
     omc = OMJulia.OMCSession(TEST_OMC)
     try
-        OMJulia.sendExpression(omc, """setCommandLineOptions("--baseModelica --frontendInline --baseModelicaOptions=scalarize -d=evaluateAllParameters")""")
+        OMJulia.sendExpression(omc, """setCommandLineOptions("--baseModelica --baseModelicaOptions=scalarize,moveBindings -d=evaluateAllParameters")""")
         ok = OMJulia.sendExpression(omc, """loadModel(Modelica, {"4.1.0"})""")
         @test ok == true
 
