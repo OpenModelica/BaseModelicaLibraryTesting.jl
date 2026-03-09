@@ -118,7 +118,7 @@ function main(;
     omc_exe      :: String                = get(ENV, "OMC_EXE", "omc"),
     results_root :: String                = "",
     ref_root     :: String                = get(ENV, "MAPLIB_REF", ""),
-    bm_options   :: String                = get(ENV, "BM_OPTIONS", "scalarize,moveBindings"),
+    bm_options   :: String                = get(ENV, "BM_OPTIONS", "scalarize,moveBindings,inlineFunctions"),
 )
     t0 = time()
 
