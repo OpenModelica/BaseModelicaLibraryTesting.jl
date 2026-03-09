@@ -1,13 +1,5 @@
 //! base 0.1.0
 package 'HeatingMOSInverter'
-  function 'Modelica.Electrical.Analog.Semiconductors.pow' "Just a helper function for x^y in order that a symbolic engine can apply some transformations more easily"
-    input Real 'x';
-    input Real 'y';
-    output Real 'z';
-  algorithm
-    'z' := 'x' ^ 'y';
-  end 'Modelica.Electrical.Analog.Semiconductors.pow';
-
   model 'HeatingMOSInverter' "Heating MOS Inverter"
     Real 'G.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'G.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
@@ -189,7 +181,7 @@ package 'HeatingMOSInverter'
     'TC2.port_a.Q_flow' + 'H_NMOS.heatPort.Q_flow' = 0.0;
     'TC3.port_b.Q_flow' + 'FixedTemperature1.port.Q_flow' = 0.0;
     'G.p.v' = 0.0;
-    'Sin.signalSource.y' = if time < 0.0 then 0.0 else 5.0 * sin(6.283185307179586 * time);
+    'Sin.signalSource.y' = if time < 0.0 then 0.0 else 5.0 * 'Modelica.Math.sin'(6.283185307179586 * time);
     'Sin.v' = 'Sin.signalSource.y';
     0.0 = 'Sin.p.i' + 'Sin.n.i';
     'Sin.i' = 'Sin.p.i';

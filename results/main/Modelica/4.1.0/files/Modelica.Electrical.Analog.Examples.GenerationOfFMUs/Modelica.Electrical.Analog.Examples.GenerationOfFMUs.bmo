@@ -1,24 +1,5 @@
 //! base 0.1.0
 package 'GenerationOfFMUs'
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1' "Return state (with one derivative)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    output Real 's';
-  algorithm
-    's' := 'u'[1];
-    annotation(derivative(order = 1, noDerivative = 'u') = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1', InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1';
-
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1' "Return 1st derivative (der of state1)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    output Real 'sder1';
-  algorithm
-    'sder1' := 'u'[2];
-    annotation(InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1';
-
   model 'GenerationOfFMUs' "Example to demonstrate variants to generate FMUs (Functional Mock-up Units)"
     parameter Real 'sine12.amplitude' = 1.0 "Amplitude of sine wave";
     parameter Real 'sine12.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 2.0 "Frequency of sine wave";
@@ -589,7 +570,7 @@ package 'GenerationOfFMUs'
     'conductor4.ground.p.i' + 'conductor4.currentToVoltage2.pin_n.i' + 'conductor4.conductor.n.i' + 'conductor4.currentToVoltage1.pin_n.i' = 0.0;
     'inductor4b.p.i' + 'voltageToCurrent4b.pin_p.i' = 0.0;
     'ground4b.p.i' + 'inductor4b.n.i' + 'voltageToCurrent4b.pin_n.i' = 0.0;
-    'sine12.y' = if time < 0.0 then 0.0 else sin(12.566370614359172 * time);
+    'sine12.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(12.566370614359172 * time);
     'directCapacitor1.capacitor.i' = 0.001 * der('directCapacitor1.capacitor.v');
     0.0 = 'directCapacitor1.capacitor.p.i' + 'directCapacitor1.capacitor.n.i';
     'directCapacitor1.capacitor.i' = 'directCapacitor1.capacitor.p.i';
@@ -622,7 +603,7 @@ package 'GenerationOfFMUs'
     'inverseCapacitor1.voltageToCurrent.y1' = 0.0;
     'inverseCapacitor1.voltageToCurrent.y2' = 0.0;
     'inverseCapacitor1.voltageToCurrent.u2' = 0.0;
-    'inverseCapacitor1.voltageToCurrent.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'inverseCapacitor1.voltageToCurrent.p', 'inverseCapacitor1.voltageToCurrent.u1'}, time);
+    'inverseCapacitor1.voltageToCurrent.u' = 'inverseCapacitor1.voltageToCurrent.p';
     'inverseCapacitor1.ground.p.v' = 0.0;
     'resistor2.voltageToCurrent1.v' = 'resistor2.voltageToCurrent1.pin_p.v' - 'resistor2.voltageToCurrent1.pin_n.v';
     'resistor2.voltageToCurrent1.i' = 'resistor2.voltageToCurrent1.pin_p.i';
@@ -689,7 +670,7 @@ package 'GenerationOfFMUs'
     'currentToVoltage2b.u' = 'currentToVoltage2b.f';
     'ground2a.p.v' = 0.0;
     'ground3b.p.v' = 0.0;
-    'sine34.y' = if time < 0.0 then 0.0 else sin(12.566370614359172 * time);
+    'sine34.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(12.566370614359172 * time);
     0.001 * der('directInductor3.inductor.i') = 'directInductor3.inductor.v';
     0.0 = 'directInductor3.inductor.p.i' + 'directInductor3.inductor.n.i';
     'directInductor3.inductor.i' = 'directInductor3.inductor.p.i';
@@ -722,7 +703,7 @@ package 'GenerationOfFMUs'
     'inverseInductor3.currentToVoltage.y1' = 0.0;
     'inverseInductor3.currentToVoltage.y2' = 0.0;
     'inverseInductor3.currentToVoltage.u2' = 0.0;
-    'inverseInductor3.currentToVoltage.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'inverseInductor3.currentToVoltage.f', 'inverseInductor3.currentToVoltage.u1'}, time);
+    'inverseInductor3.currentToVoltage.u' = 'inverseInductor3.currentToVoltage.f';
     'inverseInductor3.ground.p.v' = 0.0;
     'voltage4.v' = 'voltage4.p.v' - 'voltage4.n.v';
     0.0 = 'voltage4.p.i' + 'voltage4.n.i';

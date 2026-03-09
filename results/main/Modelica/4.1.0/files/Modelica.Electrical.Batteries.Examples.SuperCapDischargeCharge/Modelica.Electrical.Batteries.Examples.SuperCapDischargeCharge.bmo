@@ -1,12 +1,5 @@
 //! base 0.1.0
 package 'SuperCapDischargeCharge'
-  function 'Modelica.Math.BooleanVectors.oneTrue' "Returns true, if exactly one element of the Boolean input vector is true (\"xor\")"
-    input Boolean[:] 'b';
-    output Boolean 'result';
-  algorithm
-    'result' := sum(if 'b'['i'] then 1 else 0 for 'i' in 1:size('b', 1)) == 1;
-  end 'Modelica.Math.BooleanVectors.oneTrue';
-
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 
   model 'SuperCapDischargeCharge' "Discharge and charge idealized supercap"
@@ -180,8 +173,8 @@ package 'SuperCapDischargeCharge'
     'powerSensor.nc.i' + 'superCap.p.i' = 0.0;
     'powerSensor.voltageSensor.n.i' - 'powerSensor.nv.i' = 0.0;
     'powerSensor.currentSensor.n.i' - 'powerSensor.nc.i' = 0.0;
-    'pulseSeries.on1' = 'Modelica.Math.BooleanVectors.oneTrue'({time >= 10.0 and time < 20.0, time >= 30.0 and time < 40.0, time >= 50.0 and time < 60.0, time >= 70.0 and time < 80.0, time >= 90.0 and time < 100.0});
-    'pulseSeries.on2' = 'Modelica.Math.BooleanVectors.oneTrue'({time >= 120.0 and time < 130.0, time >= 140.0 and time < 150.0, time >= 160.0 and time < 170.0, time >= 180.0 and time < 190.0, time >= 200.0 and time < 210.0});
+    'pulseSeries.on1' = 'Modelica.Math.BooleanVectors.countTrue'({time >= ({10.0, 30.0, 50.0, 70.0, 90.0})['k'] and time < ({10.0, 30.0, 50.0, 70.0, 90.0})['k'] + 10.0 for 'k' in 1:5}) == 1;
+    'pulseSeries.on2' = 'Modelica.Math.BooleanVectors.countTrue'({time >= ({120.0, 140.0, 160.0, 180.0, 200.0})['k'] and time < ({120.0, 140.0, 160.0, 180.0, 200.0})['k'] + 10.0 for 'k' in 1:5}) == 1;
     'pulseSeries.y' = if 'pulseSeries.on1' then 1.0 else if 'pulseSeries.on2' then -1.0 else 0.0;
     'superCap.fixedTemperature.port.T' = 293.15;
     'superCap.resistor.R_actual' = 0.002;

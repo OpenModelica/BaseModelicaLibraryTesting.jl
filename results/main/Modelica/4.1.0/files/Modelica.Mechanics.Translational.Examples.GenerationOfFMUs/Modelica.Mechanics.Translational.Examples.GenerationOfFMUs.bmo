@@ -1,54 +1,5 @@
 //! base 0.1.0
 package 'GenerationOfFMUs'
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1' "Return state (with one derivative)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    output Real 's';
-  algorithm
-    's' := 'u'[1];
-    annotation(derivative(order = 1, noDerivative = 'u') = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1', InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1';
-
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1' "Return 1st derivative (der of state1)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    output Real 'sder1';
-  algorithm
-    'sder1' := 'u'[2];
-    annotation(InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1';
-
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state2' "Return state (with two derivatives)"
-    input Real[3] 'u';
-    input Real 'dummy';
-    output Real 's';
-  algorithm
-    's' := 'u'[1];
-    annotation(derivative(order = 1, noDerivative = 'u') = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state2der1', InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state2';
-
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state2der1' "Return 1st derivative (der of state2)"
-    input Real[3] 'u';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    output Real 'sder1';
-  algorithm
-    'sder1' := 'u'[2];
-    annotation(derivative(order = 2, noDerivative = 'u') = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state2der2', InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state2der1';
-
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state2der2' "Return 2nd derivative (der of state2der1)"
-    input Real[3] 'u';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    input Real 'dummy_der2';
-    output Real 'sder2';
-  algorithm
-    'sder2' := 'u'[3];
-    annotation(InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state2der2';
-
   model 'GenerationOfFMUs' "Example to demonstrate variants to generate FMUs (Functional Mock-up Units)"
     parameter Real 'sine1.amplitude' = 10.0 "Amplitude of sine wave";
     parameter Real 'sine1.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 2.0 "Frequency of sine wave";
@@ -465,7 +416,7 @@ package 'GenerationOfFMUs'
     'force3.flange.f' + 'mass3a.flange_a.f' = 0.0;
     'mass3b.flange_b.f' = 0.0;
     'forceToPosition3b.flange.f' + 'mass3b.flange_a.f' = 0.0;
-    'sine1.y' = if time < 0.0 then 0.0 else 10.0 * sin(12.566370614359172 * time);
+    'sine1.y' = if time < 0.0 then 0.0 else 10.0 * 'Modelica.Math.sin'(12.566370614359172 * time);
     'directMass.mass.v' = der('directMass.mass.s');
     'directMass.mass.a' = der('directMass.mass.v');
     1.1 * 'directMass.mass.a' = 'directMass.mass.flange_a.f' + 'directMass.mass.flange_b.f';
@@ -492,14 +443,14 @@ package 'GenerationOfFMUs'
     'inverseMass.positionToForce.y' = -'inverseMass.positionToForce.f';
     'inverseMass.positionToForce.y1' = 0.0;
     'inverseMass.positionToForce.y2' = 0.0;
-    'inverseMass.positionToForce.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state2'({'inverseMass.positionToForce.p', 'inverseMass.positionToForce.u1', 'inverseMass.positionToForce.u2'}, time);
+    'inverseMass.positionToForce.u' = 'inverseMass.positionToForce.p';
     'springDamper.positionToForce1.y' = 'springDamper.positionToForce1.flange.f' "output = flow = force";
     'springDamper.positionToForce1.u' = 'springDamper.positionToForce1.flange.s' "input = potential = position";
     'springDamper.positionToForce1.y' = -'springDamper.positionToForce1.f';
     'springDamper.positionToForce1.y1' = 0.0;
     'springDamper.positionToForce1.y2' = 0.0;
     'springDamper.positionToForce1.u2' = 0.0;
-    'springDamper.positionToForce1.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'springDamper.positionToForce1.p', 'springDamper.positionToForce1.u1'}, time);
+    'springDamper.positionToForce1.u' = 'springDamper.positionToForce1.p';
     'springDamper.springDamper.v_rel' = der('springDamper.springDamper.s_rel');
     'springDamper.springDamper.f_c' = 1e4 * 'springDamper.springDamper.s_rel';
     'springDamper.springDamper.f_d' = 100.0 * 'springDamper.springDamper.v_rel';
@@ -514,7 +465,7 @@ package 'GenerationOfFMUs'
     'springDamper.positionToForce2.y1' = 0.0;
     'springDamper.positionToForce2.y2' = 0.0;
     'springDamper.positionToForce2.u2' = 0.0;
-    'springDamper.positionToForce2.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'springDamper.positionToForce2.p', 'springDamper.positionToForce2.u1'}, time);
+    'springDamper.positionToForce2.u' = 'springDamper.positionToForce2.p';
     'mass2a.v' = der('mass2a.s');
     'mass2a.a' = der('mass2a.v');
     1.1 * 'mass2a.a' = 'mass2a.flange_a.f' + 'mass2a.flange_b.f';

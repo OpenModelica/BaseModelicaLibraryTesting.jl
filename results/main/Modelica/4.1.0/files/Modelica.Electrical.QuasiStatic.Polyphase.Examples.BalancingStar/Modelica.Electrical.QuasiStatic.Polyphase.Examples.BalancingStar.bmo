@@ -1,101 +1,9 @@
 //! base 0.1.0
 package 'BalancingStar'
-  function 'Complex.\'*\'.scalarProduct' "Scalar product of two complex vectors c1 and c2"
-    input 'Complex'[:] 'c1';
-    input 'Complex'[size('c1', 1)] 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'(0.0, 0.0);
-
-    for 'i' in 1:size('c1', 1) loop
-      'c3' := 'Complex'('c3'.'re' + 'c1['i']'.'re' * 'c2['i']'.'re' + 'c1['i']'.'im' * 'c2['i']'.'im', 'c3'.'im' + 'c1['i']'.'re' * 'c2['i']'.'im' - 'c1['i']'.'im' * 'c2['i']'.'re');
-    end for;
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Complex.\'*\'.scalarProduct';
-
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.ComplexMath.abs' "Absolute value of complex number"
-    input 'Complex' 'c';
-    output Real 'result';
-  algorithm
-    'result' := sqrt('c'.'re' ^ 2.0 + 'c'.'im' ^ 2.0);
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.abs';
-
-  function 'Modelica.ComplexMath.arg' "Phase angle of complex number"
-    input 'Complex' 'c';
-    input Real 'phi0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'phi' := 'Modelica.Math.atan3'('c'.'im', 'c'.'re', 'phi0');
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.arg';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'+\'' "Add two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexCurrent.\'+\'';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract' "Subtract two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
 
   record 'Modelica.Units.SI.ComplexVoltage'
     Real 're';
@@ -106,16 +14,6 @@ package 'BalancingStar'
     Real 're';
     Real 'im';
   end 'Modelica.Units.SI.ComplexCurrent';
-
-  record 'Modelica.Units.SI.ComplexElectricPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexElectricPotential';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
 
   record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
     Real 're';
@@ -1541,7 +1439,7 @@ package 'BalancingStar'
     'resistor.P' = 'resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im');
     'resistor.Q' = 'resistor.v.re' * (-'resistor.i.im') + 'resistor.v.im' * 'resistor.i.re';
     'resistor.S' = sqrt(('resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im')) ^ 2.0 + ('resistor.v.re' * (-'resistor.i.im') + 'resistor.v.im' * 'resistor.i.re') ^ 2.0);
-    'resistor.pf' = cos('Modelica.Math.atan3'('resistor.Q', 'resistor.P', 0.0));
+    'resistor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor.P', 'resistor.Q'), 0.0));
     'capacitor.abs_v' = sqrt('capacitor.v.re' ^ 2.0 + 'capacitor.v.im' ^ 2.0);
     'capacitor.arg_v' = 'Modelica.Math.atan3'('capacitor.v.im', 'capacitor.v.re', 0.0);
     'capacitor.abs_i' = sqrt('capacitor.i.re' ^ 2.0 + 'capacitor.i.im' ^ 2.0);
@@ -1549,7 +1447,7 @@ package 'BalancingStar'
     'capacitor.P' = 'capacitor.v.re' * 'capacitor.i.re' - 'capacitor.v.im' * (-'capacitor.i.im');
     'capacitor.Q' = 'capacitor.v.re' * (-'capacitor.i.im') + 'capacitor.v.im' * 'capacitor.i.re';
     'capacitor.S' = sqrt(('capacitor.v.re' * 'capacitor.i.re' - 'capacitor.v.im' * (-'capacitor.i.im')) ^ 2.0 + ('capacitor.v.re' * (-'capacitor.i.im') + 'capacitor.v.im' * 'capacitor.i.re') ^ 2.0);
-    'capacitor.pf' = cos('Modelica.Math.atan3'('capacitor.Q', 'capacitor.P', 0.0));
+    'capacitor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('capacitor.P', 'capacitor.Q'), 0.0));
     'inductor.abs_v' = sqrt('inductor.v.re' ^ 2.0 + 'inductor.v.im' ^ 2.0);
     'inductor.arg_v' = 'Modelica.Math.atan3'('inductor.v.im', 'inductor.v.re', 0.0);
     'inductor.abs_i' = sqrt('inductor.i.re' ^ 2.0 + 'inductor.i.im' ^ 2.0);
@@ -1557,7 +1455,7 @@ package 'BalancingStar'
     'inductor.P' = 'inductor.v.re' * 'inductor.i.re' - 'inductor.v.im' * (-'inductor.i.im');
     'inductor.Q' = 'inductor.v.re' * (-'inductor.i.im') + 'inductor.v.im' * 'inductor.i.re';
     'inductor.S' = sqrt(('inductor.v.re' * 'inductor.i.re' - 'inductor.v.im' * (-'inductor.i.im')) ^ 2.0 + ('inductor.v.re' * (-'inductor.i.im') + 'inductor.v.im' * 'inductor.i.re') ^ 2.0);
-    'inductor.pf' = cos('Modelica.Math.atan3'('inductor.Q', 'inductor.P', 0.0));
+    'inductor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor.P', 'inductor.Q'), 0.0));
     'currentSensor0.abs_i' = sqrt('currentSensor0.i.re' ^ 2.0 + 'currentSensor0.i.im' ^ 2.0);
     'currentSensor0.arg_i' = 'Modelica.Math.atan3'('currentSensor0.i.im', 'currentSensor0.i.re', 0.0);
     'star.plugToPins_p.plugToPin_p[1].pin_p.reference.gamma' = 'star.plugToPins_p.pin_p[1].reference.gamma';
@@ -2277,45 +2175,45 @@ package 'BalancingStar'
     'voltageSource.arg_i[1]' = 'Modelica.ComplexMath.arg'('voltageSource.i[1]', 0.0);
     'voltageSource.arg_i[2]' = 'Modelica.ComplexMath.arg'('voltageSource.i[2]', 0.0);
     'voltageSource.arg_i[3]' = 'Modelica.ComplexMath.arg'('voltageSource.i[3]', 0.0);
-    'voltageSource.P[1]' = 'voltageSource.v[1].re' * 'voltageSource.i[1].re' - 'voltageSource.v[1].im' * (-'voltageSource.i[1].im');
-    'voltageSource.P[2]' = 'voltageSource.v[2].re' * 'voltageSource.i[2].re' - 'voltageSource.v[2].im' * (-'voltageSource.i[2].im');
-    'voltageSource.P[3]' = 'voltageSource.v[3].re' * 'voltageSource.i[3].re' - 'voltageSource.v[3].im' * (-'voltageSource.i[3].im');
-    'voltageSource.Q[1]' = 'voltageSource.v[1].re' * (-'voltageSource.i[1].im') + 'voltageSource.v[1].im' * 'voltageSource.i[1].re';
-    'voltageSource.Q[2]' = 'voltageSource.v[2].re' * (-'voltageSource.i[2].im') + 'voltageSource.v[2].im' * 'voltageSource.i[2].re';
-    'voltageSource.Q[3]' = 'voltageSource.v[3].re' * (-'voltageSource.i[3].im') + 'voltageSource.v[3].im' * 'voltageSource.i[3].re';
-    'voltageSource.S[1]' = sqrt(('voltageSource.v[1].re' * 'voltageSource.i[1].re' - 'voltageSource.v[1].im' * (-'voltageSource.i[1].im')) ^ 2.0 + ('voltageSource.v[1].re' * (-'voltageSource.i[1].im') + 'voltageSource.v[1].im' * 'voltageSource.i[1].re') ^ 2.0);
-    'voltageSource.S[2]' = sqrt(('voltageSource.v[2].re' * 'voltageSource.i[2].re' - 'voltageSource.v[2].im' * (-'voltageSource.i[2].im')) ^ 2.0 + ('voltageSource.v[2].re' * (-'voltageSource.i[2].im') + 'voltageSource.v[2].im' * 'voltageSource.i[2].re') ^ 2.0);
-    'voltageSource.S[3]' = sqrt(('voltageSource.v[3].re' * 'voltageSource.i[3].re' - 'voltageSource.v[3].im' * (-'voltageSource.i[3].im')) ^ 2.0 + ('voltageSource.v[3].re' * (-'voltageSource.i[3].im') + 'voltageSource.v[3].im' * 'voltageSource.i[3].re') ^ 2.0);
-    'voltageSource.pf[1]' = cos('Modelica.Math.atan3'('voltageSource.Q[1]', 'voltageSource.P[1]', 0.0));
-    'voltageSource.pf[2]' = cos('Modelica.Math.atan3'('voltageSource.Q[2]', 'voltageSource.P[2]', 0.0));
-    'voltageSource.pf[3]' = cos('Modelica.Math.atan3'('voltageSource.Q[3]', 'voltageSource.P[3]', 0.0));
+    'voltageSource.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[1]', 'Modelica.ComplexMath.conj'('voltageSource.i[1]')));
+    'voltageSource.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[2]', 'Modelica.ComplexMath.conj'('voltageSource.i[2]')));
+    'voltageSource.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[3]', 'Modelica.ComplexMath.conj'('voltageSource.i[3]')));
+    'voltageSource.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[1]', 'Modelica.ComplexMath.conj'('voltageSource.i[1]')));
+    'voltageSource.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[2]', 'Modelica.ComplexMath.conj'('voltageSource.i[2]')));
+    'voltageSource.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[3]', 'Modelica.ComplexMath.conj'('voltageSource.i[3]')));
+    'voltageSource.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[1]', 'Modelica.ComplexMath.conj'('voltageSource.i[1]')));
+    'voltageSource.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[2]', 'Modelica.ComplexMath.conj'('voltageSource.i[2]')));
+    'voltageSource.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[3]', 'Modelica.ComplexMath.conj'('voltageSource.i[3]')));
+    'voltageSource.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P[1]', 'voltageSource.Q[1]'), 0.0));
+    'voltageSource.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P[2]', 'voltageSource.Q[2]'), 0.0));
+    'voltageSource.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P[3]', 'voltageSource.Q[3]'), 0.0));
     'voltageSource.omega' = 314.1592653589793;
     'voltageSource.v[1].re' = 100.0;
     'voltageSource.v[2].re' = -49.99999999999998;
     'voltageSource.v[3].re' = -50.00000000000004;
-    'voltageSource.v[1].im' = -0.0;
+    'voltageSource.v[1].im' = 0.0;
     'voltageSource.v[2].im' = -86.60254037844388;
     'voltageSource.v[3].im' = 86.60254037844383;
     'voltageSource.plug_p.reference.gamma' = 'voltageSource.plug_n.reference.gamma';
     'voltageSource.omega' = der('voltageSource.plug_p.reference.gamma');
-    'voltageSource.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[1].v', 'voltageSource.plug_n.pin[1].v')).re;
-    'voltageSource.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[1].v', 'voltageSource.plug_n.pin[1].v')).im;
-    'voltageSource.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[2].v', 'voltageSource.plug_n.pin[2].v')).re;
-    'voltageSource.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[2].v', 'voltageSource.plug_n.pin[2].v')).im;
-    'voltageSource.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[3].v', 'voltageSource.plug_n.pin[3].v')).re;
-    'voltageSource.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[3].v', 'voltageSource.plug_n.pin[3].v')).im;
+    'voltageSource.v[1].re' = 'voltageSource.plug_p.pin[1].v.re' - 'voltageSource.plug_n.pin[1].v.re';
+    'voltageSource.v[1].im' = 'voltageSource.plug_p.pin[1].v.im' - 'voltageSource.plug_n.pin[1].v.im';
+    'voltageSource.v[2].re' = 'voltageSource.plug_p.pin[2].v.re' - 'voltageSource.plug_n.pin[2].v.re';
+    'voltageSource.v[2].im' = 'voltageSource.plug_p.pin[2].v.im' - 'voltageSource.plug_n.pin[2].v.im';
+    'voltageSource.v[3].re' = 'voltageSource.plug_p.pin[3].v.re' - 'voltageSource.plug_n.pin[3].v.re';
+    'voltageSource.v[3].im' = 'voltageSource.plug_p.pin[3].v.im' - 'voltageSource.plug_n.pin[3].v.im';
     'voltageSource.i[1].re' = 'voltageSource.plug_p.pin[1].i.re';
     'voltageSource.i[1].im' = 'voltageSource.plug_p.pin[1].i.im';
     'voltageSource.i[2].re' = 'voltageSource.plug_p.pin[2].i.re';
     'voltageSource.i[2].im' = 'voltageSource.plug_p.pin[2].i.im';
     'voltageSource.i[3].re' = 'voltageSource.plug_p.pin[3].i.re';
     'voltageSource.i[3].im' = 'voltageSource.plug_p.pin[3].i.im';
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[1].i', 'voltageSource.plug_n.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[1].i', 'voltageSource.plug_n.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[2].i', 'voltageSource.plug_n.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[2].i', 'voltageSource.plug_n.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[3].i', 'voltageSource.plug_n.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[3].i', 'voltageSource.plug_n.pin[3].i')).im = 0.0;
+    'voltageSource.plug_p.pin[1].i.re' + 'voltageSource.plug_n.pin[1].i.re' = 0.0;
+    'voltageSource.plug_p.pin[1].i.im' + 'voltageSource.plug_n.pin[1].i.im' = 0.0;
+    'voltageSource.plug_p.pin[2].i.re' + 'voltageSource.plug_n.pin[2].i.re' = 0.0;
+    'voltageSource.plug_p.pin[2].i.im' + 'voltageSource.plug_n.pin[2].i.im' = 0.0;
+    'voltageSource.plug_p.pin[3].i.re' + 'voltageSource.plug_n.pin[3].i.re' = 0.0;
+    'voltageSource.plug_p.pin[3].i.im' + 'voltageSource.plug_n.pin[3].i.im' = 0.0;
     'star.plugToPins_p.plugToPin_p[1].plug_p.reference.gamma' = 'star.plugToPins_p.plugToPin_p[1].pin_p.reference.gamma';
     'star.plugToPins_p.plugToPin_p[1].pin_p.v.re' = 'star.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.re';
     'star.plugToPins_p.plugToPin_p[1].pin_p.v.im' = 'star.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.im';
@@ -2625,8 +2523,8 @@ package 'BalancingStar'
     'currentSensor.arg_i[3]' = 'Modelica.ComplexMath.arg'('currentSensor.i[3]', 0.0);
     'currentSensor.omega' = der('currentSensor.plug_p.reference.gamma');
     'resistor.R_actual' = 10.0;
-    'resistor.v.re' = 'resistor.R_actual' * 'resistor.i.re';
-    'resistor.v.im' = 'resistor.R_actual' * 'resistor.i.im';
+    'resistor.v.re' = 'resistor.R_actual' * 'resistor.i.re' - 0.0 * 'resistor.i.im';
+    'resistor.v.im' = 'resistor.R_actual' * 'resistor.i.im' + 0.0 * 'resistor.i.re';
     'resistor.LossPower' = 'resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im');
     'resistor.T_heatPort' = 293.15;
     'resistor.pin_p.i.re' + 'resistor.pin_n.i.re' = 0.0;
@@ -2637,8 +2535,8 @@ package 'BalancingStar'
     'resistor.i.im' = 'resistor.pin_p.i.im';
     'resistor.pin_p.reference.gamma' = 'resistor.pin_n.reference.gamma';
     'resistor.omega' = der('resistor.pin_p.reference.gamma');
-    'capacitor.i.re' = -'capacitor.omega' * 1.837762984739307e-4 * 'capacitor.v.im';
-    'capacitor.i.im' = 'capacitor.omega' * 1.837762984739307e-4 * 'capacitor.v.re';
+    'capacitor.i.re' = ((0.0 * 'capacitor.omega' - 1.0 * 0.0) * 1.837762984739307e-4 - (0.0 * 0.0 + 1.0 * 'capacitor.omega') * 0.0) * 'capacitor.v.re' - ((0.0 * 'capacitor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'capacitor.omega') * 1.837762984739307e-4) * 'capacitor.v.im';
+    'capacitor.i.im' = ((0.0 * 'capacitor.omega' - 1.0 * 0.0) * 1.837762984739307e-4 - (0.0 * 0.0 + 1.0 * 'capacitor.omega') * 0.0) * 'capacitor.v.im' + ((0.0 * 'capacitor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'capacitor.omega') * 1.837762984739307e-4) * 'capacitor.v.re';
     'capacitor.pin_p.i.re' + 'capacitor.pin_n.i.re' = 0.0;
     'capacitor.pin_p.i.im' + 'capacitor.pin_n.i.im' = 0.0;
     'capacitor.v.re' = 'capacitor.pin_p.v.re' - 'capacitor.pin_n.v.re';
@@ -2647,8 +2545,8 @@ package 'BalancingStar'
     'capacitor.i.im' = 'capacitor.pin_p.i.im';
     'capacitor.pin_p.reference.gamma' = 'capacitor.pin_n.reference.gamma';
     'capacitor.omega' = der('capacitor.pin_p.reference.gamma');
-    'inductor.v.re' = -'inductor.omega' * 0.0551328895421792 * 'inductor.i.im';
-    'inductor.v.im' = 'inductor.omega' * 0.0551328895421792 * 'inductor.i.re';
+    'inductor.v.re' = ((0.0 * 'inductor.omega' - 1.0 * 0.0) * 0.0551328895421792 - (0.0 * 0.0 + 1.0 * 'inductor.omega') * 0.0) * 'inductor.i.re' - ((0.0 * 'inductor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.omega') * 0.0551328895421792) * 'inductor.i.im';
+    'inductor.v.im' = ((0.0 * 'inductor.omega' - 1.0 * 0.0) * 0.0551328895421792 - (0.0 * 0.0 + 1.0 * 'inductor.omega') * 0.0) * 'inductor.i.im' + ((0.0 * 'inductor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.omega') * 0.0551328895421792) * 'inductor.i.re';
     'inductor.pin_p.i.re' + 'inductor.pin_n.i.re' = 0.0;
     'inductor.pin_p.i.im' + 'inductor.pin_n.i.im' = 0.0;
     'inductor.v.re' = 'inductor.pin_p.v.re' - 'inductor.pin_n.v.re';

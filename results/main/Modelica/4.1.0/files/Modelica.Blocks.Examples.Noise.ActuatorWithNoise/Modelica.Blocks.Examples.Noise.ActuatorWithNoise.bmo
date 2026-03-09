@@ -1,134 +1,5 @@
 //! base 0.1.0
 package 'ActuatorWithNoise'
-  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    input Real 'der_u';
-    output Real 'der_y';
-  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
-
-  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
-    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
-    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
-    output Real 'p'(unit = "W", quantity = "Power");
-    constant Integer 'm' = 3;
-    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
-    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
-  algorithm
-    'v_' := {0.0, 0.0};
-    'i_' := {0.0, 0.0};
-
-    for 'k' in 1:'m' loop
-      'v_' := {'v_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k'], 'v_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k']};
-      'i_' := {'i_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k'], 'i_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k']};
-    end for;
-
-    'p' := 'm' / 2.0 * ('v_'[1] * 'i_'[1] + 'v_'[2] * 'i_'[2]);
-    annotation(Inline = true);
-  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
-
-  function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
-    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Boolean 'positiveRange' = false;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'y' := mod('u', 6.283185307179586);
-
-    if 'y' > 3.141592653589793 and not 'positiveRange' then
-      'y' := 'y' - 6.283185307179586;
-    end if;
-  end 'Modelica.Math.wrapAngle';
-
-  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
-    input Integer[4] 'stateIn';
-    output Real 'result';
-    output Integer[4] 'stateOut';
-  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
-
-  function 'Modelica.Math.Random.Generators.Xorshift64star.initialState' "Returns an initial state for the xorshift64* algorithm"
-    input Integer 'localSeed';
-    input Integer 'globalSeed';
-    output Integer[2] 'state';
-    Real 'r';
-    constant Integer 'p' = 10;
-  algorithm
-    if 'localSeed' == 0 and 'globalSeed' == 0 then
-      'state' := {126247697, 'globalSeed'};
-    elseif true then
-      'state' := {'localSeed', 'globalSeed'};
-    end if;
-
-    for 'i' in 1:'p' loop
-      ('r', 'state') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state');
-    end for;
-  end 'Modelica.Math.Random.Generators.Xorshift64star.initialState';
-
-  function 'Modelica.Math.Random.Generators.Xorshift64star.random' "Returns a uniform random number with the xorshift64* algorithm"
-    input Integer[2] 'stateIn';
-    output Real 'result';
-    output Integer[2] 'stateOut';
-  external "C" ModelicaRandom_xorshift64star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Generators.Xorshift64star.random';
-
-  function 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star' "Return an initial state vector for a random number generator (based on xorshift64star algorithm)"
-    input Integer 'localSeed';
-    input Integer 'globalSeed';
-    input Integer 'nState'(min = 1);
-    output Integer['nState'] 'state';
-    Real 'r';
-    Integer[2] 'aux';
-    Integer 'nStateEven';
-  algorithm
-    'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
-
-    if 'nState' >= 2 then
-      'state'[1:2] := 'aux';
-    elseif true then
-      'state'[1] := 'aux'[1];
-    end if;
-
-    'nStateEven' := 2 * div('nState', 2);
-
-    for 'i' in 3:2:'nStateEven' loop
-      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['i' - 2:'i' - 1]);
-      'state'['i':'i' + 1] := 'aux';
-    end for;
-
-    if 'nState' >= 3 and 'nState' <> 'nStateEven' then
-      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['nState' - 2:'nState' - 1]);
-      'state'['nState'] := 'aux'[1];
-    end if;
-  end 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star';
-
-  function 'Modelica.Math.Random.Utilities.initializeImpureRandom' "Initializes the internal state of the impure random number generator"
-    input Integer 'seed';
-    output Integer 'id';
-    constant Integer 'localSeed' = 715827883;
-    Integer[33] 'rngState';
-  algorithm
-    'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
-    'id' := 'localSeed';
-    'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
-  end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
-
-  function 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState' "Stores the given state vector in an external static variable"
-    input Integer[33] 'rngState';
-    input Integer 'id';
-  external "C" ModelicaRandom_setInternalState_xorshift1024star('rngState', size('rngState', 1), 'id') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState';
-
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
@@ -1352,7 +1223,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'gearbox.lossyGear.eta_mf2_0'(unit = "1") = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 2, 0.0);
     parameter Real 'gearbox.lossyGear.tau_bf1_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 3, 0.0));
     parameter Real 'gearbox.lossyGear.tau_bf2_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 4, 0.0));
-    parameter Real 'gearbox.lossyGear.tau_bf_a_0'(unit = "N.m", quantity = "Torque") = if abs('gearbox.lossyGear.eta_mf1_0' - 1.0) <= 2.220446049250313e-16 and abs('gearbox.lossyGear.eta_mf2_0' - 1.0) <= 2.220446049250313e-16 then 'gearbox.lossyGear.tau_bf1_0' / 2.0 else ('gearbox.lossyGear.tau_bf1_0' - 'gearbox.lossyGear.tau_bf2_0') / ('gearbox.lossyGear.eta_mf1_0' - 1.0 / 'gearbox.lossyGear.eta_mf2_0');
+    parameter Real 'gearbox.lossyGear.tau_bf_a_0'(unit = "N.m", quantity = "Torque") = if 'Modelica.Math.isEqual'('gearbox.lossyGear.eta_mf1_0', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('gearbox.lossyGear.eta_mf2_0', 1.0, 2.220446049250313e-16) then 'gearbox.lossyGear.tau_bf1_0' / 2.0 else ('gearbox.lossyGear.tau_bf1_0' - 'gearbox.lossyGear.tau_bf2_0') / ('gearbox.lossyGear.eta_mf1_0' - 1.0 / 'gearbox.lossyGear.eta_mf2_0');
     parameter 'Modelica.Blocks.Types.ExternalCombiTable1D' 'gearbox.lossyGear.tableID' = 'Modelica.Blocks.Types.ExternalCombiTable1D'("NoName", "NoName", {{0.0, 0.85, 0.8, 0.1, 0.1}}, {2, 3, 4, 5}, 'Modelica.Blocks.Types.Smoothness'.'LinearSegments', 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints', false, ",", 0) "External table object for sliding friction coefficient";
     parameter Real 'gearbox.elastoBacklash.c'(start = 1e5, min = 2.2250738585072014e-308, unit = "N.m/rad", quantity = "RotationalSpringConstant") = 1e6 "Spring constant (c > 0 required)";
     parameter Real 'gearbox.elastoBacklash.d'(start = 0.0, min = 0.0, unit = "N.m.s/rad", quantity = "RotationalDampingConstant") = 1e4 "Damping constant";
@@ -1457,7 +1328,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Integer 'globalSeed.seed'(fixed = false) "Actually used global seed";
     parameter Integer 'globalSeed.id_impure'(fixed = false) "ID for impure random number generators Modelica.Math.Random.Utilities.impureXXX";
   initial equation
-    'motor.uniformNoise.r' = 'motor.uniformNoise.r_raw' * 0.02 - 0.01;
+    'motor.uniformNoise.r' = 'motor.uniformNoise.r_raw' * (0.01 - (-0.01)) + (-0.01);
     'motor.uniformNoise.localSeed' = 188641931;
     pre('motor.uniformNoise.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('motor.uniformNoise.localSeed', 'motor.uniformNoise.actualGlobalSeed', 4))[1];
     pre('motor.uniformNoise.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('motor.uniformNoise.localSeed', 'motor.uniformNoise.actualGlobalSeed', 4))[2];
@@ -1500,7 +1371,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.smpm.statorCore.w' = 'motor.smpm.statorCoreParameters.wRef';
     'motor.smpm.statorCore.wLimit' = noEvent(max(noEvent(abs('motor.smpm.statorCore.w')), 'motor.smpm.statorCore.coreParameters.wMin'));
     'motor.smpm.strayLoad.heatPort.Q_flow' = -'motor.smpm.strayLoad.lossPower';
-    'motor.smpm.strayLoad.iRMS' = sqrt('motor.smpm.strayLoad.i[1]' ^ 2.0 / 3.0 + 'motor.smpm.strayLoad.i[2]' ^ 2.0 / 3.0 + 'motor.smpm.strayLoad.i[3]' ^ 2.0 / 3.0);
+    'motor.smpm.strayLoad.iRMS' = sqrt(sum('motor.smpm.strayLoad.i' .^ 2.0 / size('motor.smpm.strayLoad.i', 1)));
     'motor.smpm.thermalAmbient.Q_flowStatorWinding' = 'motor.smpm.thermalAmbient.temperatureStatorWinding.port.Q_flow';
     'motor.smpm.thermalAmbient.Q_flowStatorCore' = 'motor.smpm.thermalAmbient.temperatureStatorCore.port.Q_flow';
     'motor.smpm.thermalAmbient.Q_flowRotorCore' = 'motor.smpm.thermalAmbient.temperatureRotorCore.port.Q_flow';
@@ -1510,7 +1381,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.smpm.thermalAmbient.Q_flowPermanentMagnet' = 'motor.smpm.thermalAmbient.temperaturePermanentMagnet.port.Q_flow';
     'motor.smpm.thermalAmbient.Q_flowTotal' = 'motor.smpm.thermalAmbient.Q_flowStatorWinding' + 'motor.smpm.thermalAmbient.Q_flowRotorWinding' + 'motor.smpm.thermalAmbient.Q_flowPermanentMagnet' + 'motor.smpm.thermalAmbient.Q_flowStatorCore' + 'motor.smpm.thermalAmbient.Q_flowRotorCore' + 'motor.smpm.thermalAmbient.Q_flowStrayLoad' + 'motor.smpm.thermalAmbient.Q_flowFriction';
     'motor.smpm.permanentMagnet.heatPort.Q_flow' = -'motor.smpm.permanentMagnet.lossPower';
-    'motor.smpm.permanentMagnet.iRMS' = sqrt('motor.smpm.permanentMagnet.is[1]' ^ 2.0 / 3.0 + 'motor.smpm.permanentMagnet.is[2]' ^ 2.0 / 3.0 + 'motor.smpm.permanentMagnet.is[3]' ^ 2.0 / 3.0);
+    'motor.smpm.permanentMagnet.iRMS' = sqrt(sum('motor.smpm.permanentMagnet.is' .^ 2.0 / size('motor.smpm.permanentMagnet.is', 1)));
     'motor.phi_motor' = 'motor.angleSensor.phi';
     'motor.w' = 'motor.speedSensor.w';
     'gearbox.phi_rel' = 'gearbox.flange_b.phi' - 'gearbox.lossyGear.flange_b.phi';
@@ -2139,7 +2010,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.rotorDisplacementAngle.rotatorVS2R.y[1]' = 'motor.rotorDisplacementAngle.rotatorVS2R.RotationMatrix[1,1]' * 'motor.rotorDisplacementAngle.rotatorVS2R.u[1]' + 'motor.rotorDisplacementAngle.rotatorVS2R.RotationMatrix[1,2]' * 'motor.rotorDisplacementAngle.rotatorVS2R.u[2]';
     'motor.rotorDisplacementAngle.rotatorVS2R.y[2]' = 'motor.rotorDisplacementAngle.rotatorVS2R.RotationMatrix[2,1]' * 'motor.rotorDisplacementAngle.rotatorVS2R.u[1]' + 'motor.rotorDisplacementAngle.rotatorVS2R.RotationMatrix[2,2]' * 'motor.rotorDisplacementAngle.rotatorVS2R.u[2]';
     'motor.rotorDisplacementAngle.ToPolarVSR.y[1]' = sqrt('motor.rotorDisplacementAngle.ToPolarVSR.u[1]' ^ 2.0 + 'motor.rotorDisplacementAngle.ToPolarVSR.u[2]' ^ 2.0);
-    'motor.rotorDisplacementAngle.ToPolarVSR.y[2]' = if noEvent('motor.rotorDisplacementAngle.ToPolarVSR.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('motor.rotorDisplacementAngle.ToPolarVSR.u[2]', 'motor.rotorDisplacementAngle.ToPolarVSR.u[1]');
+    'motor.rotorDisplacementAngle.ToPolarVSR.y[2]' = if noEvent('motor.rotorDisplacementAngle.ToPolarVSR.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('motor.rotorDisplacementAngle.ToPolarVSR.u[2]', 'motor.rotorDisplacementAngle.ToPolarVSR.u[1]');
     'motor.rotorDisplacementAngle.fixed.flange.phi' = 0.0;
     'motor.rotorDisplacementAngle.wrapAngle.y' = 'Modelica.Math.wrapAngle'('motor.rotorDisplacementAngle.wrapAngle.u', false);
     'motor.rotorDisplacementAngle.lessThreshold.y' = if noEvent('motor.rotorDisplacementAngle.lessThreshold.u[1]' < 0.0) then 0.0 else 'motor.rotorDisplacementAngle.lessThreshold.u[2]';
@@ -2164,7 +2035,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.voltageQuasiRMSSensor.ToSpacePhasor1.y[1]' = 0.6666666666666666 * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[1]' + (-0.33333333333333315) * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.3333333333333336) * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'motor.voltageQuasiRMSSensor.ToSpacePhasor1.y[2]' = 0.5773502691896257 * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.5773502691896255) * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'motor.voltageQuasiRMSSensor.ToPolar1.y[1]' = sqrt('motor.voltageQuasiRMSSensor.ToPolar1.u[1]' ^ 2.0 + 'motor.voltageQuasiRMSSensor.ToPolar1.u[2]' ^ 2.0);
-    'motor.voltageQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('motor.voltageQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('motor.voltageQuasiRMSSensor.ToPolar1.u[2]', 'motor.voltageQuasiRMSSensor.ToPolar1.u[1]');
+    'motor.voltageQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('motor.voltageQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('motor.voltageQuasiRMSSensor.ToPolar1.u[2]', 'motor.voltageQuasiRMSSensor.ToPolar1.u[1]');
     'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].p.v' = 'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].n.v';
     'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].p.i' = 'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].i';
     'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].n.i' = -'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].i';
@@ -2179,7 +2050,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.currentQuasiRMSSensor.ToSpacePhasor1.y[1]' = 0.6666666666666666 * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[1]' + (-0.33333333333333315) * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.3333333333333336) * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'motor.currentQuasiRMSSensor.ToSpacePhasor1.y[2]' = 0.5773502691896257 * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.5773502691896255) * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'motor.currentQuasiRMSSensor.ToPolar1.y[1]' = sqrt('motor.currentQuasiRMSSensor.ToPolar1.u[1]' ^ 2.0 + 'motor.currentQuasiRMSSensor.ToPolar1.u[2]' ^ 2.0);
-    'motor.currentQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('motor.currentQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('motor.currentQuasiRMSSensor.ToPolar1.u[2]', 'motor.currentQuasiRMSSensor.ToPolar1.u[1]');
+    'motor.currentQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('motor.currentQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('motor.currentQuasiRMSSensor.ToPolar1.u[2]', 'motor.currentQuasiRMSSensor.ToPolar1.u[1]');
     'motor.inertiaLoad.phi' = 'motor.inertiaLoad.flange_a.phi';
     'motor.inertiaLoad.phi' = 'motor.inertiaLoad.flange_b.phi';
     'motor.inertiaLoad.w' = der('motor.inertiaLoad.phi');
@@ -2189,7 +2060,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.addNoise.y' = 'motor.addNoise.u1' + 'motor.addNoise.u2';
 
     when sample(0.0, 0.005) then
-      'motor.uniformNoise.r' = 'motor.uniformNoise.r_raw' * 0.02 - 0.01;
+      'motor.uniformNoise.r' = 'motor.uniformNoise.r_raw' * (0.01 - (-0.01)) + (-0.01);
     end when;
 
     when sample(0.0, 0.005) then
@@ -2231,7 +2102,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
       'gearbox.lossyGear.tau_bf2' = noEvent(abs('gearbox.lossyGear.interpolation_result[1,4]'));
     end if;
 
-    if abs('gearbox.lossyGear.eta_mf1' - 1.0) <= 2.220446049250313e-16 and abs('gearbox.lossyGear.eta_mf2' - 1.0) <= 2.220446049250313e-16 then
+    if 'Modelica.Math.isEqual'('gearbox.lossyGear.eta_mf1', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('gearbox.lossyGear.eta_mf2', 1.0, 2.220446049250313e-16) then
       'gearbox.lossyGear.tau_bf_a' = 'gearbox.lossyGear.tau_bf1' / 2.0;
     elseif true then
       'gearbox.lossyGear.tau_bf_a' = ('gearbox.lossyGear.tau_bf1' - 'gearbox.lossyGear.tau_bf2') / ('gearbox.lossyGear.eta_mf1' - 1.0 / 'gearbox.lossyGear.eta_mf2');

@@ -1,38 +1,5 @@
 //! base 0.1.0
 package 'DifferenceAmplifier'
-  function 'Modelica.Electrical.Analog.Semiconductors.exlin' "Exponential function linearly continued for x > Maxexp"
-    input Real 'x';
-    input Real 'Maxexp';
-    output Real 'z';
-  algorithm
-    'z' := if 'x' > 'Maxexp' then exp('Maxexp') * (1.0 + 'x' - 'Maxexp') else exp('x');
-  end 'Modelica.Electrical.Analog.Semiconductors.exlin';
-
-  function 'Modelica.Electrical.Analog.Semiconductors.exlin2' "Exponential function linearly continued for x < MinExp and x > Maxexp"
-    input Real 'x';
-    input Real 'Minexp';
-    input Real 'Maxexp';
-    output Real 'z';
-  algorithm
-    'z' := if 'x' < 'Minexp' then exp('Minexp') * (1.0 + 'x' - 'Minexp') else 'Modelica.Electrical.Analog.Semiconductors.exlin'('x', 'Maxexp');
-  end 'Modelica.Electrical.Analog.Semiconductors.exlin2';
-
-  function 'Modelica.Electrical.Analog.Semiconductors.pow' "Just a helper function for x^y in order that a symbolic engine can apply some transformations more easily"
-    input Real 'x';
-    input Real 'y';
-    output Real 'z';
-  algorithm
-    'z' := 'x' ^ 'y';
-  end 'Modelica.Electrical.Analog.Semiconductors.pow';
-
-  function 'Modelica.Electrical.Analog.Semiconductors.powlin' "Power function (1 - x)^(-y) linearly continued for x > 0 (provided y = const.)"
-    input Real 'x';
-    input Real 'y';
-    output Real 'z';
-  algorithm
-    'z' := if 'x' > 0.0 then 1.0 + 'y' * 'x' else 'Modelica.Electrical.Analog.Semiconductors.pow'(1.0 - 'x', -'y');
-  end 'Modelica.Electrical.Analog.Semiconductors.powlin';
-
   model 'DifferenceAmplifier' "Simple NPN transistor amplifier circuit"
     parameter Real 'V1.V'(start = 1.0, unit = "V", quantity = "ElectricPotential") = 0.2 "Amplitude of sine wave";
     parameter Real 'V1.f'(start = 2.0, unit = "Hz", quantity = "Frequency") = 2e8 "Frequency of sine wave";
@@ -459,7 +426,7 @@ package 'DifferenceAmplifier'
     'Transistor2.Tr.C.i' + 'Transistor2.rtc.p.i' = 0.0;
     'Transistor2.Tr.B.i' + 'Transistor2.ct.p.i' + 'Transistor2.rtb.n.i' = 0.0;
     'Transistor2.Tr.E.i' - 'Transistor2.e.i' = 0.0;
-    'V1.signalSource.y' = if time < 0.0 then 0.0 else 0.2 * exp(-time * 1e7) * sin(1.2566370614359171e9 * time);
+    'V1.signalSource.y' = if time < 0.0 then 0.0 else 0.2 * 'Modelica.Math.exp'(-time * 1e7) * 'Modelica.Math.sin'(1.2566370614359171e9 * time);
     'V1.v' = 'V1.signalSource.y';
     0.0 = 'V1.p.i' + 'V1.n.i';
     'V1.i' = 'V1.p.i';

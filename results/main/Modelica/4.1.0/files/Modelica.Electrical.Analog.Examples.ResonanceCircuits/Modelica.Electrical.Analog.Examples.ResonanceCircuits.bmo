@@ -1,24 +1,5 @@
 //! base 0.1.0
 package 'ResonanceCircuits'
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1' "Return state (with one derivative)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    output Real 's';
-  algorithm
-    's' := 'u'[1];
-    annotation(derivative(order = 1, noDerivative = 'u') = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1', InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1';
-
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1' "Return 1st derivative (der of state1)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    output Real 'sder1';
-  algorithm
-    'sder1' := 'u'[2];
-    annotation(InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1';
-
   model 'ResonanceCircuits' "Resonance circuits: example to demonstrate generation of FMUs (Functional Mock-up Units)"
     parameter Real 'C'(min = 0.0, unit = "F", quantity = "Capacitance") = 0.01 "Capacitance";
     parameter Real 'L'(unit = "H", quantity = "Inductance") = 0.01 "Inductance";
@@ -512,7 +493,7 @@ package 'ResonanceCircuits'
     'currentToVoltageAdaptor2c.pin_n.i' + 'ground2b.p.i' + 'currentToVoltageAdaptor2b.pin_n.i' = 0.0;
     'voltageToCurrentAdaptor2c.pin_p.i' + 'capacitor2.p.i' = 0.0;
     'ground2c.p.i' + 'voltageToCurrentAdaptor2c.pin_n.i' + 'capacitor2.n.i' = 0.0;
-    'current1.signalSource.y' = if time < 0.0 then 0.0 else sin(100.0 * time);
+    'current1.signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(100.0 * time);
     'current1.i' = 'current1.signalSource.y';
     0.0 = 'current1.p.i' + 'current1.n.i';
     'current1.i' = 'current1.p.i';
@@ -533,7 +514,7 @@ package 'ResonanceCircuits'
     0.0 = 'capacitor1.p.i' + 'capacitor1.n.i';
     'capacitor1.i' = 'capacitor1.p.i';
     'capacitor1.v' = 'capacitor1.p.v' - 'capacitor1.n.v';
-    'voltage2.signalSource.y' = if time < 0.0 then 0.0 else sin(100.0 * time);
+    'voltage2.signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(100.0 * time);
     'voltage2.v' = 'voltage2.signalSource.y';
     0.0 = 'voltage2.p.i' + 'voltage2.n.i';
     'voltage2.i' = 'voltage2.p.i';
@@ -574,7 +555,7 @@ package 'ResonanceCircuits'
     'currentToVoltageAdaptor1a.y1' = 0.0;
     'currentToVoltageAdaptor1a.y2' = 0.0;
     'currentToVoltageAdaptor1a.u2' = 0.0;
-    'currentToVoltageAdaptor1a.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'currentToVoltageAdaptor1a.f', 'currentToVoltageAdaptor1a.u1'}, time);
+    'currentToVoltageAdaptor1a.u' = 'currentToVoltageAdaptor1a.f';
     'ground1a.p.v' = 0.0;
     'currentToVoltageAdaptor1b.v' = 'currentToVoltageAdaptor1b.pin_p.v' - 'currentToVoltageAdaptor1b.pin_n.v';
     'currentToVoltageAdaptor1b.i' = 'currentToVoltageAdaptor1b.pin_p.i';
@@ -585,7 +566,7 @@ package 'ResonanceCircuits'
     'currentToVoltageAdaptor1b.y1' = 0.0;
     'currentToVoltageAdaptor1b.y2' = 0.0;
     'currentToVoltageAdaptor1b.u2' = 0.0;
-    'currentToVoltageAdaptor1b.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'currentToVoltageAdaptor1b.f', 'currentToVoltageAdaptor1b.u1'}, time);
+    'currentToVoltageAdaptor1b.u' = 'currentToVoltageAdaptor1b.f';
     'voltageToCurrentAdaptor1b.v' = 'voltageToCurrentAdaptor1b.pin_p.v' - 'voltageToCurrentAdaptor1b.pin_n.v';
     'voltageToCurrentAdaptor1b.i' = 'voltageToCurrentAdaptor1b.pin_p.i';
     'voltageToCurrentAdaptor1b.pin_p.i' + 'voltageToCurrentAdaptor1b.pin_n.i' = 0.0;
@@ -618,7 +599,7 @@ package 'ResonanceCircuits'
     'currentToVoltageAdaptor1c.y1' = 0.0;
     'currentToVoltageAdaptor1c.y2' = 0.0;
     'currentToVoltageAdaptor1c.u2' = 0.0;
-    'currentToVoltageAdaptor1c.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'currentToVoltageAdaptor1c.f', 'currentToVoltageAdaptor1c.u1'}, time);
+    'currentToVoltageAdaptor1c.u' = 'currentToVoltageAdaptor1c.f';
     'ground1c.p.v' = 0.0;
     'currentToVoltageAdaptor2a.v' = 'currentToVoltageAdaptor2a.pin_p.v' - 'currentToVoltageAdaptor2a.pin_n.v';
     'currentToVoltageAdaptor2a.i' = 'currentToVoltageAdaptor2a.pin_p.i';
@@ -640,7 +621,7 @@ package 'ResonanceCircuits'
     'voltageToCurrentAdaptor2a.y1' = 0.0;
     'voltageToCurrentAdaptor2a.y2' = 0.0;
     'voltageToCurrentAdaptor2a.u2' = 0.0;
-    'voltageToCurrentAdaptor2a.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'voltageToCurrentAdaptor2a.p', 'voltageToCurrentAdaptor2a.u1'}, time);
+    'voltageToCurrentAdaptor2a.u' = 'voltageToCurrentAdaptor2a.p';
     'ground2a.p.v' = 0.0;
     'voltageToCurrentAdaptor2b.v' = 'voltageToCurrentAdaptor2b.pin_p.v' - 'voltageToCurrentAdaptor2b.pin_n.v';
     'voltageToCurrentAdaptor2b.i' = 'voltageToCurrentAdaptor2b.pin_p.i';
@@ -651,7 +632,7 @@ package 'ResonanceCircuits'
     'voltageToCurrentAdaptor2b.y1' = 0.0;
     'voltageToCurrentAdaptor2b.y2' = 0.0;
     'voltageToCurrentAdaptor2b.u2' = 0.0;
-    'voltageToCurrentAdaptor2b.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'voltageToCurrentAdaptor2b.p', 'voltageToCurrentAdaptor2b.u1'}, time);
+    'voltageToCurrentAdaptor2b.u' = 'voltageToCurrentAdaptor2b.p';
     'currentToVoltageAdaptor2b.v' = 'currentToVoltageAdaptor2b.pin_p.v' - 'currentToVoltageAdaptor2b.pin_n.v';
     'currentToVoltageAdaptor2b.i' = 'currentToVoltageAdaptor2b.pin_p.i';
     'currentToVoltageAdaptor2b.pin_p.i' + 'currentToVoltageAdaptor2b.pin_n.i' = 0.0;
@@ -684,7 +665,7 @@ package 'ResonanceCircuits'
     'voltageToCurrentAdaptor2c.y1' = 0.0;
     'voltageToCurrentAdaptor2c.y2' = 0.0;
     'voltageToCurrentAdaptor2c.u2' = 0.0;
-    'voltageToCurrentAdaptor2c.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'voltageToCurrentAdaptor2c.p', 'voltageToCurrentAdaptor2c.u1'}, time);
+    'voltageToCurrentAdaptor2c.u' = 'voltageToCurrentAdaptor2c.p';
     'ground2c.p.v' = 0.0;
     annotation(experiment(StopTime = 1.0, Interval = 0.0001));
   end 'ResonanceCircuits';

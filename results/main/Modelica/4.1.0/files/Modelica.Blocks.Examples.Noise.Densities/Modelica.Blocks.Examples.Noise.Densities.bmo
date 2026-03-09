@@ -35,12 +35,12 @@ package 'Densities'
     'add.y' = 'weibullDensity.u';
     'add.y' = 'normalDensity.u';
     'add.y' = 'uniformDensity.u';
-    'uniformDensity.y' = if 'uniformDensity.u' < (-4.0) or 'uniformDensity.u' > 4.0 then 0.0 else 0.125;
+    'uniformDensity.y' = if 'uniformDensity.u' < (-4.0) or 'uniformDensity.u' > 4.0 then 0.0 else 1.0 / (4.0 - (-4.0));
     'clock.y' = smooth(0, if time < 0.0 then 0.0 else time);
     'const.y' = -10.0;
     'add.y' = 'add.u1' + 'add.u2';
-    'normalDensity.y' = exp(-'normalDensity.u' ^ 2.0 / 8.0) / 5.0132565492620005;
-    'weibullDensity.y' = if 'weibullDensity.u' >= 0.0 then 0.5 * ('weibullDensity.u' / 3.0) ^ 0.5 * exp(-('weibullDensity.u' / 3.0) ^ 1.5) else 0.0;
+    'normalDensity.y' = 'Modelica.Math.exp'(-('normalDensity.u' - 0.0) ^ 2.0 / (2.0 * 2.0 ^ 2.0)) / (2.0 * 2.5066282746310002);
+    'weibullDensity.y' = if 'weibullDensity.u' >= 0.0 then 1.5 / 3.0 * ('weibullDensity.u' / 3.0) ^ (1.5 - 1.0) * 'Modelica.Math.exp'(-('weibullDensity.u' / 3.0) ^ 1.5) else 0.0;
     annotation(experiment(StopTime = 20, Interval = 2e-2));
   end 'Densities';
 end 'Densities';

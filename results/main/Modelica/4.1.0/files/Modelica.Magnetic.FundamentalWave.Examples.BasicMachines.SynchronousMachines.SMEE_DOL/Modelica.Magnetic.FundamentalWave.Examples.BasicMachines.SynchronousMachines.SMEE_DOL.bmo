@@ -1,86 +1,5 @@
 //! base 0.1.0
 package 'SMEE_DOL'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
-    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Boolean 'positiveRange' = false;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'y' := mod('u', 6.283185307179586);
-
-    if 'y' > 3.141592653589793 and not 'positiveRange' then
-      'y' := 'y' - 6.283185307179586;
-    end if;
-  end 'Modelica.Math.wrapAngle';
-
-  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotential';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
-
   model 'SMEE_DOL' "ElectricalExcitedSynchronousMachine starting direct on line"
     parameter Integer 'm' = 3 "Number of phases" annotation(Evaluate = true);
     parameter Real 'VNominal'(unit = "V", quantity = "ElectricPotential") = 100.0 "Nominal RMS voltage per phase";
@@ -1618,7 +1537,7 @@ package 'SMEE_DOL'
     'smee.wMechanical' = der('smee.phiMechanical');
     'smee.tauElectrical' = 'smee.inertiaRotor.flange_a.tau';
     'smee.tauShaft' = -'smee.flange.tau';
-    'smee.powerBalance.powerStator' = 'smee.vs[1]' * 'smee.is[1]' + 'smee.vs[2]' * 'smee.is[2]' + 'smee.vs[3]' * 'smee.is[3]';
+    'smee.powerBalance.powerStator' = sum('smee.vs' * 'smee.is');
     'smee.powerBalance.powerMechanical' = 'smee.wMechanical' * 'smee.tauShaft';
     'smee.powerBalance.powerInertiaStator' = 0.29 * 'smee.inertiaStator.a' * 'smee.inertiaStator.w';
     'smee.powerBalance.powerInertiaRotor' = 0.29 * 'smee.inertiaRotor.a' * 'smee.inertiaRotor.w';
@@ -1632,16 +1551,12 @@ package 'SMEE_DOL'
     'smee.powerBalance.powerExcitation' = 'smee.ve' * 'smee.ie';
     'smee.powerBalance.lossPowerExcitation' = 'smee.excitation.resistor.LossPower';
     'smee.powerBalance.lossPowerBrush' = 'smee.brush.lossPower';
-    'smee.stator.V_m.re' = 'smee.stator.port_p.V_m.re' - 'smee.stator.port_n.V_m.re';
-    'smee.stator.V_m.im' = 'smee.stator.port_p.V_m.im' - 'smee.stator.port_n.V_m.im';
     'smee.stator.abs_V_m' = sqrt('smee.stator.V_m.re' ^ 2.0 + 'smee.stator.V_m.im' ^ 2.0);
     'smee.stator.arg_V_m' = 'Modelica.Math.atan3'('smee.stator.V_m.im', 'smee.stator.V_m.re', 0.0);
     'smee.stator.Phi.re' = 'smee.stator.port_p.Phi.re';
     'smee.stator.Phi.im' = 'smee.stator.port_p.Phi.im';
     'smee.stator.abs_Phi' = sqrt('smee.stator.Phi.re' ^ 2.0 + 'smee.stator.Phi.im' ^ 2.0);
     'smee.stator.arg_Phi' = 'Modelica.Math.atan3'('smee.stator.Phi.im', 'smee.stator.Phi.re', 0.0);
-    'smee.stator.electroMagneticConverter.V_m.re' = 'smee.stator.electroMagneticConverter.port_p.V_m.re' - 'smee.stator.electroMagneticConverter.port_n.V_m.re';
-    'smee.stator.electroMagneticConverter.V_m.im' = 'smee.stator.electroMagneticConverter.port_p.V_m.im' - 'smee.stator.electroMagneticConverter.port_n.V_m.im';
     'smee.stator.electroMagneticConverter.abs_V_m' = sqrt('smee.stator.electroMagneticConverter.V_m.re' ^ 2.0 + 'smee.stator.electroMagneticConverter.V_m.im' ^ 2.0);
     'smee.stator.electroMagneticConverter.arg_V_m' = 'Modelica.Math.atan3'('smee.stator.electroMagneticConverter.V_m.im', 'smee.stator.electroMagneticConverter.V_m.re', 0.0);
     'smee.stator.electroMagneticConverter.Phi.re' = 'smee.stator.electroMagneticConverter.port_p.Phi.re';
@@ -1666,8 +1581,6 @@ package 'SMEE_DOL'
     'smee.stator.resistor.resistor[2].heatPort.Q_flow' = -'smee.stator.resistor.resistor[2].LossPower';
     'smee.stator.resistor.resistor[3].heatPort.T' = 'smee.stator.resistor.resistor[3].T_heatPort';
     'smee.stator.resistor.resistor[3].heatPort.Q_flow' = -'smee.stator.resistor.resistor[3].LossPower';
-    'smee.stator.core.V_m.re' = 'smee.stator.core.port_p.V_m.re' - 'smee.stator.core.port_n.V_m.re';
-    'smee.stator.core.V_m.im' = 'smee.stator.core.port_p.V_m.im' - 'smee.stator.core.port_n.V_m.im';
     'smee.stator.core.abs_V_m' = sqrt('smee.stator.core.V_m.re' ^ 2.0 + 'smee.stator.core.V_m.im' ^ 2.0);
     'smee.stator.core.arg_V_m' = 'Modelica.Math.atan3'('smee.stator.core.V_m.im', 'smee.stator.core.V_m.re', 0.0);
     'smee.stator.core.Phi.re' = 'smee.stator.core.port_p.Phi.re';
@@ -1676,8 +1589,6 @@ package 'SMEE_DOL'
     'smee.stator.core.arg_Phi' = 'Modelica.Math.atan3'('smee.stator.core.Phi.im', 'smee.stator.core.Phi.re', 0.0);
     'smee.stator.core.heatPort.T' = 'smee.stator.core.TheatPort';
     'smee.stator.core.heatPort.Q_flow' = -'smee.stator.core.lossPower';
-    'smee.stator.stray.V_m.re' = 'smee.stator.stray.port_p.V_m.re' - 'smee.stator.stray.port_n.V_m.re';
-    'smee.stator.stray.V_m.im' = 'smee.stator.stray.port_p.V_m.im' - 'smee.stator.stray.port_n.V_m.im';
     'smee.stator.stray.abs_V_m' = sqrt('smee.stator.stray.V_m.re' ^ 2.0 + 'smee.stator.stray.V_m.im' ^ 2.0);
     'smee.stator.stray.arg_V_m' = 'Modelica.Math.atan3'('smee.stator.stray.V_m.im', 'smee.stator.stray.V_m.re', 0.0);
     'smee.stator.stray.Phi.re' = 'smee.stator.stray.port_p.Phi.re';
@@ -1693,12 +1604,10 @@ package 'SMEE_DOL'
     'smee.thermalAmbient.Q_flowExcitation' = 'smee.thermalAmbient.temperatureExcitation.port.Q_flow';
     'smee.thermalAmbient.Q_flowTotal' = 'smee.thermalAmbient.Q_flowStatorWinding' + 'smee.thermalAmbient.Q_flowRotorWinding' + 'smee.thermalAmbient.Q_flowExcitation' + 'smee.thermalAmbient.Q_flowStatorCore' + 'smee.thermalAmbient.Q_flowRotorCore' + 'smee.thermalAmbient.Q_flowStrayLoad' + 'smee.thermalAmbient.Q_flowFriction';
     'smee.strayLoad.heatPort.Q_flow' = -'smee.strayLoad.lossPower';
-    'smee.strayLoad.iRMS' = sqrt('smee.strayLoad.i[1]' ^ 2.0 / 3.0 + 'smee.strayLoad.i[2]' ^ 2.0 / 3.0 + 'smee.strayLoad.i[3]' ^ 2.0 / 3.0);
+    'smee.strayLoad.iRMS' = sqrt(sum('smee.strayLoad.i' .^ 2.0 / size('smee.strayLoad.i', 1)));
     'smee.friction.heatPort.Q_flow' = -'smee.friction.lossPower';
     'smee.ve' = 'smee.pin_ep.v' - 'smee.pin_en.v';
     'smee.ie' = 'smee.pin_ep.i';
-    'smee.rotorCage.V_m.re' = 'smee.rotorCage.port_p.V_m.re' - 'smee.rotorCage.port_n.V_m.re';
-    'smee.rotorCage.V_m.im' = 'smee.rotorCage.port_p.V_m.im' - 'smee.rotorCage.port_n.V_m.im';
     'smee.rotorCage.abs_V_m' = sqrt('smee.rotorCage.V_m.re' ^ 2.0 + 'smee.rotorCage.V_m.im' ^ 2.0);
     'smee.rotorCage.arg_V_m' = 'Modelica.Math.atan3'('smee.rotorCage.V_m.im', 'smee.rotorCage.V_m.re', 0.0);
     'smee.rotorCage.Phi.re' = 'smee.rotorCage.port_p.Phi.re';
@@ -1707,8 +1616,6 @@ package 'SMEE_DOL'
     'smee.rotorCage.arg_Phi' = 'Modelica.Math.atan3'('smee.rotorCage.Phi.im', 'smee.rotorCage.Phi.re', 0.0);
     'smee.rotorCage.iRMS' = sqrt('smee.rotorCage.i[1]' ^ 2.0 + 'smee.rotorCage.i[2]' ^ 2.0) / 1.4142135623730951;
     'smee.rotorCage.lossPower' = 'smee.rotorCage.resistor.resistor[1].LossPower' + 'smee.rotorCage.resistor.resistor[2].LossPower';
-    'smee.rotorCage.electroMagneticConverter.V_m.re' = 'smee.rotorCage.electroMagneticConverter.port_p.V_m.re' - 'smee.rotorCage.electroMagneticConverter.port_n.V_m.re';
-    'smee.rotorCage.electroMagneticConverter.V_m.im' = 'smee.rotorCage.electroMagneticConverter.port_p.V_m.im' - 'smee.rotorCage.electroMagneticConverter.port_n.V_m.im';
     'smee.rotorCage.electroMagneticConverter.abs_V_m' = sqrt('smee.rotorCage.electroMagneticConverter.V_m.re' ^ 2.0 + 'smee.rotorCage.electroMagneticConverter.V_m.im' ^ 2.0);
     'smee.rotorCage.electroMagneticConverter.arg_V_m' = 'Modelica.Math.atan3'('smee.rotorCage.electroMagneticConverter.V_m.im', 'smee.rotorCage.electroMagneticConverter.V_m.re', 0.0);
     'smee.rotorCage.electroMagneticConverter.Phi.re' = 'smee.rotorCage.electroMagneticConverter.port_p.Phi.re';
@@ -1727,8 +1634,6 @@ package 'SMEE_DOL'
     'smee.rotorCage.resistor.resistor[1].heatPort.Q_flow' = -'smee.rotorCage.resistor.resistor[1].LossPower';
     'smee.rotorCage.resistor.resistor[2].heatPort.T' = 'smee.rotorCage.resistor.resistor[2].T_heatPort';
     'smee.rotorCage.resistor.resistor[2].heatPort.Q_flow' = -'smee.rotorCage.resistor.resistor[2].LossPower';
-    'smee.rotorCage.strayReluctance.V_m.re' = 'smee.rotorCage.strayReluctance.port_p.V_m.re' - 'smee.rotorCage.strayReluctance.port_n.V_m.re';
-    'smee.rotorCage.strayReluctance.V_m.im' = 'smee.rotorCage.strayReluctance.port_p.V_m.im' - 'smee.rotorCage.strayReluctance.port_n.V_m.im';
     'smee.rotorCage.strayReluctance.abs_V_m' = sqrt('smee.rotorCage.strayReluctance.V_m.re' ^ 2.0 + 'smee.rotorCage.strayReluctance.V_m.im' ^ 2.0);
     'smee.rotorCage.strayReluctance.arg_V_m' = 'Modelica.Math.atan3'('smee.rotorCage.strayReluctance.V_m.im', 'smee.rotorCage.strayReluctance.V_m.re', 0.0);
     'smee.rotorCage.strayReluctance.Phi.re' = 'smee.rotorCage.strayReluctance.port_p.Phi.re';
@@ -1737,8 +1642,6 @@ package 'SMEE_DOL'
     'smee.rotorCage.strayReluctance.arg_Phi' = 'Modelica.Math.atan3'('smee.rotorCage.strayReluctance.Phi.im', 'smee.rotorCage.strayReluctance.Phi.re', 0.0);
     'smee.excitation.v' = 'smee.excitation.pin_p.v' - 'smee.excitation.pin_n.v';
     'smee.excitation.i' = 'smee.excitation.pin_p.i';
-    'smee.excitation.V_m.re' = 'smee.excitation.port_p.V_m.re' - 'smee.excitation.port_n.V_m.re';
-    'smee.excitation.V_m.im' = 'smee.excitation.port_p.V_m.im' - 'smee.excitation.port_n.V_m.im';
     'smee.excitation.abs_V_m' = sqrt('smee.excitation.V_m.re' ^ 2.0 + 'smee.excitation.V_m.im' ^ 2.0);
     'smee.excitation.arg_V_m' = 'Modelica.Math.atan3'('smee.excitation.V_m.im', 'smee.excitation.V_m.re', 0.0);
     'smee.excitation.Phi.re' = 'smee.excitation.port_p.Phi.re';
@@ -1751,8 +1654,6 @@ package 'SMEE_DOL'
     'smee.excitation.electroMagneticConverter.arg_V_m' = 'Modelica.Math.atan3'('smee.excitation.electroMagneticConverter.V_m.im', 'smee.excitation.electroMagneticConverter.V_m.re', 0.0);
     'smee.excitation.electroMagneticConverter.abs_Phi' = sqrt('smee.excitation.electroMagneticConverter.Phi.re' ^ 2.0 + 'smee.excitation.electroMagneticConverter.Phi.im' ^ 2.0);
     'smee.excitation.electroMagneticConverter.arg_Phi' = 'Modelica.Math.atan3'('smee.excitation.electroMagneticConverter.Phi.im', 'smee.excitation.electroMagneticConverter.Phi.re', 0.0);
-    'smee.excitation.stray.V_m.re' = 'smee.excitation.stray.port_p.V_m.re' - 'smee.excitation.stray.port_n.V_m.re';
-    'smee.excitation.stray.V_m.im' = 'smee.excitation.stray.port_p.V_m.im' - 'smee.excitation.stray.port_n.V_m.im';
     'smee.excitation.stray.abs_V_m' = sqrt('smee.excitation.stray.V_m.re' ^ 2.0 + 'smee.excitation.stray.V_m.im' ^ 2.0);
     'smee.excitation.stray.arg_V_m' = 'Modelica.Math.atan3'('smee.excitation.stray.V_m.im', 'smee.excitation.stray.V_m.re', 0.0);
     'smee.excitation.stray.Phi.re' = 'smee.excitation.stray.port_p.Phi.re';
@@ -2289,12 +2190,16 @@ package 'SMEE_DOL'
     'smee.stator.i[1]' = 'smee.stator.plug_p.pin[1].i';
     'smee.stator.i[2]' = 'smee.stator.plug_p.pin[2].i';
     'smee.stator.i[3]' = 'smee.stator.plug_p.pin[3].i';
+    'smee.stator.V_m.re' = 'smee.stator.port_p.V_m.re' - 'smee.stator.port_n.V_m.re';
+    'smee.stator.V_m.im' = 'smee.stator.port_p.V_m.im' - 'smee.stator.port_n.V_m.im';
     'smee.stator.electroMagneticConverter.v[1]' = 'smee.stator.electroMagneticConverter.plug_p.pin[1].v' - 'smee.stator.electroMagneticConverter.plug_n.pin[1].v';
     'smee.stator.electroMagneticConverter.v[2]' = 'smee.stator.electroMagneticConverter.plug_p.pin[2].v' - 'smee.stator.electroMagneticConverter.plug_n.pin[2].v';
     'smee.stator.electroMagneticConverter.v[3]' = 'smee.stator.electroMagneticConverter.plug_p.pin[3].v' - 'smee.stator.electroMagneticConverter.plug_n.pin[3].v';
     'smee.stator.electroMagneticConverter.i[1]' = 'smee.stator.electroMagneticConverter.plug_p.pin[1].i';
     'smee.stator.electroMagneticConverter.i[2]' = 'smee.stator.electroMagneticConverter.plug_p.pin[2].i';
     'smee.stator.electroMagneticConverter.i[3]' = 'smee.stator.electroMagneticConverter.plug_p.pin[3].i';
+    'smee.stator.electroMagneticConverter.V_m.re' = 'smee.stator.electroMagneticConverter.port_p.V_m.re' - 'smee.stator.electroMagneticConverter.port_n.V_m.re';
+    'smee.stator.electroMagneticConverter.V_m.im' = 'smee.stator.electroMagneticConverter.port_p.V_m.im' - 'smee.stator.electroMagneticConverter.port_n.V_m.im';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.re';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].port_p.Phi.im' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.im';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' + 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].port_n.Phi.re' = 0.0;
@@ -2304,9 +2209,9 @@ package 'SMEE_DOL'
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].v' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_p.v' - 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_n.v';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_p.i';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_p.i' + 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_n.i' = 0.0;
-    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].N.re' * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i';
-    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].N.im' * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i';
-    -'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].v' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].N.re' * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.re') - (-'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].N.im') * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.im');
+    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i' - 0.0 * 0.0;
+    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 0.0 + 0.0 * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i';
+    -'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].v' = 1.0 * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.re') - 0.0 * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.im');
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.re';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].port_p.Phi.im' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.im';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' + 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].port_n.Phi.re' = 0.0;
@@ -2316,9 +2221,9 @@ package 'SMEE_DOL'
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].v' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_p.v' - 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_n.v';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_p.i';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_p.i' + 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_n.i' = 0.0;
-    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].V_m.re' = 0.6366197723675814 * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].N.re' * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i';
-    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].V_m.im' = 0.6366197723675814 * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].N.im' * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i';
-    -'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].v' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].N.re' * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.re') - (-'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].N.im') * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.im');
+    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].V_m.re' = (-0.3183098861837905) * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i' - 0.5513288954217921 * 0.0;
+    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].V_m.im' = (-0.3183098861837905) * 0.0 + 0.5513288954217921 * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i';
+    -'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].v' = (-0.4999999999999998) * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.re') - (-0.8660254037844387) * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.im');
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].Phi.re';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].port_p.Phi.im' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].Phi.im';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' + 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].port_n.Phi.re' = 0.0;
@@ -2328,9 +2233,9 @@ package 'SMEE_DOL'
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].v' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].pin_p.v' - 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].pin_n.v';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].i' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].pin_p.i';
     'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].pin_p.i' + 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].pin_n.i' = 0.0;
-    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].V_m.re' = 0.6366197723675814 * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].N.re' * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].i';
-    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].V_m.im' = 0.6366197723675814 * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].N.im' * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].i';
-    -'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].v' = 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].N.re' * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].Phi.re') - (-'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].N.im') * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].Phi.im');
+    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].V_m.re' = (-0.31830988618379097) * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].i' - (-0.5513288954217919) * 0.0;
+    'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].V_m.im' = (-0.31830988618379097) * 0.0 + (-0.5513288954217919) * 'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].i';
+    -'smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].v' = (-0.5000000000000004) * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].Phi.re') - 0.8660254037844384 * der('smee.stator.electroMagneticConverter.singlePhaseElectroMagneticConverter[3].Phi.im');
     3.0 * 'smee.stator.zeroInductor.i0' = 'smee.stator.zeroInductor.i[1]' + 'smee.stator.zeroInductor.i[2]' + 'smee.stator.zeroInductor.i[3]';
     'smee.stator.zeroInductor.v0' = 'smee.stator.zeroInductor.Lzero' * der('smee.stator.zeroInductor.i0');
     'smee.stator.zeroInductor.v[1]' = 'smee.stator.zeroInductor.v0';
@@ -2369,11 +2274,15 @@ package 'SMEE_DOL'
     'smee.stator.resistor.i[1]' = 'smee.stator.resistor.plug_p.pin[1].i';
     'smee.stator.resistor.i[2]' = 'smee.stator.resistor.plug_p.pin[2].i';
     'smee.stator.resistor.i[3]' = 'smee.stator.resistor.plug_p.pin[3].i';
+    'smee.stator.core.V_m.re' = 'smee.stator.core.port_p.V_m.re' - 'smee.stator.core.port_n.V_m.re';
+    'smee.stator.core.V_m.im' = 'smee.stator.core.port_p.V_m.im' - 'smee.stator.core.port_n.V_m.im';
     'smee.stator.core.lossPower' = 1.5707963267948966 * ('smee.stator.core.V_m.re' * der('smee.stator.core.Phi.re') + 'smee.stator.core.V_m.im' * der('smee.stator.core.Phi.im'));
     'smee.stator.core.V_m.re' = 0.0;
     'smee.stator.core.V_m.im' = 0.0;
     'smee.stator.core.port_p.Phi.re' + 'smee.stator.core.port_n.Phi.re' = 0.0;
     'smee.stator.core.port_p.Phi.im' + 'smee.stator.core.port_n.Phi.im' = 0.0;
+    'smee.stator.stray.V_m.re' = 'smee.stator.stray.port_p.V_m.re' - 'smee.stator.stray.port_n.V_m.re';
+    'smee.stator.stray.V_m.im' = 'smee.stator.stray.port_p.V_m.im' - 'smee.stator.stray.port_n.V_m.im';
     1.5707963267948966 * 'smee.stator.stray.G_m.d' * 'smee.stator.stray.V_m.re' = 'smee.stator.stray.Phi.re';
     1.5707963267948966 * 'smee.stator.stray.G_m.q' * 'smee.stator.stray.V_m.im' = 'smee.stator.stray.Phi.im';
     'smee.stator.stray.port_p.Phi.re' + 'smee.stator.stray.port_n.Phi.re' = 0.0;
@@ -2419,8 +2328,8 @@ package 'SMEE_DOL'
     'smee.airGap.flange_a.tau' = -'smee.airGap.tauElectrical';
     'smee.airGap.support.tau' = 'smee.airGap.tauElectrical';
     'smee.airGap.gamma' = 2.0 * ('smee.airGap.flange_a.phi' - 'smee.airGap.support.phi');
-    'smee.airGap.rotator.re' = cos('smee.airGap.gamma');
-    'smee.airGap.rotator.im' = sin('smee.airGap.gamma');
+    'smee.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('smee.airGap.gamma');
+    'smee.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('smee.airGap.gamma');
     'smee.groundR.port_p.V_m.re' = 0.0;
     'smee.groundR.port_p.V_m.im' = 0.0;
     'smee.strayLoad.v[1]' = 0.0;
@@ -2447,12 +2356,16 @@ package 'SMEE_DOL'
     'smee.friction.w' = der('smee.friction.phi');
     'smee.friction.tau' = -'smee.friction.flange.tau';
     'smee.friction.tau' = 'smee.friction.support.tau';
+    'smee.rotorCage.V_m.re' = 'smee.rotorCage.port_p.V_m.re' - 'smee.rotorCage.port_n.V_m.re';
+    'smee.rotorCage.V_m.im' = 'smee.rotorCage.port_p.V_m.im' - 'smee.rotorCage.port_n.V_m.im';
     'smee.rotorCage.i[1]' = 'smee.rotorCage.electroMagneticConverter.i[1]';
     'smee.rotorCage.i[2]' = 'smee.rotorCage.electroMagneticConverter.i[2]';
     'smee.rotorCage.electroMagneticConverter.v[1]' = 'smee.rotorCage.electroMagneticConverter.plug_p.pin[1].v' - 'smee.rotorCage.electroMagneticConverter.plug_n.pin[1].v';
     'smee.rotorCage.electroMagneticConverter.v[2]' = 'smee.rotorCage.electroMagneticConverter.plug_p.pin[2].v' - 'smee.rotorCage.electroMagneticConverter.plug_n.pin[2].v';
     'smee.rotorCage.electroMagneticConverter.i[1]' = 'smee.rotorCage.electroMagneticConverter.plug_p.pin[1].i';
     'smee.rotorCage.electroMagneticConverter.i[2]' = 'smee.rotorCage.electroMagneticConverter.plug_p.pin[2].i';
+    'smee.rotorCage.electroMagneticConverter.V_m.re' = 'smee.rotorCage.electroMagneticConverter.port_p.V_m.re' - 'smee.rotorCage.electroMagneticConverter.port_n.V_m.re';
+    'smee.rotorCage.electroMagneticConverter.V_m.im' = 'smee.rotorCage.electroMagneticConverter.port_p.V_m.im' - 'smee.rotorCage.electroMagneticConverter.port_n.V_m.im';
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.re';
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].port_p.Phi.im' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.im';
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' + 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].port_n.Phi.re' = 0.0;
@@ -2462,9 +2375,9 @@ package 'SMEE_DOL'
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].v' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_p.v' - 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_n.v';
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_p.i';
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_p.i' + 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].pin_n.i' = 0.0;
-    'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].N.re' * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i';
-    'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].N.im' * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i';
-    -'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].v' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].N.re' * der('smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.re') - (-'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].N.im') * der('smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.im');
+    'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.7796968012336761 * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i' - 0.0 * 0.0;
+    'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.7796968012336761 * 0.0 + 0.0 * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].i';
+    -'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].v' = 1.224744871391589 * der('smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.re') - 0.0 * der('smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[1].Phi.im');
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.re';
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].port_p.Phi.im' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.im';
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' + 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].port_n.Phi.re' = 0.0;
@@ -2474,9 +2387,9 @@ package 'SMEE_DOL'
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].v' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_p.v' - 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_n.v';
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_p.i';
     'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_p.i' + 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].pin_n.i' = 0.0;
-    'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].V_m.re' = 0.6366197723675814 * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].N.re' * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i';
-    'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].V_m.im' = 0.6366197723675814 * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].N.im' * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i';
-    -'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].v' = 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].N.re' * der('smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.re') - (-'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].N.im') * der('smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.im');
+    'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].V_m.re' = 4.774265959681258e-17 * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i' - 0.7796968012336761 * 0.0;
+    'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].V_m.im' = 4.774265959681258e-17 * 0.0 + 0.7796968012336761 * 'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].i';
+    -'smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].v' = 7.499399432609231e-17 * der('smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.re') - (-1.224744871391589) * der('smee.rotorCage.electroMagneticConverter.singlePhaseElectroMagneticConverter[2].Phi.im');
     'smee.rotorCage.resistor.resistor[1].R_actual' = 'smee.rotorCage.resistor.resistor[1].R';
     'smee.rotorCage.resistor.resistor[1].v' = 'smee.rotorCage.resistor.resistor[1].R_actual' * 'smee.rotorCage.resistor.resistor[1].i';
     'smee.rotorCage.resistor.resistor[1].LossPower' = 'smee.rotorCage.resistor.resistor[1].v' * 'smee.rotorCage.resistor.resistor[1].i';
@@ -2497,10 +2410,14 @@ package 'SMEE_DOL'
     'smee.rotorCage.thermalCollector.port_b.Q_flow' + 'smee.rotorCage.thermalCollector.port_a[1].Q_flow' + 'smee.rotorCage.thermalCollector.port_a[2].Q_flow' = 0.0;
     'smee.rotorCage.thermalCollector.port_a[1].T' = 'smee.rotorCage.thermalCollector.port_b.T';
     'smee.rotorCage.thermalCollector.port_a[2].T' = 'smee.rotorCage.thermalCollector.port_b.T';
+    'smee.rotorCage.strayReluctance.V_m.re' = 'smee.rotorCage.strayReluctance.port_p.V_m.re' - 'smee.rotorCage.strayReluctance.port_n.V_m.re';
+    'smee.rotorCage.strayReluctance.V_m.im' = 'smee.rotorCage.strayReluctance.port_p.V_m.im' - 'smee.rotorCage.strayReluctance.port_n.V_m.im';
     1.5707963267948966 * 'smee.rotorCage.strayReluctance.V_m.re' = 'smee.rotorCage.strayReluctance.R_m.d' * 'smee.rotorCage.strayReluctance.Phi.re';
     1.5707963267948966 * 'smee.rotorCage.strayReluctance.V_m.im' = 'smee.rotorCage.strayReluctance.R_m.q' * 'smee.rotorCage.strayReluctance.Phi.im';
     'smee.rotorCage.strayReluctance.port_p.Phi.re' + 'smee.rotorCage.strayReluctance.port_n.Phi.re' = 0.0;
     'smee.rotorCage.strayReluctance.port_p.Phi.im' + 'smee.rotorCage.strayReluctance.port_n.Phi.im' = 0.0;
+    'smee.excitation.V_m.re' = 'smee.excitation.port_p.V_m.re' - 'smee.excitation.port_n.V_m.re';
+    'smee.excitation.V_m.im' = 'smee.excitation.port_p.V_m.im' - 'smee.excitation.port_n.V_m.im';
     'smee.excitation.resistor.R_actual' = 2.499999995307565;
     'smee.excitation.resistor.v' = 'smee.excitation.resistor.R_actual' * 'smee.excitation.resistor.i';
     'smee.excitation.resistor.LossPower' = 'smee.excitation.resistor.v' * 'smee.excitation.resistor.i';
@@ -2516,9 +2433,11 @@ package 'SMEE_DOL'
     'smee.excitation.electroMagneticConverter.v' = 'smee.excitation.electroMagneticConverter.pin_p.v' - 'smee.excitation.electroMagneticConverter.pin_n.v';
     'smee.excitation.electroMagneticConverter.i' = 'smee.excitation.electroMagneticConverter.pin_p.i';
     'smee.excitation.electroMagneticConverter.pin_p.i' + 'smee.excitation.electroMagneticConverter.pin_n.i' = 0.0;
-    'smee.excitation.electroMagneticConverter.V_m.re' = 0.6366197723675814 * 'smee.excitation.electroMagneticConverter.N.re' * 'smee.excitation.electroMagneticConverter.i';
-    'smee.excitation.electroMagneticConverter.V_m.im' = 0.6366197723675814 * 'smee.excitation.electroMagneticConverter.N.im' * 'smee.excitation.electroMagneticConverter.i';
+    'smee.excitation.electroMagneticConverter.V_m.re' = (0.6366197723675814 * 'smee.excitation.electroMagneticConverter.N.re' - 0.0 * 'smee.excitation.electroMagneticConverter.N.im') * 'smee.excitation.electroMagneticConverter.i' - (0.6366197723675814 * 'smee.excitation.electroMagneticConverter.N.im' + 0.0 * 'smee.excitation.electroMagneticConverter.N.re') * 0.0;
+    'smee.excitation.electroMagneticConverter.V_m.im' = (0.6366197723675814 * 'smee.excitation.electroMagneticConverter.N.re' - 0.0 * 'smee.excitation.electroMagneticConverter.N.im') * 0.0 + (0.6366197723675814 * 'smee.excitation.electroMagneticConverter.N.im' + 0.0 * 'smee.excitation.electroMagneticConverter.N.re') * 'smee.excitation.electroMagneticConverter.i';
     -'smee.excitation.electroMagneticConverter.v' = 'smee.excitation.electroMagneticConverter.N.re' * der('smee.excitation.electroMagneticConverter.Phi.re') - (-'smee.excitation.electroMagneticConverter.N.im') * der('smee.excitation.electroMagneticConverter.Phi.im');
+    'smee.excitation.stray.V_m.re' = 'smee.excitation.stray.port_p.V_m.re' - 'smee.excitation.stray.port_n.V_m.re';
+    'smee.excitation.stray.V_m.im' = 'smee.excitation.stray.port_p.V_m.im' - 'smee.excitation.stray.port_n.V_m.im';
     1.5707963267948966 * 'smee.excitation.stray.G_m.d' * 'smee.excitation.stray.V_m.re' = 'smee.excitation.stray.Phi.re';
     1.5707963267948966 * 'smee.excitation.stray.G_m.q' * 'smee.excitation.stray.V_m.im' = 'smee.excitation.stray.Phi.im';
     'smee.excitation.stray.port_p.Phi.re' + 'smee.excitation.stray.port_n.Phi.re' = 0.0;
@@ -2552,7 +2471,7 @@ package 'SMEE_DOL'
     'rotorDisplacementAngle.rotatorVS2R.y[1]' = 'rotorDisplacementAngle.rotatorVS2R.RotationMatrix[1,1]' * 'rotorDisplacementAngle.rotatorVS2R.u[1]' + 'rotorDisplacementAngle.rotatorVS2R.RotationMatrix[1,2]' * 'rotorDisplacementAngle.rotatorVS2R.u[2]';
     'rotorDisplacementAngle.rotatorVS2R.y[2]' = 'rotorDisplacementAngle.rotatorVS2R.RotationMatrix[2,1]' * 'rotorDisplacementAngle.rotatorVS2R.u[1]' + 'rotorDisplacementAngle.rotatorVS2R.RotationMatrix[2,2]' * 'rotorDisplacementAngle.rotatorVS2R.u[2]';
     'rotorDisplacementAngle.ToPolarVSR.y[1]' = sqrt('rotorDisplacementAngle.ToPolarVSR.u[1]' ^ 2.0 + 'rotorDisplacementAngle.ToPolarVSR.u[2]' ^ 2.0);
-    'rotorDisplacementAngle.ToPolarVSR.y[2]' = if noEvent('rotorDisplacementAngle.ToPolarVSR.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('rotorDisplacementAngle.ToPolarVSR.u[2]', 'rotorDisplacementAngle.ToPolarVSR.u[1]');
+    'rotorDisplacementAngle.ToPolarVSR.y[2]' = if noEvent('rotorDisplacementAngle.ToPolarVSR.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('rotorDisplacementAngle.ToPolarVSR.u[2]', 'rotorDisplacementAngle.ToPolarVSR.u[1]');
     'rotorDisplacementAngle.fixed.flange.phi' = 0.0;
     'rotorDisplacementAngle.wrapAngle.y' = 'Modelica.Math.wrapAngle'('rotorDisplacementAngle.wrapAngle.u', false);
     'rotorDisplacementAngle.lessThreshold.y' = if noEvent('rotorDisplacementAngle.lessThreshold.u[1]' < 0.0) then 0.0 else 'rotorDisplacementAngle.lessThreshold.u[2]';
@@ -2593,24 +2512,24 @@ package 'SMEE_DOL'
     'currentRMSSensor.currentSensor.currentSensor[3].p.v' = 'currentRMSSensor.currentSensor.currentSensor[3].n.v';
     'currentRMSSensor.currentSensor.currentSensor[3].p.i' = 'currentRMSSensor.currentSensor.currentSensor[3].i';
     'currentRMSSensor.currentSensor.currentSensor[3].n.i' = -'currentRMSSensor.currentSensor.currentSensor[3].i';
-    'currentRMSSensor.quasiRMS.y' = sqrt('currentRMSSensor.quasiRMS.u[1]' ^ 2.0 / 3.0 + 'currentRMSSensor.quasiRMS.u[2]' ^ 2.0 / 3.0 + 'currentRMSSensor.quasiRMS.u[3]' ^ 2.0 / 3.0);
+    'currentRMSSensor.quasiRMS.y' = sqrt(sum('currentRMSSensor.quasiRMS.u' .^ 2.0 / size('currentRMSSensor.quasiRMS.u', 1)));
     'currentRMSSensor.v[1]' = 'currentRMSSensor.plug_p.pin[1].v' - 'currentRMSSensor.plug_n.pin[1].v';
     'currentRMSSensor.v[2]' = 'currentRMSSensor.plug_p.pin[2].v' - 'currentRMSSensor.plug_n.pin[2].v';
     'currentRMSSensor.v[3]' = 'currentRMSSensor.plug_p.pin[3].v' - 'currentRMSSensor.plug_n.pin[3].v';
     'currentRMSSensor.i[1]' = 'currentRMSSensor.plug_p.pin[1].i';
     'currentRMSSensor.i[2]' = 'currentRMSSensor.plug_p.pin[2].i';
     'currentRMSSensor.i[3]' = 'currentRMSSensor.plug_p.pin[3].i';
-    'sineVoltage.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(314.1592653589793 * time);
+    'sineVoltage.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(314.1592653589793 * time);
     'sineVoltage.sineVoltage[1].v' = 'sineVoltage.sineVoltage[1].signalSource.y';
     0.0 = 'sineVoltage.sineVoltage[1].p.i' + 'sineVoltage.sineVoltage[1].n.i';
     'sineVoltage.sineVoltage[1].i' = 'sineVoltage.sineVoltage[1].p.i';
     'sineVoltage.sineVoltage[1].v' = 'sineVoltage.sineVoltage[1].p.v' - 'sineVoltage.sineVoltage[1].n.v';
-    'sineVoltage.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(314.1592653589793 * time - 2.0943951023931953);
+    'sineVoltage.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(314.1592653589793 * time - 2.0943951023931953);
     'sineVoltage.sineVoltage[2].v' = 'sineVoltage.sineVoltage[2].signalSource.y';
     0.0 = 'sineVoltage.sineVoltage[2].p.i' + 'sineVoltage.sineVoltage[2].n.i';
     'sineVoltage.sineVoltage[2].i' = 'sineVoltage.sineVoltage[2].p.i';
     'sineVoltage.sineVoltage[2].v' = 'sineVoltage.sineVoltage[2].p.v' - 'sineVoltage.sineVoltage[2].n.v';
-    'sineVoltage.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(314.1592653589793 * time - 4.1887902047863905);
+    'sineVoltage.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(314.1592653589793 * time - 4.1887902047863905);
     'sineVoltage.sineVoltage[3].v' = 'sineVoltage.sineVoltage[3].signalSource.y';
     0.0 = 'sineVoltage.sineVoltage[3].p.i' + 'sineVoltage.sineVoltage[3].n.i';
     'sineVoltage.sineVoltage[3].i' = 'sineVoltage.sineVoltage[3].p.i';

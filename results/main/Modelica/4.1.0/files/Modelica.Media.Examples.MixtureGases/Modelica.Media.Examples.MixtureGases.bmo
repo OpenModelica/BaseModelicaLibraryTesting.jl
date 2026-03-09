@@ -1,295 +1,17 @@
 //! base 0.1.0
 package 'MixtureGases'
-  function 'Modelica.Media.Common.smoothStep' "Approximation of a general step, such that the characteristic is continuous and differentiable"
-    input Real 'x';
-    input Real 'y1';
-    input Real 'y2';
-    input Real 'x_small'(min = 0.0) = 1e-5;
-    output Real 'y';
-  algorithm
-    'y' := smooth(1, if 'x' > 'x_small' then 'y1' else if 'x' < (-'x_small') then 'y2' else if abs('x_small') > 0.0 then 'x' / 'x_small' * (('x' / 'x_small') ^ 2.0 - 3.0) * ('y2' - 'y1') / 4.0 + ('y1' + 'y2') / 2.0 else ('y1' + 'y2') / 2.0);
-    annotation(Inline = true, smoothOrder = 1);
-  end 'Modelica.Media.Common.smoothStep';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium1.dynamicViscosity' "Return mixture dynamic viscosity"
-    input 'Medium1.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real[2] 'etaX'(nominal = {0.001, 0.001}, start = {0.001, 0.001}, max = {1e8, 1e8}, min = {0.0, 0.0}, unit = {"Pa.s", "Pa.s"}, quantity = {"DynamicViscosity", "DynamicViscosity"});
-  algorithm
-    for 'i' in 1:2 loop
-      'etaX'['i'] := 'Modelica.Media.IdealGases.Common.Functions.dynamicViscosityLowPressure'('state'.'T', ({126.2, 154.58})['i'], ({0.0280134, 0.0319988})['i'], ({9.01e-5, 7.337e-5})['i'], ({0.037, 0.022})['i'], 0.0, 0.0);
-    end for;
-
-    'eta' := 'Modelica.Media.Examples.MixtureGases.Medium1.gasMixtureViscosity'('Modelica.Media.Examples.MixtureGases.Medium1.massToMoleFractions'('state'.'X', {0.0280134, 0.0319988}), {0.0280134, 0.0319988}, 'etaX');
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium1.dynamicViscosity';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium1.gasMixtureViscosity' "Return viscosities of gas mixtures at low pressures (Wilke method)"
-    input Real[:] 'yi'(nominal = fill(0.1, size('yi', 1)), max = fill(1.0, size('yi', 1)), min = fill(0.0, size('yi', 1)), unit = fill("mol/mol", size('yi', 1)), quantity = fill("MoleFraction", size('yi', 1)));
-    input Real[size('yi', 1)] 'M'(nominal = fill(0.032, size('yi', 1)), max = fill(0.25, size('yi', 1)), min = fill(0.001, size('yi', 1)), unit = fill("kg/mol", size('yi', 1)), quantity = fill("MolarMass", size('yi', 1)));
-    input Real[size('yi', 1)] 'eta'(nominal = fill(0.001, size('yi', 1)), start = fill(0.001, size('yi', 1)), max = fill(1e8, size('yi', 1)), min = fill(0.0, size('yi', 1)), unit = fill("Pa.s", size('yi', 1)), quantity = fill("DynamicViscosity", size('yi', 1)));
-    output Real 'etam'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real[size('yi', 1), size('yi', 1)] 'fi';
-  algorithm
-    for 'i' in 1:size('eta', 1) loop
-      assert(true, "Dipole moment for " + ({"N2", "O2"})['i'] + " not known. Can not compute viscosity.", AssertionLevel.error);
-      assert(true, "Critical data for " + ({"N2", "O2"})['i'] + " not known. Can not compute viscosity.", AssertionLevel.error);
-
-      for 'j' in 1:size('eta', 1) loop
-        if 'i' == 1 then
-          'fi'['i','j'] := (1.0 + ('eta'['i'] / 'eta'['j']) ^ 0.5 * ('M'['j'] / 'M'['i']) ^ 0.25) ^ 2.0 / (8.0 * (1.0 + 'M'['i'] / 'M'['j'])) ^ 0.5;
-        elseif 'j' < 'i' then
-          'fi'['i','j'] := 'eta'['i'] / 'eta'['j'] * 'M'['j'] / 'M'['i'] * 'fi'['j','i'];
-        elseif true then
-          'fi'['i','j'] := (1.0 + ('eta'['i'] / 'eta'['j']) ^ 0.5 * ('M'['j'] / 'M'['i']) ^ 0.25) ^ 2.0 / (8.0 * (1.0 + 'M'['i'] / 'M'['j'])) ^ 0.5;
-        end if;
-      end for;
-    end for;
-
-    'etam' := sum('yi'['i'] * 'eta'['i'] / sum('yi'['j'] * 'fi'['i','j'] for 'j' in 1:size('eta', 1)) for 'i' in 1:size('eta', 1));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium1.gasMixtureViscosity';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium1.h_TX' "Return specific enthalpy"
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[2] 'X'(nominal = {0.1, 0.1}, max = {1.0, 1.0}, min = {0.0, 0.0}, unit = {"kg/kg", "kg/kg"}, quantity = {"MassFraction", "MassFraction"}) = {0.768, 0.232};
-    input Boolean 'exclEnthForm' = true;
-    input 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' 'refChoice' = 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K';
-    input Real 'h_off'(unit = "J/kg", quantity = "SpecificEnergy") = 0.0;
-    output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 'X' * {'Modelica.Media.IdealGases.Common.Functions.h_T'(({'Modelica.Media.IdealGases.Common.DataRecord'("N2", 0.0280134, 0.0, 309498.4543111511, 1000.0, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {710.846086, -10.76003744}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {12832.10415, -15.86640027}, 296.80474344420884), 'Modelica.Media.IdealGases.Common.DataRecord'("O2", 0.0319988, 0.0, 271263.4223783392, 1000.0, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}, {-3391.45487, 18.4969947}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}, {-16890.10929, 17.38716506}, 259.8381814318037)})['i'], 'T', 'exclEnthForm', 'refChoice', 'h_off') for 'i' in 1:2};
-    annotation(Inline = false, smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium1.h_TX';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium1.lowPressureThermalConductivity' "Return thermal conductivities of low-pressure gas mixtures (Mason and Saxena Modification)"
-    input Real[:] 'y'(nominal = fill(0.1, size('y', 1)), max = fill(1.0, size('y', 1)), min = fill(0.0, size('y', 1)), unit = fill("mol/mol", size('y', 1)), quantity = fill("MoleFraction", size('y', 1)));
-    input Real 'T'(nominal = 500.0, start = 500.0, max = 6000.0, min = 200.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[size('y', 1)] 'Tc'(nominal = fill(500.0, size('y', 1)), start = fill(500.0, size('y', 1)), max = fill(6000.0, size('y', 1)), min = fill(200.0, size('y', 1)), displayUnit = fill("degC", size('y', 1)), unit = fill("K", size('y', 1)), quantity = fill("ThermodynamicTemperature", size('y', 1)));
-    input Real[size('y', 1)] 'Pc'(nominal = fill(1e6, size('y', 1)), start = fill(1e6, size('y', 1)), max = fill(1e8, size('y', 1)), min = fill(0.0, size('y', 1)), displayUnit = fill("bar", size('y', 1)), unit = fill("Pa", size('y', 1)), quantity = fill("Pressure", size('y', 1)));
-    input Real[size('y', 1)] 'M'(nominal = fill(0.032, size('y', 1)), max = fill(0.25, size('y', 1)), min = fill(0.001, size('y', 1)), unit = fill("kg/mol", size('y', 1)), quantity = fill("MolarMass", size('y', 1)));
-    input Real[size('y', 1)] 'lambda'(nominal = fill(1.0, size('y', 1)), start = fill(1.0, size('y', 1)), max = fill(500.0, size('y', 1)), min = fill(0.0, size('y', 1)), unit = fill("W/(m.K)", size('y', 1)), quantity = fill("ThermalConductivity", size('y', 1)));
-    output Real 'lambdam'(nominal = 1.0, start = 1.0, max = 500.0, min = 0.0, unit = "W/(m.K)", quantity = "ThermalConductivity");
-    Real[size('y', 1)] 'gamma'(nominal = fill(0.032, size('y', 1)), max = fill(0.25, size('y', 1)), min = fill(0.001, size('y', 1)), unit = fill("kg/mol", size('y', 1)), quantity = fill("MolarMass", size('y', 1)));
-    Real[size('y', 1)] 'Tr';
-    Real[size('y', 1), size('y', 1)] 'A';
-    constant Real 'epsilon' = 1.0;
-  algorithm
-    for 'i' in 1:size('y', 1) loop
-      'gamma'['i'] := 210.0 * ('Tc'['i'] * 'M'['i'] ^ 3.0 / 'Pc'['i'] ^ 4.0) ^ 0.16666666666666666;
-      'Tr'['i'] := 'T' / 'Tc'['i'];
-    end for;
-
-    for 'i' in 1:size('y', 1) loop
-      for 'j' in 1:size('y', 1) loop
-        'A'['i','j'] := 'epsilon' * (1.0 + ('gamma'['j'] * (exp(0.0464 * 'Tr'['i']) - exp(-0.2412 * 'Tr'['i'])) / ('gamma'['i'] * (exp(0.0464 * 'Tr'['j']) - exp(-0.2412 * 'Tr'['j'])))) ^ 0.5 * ('M'['i'] / 'M'['j']) ^ 0.25) ^ 2.0 / (8.0 * (1.0 + 'M'['i'] / 'M'['j'])) ^ 0.5;
-      end for;
-    end for;
-
-    'lambdam' := sum('y'['i'] * 'lambda'['i'] / sum('y'['j'] * 'A'['i','j'] for 'j' in 1:size('y', 1)) for 'i' in 1:size('y', 1));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium1.lowPressureThermalConductivity';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium1.massToMoleFractions' "Return mole fractions from mass fractions X"
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    input Real[:] 'MMX'(min = fill(0.0, size('MMX', 1)), unit = fill("kg/mol", size('MMX', 1)), quantity = fill("MolarMass", size('MMX', 1)));
-    output Real[size('X', 1)] 'moleFractions'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MoleFraction", size('X', 1)));
-    Real[size('X', 1)] 'invMMX';
-    Real 'Mmix'(min = 0.0, unit = "kg/mol", quantity = "MolarMass");
-  algorithm
-    for 'i' in 1:size('X', 1) loop
-      'invMMX'['i'] := 1.0 / 'MMX'['i'];
-    end for;
-
-    'Mmix' := 1.0 / ('X' * 'invMMX');
-
-    for 'i' in 1:size('X', 1) loop
-      'moleFractions'['i'] := 'Mmix' * 'X'['i'] / 'MMX'['i'];
-    end for;
-    annotation(smoothOrder = 5);
-  end 'Modelica.Media.Examples.MixtureGases.Medium1.massToMoleFractions';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium1.thermalConductivity' "Return thermal conductivity for low pressure gas mixtures"
-    input 'Medium1.ThermodynamicState' 'state';
-    input Integer 'method' = 1;
-    output Real 'lambda'(nominal = 1.0, start = 1.0, max = 500.0, min = 0.0, unit = "W/(m.K)", quantity = "ThermalConductivity");
-    Real[2] 'lambdaX'(nominal = {1.0, 1.0}, start = {1.0, 1.0}, max = {500.0, 500.0}, min = {0.0, 0.0}, unit = {"W/(m.K)", "W/(m.K)"}, quantity = {"ThermalConductivity", "ThermalConductivity"});
-    Real[2] 'eta'(nominal = {0.001, 0.001}, start = {0.001, 0.001}, max = {1e8, 1e8}, min = {0.0, 0.0}, unit = {"Pa.s", "Pa.s"}, quantity = {"DynamicViscosity", "DynamicViscosity"});
-    Real[2] 'cp'(nominal = {1000.0, 1000.0}, start = {1000.0, 1000.0}, max = {1e7, 1e7}, min = {0.0, 0.0}, unit = {"J/(kg.K)", "J/(kg.K)"}, quantity = {"SpecificHeatCapacity", "SpecificHeatCapacity"});
-  algorithm
-    for 'i' in 1:2 loop
-      assert(true, "Critical data for " + ({"N2", "O2"})['i'] + " not known. Can not compute thermal conductivity.", AssertionLevel.error);
-      'eta'['i'] := 'Modelica.Media.IdealGases.Common.Functions.dynamicViscosityLowPressure'('state'.'T', ({126.2, 154.58})['i'], ({0.0280134, 0.0319988})['i'], ({9.01e-5, 7.337e-5})['i'], ({0.037, 0.022})['i'], 0.0, 0.0);
-      'cp'['i'] := smooth(0, if 'state'.'T' < 1000.0 then ({296.80474344420884, 259.8381814318037})['i'] * (1.0 / ('state'.'T' * 'state'.'T') * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',1] + 'state'.'T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',2] + 'state'.'T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',3] + 'state'.'T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',4] + 'state'.'T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',5] + 'state'.'T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',6] + ({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',7] * 'state'.'T'))))))) else ({296.80474344420884, 259.8381814318037})['i'] * (1.0 / ('state'.'T' * 'state'.'T') * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',1] + 'state'.'T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',2] + 'state'.'T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',3] + 'state'.'T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',4] + 'state'.'T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',5] + 'state'.'T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',6] + ({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',7] * 'state'.'T'))))))));
-      'lambdaX'['i'] := 'Modelica.Media.IdealGases.Common.Functions.thermalConductivityEstimate'('cp'['i'], 'eta'['i'], 'method', ({'Modelica.Media.IdealGases.Common.DataRecord'("N2", 0.0280134, 0.0, 309498.4543111511, 1000.0, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {710.846086, -10.76003744}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {12832.10415, -15.86640027}, 296.80474344420884), 'Modelica.Media.IdealGases.Common.DataRecord'("O2", 0.0319988, 0.0, 271263.4223783392, 1000.0, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}, {-3391.45487, 18.4969947}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}, {-16890.10929, 17.38716506}, 259.8381814318037)})['i']);
-    end for;
-
-    'lambda' := 'Modelica.Media.Examples.MixtureGases.Medium1.lowPressureThermalConductivity'('Modelica.Media.Examples.MixtureGases.Medium1.massToMoleFractions'('state'.'X', {0.0280134, 0.0319988}), 'state'.'T', {126.2, 154.58}, {3.398e6, 5.043e6}, {0.0280134, 0.0319988}, 'lambdaX');
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium1.thermalConductivity';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium2.dynamicViscosity' "Return mixture dynamic viscosity"
-    input 'Medium2.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real[6] 'etaX'(nominal = {0.001, 0.001, 0.001, 0.001, 0.001, 0.001}, start = {0.001, 0.001, 0.001, 0.001, 0.001, 0.001}, max = {1e8, 1e8, 1e8, 1e8, 1e8, 1e8}, min = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, unit = {"Pa.s", "Pa.s", "Pa.s", "Pa.s", "Pa.s", "Pa.s"}, quantity = {"DynamicViscosity", "DynamicViscosity", "DynamicViscosity", "DynamicViscosity", "DynamicViscosity", "DynamicViscosity"});
-  algorithm
-    for 'i' in 1:6 loop
-      'etaX'['i'] := 'Modelica.Media.IdealGases.Common.Functions.dynamicViscosityLowPressure'('state'.'T', ({190.56, 305.32, 369.83, 425.12, 126.2, 304.12})['i'], ({0.01604246, 0.03006904, 0.04409562, 0.0581222, 0.0280134, 0.0440095})['i'], ({9.86e-5, 1.455e-4, 2e-4, 2.55e-4, 9.01e-5, 9.407e-5})['i'], ({0.011, 0.099, 0.152, 0.2, 0.037, 0.225})['i'], 0.0, 0.0);
-    end for;
-
-    'eta' := 'Modelica.Media.Examples.MixtureGases.Medium2.gasMixtureViscosity'('Modelica.Media.Examples.MixtureGases.Medium2.massToMoleFractions'('state'.'X', {0.01604246, 0.03006904, 0.04409562, 0.0581222, 0.0280134, 0.0440095}), {0.01604246, 0.03006904, 0.04409562, 0.0581222, 0.0280134, 0.0440095}, 'etaX');
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium2.dynamicViscosity';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium2.gasMixtureViscosity' "Return viscosities of gas mixtures at low pressures (Wilke method)"
-    input Real[:] 'yi'(nominal = fill(0.1, size('yi', 1)), max = fill(1.0, size('yi', 1)), min = fill(0.0, size('yi', 1)), unit = fill("mol/mol", size('yi', 1)), quantity = fill("MoleFraction", size('yi', 1)));
-    input Real[size('yi', 1)] 'M'(nominal = fill(0.032, size('yi', 1)), max = fill(0.25, size('yi', 1)), min = fill(0.001, size('yi', 1)), unit = fill("kg/mol", size('yi', 1)), quantity = fill("MolarMass", size('yi', 1)));
-    input Real[size('yi', 1)] 'eta'(nominal = fill(0.001, size('yi', 1)), start = fill(0.001, size('yi', 1)), max = fill(1e8, size('yi', 1)), min = fill(0.0, size('yi', 1)), unit = fill("Pa.s", size('yi', 1)), quantity = fill("DynamicViscosity", size('yi', 1)));
-    output Real 'etam'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real[size('yi', 1), size('yi', 1)] 'fi';
-  algorithm
-    for 'i' in 1:size('eta', 1) loop
-      assert(true, "Dipole moment for " + ({"CH4", "C2H6", "C3H8", "C4H10", "N2", "CO2"})['i'] + " not known. Can not compute viscosity.", AssertionLevel.error);
-      assert(true, "Critical data for " + ({"CH4", "C2H6", "C3H8", "C4H10", "N2", "CO2"})['i'] + " not known. Can not compute viscosity.", AssertionLevel.error);
-
-      for 'j' in 1:size('eta', 1) loop
-        if 'i' == 1 then
-          'fi'['i','j'] := (1.0 + ('eta'['i'] / 'eta'['j']) ^ 0.5 * ('M'['j'] / 'M'['i']) ^ 0.25) ^ 2.0 / (8.0 * (1.0 + 'M'['i'] / 'M'['j'])) ^ 0.5;
-        elseif 'j' < 'i' then
-          'fi'['i','j'] := 'eta'['i'] / 'eta'['j'] * 'M'['j'] / 'M'['i'] * 'fi'['j','i'];
-        elseif true then
-          'fi'['i','j'] := (1.0 + ('eta'['i'] / 'eta'['j']) ^ 0.5 * ('M'['j'] / 'M'['i']) ^ 0.25) ^ 2.0 / (8.0 * (1.0 + 'M'['i'] / 'M'['j'])) ^ 0.5;
-        end if;
-      end for;
-    end for;
-
-    'etam' := sum('yi'['i'] * 'eta'['i'] / sum('yi'['j'] * 'fi'['i','j'] for 'j' in 1:size('eta', 1)) for 'i' in 1:size('eta', 1));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium2.gasMixtureViscosity';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium2.h_TX' "Return specific enthalpy"
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[6] 'X'(nominal = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1}, max = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}, min = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, unit = {"kg/kg", "kg/kg", "kg/kg", "kg/kg", "kg/kg", "kg/kg"}, quantity = {"MassFraction", "MassFraction", "MassFraction", "MassFraction", "MassFraction", "MassFraction"}) = {0.92, 0.048, 0.005, 0.002, 0.015, 0.01};
-    input Boolean 'exclEnthForm' = true;
-    input 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' 'refChoice' = 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K';
-    input Real 'h_off'(unit = "J/kg", quantity = "SpecificEnergy") = 0.0;
-    output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 'X' * {'Modelica.Media.IdealGases.Common.Functions.h_T'(({'Modelica.Media.IdealGases.Common.DataRecord'("CH4", 0.01604246, -4.65015963885838e6, 624355.7409524474, 1000.0, {-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-23313.1436, 89.0432275}, {3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {75320.6691, -121.9124889}, 518.2814855078335), 'Modelica.Media.IdealGases.Common.DataRecord'("C2H6", 0.03006904, -2.788633890539904e6, 395476.3437741943, 1000.0, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-27029.3289, 129.8140496}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {111596.395, -203.9410584}, 276.51398248830026), 'Modelica.Media.IdealGases.Common.DataRecord'("C3H8", 0.04409562, -2.373931923397381e6, 334301.1845620949, 1000.0, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-35403.3527, 184.1749277}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {145558.2459, -281.8374734}, 188.55636909062622), 'Modelica.Media.IdealGases.Common.DataRecord'("C4H10_n_butane", 0.0581222, -2.16423328779709e6, 330832.0228759407, 1000.0, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {-45403.63390000001, 237.9488665}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {177452.656, -358.791876}, 143.05222445124238), 'Modelica.Media.IdealGases.Common.DataRecord'("N2", 0.0280134, 0.0, 309498.4543111511, 1000.0, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {710.846086, -10.76003744}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {12832.10415, -15.86640027}, 296.80474344420884), 'Modelica.Media.IdealGases.Common.DataRecord'("CO2", 0.0440095, -8.941478544405185e6, 212805.6215135368, 1000.0, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}, {-45281.9846, -7.04827944}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}, {-39083.5059, -26.52669281}, 188.92534566400437)})['i'], 'T', 'exclEnthForm', 'refChoice', 'h_off') for 'i' in 1:6};
-    annotation(Inline = false, smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium2.h_TX';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium2.lowPressureThermalConductivity' "Return thermal conductivities of low-pressure gas mixtures (Mason and Saxena Modification)"
-    input Real[:] 'y'(nominal = fill(0.1, size('y', 1)), max = fill(1.0, size('y', 1)), min = fill(0.0, size('y', 1)), unit = fill("mol/mol", size('y', 1)), quantity = fill("MoleFraction", size('y', 1)));
-    input Real 'T'(nominal = 500.0, start = 500.0, max = 6000.0, min = 200.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[size('y', 1)] 'Tc'(nominal = fill(500.0, size('y', 1)), start = fill(500.0, size('y', 1)), max = fill(6000.0, size('y', 1)), min = fill(200.0, size('y', 1)), displayUnit = fill("degC", size('y', 1)), unit = fill("K", size('y', 1)), quantity = fill("ThermodynamicTemperature", size('y', 1)));
-    input Real[size('y', 1)] 'Pc'(nominal = fill(1e6, size('y', 1)), start = fill(1e6, size('y', 1)), max = fill(1e8, size('y', 1)), min = fill(0.0, size('y', 1)), displayUnit = fill("bar", size('y', 1)), unit = fill("Pa", size('y', 1)), quantity = fill("Pressure", size('y', 1)));
-    input Real[size('y', 1)] 'M'(nominal = fill(0.032, size('y', 1)), max = fill(0.25, size('y', 1)), min = fill(0.001, size('y', 1)), unit = fill("kg/mol", size('y', 1)), quantity = fill("MolarMass", size('y', 1)));
-    input Real[size('y', 1)] 'lambda'(nominal = fill(1.0, size('y', 1)), start = fill(1.0, size('y', 1)), max = fill(500.0, size('y', 1)), min = fill(0.0, size('y', 1)), unit = fill("W/(m.K)", size('y', 1)), quantity = fill("ThermalConductivity", size('y', 1)));
-    output Real 'lambdam'(nominal = 1.0, start = 1.0, max = 500.0, min = 0.0, unit = "W/(m.K)", quantity = "ThermalConductivity");
-    Real[size('y', 1)] 'gamma'(nominal = fill(0.032, size('y', 1)), max = fill(0.25, size('y', 1)), min = fill(0.001, size('y', 1)), unit = fill("kg/mol", size('y', 1)), quantity = fill("MolarMass", size('y', 1)));
-    Real[size('y', 1)] 'Tr';
-    Real[size('y', 1), size('y', 1)] 'A';
-    constant Real 'epsilon' = 1.0;
-  algorithm
-    for 'i' in 1:size('y', 1) loop
-      'gamma'['i'] := 210.0 * ('Tc'['i'] * 'M'['i'] ^ 3.0 / 'Pc'['i'] ^ 4.0) ^ 0.16666666666666666;
-      'Tr'['i'] := 'T' / 'Tc'['i'];
-    end for;
-
-    for 'i' in 1:size('y', 1) loop
-      for 'j' in 1:size('y', 1) loop
-        'A'['i','j'] := 'epsilon' * (1.0 + ('gamma'['j'] * (exp(0.0464 * 'Tr'['i']) - exp(-0.2412 * 'Tr'['i'])) / ('gamma'['i'] * (exp(0.0464 * 'Tr'['j']) - exp(-0.2412 * 'Tr'['j'])))) ^ 0.5 * ('M'['i'] / 'M'['j']) ^ 0.25) ^ 2.0 / (8.0 * (1.0 + 'M'['i'] / 'M'['j'])) ^ 0.5;
-      end for;
-    end for;
-
-    'lambdam' := sum('y'['i'] * 'lambda'['i'] / sum('y'['j'] * 'A'['i','j'] for 'j' in 1:size('y', 1)) for 'i' in 1:size('y', 1));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium2.lowPressureThermalConductivity';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium2.massToMoleFractions' "Return mole fractions from mass fractions X"
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    input Real[:] 'MMX'(min = fill(0.0, size('MMX', 1)), unit = fill("kg/mol", size('MMX', 1)), quantity = fill("MolarMass", size('MMX', 1)));
-    output Real[size('X', 1)] 'moleFractions'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MoleFraction", size('X', 1)));
-    Real[size('X', 1)] 'invMMX';
-    Real 'Mmix'(min = 0.0, unit = "kg/mol", quantity = "MolarMass");
-  algorithm
-    for 'i' in 1:size('X', 1) loop
-      'invMMX'['i'] := 1.0 / 'MMX'['i'];
-    end for;
-
-    'Mmix' := 1.0 / ('X' * 'invMMX');
-
-    for 'i' in 1:size('X', 1) loop
-      'moleFractions'['i'] := 'Mmix' * 'X'['i'] / 'MMX'['i'];
-    end for;
-    annotation(smoothOrder = 5);
-  end 'Modelica.Media.Examples.MixtureGases.Medium2.massToMoleFractions';
-
-  function 'Modelica.Media.Examples.MixtureGases.Medium2.thermalConductivity' "Return thermal conductivity for low pressure gas mixtures"
-    input 'Medium2.ThermodynamicState' 'state';
-    input Integer 'method' = 1;
-    output Real 'lambda'(nominal = 1.0, start = 1.0, max = 500.0, min = 0.0, unit = "W/(m.K)", quantity = "ThermalConductivity");
-    Real[6] 'lambdaX'(nominal = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}, start = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}, max = {500.0, 500.0, 500.0, 500.0, 500.0, 500.0}, min = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, unit = {"W/(m.K)", "W/(m.K)", "W/(m.K)", "W/(m.K)", "W/(m.K)", "W/(m.K)"}, quantity = {"ThermalConductivity", "ThermalConductivity", "ThermalConductivity", "ThermalConductivity", "ThermalConductivity", "ThermalConductivity"});
-    Real[6] 'eta'(nominal = {0.001, 0.001, 0.001, 0.001, 0.001, 0.001}, start = {0.001, 0.001, 0.001, 0.001, 0.001, 0.001}, max = {1e8, 1e8, 1e8, 1e8, 1e8, 1e8}, min = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, unit = {"Pa.s", "Pa.s", "Pa.s", "Pa.s", "Pa.s", "Pa.s"}, quantity = {"DynamicViscosity", "DynamicViscosity", "DynamicViscosity", "DynamicViscosity", "DynamicViscosity", "DynamicViscosity"});
-    Real[6] 'cp'(nominal = {1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0}, start = {1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0}, max = {1e7, 1e7, 1e7, 1e7, 1e7, 1e7}, min = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, unit = {"J/(kg.K)", "J/(kg.K)", "J/(kg.K)", "J/(kg.K)", "J/(kg.K)", "J/(kg.K)"}, quantity = {"SpecificHeatCapacity", "SpecificHeatCapacity", "SpecificHeatCapacity", "SpecificHeatCapacity", "SpecificHeatCapacity", "SpecificHeatCapacity"});
-  algorithm
-    for 'i' in 1:6 loop
-      assert(true, "Critical data for " + ({"CH4", "C2H6", "C3H8", "C4H10", "N2", "CO2"})['i'] + " not known. Can not compute thermal conductivity.", AssertionLevel.error);
-      'eta'['i'] := 'Modelica.Media.IdealGases.Common.Functions.dynamicViscosityLowPressure'('state'.'T', ({190.56, 305.32, 369.83, 425.12, 126.2, 304.12})['i'], ({0.01604246, 0.03006904, 0.04409562, 0.0581222, 0.0280134, 0.0440095})['i'], ({9.86e-5, 1.455e-4, 2e-4, 2.55e-4, 9.01e-5, 9.407e-5})['i'], ({0.011, 0.099, 0.152, 0.2, 0.037, 0.225})['i'], 0.0, 0.0);
-      'cp'['i'] := smooth(0, if 'state'.'T' < 1000.0 then ({518.2814855078335, 276.51398248830026, 188.55636909062622, 143.05222445124238, 296.80474344420884, 188.92534566400437})['i'] * (1.0 / ('state'.'T' * 'state'.'T') * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',1] + 'state'.'T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',2] + 'state'.'T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',3] + 'state'.'T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',4] + 'state'.'T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',5] + 'state'.'T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',6] + ({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',7] * 'state'.'T'))))))) else ({518.2814855078335, 276.51398248830026, 188.55636909062622, 143.05222445124238, 296.80474344420884, 188.92534566400437})['i'] * (1.0 / ('state'.'T' * 'state'.'T') * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',1] + 'state'.'T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',2] + 'state'.'T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',3] + 'state'.'T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',4] + 'state'.'T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',5] + 'state'.'T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',6] + ({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',7] * 'state'.'T'))))))));
-      'lambdaX'['i'] := 'Modelica.Media.IdealGases.Common.Functions.thermalConductivityEstimate'('cp'['i'], 'eta'['i'], 'method', ({'Modelica.Media.IdealGases.Common.DataRecord'("CH4", 0.01604246, -4.65015963885838e6, 624355.7409524474, 1000.0, {-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-23313.1436, 89.0432275}, {3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {75320.6691, -121.9124889}, 518.2814855078335), 'Modelica.Media.IdealGases.Common.DataRecord'("C2H6", 0.03006904, -2.788633890539904e6, 395476.3437741943, 1000.0, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-27029.3289, 129.8140496}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {111596.395, -203.9410584}, 276.51398248830026), 'Modelica.Media.IdealGases.Common.DataRecord'("C3H8", 0.04409562, -2.373931923397381e6, 334301.1845620949, 1000.0, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-35403.3527, 184.1749277}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {145558.2459, -281.8374734}, 188.55636909062622), 'Modelica.Media.IdealGases.Common.DataRecord'("C4H10_n_butane", 0.0581222, -2.16423328779709e6, 330832.0228759407, 1000.0, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {-45403.63390000001, 237.9488665}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {177452.656, -358.791876}, 143.05222445124238), 'Modelica.Media.IdealGases.Common.DataRecord'("N2", 0.0280134, 0.0, 309498.4543111511, 1000.0, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {710.846086, -10.76003744}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {12832.10415, -15.86640027}, 296.80474344420884), 'Modelica.Media.IdealGases.Common.DataRecord'("CO2", 0.0440095, -8.941478544405185e6, 212805.6215135368, 1000.0, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}, {-45281.9846, -7.04827944}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}, {-39083.5059, -26.52669281}, 188.92534566400437)})['i']);
-    end for;
-
-    'lambda' := 'Modelica.Media.Examples.MixtureGases.Medium2.lowPressureThermalConductivity'('Modelica.Media.Examples.MixtureGases.Medium2.massToMoleFractions'('state'.'X', {0.01604246, 0.03006904, 0.04409562, 0.0581222, 0.0280134, 0.0440095}), 'state'.'T', {190.56, 305.32, 369.83, 425.12, 126.2, 304.12}, {4.599e6, 4.872e6, 4.248e6, 3.796e6, 3.398e6, 7.374e6}, {0.01604246, 0.03006904, 0.04409562, 0.0581222, 0.0280134, 0.0440095}, 'lambdaX');
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium2.thermalConductivity';
-
-  function 'Modelica.Media.IdealGases.Common.Functions.dynamicViscosityLowPressure' "Dynamic viscosity of low pressure gases"
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'Tc'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'M'(min = 0.0, unit = "kg/mol", quantity = "MolarMass");
-    input Real 'Vc'(min = 0.0, unit = "m3/mol", quantity = "MolarVolume");
-    input Real 'w';
-    input Real 'mu'(max = 2.0, min = 0.0, unit = "debye", quantity = "ElectricDipoleMoment");
-    input Real 'k' = 0.0;
-    output Real 'eta'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    parameter Real 'Const1_SI' = 1.2897349436996735e-8;
-    parameter Real 'Const2_SI' = 0.1313;
-    Real 'Tstar';
-    Real 'Ov';
-    Real 'mur' = 'Const2_SI' * 'mu' / sqrt('Vc' * 'Tc');
-    Real 'Fc' = 1.0 - 0.2756 * 'w' + 0.059035 * 'mur' ^ 4.0 + 'k';
-  algorithm
-    'Tstar' := 1.2593 * 'T' / 'Tc';
-    'Ov' := 1.16145 * 'Tstar' ^ (-0.14874) + 0.52487 * exp(-0.7732 * 'Tstar') + 2.16178 * exp(-2.43787 * 'Tstar');
-    'eta' := 'Const1_SI' * 'Fc' * sqrt('M' * 'T') / ('Vc' ^ 0.6666666666666666 * 'Ov');
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.IdealGases.Common.Functions.dynamicViscosityLowPressure';
-
-  function 'Modelica.Media.IdealGases.Common.Functions.h_T' "Compute specific enthalpy from temperature and gas data; reference is decided by the
-    refChoice input, or by the referenceChoice package constant by default"
-    input 'Modelica.Media.IdealGases.Common.DataRecord' 'data';
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Boolean 'exclEnthForm' = true;
-    input 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' 'refChoice' = 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K';
-    input Real 'h_off'(unit = "J/kg", quantity = "SpecificEnergy") = 0.0;
-    output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := smooth(0, (if 'T' < 'data'.'Tlimit' then 'data'.'R_s' * (('T' * ('data'.'blow'[1] + 'data'.'alow'[2] * log('T') + 'T' * ('data'.'alow'[3] + 'T' * (0.5 * 'data'.'alow'[4] + 'T' * (0.3333333333333333 * 'data'.'alow'[5] + 'T' * (0.25 * 'data'.'alow'[6] + 0.2 * 'data'.'alow'[7] * 'T'))))) - 'data'.'alow'[1]) / 'T') else 'data'.'R_s' * (('T' * ('data'.'bhigh'[1] + 'data'.'ahigh'[2] * log('T') + 'T' * ('data'.'ahigh'[3] + 'T' * (0.5 * 'data'.'ahigh'[4] + 'T' * (0.3333333333333333 * 'data'.'ahigh'[5] + 'T' * (0.25 * 'data'.'ahigh'[6] + 0.2 * 'data'.'ahigh'[7] * 'T'))))) - 'data'.'ahigh'[1]) / 'T')) + (if 'exclEnthForm' then -'data'.'Hf' else 0.0) + (if 'refChoice' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K' then 'data'.'H0' else 0.0) + (if 'refChoice' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined' then 'h_off' else 0.0));
-    annotation(Inline = false, smoothOrder = 2);
-  end 'Modelica.Media.IdealGases.Common.Functions.h_T';
-
-  function 'Modelica.Media.IdealGases.Common.Functions.thermalConductivityEstimate' "Thermal conductivity of polyatomic gases (Eucken and Modified Eucken correlation)"
-    input Real 'Cp'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
-    input Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Integer 'method'(max = 2, min = 1) = 1;
-    input 'Modelica.Media.IdealGases.Common.DataRecord' 'data';
-    output Real 'lambda'(nominal = 1.0, start = 1.0, max = 500.0, min = 0.0, unit = "W/(m.K)", quantity = "ThermalConductivity");
-  algorithm
-    'lambda' := if 'method' == 1 then 'eta' * ('Cp' - 'data'.'R_s' + 2.25 * 'data'.'R_s') else 'eta' * ('Cp' - 'data'.'R_s') * (1.32 + 1.77 / ('Cp' / 'data'.'R_s' - 1.0));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.IdealGases.Common.Functions.thermalConductivityEstimate';
+  record 'Modelica.Media.IdealGases.Common.DataRecord'
+    String 'name';
+    Real 'MM'(min = 0.0, unit = "kg/mol", quantity = "MolarMass");
+    Real 'Hf'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'H0'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'Tlimit'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real[7] 'alow';
+    Real[2] 'blow';
+    Real[7] 'ahigh';
+    Real[2] 'bhigh';
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+  end 'Modelica.Media.IdealGases.Common.DataRecord';
 
   record 'Medium1.ThermodynamicState'
     Real 'p'(nominal = 1e6, start = 1e6, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -304,19 +26,6 @@ package 'MixtureGases'
   end 'Medium2.ThermodynamicState';
 
   type 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' = enumeration('ZeroAt0K', 'ZeroAt25C', 'UserDefined');
-
-  record 'Modelica.Media.IdealGases.Common.DataRecord'
-    String 'name';
-    Real 'MM'(min = 0.0, unit = "kg/mol", quantity = "MolarMass");
-    Real 'Hf'(unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'H0'(unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'Tlimit'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[7] 'alow';
-    Real[2] 'blow';
-    Real[7] 'ahigh';
-    Real[2] 'bhigh';
-    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
-  end 'Modelica.Media.IdealGases.Common.DataRecord';
 
   model 'MixtureGases' "Test gas mixtures"
     parameter Real 'V'(unit = "m3", quantity = "Volume") = 1.0 "Fixed size of volume 1 and volume 2";
@@ -404,19 +113,19 @@ package 'MixtureGases'
   equation
     'medium1.T_degC' = 'medium1.T' - 273.15;
     'medium1.p_bar' = 'medium1.p' / 1e5;
-    'cp1' = {smooth(0, if 'medium1.state.T' < 1000.0 then ({296.80474344420884, 259.8381814318037})['i'] * (1.0 / ('medium1.state.T' * 'medium1.state.T') * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',1] + 'medium1.state.T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',2] + 'medium1.state.T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',3] + 'medium1.state.T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',4] + 'medium1.state.T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',5] + 'medium1.state.T' * (({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',6] + ({{22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}})['i',7] * 'medium1.state.T'))))))) else ({296.80474344420884, 259.8381814318037})['i'] * (1.0 / ('medium1.state.T' * 'medium1.state.T') * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',1] + 'medium1.state.T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',2] + 'medium1.state.T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',3] + 'medium1.state.T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',4] + 'medium1.state.T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',5] + 'medium1.state.T' * (({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',6] + ({{587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}})['i',7] * 'medium1.state.T')))))))) for 'i' in 1:2} * 'medium1.state.X';
+    'cp1' = {'Modelica.Media.IdealGases.Common.Functions.cp_T'(({'Modelica.Media.IdealGases.Common.DataRecord'("N2", 0.0280134, 0.0, 309498.4543111511, 1000.0, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {710.846086, -10.76003744}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {12832.10415, -15.86640027}, 296.80474344420884), 'Modelica.Media.IdealGases.Common.DataRecord'("O2", 0.0319988, 0.0, 271263.4223783392, 1000.0, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}, {-3391.45487, 18.4969947}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}, {-16890.10929, 17.38716506}, 259.8381814318037)})['i'], 'medium1.state.T') for 'i' in 1:2} * 'medium1.state.X';
     'eta1' = 'Modelica.Media.Examples.MixtureGases.Medium1.dynamicViscosity'('medium1.state');
     'lambda1' = 'Modelica.Media.Examples.MixtureGases.Medium1.thermalConductivity'('medium1.state', 1);
     'medium2.T_degC' = 'medium2.T' - 273.15;
     'medium2.p_bar' = 'medium2.p' / 1e5;
-    'cp2' = {smooth(0, if 'medium2.state.T' < 1000.0 then ({518.2814855078335, 276.51398248830026, 188.55636909062622, 143.05222445124238, 296.80474344420884, 188.92534566400437})['i'] * (1.0 / ('medium2.state.T' * 'medium2.state.T') * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',1] + 'medium2.state.T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',2] + 'medium2.state.T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',3] + 'medium2.state.T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',4] + 'medium2.state.T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',5] + 'medium2.state.T' * (({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',6] + ({{-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}})['i',7] * 'medium2.state.T'))))))) else ({518.2814855078335, 276.51398248830026, 188.55636909062622, 143.05222445124238, 296.80474344420884, 188.92534566400437})['i'] * (1.0 / ('medium2.state.T' * 'medium2.state.T') * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',1] + 'medium2.state.T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',2] + 'medium2.state.T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',3] + 'medium2.state.T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',4] + 'medium2.state.T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',5] + 'medium2.state.T' * (({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',6] + ({{3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}})['i',7] * 'medium2.state.T')))))))) for 'i' in 1:6} * 'medium2.state.X';
+    'cp2' = {'Modelica.Media.IdealGases.Common.Functions.cp_T'(({'Modelica.Media.IdealGases.Common.DataRecord'("CH4", 0.01604246, -4.65015963885838e6, 624355.7409524474, 1000.0, {-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-23313.1436, 89.0432275}, {3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {75320.6691, -121.9124889}, 518.2814855078335), 'Modelica.Media.IdealGases.Common.DataRecord'("C2H6", 0.03006904, -2.788633890539904e6, 395476.3437741943, 1000.0, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-27029.3289, 129.8140496}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {111596.395, -203.9410584}, 276.51398248830026), 'Modelica.Media.IdealGases.Common.DataRecord'("C3H8", 0.04409562, -2.373931923397381e6, 334301.1845620949, 1000.0, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-35403.3527, 184.1749277}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {145558.2459, -281.8374734}, 188.55636909062622), 'Modelica.Media.IdealGases.Common.DataRecord'("C4H10_n_butane", 0.0581222, -2.16423328779709e6, 330832.0228759407, 1000.0, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {-45403.63390000001, 237.9488665}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {177452.656, -358.791876}, 143.05222445124238), 'Modelica.Media.IdealGases.Common.DataRecord'("N2", 0.0280134, 0.0, 309498.4543111511, 1000.0, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {710.846086, -10.76003744}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {12832.10415, -15.86640027}, 296.80474344420884), 'Modelica.Media.IdealGases.Common.DataRecord'("CO2", 0.0440095, -8.941478544405185e6, 212805.6215135368, 1000.0, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}, {-45281.9846, -7.04827944}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}, {-39083.5059, -26.52669281}, 188.92534566400437)})['i'], 'medium2.state.T') for 'i' in 1:6} * 'medium2.state.X';
     'eta2' = 'Modelica.Media.Examples.MixtureGases.Medium2.dynamicViscosity'('medium2.state');
     'lambda2' = 'Modelica.Media.Examples.MixtureGases.Medium2.thermalConductivity'('medium2.state', 1);
     'state2.p' = 100500.0;
     'state2.T' = 302.0;
     assert('medium1.T' >= 200.0 and 'medium1.T' <= 6000.0, "\nTemperature T (=" + String('medium1.T') + " K = 200 K) is not in the allowed range\n200 K <= T <= 6000 K\nrequired from medium model \"" + "CombustionAirN2O2" + "\".", AssertionLevel.error);
     'medium1.MM' = 1.0 / ('medium1.state.X[1]' / 0.0280134 + 'medium1.state.X[2]' / 0.0319988);
-    'medium1.h' = 'Modelica.Media.Examples.MixtureGases.Medium1.h_TX'('medium1.T', {'medium1.X[1]', 'medium1.X[2]'}, true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K', 0.0);
+    'medium1.h' = 'medium1.X' * {'Modelica.Media.IdealGases.Common.Functions.h_T'(({'Modelica.Media.IdealGases.Common.DataRecord'("N2", 0.0280134, 0.0, 309498.4543111511, 1000.0, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {710.846086, -10.76003744}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {12832.10415, -15.86640027}, 296.80474344420884), 'Modelica.Media.IdealGases.Common.DataRecord'("O2", 0.0319988, 0.0, 271263.4223783392, 1000.0, {-34255.6342, 484.700097, 1.119010961, 0.00429388924, -6.83630052e-7, -2.0233727e-9, 1.039040018e-12}, {-3391.45487, 18.4969947}, {-1.037939022e6, 2344.830282, 1.819732036, 0.001267847582, -2.188067988e-7, 2.053719572e-11, -8.193467050000001e-16}, {-16890.10929, 17.38716506}, 259.8381814318037)})['i'], 'medium1.T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K', 0.0) for 'i' in 1:2};
     'medium1.R_s' = 296.80474344420884 * 'medium1.X[1]' + 259.8381814318037 * 'medium1.X[2]';
     'medium1.u' = 'medium1.h' - 'medium1.R_s' * 'medium1.T';
     'medium1.d' = 'medium1.p' / ('medium1.R_s' * 'medium1.T');
@@ -431,7 +140,7 @@ package 'MixtureGases'
     assert('medium1.p' >= 0.0, "Pressure (= " + String('medium1.p') + " Pa) of medium \"" + "CombustionAirN2O2" + "\" is negative\n(Temperature = " + String('medium1.T') + " K)", AssertionLevel.error);
     assert('medium2.T' >= 200.0 and 'medium2.T' <= 6000.0, "\nTemperature T (=" + String('medium2.T') + " K = 200 K) is not in the allowed range\n200 K <= T <= 6000 K\nrequired from medium model \"" + "SimpleNaturalGas" + "\".", AssertionLevel.error);
     'medium2.MM' = 1.0 / ('medium2.state.X[1]' / 0.01604246 + 'medium2.state.X[2]' / 0.03006904 + 'medium2.state.X[3]' / 0.04409562 + 'medium2.state.X[4]' / 0.0581222 + 'medium2.state.X[5]' / 0.0280134 + 'medium2.state.X[6]' / 0.0440095);
-    'medium2.h' = 'Modelica.Media.Examples.MixtureGases.Medium2.h_TX'('medium2.T', {'medium2.X[1]', 'medium2.X[2]', 'medium2.X[3]', 'medium2.X[4]', 'medium2.X[5]', 'medium2.X[6]'}, true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K', 0.0);
+    'medium2.h' = 'medium2.X' * {'Modelica.Media.IdealGases.Common.Functions.h_T'(({'Modelica.Media.IdealGases.Common.DataRecord'("CH4", 0.01604246, -4.65015963885838e6, 624355.7409524474, 1000.0, {-176685.0998, 2786.18102, -12.0257785, 0.0391761929, -3.61905443e-5, 2.026853043e-8, -4.976705489999999e-12}, {-23313.1436, 89.0432275}, {3.73004276e6, -13835.01485, 20.49107091, -0.001961974759, 4.72731304e-7, -3.72881469e-11, 1.623737207e-15}, {75320.6691, -121.9124889}, 518.2814855078335), 'Modelica.Media.IdealGases.Common.DataRecord'("C2H6", 0.03006904, -2.788633890539904e6, 395476.3437741943, 1000.0, {-186204.4161, 3406.19186, -19.51705092, 0.0756583559, -8.20417322e-5, 5.0611358e-8, -1.319281992e-11}, {-27029.3289, 129.8140496}, {5.02578213e6, -20330.22397, 33.2255293, -0.00383670341, 7.23840586e-7, -7.3191825e-11, 3.065468699e-15}, {111596.395, -203.9410584}, 276.51398248830026), 'Modelica.Media.IdealGases.Common.DataRecord'("C3H8", 0.04409562, -2.373931923397381e6, 334301.1845620949, 1000.0, {-243314.4337, 4656.27081, -29.39466091, 0.1188952745, -1.376308269e-4, 8.814823909999999e-8, -2.342987994e-11}, {-35403.3527, 184.1749277}, {6.420731680000001e6, -26597.91134, 45.3435684, -0.00502066392, 9.471216939999999e-7, -9.57540523e-11, 4.00967288e-15}, {145558.2459, -281.8374734}, 188.55636909062622), 'Modelica.Media.IdealGases.Common.DataRecord'("C4H10_n_butane", 0.0581222, -2.16423328779709e6, 330832.0228759407, 1000.0, {-317587.254, 6176.331819999999, -38.9156212, 0.1584654284, -1.860050159e-4, 1.199676349e-7, -3.20167055e-11}, {-45403.63390000001, 237.9488665}, {7.68232245e6, -32560.5151, 57.3673275, -0.00619791681, 1.180186048e-6, -1.221893698e-10, 5.250635250000001e-15}, {177452.656, -358.791876}, 143.05222445124238), 'Modelica.Media.IdealGases.Common.DataRecord'("N2", 0.0280134, 0.0, 309498.4543111511, 1000.0, {22103.71497, -381.846182, 6.08273836, -0.00853091441, 1.384646189e-5, -9.62579362e-9, 2.519705809e-12}, {710.846086, -10.76003744}, {587712.406, -2239.249073, 6.06694922, -6.1396855e-4, 1.491806679e-7, -1.923105485e-11, 1.061954386e-15}, {12832.10415, -15.86640027}, 296.80474344420884), 'Modelica.Media.IdealGases.Common.DataRecord'("CO2", 0.0440095, -8.941478544405185e6, 212805.6215135368, 1000.0, {49436.5054, -626.411601, 5.30172524, 0.002503813816, -2.127308728e-7, -7.68998878e-10, 2.849677801e-13}, {-45281.9846, -7.04827944}, {117696.2419, -1788.791477, 8.29152319, -9.22315678e-5, 4.86367688e-9, -1.891053312e-12, 6.330036589999999e-16}, {-39083.5059, -26.52669281}, 188.92534566400437)})['i'], 'medium2.T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K', 0.0) for 'i' in 1:6};
     'medium2.R_s' = 518.2814855078335 * 'medium2.X[1]' + 276.51398248830026 * 'medium2.X[2]' + 188.55636909062622 * 'medium2.X[3]' + 143.05222445124238 * 'medium2.X[4]' + 296.80474344420884 * 'medium2.X[5]' + 188.92534566400437 * 'medium2.X[6]';
     'medium2.u' = 'medium2.h' - 'medium2.R_s' * 'medium2.T';
     'medium2.d' = 'medium2.p' / ('medium2.R_s' * 'medium2.T');
@@ -479,8 +188,8 @@ package 'MixtureGases'
     der('m2') = 0.01;
     der('U2') = 5000.0;
     'm_flow_ext2' = time - 0.5;
-    'smoothState.p' = smooth(1, if 'm_flow_ext2' > 0.2 then 'medium2.state.p' else if 'm_flow_ext2' < (-0.2) then 'state2.p' else 'm_flow_ext2' / 0.2 * (('m_flow_ext2' / 0.2) ^ 2.0 - 3.0) * ('state2.p' - 'medium2.state.p') / 4.0 + ('medium2.state.p' + 'state2.p') / 2.0);
-    'smoothState.T' = smooth(1, if 'm_flow_ext2' > 0.2 then 'medium2.state.T' else if 'm_flow_ext2' < (-0.2) then 'state2.T' else 'm_flow_ext2' / 0.2 * (('m_flow_ext2' / 0.2) ^ 2.0 - 3.0) * ('state2.T' - 'medium2.state.T') / 4.0 + ('medium2.state.T' + 'state2.T') / 2.0);
+    'smoothState.p' = 'Modelica.Media.Common.smoothStep'('m_flow_ext2', 'medium2.state.p', 'state2.p', 0.2);
+    'smoothState.T' = 'Modelica.Media.Common.smoothStep'('m_flow_ext2', 'medium2.state.T', 'state2.T', 0.2);
     'smoothState.X[1]' = 'Modelica.Media.Common.smoothStep'('m_flow_ext2', 'medium2.state.X[1]', 'state2.X[1]', 0.2);
     'smoothState.X[2]' = 'Modelica.Media.Common.smoothStep'('m_flow_ext2', 'medium2.state.X[2]', 'state2.X[2]', 0.2);
     'smoothState.X[3]' = 'Modelica.Media.Common.smoothStep'('m_flow_ext2', 'medium2.state.X[3]', 'state2.X[3]', 0.2);

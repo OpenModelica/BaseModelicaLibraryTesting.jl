@@ -1,70 +1,5 @@
 //! base 0.1.0
 package 'GenerationOfFMUs'
-  function 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.inverseInertia.angleToTorque.move.position'
-    input Real[3] 'q_qd_qdd';
-    input Real 'dummy';
-    output Real 'q';
-  algorithm
-    'q' := 'q_qd_qdd'[1];
-    annotation(derivative(order = 1, noDerivative = 'q_qd_qdd') = 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.inverseInertia.angleToTorque.move.position_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.inverseInertia.angleToTorque.move.position';
-
-  function 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.inverseInertia.angleToTorque.move.position_der'
-    input Real[3] 'q_qd_qdd';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    output Real 'qd';
-  algorithm
-    'qd' := 'q_qd_qdd'[2];
-    annotation(derivative(order = 2, noDerivative = 'q_qd_qdd') = 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.inverseInertia.angleToTorque.move.position_der2', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.inverseInertia.angleToTorque.move.position_der';
-
-  function 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.inverseInertia.angleToTorque.move.position_der2'
-    input Real[3] 'q_qd_qdd';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    input Real 'dummy_der2';
-    output Real 'qdd';
-  algorithm
-    'qdd' := 'q_qd_qdd'[3];
-  end 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.inverseInertia.angleToTorque.move.position_der2';
-
-  function 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque1.move_w.position'
-    input Real[2] 'q_qd';
-    input Real 'dummy';
-    output Real 'q';
-  algorithm
-    'q' := 'q_qd'[1];
-    annotation(derivative(order = 1, noDerivative = 'q_qd') = 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque1.move_w.position_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque1.move_w.position';
-
-  function 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque1.move_w.position_der'
-    input Real[2] 'q_qd';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    output Real 'qd';
-  algorithm
-    'qd' := 'q_qd'[2];
-  end 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque1.move_w.position_der';
-
-  function 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque2.move_w.position'
-    input Real[2] 'q_qd';
-    input Real 'dummy';
-    output Real 'q';
-  algorithm
-    'q' := 'q_qd'[1];
-    annotation(derivative(order = 1, noDerivative = 'q_qd') = 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque2.move_w.position_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque2.move_w.position';
-
-  function 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque2.move_w.position_der'
-    input Real[2] 'q_qd';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    output Real 'qd';
-  algorithm
-    'qd' := 'q_qd'[2];
-  end 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque2.move_w.position_der';
-
   model 'GenerationOfFMUs' "Example to demonstrate variants to generate FMUs (Functional Mock-up Units)"
     parameter Real 'sine1.amplitude' = 10.0 "Amplitude of sine wave";
     parameter Real 'sine1.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 2.0 "Frequency of sine wave";
@@ -457,7 +392,7 @@ package 'GenerationOfFMUs'
     'force3.flange.tau' + 'inertia3a.flange_a.tau' = 0.0;
     'inertia3b.flange_b.tau' = 0.0;
     'torqueToAngle3b.flange.tau' + 'inertia3b.flange_a.tau' = 0.0;
-    'sine1.y' = if time < 0.0 then 0.0 else 10.0 * sin(12.566370614359172 * time);
+    'sine1.y' = if time < 0.0 then 0.0 else 10.0 * 'Modelica.Math.sin'(12.566370614359172 * time);
     'directInertia.inertia.phi' = 'directInertia.inertia.flange_a.phi';
     'directInertia.inertia.phi' = 'directInertia.inertia.flange_b.phi';
     'directInertia.inertia.w' = der('directInertia.inertia.phi');
@@ -475,7 +410,7 @@ package 'GenerationOfFMUs'
     'inverseInertia.inertia.a' = der('inverseInertia.inertia.w');
     2.2 * 'inverseInertia.inertia.a' = 'inverseInertia.inertia.flange_a.tau' + 'inverseInertia.inertia.flange_b.tau';
     'inverseInertia.angleToTorque.move.phi' = 'inverseInertia.angleToTorque.move.flange.phi' - 'inverseInertia.angleToTorque.move.phi_support';
-    'inverseInertia.angleToTorque.move.phi' = 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.inverseInertia.angleToTorque.move.position'({'inverseInertia.angleToTorque.move.u[1]', 'inverseInertia.angleToTorque.move.u[2]', 'inverseInertia.angleToTorque.move.u[3]'}, time);
+    'inverseInertia.angleToTorque.move.phi' = 'inverseInertia.angleToTorque.move.u[1]';
     'inverseInertia.angleToTorque.move.phi_support' = 0.0;
     'inverseInertia.angleToTorque.multiplex3.y[1]' = 'inverseInertia.angleToTorque.multiplex3.u1[1]';
     'inverseInertia.angleToTorque.multiplex3.y[2]' = 'inverseInertia.angleToTorque.multiplex3.u2[1]';
@@ -489,7 +424,7 @@ package 'GenerationOfFMUs'
     'springDamper.angleToTorque1.multiplex2.y[1]' = 'springDamper.angleToTorque1.multiplex2.u1[1]';
     'springDamper.angleToTorque1.multiplex2.y[2]' = 'springDamper.angleToTorque1.multiplex2.u2[1]';
     'springDamper.angleToTorque1.move_w.phi' = 'springDamper.angleToTorque1.move_w.flange.phi' - 'springDamper.angleToTorque1.move_w.phi_support';
-    'springDamper.angleToTorque1.move_w.phi' = 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque1.move_w.position'({'springDamper.angleToTorque1.move_w.u[1]', 'springDamper.angleToTorque1.move_w.u[2]'}, time);
+    'springDamper.angleToTorque1.move_w.phi' = 'springDamper.angleToTorque1.move_w.u[1]';
     'springDamper.angleToTorque1.move_w.phi_support' = 0.0;
     'springDamper.springDamper.w_rel' = der('springDamper.springDamper.phi_rel');
     'springDamper.springDamper.tau_c' = 1e4 * 'springDamper.springDamper.phi_rel';
@@ -505,7 +440,7 @@ package 'GenerationOfFMUs'
     'springDamper.angleToTorque2.multiplex2.y[1]' = 'springDamper.angleToTorque2.multiplex2.u1[1]';
     'springDamper.angleToTorque2.multiplex2.y[2]' = 'springDamper.angleToTorque2.multiplex2.u2[1]';
     'springDamper.angleToTorque2.move_w.phi' = 'springDamper.angleToTorque2.move_w.flange.phi' - 'springDamper.angleToTorque2.move_w.phi_support';
-    'springDamper.angleToTorque2.move_w.phi' = 'Modelica.Mechanics.Rotational.Examples.GenerationOfFMUs.springDamper.angleToTorque2.move_w.position'({'springDamper.angleToTorque2.move_w.u[1]', 'springDamper.angleToTorque2.move_w.u[2]'}, time);
+    'springDamper.angleToTorque2.move_w.phi' = 'springDamper.angleToTorque2.move_w.u[1]';
     'springDamper.angleToTorque2.move_w.phi_support' = 0.0;
     'inertia2a.phi' = 'inertia2a.flange_a.phi';
     'inertia2a.phi' = 'inertia2a.flange_b.phi';

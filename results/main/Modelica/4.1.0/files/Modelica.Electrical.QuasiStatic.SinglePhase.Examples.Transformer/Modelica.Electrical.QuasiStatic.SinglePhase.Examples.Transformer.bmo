@@ -1,83 +1,9 @@
 //! base 0.1.0
 package 'Transformer'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
-
   record 'Complex'
     Real 're';
     Real 'im';
   end 'Complex';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
-
-  record 'Modelica.Units.SI.ComplexCurrent'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexCurrent';
-
-  record 'Modelica.Units.SI.ComplexElectricPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexElectricPotential';
-
-  record 'Modelica.Units.SI.ComplexVoltage'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexVoltage';
 
   model 'Transformer' "Example of transformer with short circuit impedance, transmission resistances and load"
     Real 'voltageSource.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
@@ -354,14 +280,10 @@ package 'Transformer'
     'voltageSource.P' = 'voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im');
     'voltageSource.Q' = 'voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re';
     'voltageSource.S' = sqrt(('voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im')) ^ 2.0 + ('voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re') ^ 2.0);
-    'voltageSource.pf' = cos('Modelica.Math.atan3'('voltageSource.Q', 'voltageSource.P', 0.0));
+    'voltageSource.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P', 'voltageSource.Q'), 0.0));
     'voltageSource.gamma' = 'voltageSource.pin_p.reference.gamma';
-    'idealTransformer.v1.re' = 'idealTransformer.pin_p1.v.re' - 'idealTransformer.pin_n1.v.re';
-    'idealTransformer.v1.im' = 'idealTransformer.pin_p1.v.im' - 'idealTransformer.pin_n1.v.im';
     'idealTransformer.i1.re' = 'idealTransformer.pin_p1.i.re';
     'idealTransformer.i1.im' = 'idealTransformer.pin_p1.i.im';
-    'idealTransformer.v2.re' = 'idealTransformer.pin_p2.v.re' - 'idealTransformer.pin_n2.v.re';
-    'idealTransformer.v2.im' = 'idealTransformer.pin_p2.v.im' - 'idealTransformer.pin_n2.v.im';
     'idealTransformer.i2.re' = 'idealTransformer.pin_p2.i.re';
     'idealTransformer.i2.im' = 'idealTransformer.pin_p2.i.im';
     'idealTransformer.abs_v1' = sqrt('idealTransformer.v1.re' ^ 2.0 + 'idealTransformer.v1.im' ^ 2.0);
@@ -371,7 +293,7 @@ package 'Transformer'
     'idealTransformer.P1' = 'idealTransformer.v1.re' * 'idealTransformer.i1.re' - 'idealTransformer.v1.im' * (-'idealTransformer.i1.im');
     'idealTransformer.Q1' = 'idealTransformer.v1.re' * (-'idealTransformer.i1.im') + 'idealTransformer.v1.im' * 'idealTransformer.i1.re';
     'idealTransformer.S1' = sqrt(('idealTransformer.v1.re' * 'idealTransformer.i1.re' - 'idealTransformer.v1.im' * (-'idealTransformer.i1.im')) ^ 2.0 + ('idealTransformer.v1.re' * (-'idealTransformer.i1.im') + 'idealTransformer.v1.im' * 'idealTransformer.i1.re') ^ 2.0);
-    'idealTransformer.pf1' = cos('Modelica.Math.atan3'('idealTransformer.Q1', 'idealTransformer.P1', 0.0));
+    'idealTransformer.pf1' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('idealTransformer.P1', 'idealTransformer.Q1'), 0.0));
     'idealTransformer.abs_v2' = sqrt('idealTransformer.v2.re' ^ 2.0 + 'idealTransformer.v2.im' ^ 2.0);
     'idealTransformer.arg_v2' = 'Modelica.Math.atan3'('idealTransformer.v2.im', 'idealTransformer.v2.re', 0.0);
     'idealTransformer.abs_i2' = sqrt('idealTransformer.i2.re' ^ 2.0 + 'idealTransformer.i2.im' ^ 2.0);
@@ -379,7 +301,7 @@ package 'Transformer'
     'idealTransformer.P2' = 'idealTransformer.v2.re' * 'idealTransformer.i2.re' - 'idealTransformer.v2.im' * (-'idealTransformer.i2.im');
     'idealTransformer.Q2' = 'idealTransformer.v2.re' * (-'idealTransformer.i2.im') + 'idealTransformer.v2.im' * 'idealTransformer.i2.re';
     'idealTransformer.S2' = sqrt(('idealTransformer.v2.re' * 'idealTransformer.i2.re' - 'idealTransformer.v2.im' * (-'idealTransformer.i2.im')) ^ 2.0 + ('idealTransformer.v2.re' * (-'idealTransformer.i2.im') + 'idealTransformer.v2.im' * 'idealTransformer.i2.re') ^ 2.0);
-    'idealTransformer.pf2' = cos('Modelica.Math.atan3'('idealTransformer.Q2', 'idealTransformer.P2', 0.0));
+    'idealTransformer.pf2' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('idealTransformer.P2', 'idealTransformer.Q2'), 0.0));
     'sensor0.abs_apparentPower' = sqrt('sensor0.apparentPower.re' ^ 2.0 + 'sensor0.apparentPower.im' ^ 2.0);
     'sensor0.arg_apparentPower' = 'Modelica.Math.atan3'('sensor0.apparentPower.im', 'sensor0.apparentPower.re', 0.0);
     'zk.abs_v' = sqrt('zk.v.re' ^ 2.0 + 'zk.v.im' ^ 2.0);
@@ -389,7 +311,7 @@ package 'Transformer'
     'zk.P' = 'zk.v.re' * 'zk.i.re' - 'zk.v.im' * (-'zk.i.im');
     'zk.Q' = 'zk.v.re' * (-'zk.i.im') + 'zk.v.im' * 'zk.i.re';
     'zk.S' = sqrt(('zk.v.re' * 'zk.i.re' - 'zk.v.im' * (-'zk.i.im')) ^ 2.0 + ('zk.v.re' * (-'zk.i.im') + 'zk.v.im' * 'zk.i.re') ^ 2.0);
-    'zk.pf' = cos('Modelica.Math.atan3'('zk.Q', 'zk.P', 0.0));
+    'zk.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('zk.P', 'zk.Q'), 0.0));
     'load.abs_v' = sqrt('load.v.re' ^ 2.0 + 'load.v.im' ^ 2.0);
     'load.arg_v' = 'Modelica.Math.atan3'('load.v.im', 'load.v.re', 0.0);
     'load.abs_i' = sqrt('load.i.re' ^ 2.0 + 'load.i.im' ^ 2.0);
@@ -397,7 +319,7 @@ package 'Transformer'
     'load.P' = 'load.v.re' * 'load.i.re' - 'load.v.im' * (-'load.i.im');
     'load.Q' = 'load.v.re' * (-'load.i.im') + 'load.v.im' * 'load.i.re';
     'load.S' = sqrt(('load.v.re' * 'load.i.re' - 'load.v.im' * (-'load.i.im')) ^ 2.0 + ('load.v.re' * (-'load.i.im') + 'load.v.im' * 'load.i.re') ^ 2.0);
-    'load.pf' = cos('Modelica.Math.atan3'('load.Q', 'load.P', 0.0));
+    'load.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('load.P', 'load.Q'), 0.0));
     'load.gamma' = 'load.pin_p.reference.gamma';
     'sensorL.abs_apparentPower' = sqrt('sensorL.apparentPower.re' ^ 2.0 + 'sensorL.apparentPower.im' ^ 2.0);
     'sensorL.arg_apparentPower' = 'Modelica.Math.atan3'('sensorL.apparentPower.im', 'sensorL.apparentPower.re', 0.0);
@@ -484,14 +406,18 @@ package 'Transformer'
     'voltageSource.i.im' = 'voltageSource.pin_p.i.im';
     'voltageSource.pin_p.reference.gamma' = 'voltageSource.pin_n.reference.gamma';
     'voltageSource.omega' = der('voltageSource.pin_p.reference.gamma');
+    'idealTransformer.v1.re' = 'idealTransformer.pin_p1.v.re' - 'idealTransformer.pin_n1.v.re';
+    'idealTransformer.v1.im' = 'idealTransformer.pin_p1.v.im' - 'idealTransformer.pin_n1.v.im';
+    'idealTransformer.v2.re' = 'idealTransformer.pin_p2.v.re' - 'idealTransformer.pin_n2.v.re';
+    'idealTransformer.v2.im' = 'idealTransformer.pin_p2.v.im' - 'idealTransformer.pin_n2.v.im';
     'idealTransformer.pin_p1.i.re' + 'idealTransformer.pin_n1.i.re' = 0.0;
     'idealTransformer.pin_p1.i.im' + 'idealTransformer.pin_n1.i.im' = 0.0;
     'idealTransformer.pin_p2.i.re' + 'idealTransformer.pin_n2.i.re' = 0.0;
     'idealTransformer.pin_p2.i.im' + 'idealTransformer.pin_n2.i.im' = 0.0;
-    'idealTransformer.v1.re' = 5.0 * 'idealTransformer.v2.re';
-    'idealTransformer.v1.im' = 5.0 * 'idealTransformer.v2.im';
-    'idealTransformer.i2.re' = (-5.0) * 'idealTransformer.i1.re';
-    'idealTransformer.i2.im' = (-5.0) * 'idealTransformer.i1.im';
+    'idealTransformer.v1.re' = 5.0 * 'idealTransformer.v2.re' - 0.0 * 'idealTransformer.v2.im';
+    'idealTransformer.v1.im' = 5.0 * 'idealTransformer.v2.im' + 0.0 * 'idealTransformer.v2.re';
+    'idealTransformer.i2.re' = (-5.0) * 'idealTransformer.i1.re' - 0.0 * 'idealTransformer.i1.im';
+    'idealTransformer.i2.im' = (-5.0) * 'idealTransformer.i1.im' + 0.0 * 'idealTransformer.i1.re';
     'idealTransformer.pin_p1.reference.gamma' = 'idealTransformer.pin_n1.reference.gamma';
     'idealTransformer.pin_p2.reference.gamma' = 'idealTransformer.pin_n2.reference.gamma';
     'idealTransformer.pin_p1.reference.gamma' = 'idealTransformer.pin_p2.reference.gamma';

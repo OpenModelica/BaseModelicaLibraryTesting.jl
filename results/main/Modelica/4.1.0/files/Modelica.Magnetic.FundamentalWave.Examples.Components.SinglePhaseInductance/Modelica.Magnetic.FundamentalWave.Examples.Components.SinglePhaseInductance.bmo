@@ -1,74 +1,5 @@
 //! base 0.1.0
 package 'SinglePhaseInductance'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotential';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
-
   model 'SinglePhaseInductance' "Single-phase inductance"
     parameter Real 'f'(unit = "Hz", quantity = "Frequency") = 1.0 "Supply frequency";
     parameter Real 'VRMS'(unit = "V", quantity = "ElectricPotential") = 100.0 "RMS supply voltage";
@@ -207,8 +138,6 @@ package 'SinglePhaseInductance'
     'converter_m.arg_V_m' = 'Modelica.Math.atan3'('converter_m.V_m.im', 'converter_m.V_m.re', 0.0);
     'converter_m.abs_Phi' = sqrt('converter_m.Phi.re' ^ 2.0 + 'converter_m.Phi.im' ^ 2.0);
     'converter_m.arg_Phi' = 'Modelica.Math.atan3'('converter_m.Phi.im', 'converter_m.Phi.re', 0.0);
-    'reluctance_m.V_m.re' = 'reluctance_m.port_p.V_m.re' - 'reluctance_m.port_n.V_m.re';
-    'reluctance_m.V_m.im' = 'reluctance_m.port_p.V_m.im' - 'reluctance_m.port_n.V_m.im';
     'reluctance_m.abs_V_m' = sqrt('reluctance_m.V_m.re' ^ 2.0 + 'reluctance_m.V_m.im' ^ 2.0);
     'reluctance_m.arg_V_m' = 'Modelica.Math.atan3'('reluctance_m.V_m.im', 'reluctance_m.V_m.re', 0.0);
     'reluctance_m.Phi.re' = 'reluctance_m.port_p.Phi.re';
@@ -241,12 +170,12 @@ package 'SinglePhaseInductance'
     'groundM_m.port_p.Phi.im' + 'reluctance_m.port_n.Phi.im' + 'converter_m.port_n.Phi.im' = 0.0;
     'ground_e.p.v' = 0.0;
     'ground_m.p.v' = 0.0;
-    'voltageSource_e.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time + 1.5707963267948966);
+    'voltageSource_e.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time + 1.5707963267948966);
     'voltageSource_e.v' = 'voltageSource_e.signalSource.y';
     0.0 = 'voltageSource_e.p.i' + 'voltageSource_e.n.i';
     'voltageSource_e.i' = 'voltageSource_e.p.i';
     'voltageSource_e.v' = 'voltageSource_e.p.v' - 'voltageSource_e.n.v';
-    'voltageSource_m.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time + 1.5707963267948966);
+    'voltageSource_m.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time + 1.5707963267948966);
     'voltageSource_m.v' = 'voltageSource_m.signalSource.y';
     0.0 = 'voltageSource_m.p.i' + 'voltageSource_m.n.i';
     'voltageSource_m.i' = 'voltageSource_m.p.i';
@@ -278,9 +207,11 @@ package 'SinglePhaseInductance'
     'converter_m.v' = 'converter_m.pin_p.v' - 'converter_m.pin_n.v';
     'converter_m.i' = 'converter_m.pin_p.i';
     'converter_m.pin_p.i' + 'converter_m.pin_n.i' = 0.0;
-    'converter_m.V_m.re' = 0.6366197723675814 * 'converter_m.N.re' * 'converter_m.i';
-    'converter_m.V_m.im' = 0.6366197723675814 * 'converter_m.N.im' * 'converter_m.i';
-    -'converter_m.v' = 'converter_m.N.re' * der('converter_m.Phi.re') - (-'converter_m.N.im') * der('converter_m.Phi.im');
+    'converter_m.V_m.re' = 3.183098861837907 * 'converter_m.i' - 0.0 * 0.0;
+    'converter_m.V_m.im' = 3.183098861837907 * 0.0 + 0.0 * 'converter_m.i';
+    -'converter_m.v' = 5.0 * der('converter_m.Phi.re') - 0.0 * der('converter_m.Phi.im');
+    'reluctance_m.V_m.re' = 'reluctance_m.port_p.V_m.re' - 'reluctance_m.port_n.V_m.re';
+    'reluctance_m.V_m.im' = 'reluctance_m.port_p.V_m.im' - 'reluctance_m.port_n.V_m.im';
     1.5707963267948966 * 'reluctance_m.V_m.re' = 25.0 * 'reluctance_m.Phi.re';
     1.5707963267948966 * 'reluctance_m.V_m.im' = 25.0 * 'reluctance_m.Phi.im';
     'reluctance_m.port_p.Phi.re' + 'reluctance_m.port_n.Phi.re' = 0.0;

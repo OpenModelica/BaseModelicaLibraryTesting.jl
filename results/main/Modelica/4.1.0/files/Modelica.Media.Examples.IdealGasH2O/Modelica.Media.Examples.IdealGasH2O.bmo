@@ -1,38 +1,5 @@
 //! base 0.1.0
 package 'IdealGasH2O'
-  function 'Modelica.Media.Examples.IdealGasH2O.Medium.isentropicEnthalpyApproximation' "Approximate method of calculating h_is from upstream properties and downstream pressure"
-    input Real 'p2'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input 'Medium.ThermodynamicState' 'state';
-    input Boolean 'exclEnthForm' = true;
-    input 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' 'refChoice' = 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K';
-    input Real 'h_off'(nominal = 1e5, start = 549760.6476280135, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 0.0;
-    output Real 'h_is'(unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'gamma'(nominal = 1.2, start = 1.2, max = 5e5, min = 1.0, unit = "1", quantity = "RatioOfSpecificHeatCapacities") = smooth(0, if 'state'.'T' < 1000.0 then 461.5254384056201 * (1.0 / ('state'.'T' * 'state'.'T') * ('state'.'T' * (575.573102 + 'state'.'T' * (0.931782653 + 'state'.'T' * (0.00722271286 + 'state'.'T' * ('state'.'T' * (4.95504349e-9 + (-1.336933246e-12) * 'state'.'T') - 7.34255737e-6)))) - 39479.6083)) else 461.5254384056201 * (1.0 / ('state'.'T' * 'state'.'T') * (1.034972096e6 + 'state'.'T' * ('state'.'T' * (4.64611078 + 'state'.'T' * (0.002291998307 + 'state'.'T' * ('state'.'T' * (9.426468930000001e-11 + (-4.82238053e-15) * 'state'.'T') - 6.836830479999999e-7))) - 2412.698562)))) / (smooth(0, if 'state'.'T' < 1000.0 then 461.5254384056201 * (1.0 / ('state'.'T' * 'state'.'T') * ('state'.'T' * (575.573102 + 'state'.'T' * (0.931782653 + 'state'.'T' * (0.00722271286 + 'state'.'T' * ('state'.'T' * (4.95504349e-9 + (-1.336933246e-12) * 'state'.'T') - 7.34255737e-6)))) - 39479.6083)) else 461.5254384056201 * (1.0 / ('state'.'T' * 'state'.'T') * (1.034972096e6 + 'state'.'T' * ('state'.'T' * (4.64611078 + 'state'.'T' * (0.002291998307 + 'state'.'T' * ('state'.'T' * (9.426468930000001e-11 + (-4.82238053e-15) * 'state'.'T') - 6.836830479999999e-7))) - 2412.698562)))) - 461.5254384056201);
-  algorithm
-    'h_is' := 'Modelica.Media.IdealGases.Common.Functions.h_T'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'state'.'T', 'exclEnthForm', 'refChoice', 'h_off') + 'gamma' / ('gamma' - 1.0) * 'state'.'p' / ('state'.'p' / (461.5254384056201 * 'state'.'T')) * (('p2' / 'state'.'p') ^ (('gamma' - 1.0) / 'gamma') - 1.0);
-    annotation(Inline = true, smoothOrder = 2);
-  end 'Modelica.Media.Examples.IdealGasH2O.Medium.isentropicEnthalpyApproximation';
-
-  function 'Modelica.Media.IdealGases.Common.Functions.h_T' "Compute specific enthalpy from temperature and gas data; reference is decided by the
-    refChoice input, or by the referenceChoice package constant by default"
-    input 'Modelica.Media.IdealGases.Common.DataRecord' 'data';
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Boolean 'exclEnthForm' = true;
-    input 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' 'refChoice' = 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K';
-    input Real 'h_off'(unit = "J/kg", quantity = "SpecificEnergy") = 0.0;
-    output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := smooth(0, (if 'T' < 'data'.'Tlimit' then 'data'.'R_s' * (('T' * ('data'.'blow'[1] + 'data'.'alow'[2] * log('T') + 'T' * ('data'.'alow'[3] + 'T' * (0.5 * 'data'.'alow'[4] + 'T' * (0.3333333333333333 * 'data'.'alow'[5] + 'T' * (0.25 * 'data'.'alow'[6] + 0.2 * 'data'.'alow'[7] * 'T'))))) - 'data'.'alow'[1]) / 'T') else 'data'.'R_s' * (('T' * ('data'.'bhigh'[1] + 'data'.'ahigh'[2] * log('T') + 'T' * ('data'.'ahigh'[3] + 'T' * (0.5 * 'data'.'ahigh'[4] + 'T' * (0.3333333333333333 * 'data'.'ahigh'[5] + 'T' * (0.25 * 'data'.'ahigh'[6] + 0.2 * 'data'.'ahigh'[7] * 'T'))))) - 'data'.'ahigh'[1]) / 'T')) + (if 'exclEnthForm' then -'data'.'Hf' else 0.0) + (if 'refChoice' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K' then 'data'.'H0' else 0.0) + (if 'refChoice' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined' then 'h_off' else 0.0));
-    annotation(Inline = false, smoothOrder = 2);
-  end 'Modelica.Media.IdealGases.Common.Functions.h_T';
-
-  record 'Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e6, start = 1e6, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 500.0, start = 500.0, max = 6000.0, min = 200.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'Medium.ThermodynamicState';
-
-  type 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' = enumeration('ZeroAt0K', 'ZeroAt25C', 'UserDefined');
-
   record 'Modelica.Media.IdealGases.Common.DataRecord'
     String 'name';
     Real 'MM'(min = 0.0, unit = "kg/mol", quantity = "MolarMass");
@@ -45,6 +12,13 @@ package 'IdealGasH2O'
     Real[2] 'bhigh';
     Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
   end 'Modelica.Media.IdealGases.Common.DataRecord';
+
+  record 'Medium.ThermodynamicState'
+    Real 'p'(nominal = 1e6, start = 1e6, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'T'(nominal = 500.0, start = 500.0, max = 6000.0, min = 200.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+  end 'Medium.ThermodynamicState';
+
+  type 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' = enumeration('ZeroAt0K', 'ZeroAt25C', 'UserDefined');
 
   model 'IdealGasH2O' "IdealGas H20 medium model"
     Real 'state.p'(nominal = 1e6, start = 1e6, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
@@ -73,11 +47,11 @@ package 'IdealGasH2O'
     parameter Real 'T02'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 500.0 "state2.T at time 0";
     parameter Real 'Trate2'(unit = "K/s", quantity = "TemperatureSlope") = 0.0 "state2.T rate of change";
   equation
-    'cp' = smooth(0, if 'state.T' < 1000.0 then 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * ('state.T' * (575.573102 + 'state.T' * (0.931782653 + 'state.T' * (0.00722271286 + 'state.T' * ('state.T' * (4.95504349e-9 + (-1.336933246e-12) * 'state.T') - 7.34255737e-6)))) - 39479.6083)) else 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * (1.034972096e6 + 'state.T' * ('state.T' * (4.64611078 + 'state.T' * (0.002291998307 + 'state.T' * ('state.T' * (9.426468930000001e-11 + (-4.82238053e-15) * 'state.T') - 6.836830479999999e-7))) - 2412.698562))));
-    'cv' = smooth(0, if 'state.T' < 1000.0 then 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * ('state.T' * (575.573102 + 'state.T' * (0.931782653 + 'state.T' * (0.00722271286 + 'state.T' * ('state.T' * (4.95504349e-9 + (-1.336933246e-12) * 'state.T') - 7.34255737e-6)))) - 39479.6083)) else 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * (1.034972096e6 + 'state.T' * ('state.T' * (4.64611078 + 'state.T' * (0.002291998307 + 'state.T' * ('state.T' * (9.426468930000001e-11 + (-4.82238053e-15) * 'state.T') - 6.836830479999999e-7))) - 2412.698562)))) - 461.5254384056201;
-    'k' = smooth(0, if 'state.T' < 1000.0 then 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * ('state.T' * (575.573102 + 'state.T' * (0.931782653 + 'state.T' * (0.00722271286 + 'state.T' * ('state.T' * (4.95504349e-9 + (-1.336933246e-12) * 'state.T') - 7.34255737e-6)))) - 39479.6083)) else 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * (1.034972096e6 + 'state.T' * ('state.T' * (4.64611078 + 'state.T' * (0.002291998307 + 'state.T' * ('state.T' * (9.426468930000001e-11 + (-4.82238053e-15) * 'state.T') - 6.836830479999999e-7))) - 2412.698562)))) / (smooth(0, if 'state.T' < 1000.0 then 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * ('state.T' * (575.573102 + 'state.T' * (0.931782653 + 'state.T' * (0.00722271286 + 'state.T' * ('state.T' * (4.95504349e-9 + (-1.336933246e-12) * 'state.T') - 7.34255737e-6)))) - 39479.6083)) else 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * (1.034972096e6 + 'state.T' * ('state.T' * (4.64611078 + 'state.T' * (0.002291998307 + 'state.T' * ('state.T' * (9.426468930000001e-11 + (-4.82238053e-15) * 'state.T') - 6.836830479999999e-7))) - 2412.698562)))) - 461.5254384056201);
-    's' = (if 'state.T' < 1000.0 then 461.5254384056201 * (17.24205775 - 19739.80415 / (-'state.T' * 'state.T') - 575.573102 / 'state.T' + 0.931782653 * log('state.T') + 'state.T' * (0.00722271286 + 'state.T' * ('state.T' * (1.6516811633333334e-9 + (-3.342333115e-13) * 'state.T') - 3.671278685e-6))) else 461.5254384056201 * (4.64611078 * log('state.T') - (7.97814851 + 517486.048 / ('state.T' * 'state.T') + 2412.698562 / (-'state.T')) + 'state.T' * (0.002291998307 + 'state.T' * ('state.T' * (3.14215631e-11 + (-1.2055951325e-15) * 'state.T') - 3.4184152399999997e-7)))) - 461.5254384056201 * log('state.p' / 101325.0);
-    'a' = sqrt(max(0.0, 461.5254384056201 * 'state.T' * smooth(0, if 'state.T' < 1000.0 then 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * ('state.T' * (575.573102 + 'state.T' * (0.931782653 + 'state.T' * (0.00722271286 + 'state.T' * ('state.T' * (4.95504349e-9 + (-1.336933246e-12) * 'state.T') - 7.34255737e-6)))) - 39479.6083)) else 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * (1.034972096e6 + 'state.T' * ('state.T' * (4.64611078 + 'state.T' * (0.002291998307 + 'state.T' * ('state.T' * (9.426468930000001e-11 + (-4.82238053e-15) * 'state.T') - 6.836830479999999e-7))) - 2412.698562)))) / (smooth(0, if 'state.T' < 1000.0 then 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * ('state.T' * (575.573102 + 'state.T' * (0.931782653 + 'state.T' * (0.00722271286 + 'state.T' * ('state.T' * (4.95504349e-9 + (-1.336933246e-12) * 'state.T') - 7.34255737e-6)))) - 39479.6083)) else 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * (1.034972096e6 + 'state.T' * ('state.T' * (4.64611078 + 'state.T' * (0.002291998307 + 'state.T' * ('state.T' * (9.426468930000001e-11 + (-4.82238053e-15) * 'state.T') - 6.836830479999999e-7))) - 2412.698562)))) - 461.5254384056201)));
+    'cp' = smooth(0, if 'state.T' < 1000.0 then 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * ((-39479.6083) + 'state.T' * (575.573102 + 'state.T' * (0.931782653 + 'state.T' * (0.00722271286 + 'state.T' * ((-7.34255737e-6) + 'state.T' * (4.95504349e-9 + (-1.336933246e-12) * 'state.T'))))))) else 461.5254384056201 * (1.0 / ('state.T' * 'state.T') * (1.034972096e6 + 'state.T' * ((-2412.698562) + 'state.T' * (4.64611078 + 'state.T' * (0.002291998307 + 'state.T' * ((-6.836830479999999e-7) + 'state.T' * (9.426468930000001e-11 + (-4.82238053e-15) * 'state.T'))))))));
+    'cv' = 'Modelica.Media.IdealGases.Common.Functions.cp_T'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'state.T') - 461.5254384056201;
+    'k' = 'Modelica.Media.Examples.IdealGasH2O.Medium.specificHeatCapacityCp'('state') / 'Modelica.Media.Examples.IdealGasH2O.Medium.specificHeatCapacityCv'('state');
+    's' = 'Modelica.Media.IdealGases.Common.Functions.s0_T'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'state.T') - 461.5254384056201 * 'Modelica.Math.log'('state.p' / 101325.0);
+    'a' = sqrt(max(0.0, 461.5254384056201 * 'state.T' * 'Modelica.Media.IdealGases.Common.Functions.cp_T'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'state.T') / 'Modelica.Media.Examples.IdealGasH2O.Medium.specificHeatCapacityCv'('state')));
     'beta' = 1.0 / 'state.T';
     'gamma' = 1.0 / 'state.p';
     'h_is' = 'Modelica.Media.Examples.IdealGasH2O.Medium.isentropicEnthalpyApproximation'(2.0, 'state', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K', 0.0);
@@ -86,8 +60,8 @@ package 'IdealGasH2O'
     'state2.p' = 2e5;
     'state2.T' = 500.0;
     'm_flow_ext' = time - 0.5;
-    'smoothState.p' = smooth(1, if 'm_flow_ext' > 0.1 then 'state.p' else if 'm_flow_ext' < (-0.1) then 'state2.p' else 'm_flow_ext' / 0.1 * (('m_flow_ext' / 0.1) ^ 2.0 - 3.0) * ('state2.p' - 'state.p') / 4.0 + ('state.p' + 'state2.p') / 2.0);
-    'smoothState.T' = smooth(1, if 'm_flow_ext' > 0.1 then 'state.T' else if 'm_flow_ext' < (-0.1) then 'state2.T' else 'm_flow_ext' / 0.1 * (('m_flow_ext' / 0.1) ^ 2.0 - 3.0) * ('state2.T' - 'state.T') / 4.0 + ('state.T' + 'state2.T') / 2.0);
+    'smoothState.p' = 'Modelica.Media.Common.smoothStep'('m_flow_ext', 'state.p', 'state2.p', 0.1);
+    'smoothState.T' = 'Modelica.Media.Common.smoothStep'('m_flow_ext', 'state.T', 'state2.T', 0.1);
     'der_p' = der('smoothState.p');
     'der_T' = der('smoothState.T');
     annotation(experiment(StopTime = 1));

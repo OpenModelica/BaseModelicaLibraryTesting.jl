@@ -1,66 +1,5 @@
 //! base 0.1.0
 package 'IMC_Conveyor'
-  function 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer' "Derivative of interpolated 1-dim. table where first column is time (but do not provide a derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    input Integer 'icol';
-    input Real 'timeIn';
-    input Real 'nextTimeEvent';
-    input Real 'pre_nextTimeEvent';
-    input Real 'der_timeIn';
-    output Real 'der_y';
-  external "C" 'der_y' = ModelicaStandardTables_CombiTimeTable_getDerValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent', 'der_timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer';
-
-  function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    input Real 'timeIn';
-    output Real 'nextTimeEvent';
-  external "C" 'nextTimeEvent' = ModelicaStandardTables_CombiTimeTable_nextTimeEvent('tableID', 'timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getNextTimeEvent';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    output Real 'timeMax';
-  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    output Real 'timeMin';
-  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2' "Interpolate 1-dim. table where first column is time (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    input Integer 'icol';
-    input Real 'timeIn';
-    input Real 'nextTimeEvent';
-    input Real 'pre_nextTimeEvent';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTimeTable_getValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1, noDerivative = 'nextTimeEvent', noDerivative = 'pre_nextTimeEvent') = 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer');
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2';
-
-  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
-    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
-    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
-    output Real 'p'(unit = "W", quantity = "Power");
-    constant Integer 'm' = 3;
-    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
-    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
-  algorithm
-    'v_' := {0.0, 0.0};
-    'i_' := {0.0, 0.0};
-
-    for 'k' in 1:'m' loop
-      'v_' := {'v_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k'], 'v_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k']};
-      'i_' := {'i_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k'], 'i_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k']};
-    end for;
-
-    'p' := 'm' / 2.0 * ('v_'[1] * 'i_'[1] + 'v_'[2] * 'i_'[2]);
-    annotation(Inline = true);
-  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
-
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
@@ -919,7 +858,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'aimc.statorCore.w' = 'aimc.statorCoreParameters.wRef';
     'aimc.statorCore.wLimit' = noEvent(max(noEvent(abs('aimc.statorCore.w')), 'aimc.statorCore.coreParameters.wMin'));
     'aimc.strayLoad.heatPort.Q_flow' = -'aimc.strayLoad.lossPower';
-    'aimc.strayLoad.iRMS' = sqrt('aimc.strayLoad.i[1]' ^ 2.0 / 3.0 + 'aimc.strayLoad.i[2]' ^ 2.0 / 3.0 + 'aimc.strayLoad.i[3]' ^ 2.0 / 3.0);
+    'aimc.strayLoad.iRMS' = sqrt(sum('aimc.strayLoad.i' .^ 2.0 / size('aimc.strayLoad.i', 1)));
     'aimc.thermalAmbient.Q_flowStatorWinding' = 'aimc.thermalAmbient.temperatureStatorWinding.port.Q_flow';
     'aimc.thermalAmbient.Q_flowStatorCore' = 'aimc.thermalAmbient.temperatureStatorCore.port.Q_flow';
     'aimc.thermalAmbient.Q_flowRotorCore' = 'aimc.thermalAmbient.temperatureRotorCore.port.Q_flow';
@@ -1340,7 +1279,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'currentQuasiRMSSensor.ToSpacePhasor1.y[1]' = 0.6666666666666666 * 'currentQuasiRMSSensor.ToSpacePhasor1.u[1]' + (-0.33333333333333315) * 'currentQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.3333333333333336) * 'currentQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'currentQuasiRMSSensor.ToSpacePhasor1.y[2]' = 0.5773502691896257 * 'currentQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.5773502691896255) * 'currentQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'currentQuasiRMSSensor.ToPolar1.y[1]' = sqrt('currentQuasiRMSSensor.ToPolar1.u[1]' ^ 2.0 + 'currentQuasiRMSSensor.ToPolar1.u[2]' ^ 2.0);
-    'currentQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('currentQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('currentQuasiRMSSensor.ToPolar1.u[2]', 'currentQuasiRMSSensor.ToPolar1.u[1]');
+    'currentQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('currentQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('currentQuasiRMSSensor.ToPolar1.u[2]', 'currentQuasiRMSSensor.ToPolar1.u[1]');
     'dutyCycle.timeScaled' = time;
 
     when {time >= pre('dutyCycle.nextTimeEvent'), initial()} then
@@ -1382,7 +1321,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'mass.flange_a.s' = 'mass.s';
     'mass.flange_b.s' = 'mass.s';
     'signForce.v' = der('signForce.s');
-    'signForce.f' = -(-3228.0) * (2.0 / (1.0 + exp(-'signForce.v' / 7.853981633974483e-4)) - 1.0);
+    'signForce.f' = -(-3228.0) * (2.0 / (1.0 + 'Modelica.Math.exp'(-'signForce.v' / 7.853981633974483e-4)) - 1.0);
     'signForce.f' = 'signForce.flange.f';
     'signForce.s' = 'signForce.flange.s' - 'signForce.s_support';
     'signForce.s_support' = 0.0;

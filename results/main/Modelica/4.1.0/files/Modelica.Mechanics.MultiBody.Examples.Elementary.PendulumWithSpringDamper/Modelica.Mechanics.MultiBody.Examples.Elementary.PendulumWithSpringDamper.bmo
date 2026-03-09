@@ -1,98 +1,5 @@
 //! base 0.1.0
 package 'PendulumWithSpringDamper'
-  function 'Modelica.Mechanics.MultiBody.Frames.resolve1' "Transform vector from frame 2 to frame 1"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v2';
-    output Real[3] 'v1';
-  algorithm
-    'v1' := {'R'.'T'[1,1] * 'v2'[1] + 'R'.'T'[2,1] * 'v2'[2] + 'R'.'T'[3,1] * 'v2'[3], 'R'.'T'[1,2] * 'v2'[1] + 'R'.'T'[2,2] * 'v2'[2] + 'R'.'T'[3,2] * 'v2'[3], 'R'.'T'[1,3] * 'v2'[1] + 'R'.'T'[2,3] * 'v2'[2] + 'R'.'T'[3,3] * 'v2'[3]};
-    annotation(derivative(order = 1, noDerivative = 'R') = 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.resolve1';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.resolve2' "Transform vector from frame 1 to frame 2"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v1';
-    output Real[3] 'v2';
-  algorithm
-    'v2' := {'R'.'T'[1,1] * 'v1'[1] + 'R'.'T'[1,2] * 'v1'[2] + 'R'.'T'[1,3] * 'v1'[3], 'R'.'T'[2,1] * 'v1'[1] + 'R'.'T'[2,2] * 'v1'[2] + 'R'.'T'[2,3] * 'v1'[3], 'R'.'T'[3,1] * 'v1'[1] + 'R'.'T'[3,2] * 'v1'[2] + 'R'.'T'[3,3] * 'v1'[3]};
-    annotation(derivative(order = 1, noDerivative = 'R') = 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve2_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.resolve2';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent' "Maximum of the input arguments, without event and function can be differentiated"
-    input Real 'u1';
-    input Real 'u2';
-    output Real 'y';
-  algorithm
-    'y' := if 'u1' > 'u2' then 'u1' else 'u2';
-    annotation(derivative(order = 1) = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_d', LateInline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_d' "First derivative of function maxWithoutEvent(..)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'u1_d';
-    input Real 'u2_d';
-    output Real 'y_d';
-  algorithm
-    'y_d' := if 'u1' > 'u2' then 'u1_d' else 'u2_d';
-    annotation(derivative(order = 2) = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_dd', LateInline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_d';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_dd' "First derivative of function maxWithoutEvent_d(..)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'u1_d';
-    input Real 'u2_d';
-    input Real 'u1_dd';
-    input Real 'u2_dd';
-    output Real 'y_dd';
-  algorithm
-    'y_dd' := if 'u1' > 'u2' then 'u1_dd' else 'u2_dd';
-    annotation(LateInline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_dd';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der' "Derivative of function Frames.resolve1(..)"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v2';
-    input Real[3] 'v2_der';
-    output Real[3] 'v1_der';
-  algorithm
-    'v1_der' := 'Modelica.Mechanics.MultiBody.Frames.resolve1'('R', {'v2_der'[1] + 'R'.'w'[2] * 'v2'[3] - 'R'.'w'[3] * 'v2'[2], 'v2_der'[2] + 'R'.'w'[3] * 'v2'[1] - 'R'.'w'[1] * 'v2'[3], 'v2_der'[3] + 'R'.'w'[1] * 'v2'[2] - 'R'.'w'[2] * 'v2'[1]});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve2_der' "Derivative of function Frames.resolve2(..)"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v1';
-    input Real[3] 'v1_der';
-    output Real[3] 'v2_der';
-  algorithm
-    'v2_der' := 'Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1_der') - {'R'.'w'[2] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[3] - 'R'.'w'[3] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[2], 'R'.'w'[3] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[1] - 'R'.'w'[1] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[3], 'R'.'w'[1] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[2] - 'R'.'w'[2] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[1]};
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve2_der';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
-    input Real[3] 'n_x';
-    input Real[3] 'n_y';
-    output Real[3, 3] 'T';
-    Real[3] 'e_x'(each unit = "1") = if sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]) < 1e-10 then {1.0, 0.0, 0.0} else smooth(0, if sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]) >= 2.220446049250313e-14 then {'n_x'[1] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]), 'n_x'[2] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]), 'n_x'[3] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3])} else {'n_x'[1] / 2.220446049250313e-14, 'n_x'[2] / 2.220446049250313e-14, 'n_x'[3] / 2.220446049250313e-14});
-    Real[3] 'e_y'(each unit = "1") = if sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]) < 1e-10 then {0.0, 1.0, 0.0} else smooth(0, if sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]) >= 2.220446049250313e-14 then {'n_y'[1] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]), 'n_y'[2] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]), 'n_y'[3] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3])} else {'n_y'[1] / 2.220446049250313e-14, 'n_y'[2] / 2.220446049250313e-14, 'n_y'[3] / 2.220446049250313e-14});
-    Real[3] 'n_z_aux'(each unit = "1") = {'e_x'[2] * 'e_y'[3] - 'e_x'[3] * 'e_y'[2], 'e_x'[3] * 'e_y'[1] - 'e_x'[1] * 'e_y'[3], 'e_x'[1] * 'e_y'[2] - 'e_x'[2] * 'e_y'[1]};
-    Real[3] 'n_y_aux'(each unit = "1") = if 'n_z_aux'[1] * 'n_z_aux'[1] + 'n_z_aux'[2] * 'n_z_aux'[2] + 'n_z_aux'[3] * 'n_z_aux'[3] > 1e-6 then 'e_y' else if abs('e_x'[1]) > 1e-6 then {0.0, 1.0, 0.0} else {1.0, 0.0, 0.0};
-    Real[3] 'e_z_aux'(each unit = "1") = {'e_x'[2] * 'n_y_aux'[3] - 'e_x'[3] * 'n_y_aux'[2], 'e_x'[3] * 'n_y_aux'[1] - 'e_x'[1] * 'n_y_aux'[3], 'e_x'[1] * 'n_y_aux'[2] - 'e_x'[2] * 'n_y_aux'[1]};
-    Real[3] 'e_z'(each unit = "1") = smooth(0, if sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]) >= 2.220446049250313e-14 then {'e_z_aux'[1] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]), 'e_z_aux'[2] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]), 'e_z_aux'[3] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3])} else {'e_z_aux'[1] / 2.220446049250313e-14, 'e_z_aux'[2] / 2.220446049250313e-14, 'e_z_aux'[3] / 2.220446049250313e-14});
-  algorithm
-    'T' := {'e_x', {'e_z'[2] * 'e_x'[3] - 'e_z'[3] * 'e_x'[2], 'e_z'[3] * 'e_x'[1] - 'e_z'[1] * 'e_x'[3], 'e_z'[1] * 'e_x'[2] - 'e_z'[2] * 'e_x'[1]}, 'e_z'};
-  end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
-
-  function 'Modelica.Units.Conversions.to_unit1' "Change the unit of a Real number to unit=\"1\""
-    input Real 'r';
-    output Real 'result'(unit = "1");
-  algorithm
-    'result' := 'r';
-    annotation(Inline = true);
-  end 'Modelica.Units.Conversions.to_unit1';
-
   type 'Modelica.Mechanics.MultiBody.Types.GravityTypes' = enumeration('NoGravity', 'UniformGravity', 'PointGravity');
 
   record 'Modelica.Mechanics.MultiBody.Frames.Orientation'
@@ -1676,12 +1583,12 @@ package 'PendulumWithSpringDamper'
     'world.x_arrowHead.specularCoefficient' = 0.0;
     'world.x_label.diameter' = 0.015;
     'world.x_label.specularCoefficient' = 0.0;
-    'world.x_label.cylinders[1].length' = sqrt(('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'));
+    'world.x_label.cylinders[1].length' = sqrt({'world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'} * {'world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'});
     'world.x_label.cylinders[1].width' = 'world.x_label.diameter';
     'world.x_label.cylinders[1].height' = 'world.x_label.diameter';
     'world.x_label.cylinders[1].extra' = 0.0;
     'world.x_label.cylinders[1].specularCoefficient' = 'world.x_label.specularCoefficient';
-    'world.x_label.cylinders[2].length' = sqrt(('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'));
+    'world.x_label.cylinders[2].length' = sqrt({'world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'} * {'world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'});
     'world.x_label.cylinders[2].width' = 'world.x_label.diameter';
     'world.x_label.cylinders[2].height' = 'world.x_label.diameter';
     'world.x_label.cylinders[2].extra' = 0.0;
@@ -1698,12 +1605,12 @@ package 'PendulumWithSpringDamper'
     'world.y_arrowHead.specularCoefficient' = 0.0;
     'world.y_label.diameter' = 0.015;
     'world.y_label.specularCoefficient' = 0.0;
-    'world.y_label.cylinders[1].length' = sqrt(('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'));
+    'world.y_label.cylinders[1].length' = sqrt({'world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'} * {'world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'});
     'world.y_label.cylinders[1].width' = 'world.y_label.diameter';
     'world.y_label.cylinders[1].height' = 'world.y_label.diameter';
     'world.y_label.cylinders[1].extra' = 0.0;
     'world.y_label.cylinders[1].specularCoefficient' = 'world.y_label.specularCoefficient';
-    'world.y_label.cylinders[2].length' = sqrt(('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'));
+    'world.y_label.cylinders[2].length' = sqrt({'world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'} * {'world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'});
     'world.y_label.cylinders[2].width' = 'world.y_label.diameter';
     'world.y_label.cylinders[2].height' = 'world.y_label.diameter';
     'world.y_label.cylinders[2].extra' = 0.0;
@@ -1720,17 +1627,17 @@ package 'PendulumWithSpringDamper'
     'world.z_arrowHead.specularCoefficient' = 0.0;
     'world.z_label.diameter' = 0.015;
     'world.z_label.specularCoefficient' = 0.0;
-    'world.z_label.cylinders[1].length' = sqrt(('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'));
+    'world.z_label.cylinders[1].length' = sqrt({'world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'} * {'world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'});
     'world.z_label.cylinders[1].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[1].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[1].extra' = 0.0;
     'world.z_label.cylinders[1].specularCoefficient' = 'world.z_label.specularCoefficient';
-    'world.z_label.cylinders[2].length' = sqrt(('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'));
+    'world.z_label.cylinders[2].length' = sqrt({'world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'} * {'world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'});
     'world.z_label.cylinders[2].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[2].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[2].extra' = 0.0;
     'world.z_label.cylinders[2].specularCoefficient' = 'world.z_label.specularCoefficient';
-    'world.z_label.cylinders[3].length' = sqrt(('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'));
+    'world.z_label.cylinders[3].length' = sqrt({'world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'} * {'world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'});
     'world.z_label.cylinders[3].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[3].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[3].extra' = 0.0;
@@ -2113,9 +2020,9 @@ package 'PendulumWithSpringDamper'
     'world.x_label.R_lines[3,1]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,1]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,1]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,1]';
     'world.x_label.R_lines[3,2]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,2]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,2]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,2]';
     'world.x_label.R_lines[3,3]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,3]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,3]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,3]';
-    'world.x_label.r_abs[1]' = 'world.x_label.r[1]' + 'world.x_label.R.T[1,1]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,1]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,1]' * 'world.x_label.r_lines[3]';
-    'world.x_label.r_abs[2]' = 'world.x_label.r[2]' + 'world.x_label.R.T[1,2]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,2]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,2]' * 'world.x_label.r_lines[3]';
-    'world.x_label.r_abs[3]' = 'world.x_label.r[3]' + 'world.x_label.R.T[1,3]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,3]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,3]' * 'world.x_label.r_lines[3]';
+    'world.x_label.r_abs[1]' = 'world.x_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[1];
+    'world.x_label.r_abs[2]' = 'world.x_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[2];
+    'world.x_label.r_abs[3]' = 'world.x_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[3];
     'world.x_label.cylinders[1].R.T[1,1]' = 'world.x_label.R.T[1,1]';
     'world.x_label.cylinders[1].R.T[1,2]' = 'world.x_label.R.T[1,2]';
     'world.x_label.cylinders[1].R.T[1,3]' = 'world.x_label.R.T[1,3]';
@@ -2128,15 +2035,15 @@ package 'PendulumWithSpringDamper'
     'world.x_label.cylinders[1].R.w[1]' = 'world.x_label.R.w[1]';
     'world.x_label.cylinders[1].R.w[2]' = 'world.x_label.R.w[2]';
     'world.x_label.cylinders[1].R.w[3]' = 'world.x_label.R.w[3]';
-    'world.x_label.cylinders[1].r[1]' = 'world.x_label.r_abs[1]' + 'world.x_label.R_lines[1,1]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,1]' * 'world.x_label.lines[1,1,2]';
-    'world.x_label.cylinders[1].r[2]' = 'world.x_label.r_abs[2]' + 'world.x_label.R_lines[1,2]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,2]' * 'world.x_label.lines[1,1,2]';
-    'world.x_label.cylinders[1].r[3]' = 'world.x_label.r_abs[3]' + 'world.x_label.R_lines[1,3]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,3]' * 'world.x_label.lines[1,1,2]';
+    'world.x_label.cylinders[1].r[1]' = 'world.x_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[1];
+    'world.x_label.cylinders[1].r[2]' = 'world.x_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[2];
+    'world.x_label.cylinders[1].r[3]' = 'world.x_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[3];
     'world.x_label.cylinders[1].r_shape[1]' = 0.0;
     'world.x_label.cylinders[1].r_shape[2]' = 0.0;
     'world.x_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.x_label.cylinders[1].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
-    'world.x_label.cylinders[1].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
-    'world.x_label.cylinders[1].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
+    'world.x_label.cylinders[1].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,1]' * 0.0;
+    'world.x_label.cylinders[1].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,2]' * 0.0;
+    'world.x_label.cylinders[1].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,3]' * 0.0;
     'world.x_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.x_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.x_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -2155,15 +2062,15 @@ package 'PendulumWithSpringDamper'
     'world.x_label.cylinders[2].R.w[1]' = 'world.x_label.R.w[1]';
     'world.x_label.cylinders[2].R.w[2]' = 'world.x_label.R.w[2]';
     'world.x_label.cylinders[2].R.w[3]' = 'world.x_label.R.w[3]';
-    'world.x_label.cylinders[2].r[1]' = 'world.x_label.r_abs[1]' + 'world.x_label.R_lines[1,1]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,1]' * 'world.x_label.lines[2,1,2]';
-    'world.x_label.cylinders[2].r[2]' = 'world.x_label.r_abs[2]' + 'world.x_label.R_lines[1,2]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,2]' * 'world.x_label.lines[2,1,2]';
-    'world.x_label.cylinders[2].r[3]' = 'world.x_label.r_abs[3]' + 'world.x_label.R_lines[1,3]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,3]' * 'world.x_label.lines[2,1,2]';
+    'world.x_label.cylinders[2].r[1]' = 'world.x_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[1];
+    'world.x_label.cylinders[2].r[2]' = 'world.x_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[2];
+    'world.x_label.cylinders[2].r[3]' = 'world.x_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[3];
     'world.x_label.cylinders[2].r_shape[1]' = 0.0;
     'world.x_label.cylinders[2].r_shape[2]' = 0.0;
     'world.x_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.x_label.cylinders[2].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
-    'world.x_label.cylinders[2].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
-    'world.x_label.cylinders[2].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
+    'world.x_label.cylinders[2].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,1]' * 0.0;
+    'world.x_label.cylinders[2].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,2]' * 0.0;
+    'world.x_label.cylinders[2].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,3]' * 0.0;
     'world.x_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.x_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.x_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -2277,9 +2184,9 @@ package 'PendulumWithSpringDamper'
     'world.y_label.R_lines[3,1]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,1]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,1]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,1]';
     'world.y_label.R_lines[3,2]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,2]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,2]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,2]';
     'world.y_label.R_lines[3,3]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,3]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,3]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,3]';
-    'world.y_label.r_abs[1]' = 'world.y_label.r[1]' + 'world.y_label.R.T[1,1]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,1]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,1]' * 'world.y_label.r_lines[3]';
-    'world.y_label.r_abs[2]' = 'world.y_label.r[2]' + 'world.y_label.R.T[1,2]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,2]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,2]' * 'world.y_label.r_lines[3]';
-    'world.y_label.r_abs[3]' = 'world.y_label.r[3]' + 'world.y_label.R.T[1,3]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,3]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,3]' * 'world.y_label.r_lines[3]';
+    'world.y_label.r_abs[1]' = 'world.y_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[1];
+    'world.y_label.r_abs[2]' = 'world.y_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[2];
+    'world.y_label.r_abs[3]' = 'world.y_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[3];
     'world.y_label.cylinders[1].R.T[1,1]' = 'world.y_label.R.T[1,1]';
     'world.y_label.cylinders[1].R.T[1,2]' = 'world.y_label.R.T[1,2]';
     'world.y_label.cylinders[1].R.T[1,3]' = 'world.y_label.R.T[1,3]';
@@ -2292,15 +2199,15 @@ package 'PendulumWithSpringDamper'
     'world.y_label.cylinders[1].R.w[1]' = 'world.y_label.R.w[1]';
     'world.y_label.cylinders[1].R.w[2]' = 'world.y_label.R.w[2]';
     'world.y_label.cylinders[1].R.w[3]' = 'world.y_label.R.w[3]';
-    'world.y_label.cylinders[1].r[1]' = 'world.y_label.r_abs[1]' + 'world.y_label.R_lines[1,1]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,1]' * 'world.y_label.lines[1,1,2]';
-    'world.y_label.cylinders[1].r[2]' = 'world.y_label.r_abs[2]' + 'world.y_label.R_lines[1,2]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,2]' * 'world.y_label.lines[1,1,2]';
-    'world.y_label.cylinders[1].r[3]' = 'world.y_label.r_abs[3]' + 'world.y_label.R_lines[1,3]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,3]' * 'world.y_label.lines[1,1,2]';
+    'world.y_label.cylinders[1].r[1]' = 'world.y_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[1];
+    'world.y_label.cylinders[1].r[2]' = 'world.y_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[2];
+    'world.y_label.cylinders[1].r[3]' = 'world.y_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[3];
     'world.y_label.cylinders[1].r_shape[1]' = 0.0;
     'world.y_label.cylinders[1].r_shape[2]' = 0.0;
     'world.y_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.y_label.cylinders[1].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
-    'world.y_label.cylinders[1].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
-    'world.y_label.cylinders[1].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
+    'world.y_label.cylinders[1].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,1]' * 0.0;
+    'world.y_label.cylinders[1].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,2]' * 0.0;
+    'world.y_label.cylinders[1].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,3]' * 0.0;
     'world.y_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.y_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.y_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -2319,15 +2226,15 @@ package 'PendulumWithSpringDamper'
     'world.y_label.cylinders[2].R.w[1]' = 'world.y_label.R.w[1]';
     'world.y_label.cylinders[2].R.w[2]' = 'world.y_label.R.w[2]';
     'world.y_label.cylinders[2].R.w[3]' = 'world.y_label.R.w[3]';
-    'world.y_label.cylinders[2].r[1]' = 'world.y_label.r_abs[1]' + 'world.y_label.R_lines[1,1]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,1]' * 'world.y_label.lines[2,1,2]';
-    'world.y_label.cylinders[2].r[2]' = 'world.y_label.r_abs[2]' + 'world.y_label.R_lines[1,2]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,2]' * 'world.y_label.lines[2,1,2]';
-    'world.y_label.cylinders[2].r[3]' = 'world.y_label.r_abs[3]' + 'world.y_label.R_lines[1,3]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,3]' * 'world.y_label.lines[2,1,2]';
+    'world.y_label.cylinders[2].r[1]' = 'world.y_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[1];
+    'world.y_label.cylinders[2].r[2]' = 'world.y_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[2];
+    'world.y_label.cylinders[2].r[3]' = 'world.y_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[3];
     'world.y_label.cylinders[2].r_shape[1]' = 0.0;
     'world.y_label.cylinders[2].r_shape[2]' = 0.0;
     'world.y_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.y_label.cylinders[2].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
-    'world.y_label.cylinders[2].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
-    'world.y_label.cylinders[2].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
+    'world.y_label.cylinders[2].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,1]' * 0.0;
+    'world.y_label.cylinders[2].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,2]' * 0.0;
+    'world.y_label.cylinders[2].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,3]' * 0.0;
     'world.y_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.y_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.y_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -2445,9 +2352,9 @@ package 'PendulumWithSpringDamper'
     'world.z_label.R_lines[3,1]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,1]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,1]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,1]';
     'world.z_label.R_lines[3,2]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,2]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,2]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,2]';
     'world.z_label.R_lines[3,3]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,3]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,3]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,3]';
-    'world.z_label.r_abs[1]' = 'world.z_label.r[1]' + 'world.z_label.R.T[1,1]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,1]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,1]' * 'world.z_label.r_lines[3]';
-    'world.z_label.r_abs[2]' = 'world.z_label.r[2]' + 'world.z_label.R.T[1,2]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,2]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,2]' * 'world.z_label.r_lines[3]';
-    'world.z_label.r_abs[3]' = 'world.z_label.r[3]' + 'world.z_label.R.T[1,3]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,3]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,3]' * 'world.z_label.r_lines[3]';
+    'world.z_label.r_abs[1]' = 'world.z_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[1];
+    'world.z_label.r_abs[2]' = 'world.z_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[2];
+    'world.z_label.r_abs[3]' = 'world.z_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[3];
     'world.z_label.cylinders[1].R.T[1,1]' = 'world.z_label.R.T[1,1]';
     'world.z_label.cylinders[1].R.T[1,2]' = 'world.z_label.R.T[1,2]';
     'world.z_label.cylinders[1].R.T[1,3]' = 'world.z_label.R.T[1,3]';
@@ -2460,15 +2367,15 @@ package 'PendulumWithSpringDamper'
     'world.z_label.cylinders[1].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[1].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[1].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[1].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[1,1,2]';
-    'world.z_label.cylinders[1].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[1,1,2]';
-    'world.z_label.cylinders[1].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[1,1,2]';
+    'world.z_label.cylinders[1].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[1].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[1].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[3];
     'world.z_label.cylinders[1].r_shape[1]' = 0.0;
     'world.z_label.cylinders[1].r_shape[2]' = 0.0;
     'world.z_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[1].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
-    'world.z_label.cylinders[1].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
-    'world.z_label.cylinders[1].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
+    'world.z_label.cylinders[1].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[1].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[1].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -2487,15 +2394,15 @@ package 'PendulumWithSpringDamper'
     'world.z_label.cylinders[2].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[2].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[2].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[2].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[2,1,2]';
-    'world.z_label.cylinders[2].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[2,1,2]';
-    'world.z_label.cylinders[2].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[2,1,2]';
+    'world.z_label.cylinders[2].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[2].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[2].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[3];
     'world.z_label.cylinders[2].r_shape[1]' = 0.0;
     'world.z_label.cylinders[2].r_shape[2]' = 0.0;
     'world.z_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[2].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
-    'world.z_label.cylinders[2].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
-    'world.z_label.cylinders[2].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
+    'world.z_label.cylinders[2].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[2].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[2].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -2514,15 +2421,15 @@ package 'PendulumWithSpringDamper'
     'world.z_label.cylinders[3].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[3].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[3].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[3].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[3,1,2]';
-    'world.z_label.cylinders[3].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[3,1,2]';
-    'world.z_label.cylinders[3].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[3,1,2]';
+    'world.z_label.cylinders[3].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[3].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[3].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[3];
     'world.z_label.cylinders[3].r_shape[1]' = 0.0;
     'world.z_label.cylinders[3].r_shape[2]' = 0.0;
     'world.z_label.cylinders[3].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[3].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
-    'world.z_label.cylinders[3].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
-    'world.z_label.cylinders[3].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
+    'world.z_label.cylinders[3].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[3].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[3].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[3].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[3].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[3].widthDirection[3]' = 0.0;
@@ -2674,9 +2581,9 @@ package 'PendulumWithSpringDamper'
     'body1.phi_dd[1]' = 0.0;
     'body1.phi_dd[2]' = 0.0;
     'body1.phi_dd[3]' = 0.0;
-    'body1.g_0[1]' = 0.0;
-    'body1.g_0[2]' = -9.80665;
-    'body1.g_0[3]' = 0.0;
+    'body1.g_0[1]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[1] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[1] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[2] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[2] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[3] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[3]) * (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[1] / 'Modelica.Math.Vectors.length'('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))) else 0.0;
+    'body1.g_0[2]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then -9.80665 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[1] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[1] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[2] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[2] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[3] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[3]) * (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[2] / 'Modelica.Math.Vectors.length'('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))) else 0.0;
+    'body1.g_0[3]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[1] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[1] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[2] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[2] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[3] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[3]) * (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))[3] / 'Modelica.Math.Vectors.length'('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.0, 0.0, 0.0}))) else 0.0;
     'body1.v_0[1]' = der('body1.frame_a.r_0[1]');
     'body1.v_0[2]' = der('body1.frame_a.r_0[2]');
     'body1.v_0[3]' = der('body1.frame_a.r_0[3]');
@@ -2779,9 +2686,9 @@ package 'PendulumWithSpringDamper'
     'spring1.lineForce.lineShape.lengthDirection[1]' = 'spring1.lineForce.e_rel_0[1]';
     'spring1.lineForce.lineShape.lengthDirection[2]' = 'spring1.lineForce.e_rel_0[2]';
     'spring1.lineForce.lineShape.lengthDirection[3]' = 'spring1.lineForce.e_rel_0[3]';
-    'spring1.lineForce.lineShape.widthDirection[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('spring1.lineForce.frame_a.R', {0.0, 1.0, 0.0}))[1];
-    'spring1.lineForce.lineShape.widthDirection[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('spring1.lineForce.frame_a.R', {0.0, 1.0, 0.0}))[2];
-    'spring1.lineForce.lineShape.widthDirection[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('spring1.lineForce.frame_a.R', {0.0, 1.0, 0.0}))[3];
+    'spring1.lineForce.lineShape.widthDirection[1]' = 'spring1.lineForce.frame_a.R.T[1,1]' * 0.0 + 'spring1.lineForce.frame_a.R.T[2,1]' * 1.0 + 'spring1.lineForce.frame_a.R.T[3,1]' * 0.0;
+    'spring1.lineForce.lineShape.widthDirection[2]' = 'spring1.lineForce.frame_a.R.T[1,2]' * 0.0 + 'spring1.lineForce.frame_a.R.T[2,2]' * 1.0 + 'spring1.lineForce.frame_a.R.T[3,2]' * 0.0;
+    'spring1.lineForce.lineShape.widthDirection[3]' = 'spring1.lineForce.frame_a.R.T[1,3]' * 0.0 + 'spring1.lineForce.frame_a.R.T[2,3]' * 1.0 + 'spring1.lineForce.frame_a.R.T[3,3]' * 0.0;
     'spring1.lineForce.lineShape.color[1]' = 'spring1.lineForce.lineShapeColor[1]';
     'spring1.lineForce.lineShape.color[2]' = 'spring1.lineForce.lineShapeColor[2]';
     'spring1.lineForce.lineShape.color[3]' = 'spring1.lineForce.lineShapeColor[3]';
@@ -2809,7 +2716,7 @@ package 'PendulumWithSpringDamper'
     'spring1.lineForce.r_rel_0[2]' = 'spring1.lineForce.frame_b.r_0[2]' - 'spring1.lineForce.frame_a.r_0[2]';
     'spring1.lineForce.r_rel_0[3]' = 'spring1.lineForce.frame_b.r_0[3]' - 'spring1.lineForce.frame_a.r_0[3]';
     'spring1.lineForce.length' = sqrt('spring1.lineForce.r_rel_0[1]' * 'spring1.lineForce.r_rel_0[1]' + 'spring1.lineForce.r_rel_0[2]' * 'spring1.lineForce.r_rel_0[2]' + 'spring1.lineForce.r_rel_0[3]' * 'spring1.lineForce.r_rel_0[3]');
-    'spring1.lineForce.s' = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent'('spring1.lineForce.length', 1e-10);
+    'spring1.lineForce.s' = if 'spring1.lineForce.length' > 1e-10 then 'spring1.lineForce.length' else 1e-10;
     'spring1.lineForce.e_rel_0[1]' = 'spring1.lineForce.r_rel_0[1]' / 'spring1.lineForce.s';
     'spring1.lineForce.e_rel_0[2]' = 'spring1.lineForce.r_rel_0[2]' / 'spring1.lineForce.s';
     'spring1.lineForce.e_rel_0[3]' = 'spring1.lineForce.r_rel_0[3]' / 'spring1.lineForce.s';
@@ -2823,9 +2730,9 @@ package 'PendulumWithSpringDamper'
     'spring1.spring.s_rel' = 'spring1.spring.flange_b.s' - 'spring1.spring.flange_a.s';
     'spring1.spring.flange_b.f' = 'spring1.spring.f';
     'spring1.spring.flange_a.f' = -'spring1.spring.f';
-    'spring1.r_rel_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('spring1.frame_a.R', 'spring1.r_rel_0'))[1];
-    'spring1.r_rel_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('spring1.frame_a.R', 'spring1.r_rel_0'))[2];
-    'spring1.r_rel_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('spring1.frame_a.R', 'spring1.r_rel_0'))[3];
+    'spring1.r_rel_a[1]' = 'spring1.frame_a.R.T[1,1]' * 'spring1.r_rel_0[1]' + 'spring1.frame_a.R.T[1,2]' * 'spring1.r_rel_0[2]' + 'spring1.frame_a.R.T[1,3]' * 'spring1.r_rel_0[3]';
+    'spring1.r_rel_a[2]' = 'spring1.frame_a.R.T[2,1]' * 'spring1.r_rel_0[1]' + 'spring1.frame_a.R.T[2,2]' * 'spring1.r_rel_0[2]' + 'spring1.frame_a.R.T[2,3]' * 'spring1.r_rel_0[3]';
+    'spring1.r_rel_a[3]' = 'spring1.frame_a.R.T[3,1]' * 'spring1.r_rel_0[1]' + 'spring1.frame_a.R.T[3,2]' * 'spring1.r_rel_0[2]' + 'spring1.frame_a.R.T[3,3]' * 'spring1.r_rel_0[3]';
     'spring1.e_a[1]' = 'spring1.r_rel_a[1]' / 'spring1.s';
     'spring1.e_a[2]' = 'spring1.r_rel_a[2]' / 'spring1.s';
     'spring1.e_a[3]' = 'spring1.r_rel_a[3]' / 'spring1.s';
@@ -2850,24 +2757,24 @@ package 'PendulumWithSpringDamper'
     'damper1.f' = der('damper1.s');
     'damper1.lossPower' = 'damper1.f' * der('damper1.s');
     'damper1.TheatPort' = 293.15;
-    'damper1.r_rel_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('damper1.frame_a.R', 'damper1.r_rel_0'))[1];
-    'damper1.r_rel_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('damper1.frame_a.R', 'damper1.r_rel_0'))[2];
-    'damper1.r_rel_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('damper1.frame_a.R', 'damper1.r_rel_0'))[3];
+    'damper1.r_rel_a[1]' = 'damper1.frame_a.R.T[1,1]' * 'damper1.r_rel_0[1]' + 'damper1.frame_a.R.T[1,2]' * 'damper1.r_rel_0[2]' + 'damper1.frame_a.R.T[1,3]' * 'damper1.r_rel_0[3]';
+    'damper1.r_rel_a[2]' = 'damper1.frame_a.R.T[2,1]' * 'damper1.r_rel_0[1]' + 'damper1.frame_a.R.T[2,2]' * 'damper1.r_rel_0[2]' + 'damper1.frame_a.R.T[2,3]' * 'damper1.r_rel_0[3]';
+    'damper1.r_rel_a[3]' = 'damper1.frame_a.R.T[3,1]' * 'damper1.r_rel_0[1]' + 'damper1.frame_a.R.T[3,2]' * 'damper1.r_rel_0[2]' + 'damper1.frame_a.R.T[3,3]' * 'damper1.r_rel_0[3]';
     'damper1.e_a[1]' = 'damper1.r_rel_a[1]' / 'damper1.s';
     'damper1.e_a[2]' = 'damper1.r_rel_a[2]' / 'damper1.s';
     'damper1.e_a[3]' = 'damper1.r_rel_a[3]' / 'damper1.s';
     'damper1.frame_a.f[1]' = -'damper1.e_a[1]' * 'damper1.f';
     'damper1.frame_a.f[2]' = -'damper1.e_a[2]' * 'damper1.f';
     'damper1.frame_a.f[3]' = -'damper1.e_a[3]' * 'damper1.f';
-    'damper1.frame_b.f[1]' = -('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{'damper1.frame_b.R.T[1,1]' * 'damper1.frame_a.R.T[1,1]' + 'damper1.frame_b.R.T[1,2]' * 'damper1.frame_a.R.T[1,2]' + 'damper1.frame_b.R.T[1,3]' * 'damper1.frame_a.R.T[1,3]', 'damper1.frame_b.R.T[1,1]' * 'damper1.frame_a.R.T[2,1]' + 'damper1.frame_b.R.T[1,2]' * 'damper1.frame_a.R.T[2,2]' + 'damper1.frame_b.R.T[1,3]' * 'damper1.frame_a.R.T[2,3]', 'damper1.frame_b.R.T[1,1]' * 'damper1.frame_a.R.T[3,1]' + 'damper1.frame_b.R.T[1,2]' * 'damper1.frame_a.R.T[3,2]' + 'damper1.frame_b.R.T[1,3]' * 'damper1.frame_a.R.T[3,3]'}, {'damper1.frame_b.R.T[2,1]' * 'damper1.frame_a.R.T[1,1]' + 'damper1.frame_b.R.T[2,2]' * 'damper1.frame_a.R.T[1,2]' + 'damper1.frame_b.R.T[2,3]' * 'damper1.frame_a.R.T[1,3]', 'damper1.frame_b.R.T[2,1]' * 'damper1.frame_a.R.T[2,1]' + 'damper1.frame_b.R.T[2,2]' * 'damper1.frame_a.R.T[2,2]' + 'damper1.frame_b.R.T[2,3]' * 'damper1.frame_a.R.T[2,3]', 'damper1.frame_b.R.T[2,1]' * 'damper1.frame_a.R.T[3,1]' + 'damper1.frame_b.R.T[2,2]' * 'damper1.frame_a.R.T[3,2]' + 'damper1.frame_b.R.T[2,3]' * 'damper1.frame_a.R.T[3,3]'}, {'damper1.frame_b.R.T[3,1]' * 'damper1.frame_a.R.T[1,1]' + 'damper1.frame_b.R.T[3,2]' * 'damper1.frame_a.R.T[1,2]' + 'damper1.frame_b.R.T[3,3]' * 'damper1.frame_a.R.T[1,3]', 'damper1.frame_b.R.T[3,1]' * 'damper1.frame_a.R.T[2,1]' + 'damper1.frame_b.R.T[3,2]' * 'damper1.frame_a.R.T[2,2]' + 'damper1.frame_b.R.T[3,3]' * 'damper1.frame_a.R.T[2,3]', 'damper1.frame_b.R.T[3,1]' * 'damper1.frame_a.R.T[3,1]' + 'damper1.frame_b.R.T[3,2]' * 'damper1.frame_a.R.T[3,2]' + 'damper1.frame_b.R.T[3,3]' * 'damper1.frame_a.R.T[3,3]'}}, 'damper1.frame_b.R.w' - 'Modelica.Mechanics.MultiBody.Frames.resolve2'('damper1.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('damper1.frame_a.R', 'damper1.frame_a.R.w'))), 'damper1.frame_a.f'))[1];
-    'damper1.frame_b.f[2]' = -('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{'damper1.frame_b.R.T[1,1]' * 'damper1.frame_a.R.T[1,1]' + 'damper1.frame_b.R.T[1,2]' * 'damper1.frame_a.R.T[1,2]' + 'damper1.frame_b.R.T[1,3]' * 'damper1.frame_a.R.T[1,3]', 'damper1.frame_b.R.T[1,1]' * 'damper1.frame_a.R.T[2,1]' + 'damper1.frame_b.R.T[1,2]' * 'damper1.frame_a.R.T[2,2]' + 'damper1.frame_b.R.T[1,3]' * 'damper1.frame_a.R.T[2,3]', 'damper1.frame_b.R.T[1,1]' * 'damper1.frame_a.R.T[3,1]' + 'damper1.frame_b.R.T[1,2]' * 'damper1.frame_a.R.T[3,2]' + 'damper1.frame_b.R.T[1,3]' * 'damper1.frame_a.R.T[3,3]'}, {'damper1.frame_b.R.T[2,1]' * 'damper1.frame_a.R.T[1,1]' + 'damper1.frame_b.R.T[2,2]' * 'damper1.frame_a.R.T[1,2]' + 'damper1.frame_b.R.T[2,3]' * 'damper1.frame_a.R.T[1,3]', 'damper1.frame_b.R.T[2,1]' * 'damper1.frame_a.R.T[2,1]' + 'damper1.frame_b.R.T[2,2]' * 'damper1.frame_a.R.T[2,2]' + 'damper1.frame_b.R.T[2,3]' * 'damper1.frame_a.R.T[2,3]', 'damper1.frame_b.R.T[2,1]' * 'damper1.frame_a.R.T[3,1]' + 'damper1.frame_b.R.T[2,2]' * 'damper1.frame_a.R.T[3,2]' + 'damper1.frame_b.R.T[2,3]' * 'damper1.frame_a.R.T[3,3]'}, {'damper1.frame_b.R.T[3,1]' * 'damper1.frame_a.R.T[1,1]' + 'damper1.frame_b.R.T[3,2]' * 'damper1.frame_a.R.T[1,2]' + 'damper1.frame_b.R.T[3,3]' * 'damper1.frame_a.R.T[1,3]', 'damper1.frame_b.R.T[3,1]' * 'damper1.frame_a.R.T[2,1]' + 'damper1.frame_b.R.T[3,2]' * 'damper1.frame_a.R.T[2,2]' + 'damper1.frame_b.R.T[3,3]' * 'damper1.frame_a.R.T[2,3]', 'damper1.frame_b.R.T[3,1]' * 'damper1.frame_a.R.T[3,1]' + 'damper1.frame_b.R.T[3,2]' * 'damper1.frame_a.R.T[3,2]' + 'damper1.frame_b.R.T[3,3]' * 'damper1.frame_a.R.T[3,3]'}}, 'damper1.frame_b.R.w' - 'Modelica.Mechanics.MultiBody.Frames.resolve2'('damper1.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('damper1.frame_a.R', 'damper1.frame_a.R.w'))), 'damper1.frame_a.f'))[2];
-    'damper1.frame_b.f[3]' = -('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{'damper1.frame_b.R.T[1,1]' * 'damper1.frame_a.R.T[1,1]' + 'damper1.frame_b.R.T[1,2]' * 'damper1.frame_a.R.T[1,2]' + 'damper1.frame_b.R.T[1,3]' * 'damper1.frame_a.R.T[1,3]', 'damper1.frame_b.R.T[1,1]' * 'damper1.frame_a.R.T[2,1]' + 'damper1.frame_b.R.T[1,2]' * 'damper1.frame_a.R.T[2,2]' + 'damper1.frame_b.R.T[1,3]' * 'damper1.frame_a.R.T[2,3]', 'damper1.frame_b.R.T[1,1]' * 'damper1.frame_a.R.T[3,1]' + 'damper1.frame_b.R.T[1,2]' * 'damper1.frame_a.R.T[3,2]' + 'damper1.frame_b.R.T[1,3]' * 'damper1.frame_a.R.T[3,3]'}, {'damper1.frame_b.R.T[2,1]' * 'damper1.frame_a.R.T[1,1]' + 'damper1.frame_b.R.T[2,2]' * 'damper1.frame_a.R.T[1,2]' + 'damper1.frame_b.R.T[2,3]' * 'damper1.frame_a.R.T[1,3]', 'damper1.frame_b.R.T[2,1]' * 'damper1.frame_a.R.T[2,1]' + 'damper1.frame_b.R.T[2,2]' * 'damper1.frame_a.R.T[2,2]' + 'damper1.frame_b.R.T[2,3]' * 'damper1.frame_a.R.T[2,3]', 'damper1.frame_b.R.T[2,1]' * 'damper1.frame_a.R.T[3,1]' + 'damper1.frame_b.R.T[2,2]' * 'damper1.frame_a.R.T[3,2]' + 'damper1.frame_b.R.T[2,3]' * 'damper1.frame_a.R.T[3,3]'}, {'damper1.frame_b.R.T[3,1]' * 'damper1.frame_a.R.T[1,1]' + 'damper1.frame_b.R.T[3,2]' * 'damper1.frame_a.R.T[1,2]' + 'damper1.frame_b.R.T[3,3]' * 'damper1.frame_a.R.T[1,3]', 'damper1.frame_b.R.T[3,1]' * 'damper1.frame_a.R.T[2,1]' + 'damper1.frame_b.R.T[3,2]' * 'damper1.frame_a.R.T[2,2]' + 'damper1.frame_b.R.T[3,3]' * 'damper1.frame_a.R.T[2,3]', 'damper1.frame_b.R.T[3,1]' * 'damper1.frame_a.R.T[3,1]' + 'damper1.frame_b.R.T[3,2]' * 'damper1.frame_a.R.T[3,2]' + 'damper1.frame_b.R.T[3,3]' * 'damper1.frame_a.R.T[3,3]'}}, 'damper1.frame_b.R.w' - 'Modelica.Mechanics.MultiBody.Frames.resolve2'('damper1.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('damper1.frame_a.R', 'damper1.frame_a.R.w'))), 'damper1.frame_a.f'))[3];
+    'damper1.frame_b.f[1]' = -('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.relativeRotation'('damper1.frame_a.R', 'damper1.frame_b.R'), 'damper1.frame_a.f'))[1];
+    'damper1.frame_b.f[2]' = -('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.relativeRotation'('damper1.frame_a.R', 'damper1.frame_b.R'), 'damper1.frame_a.f'))[2];
+    'damper1.frame_b.f[3]' = -('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.relativeRotation'('damper1.frame_a.R', 'damper1.frame_b.R'), 'damper1.frame_a.f'))[3];
     assert(noEvent('damper1.length' > 1e-10), "\nThe distance between the origin of frame_a and the origin of frame_b\nof a line force component became smaller as parameter s_small\n(= a small number, defined in the \"Advanced\" menu). The distance is\nset to s_small, although it is smaller, to avoid a division by zero\nwhen computing the direction of the line force. Possible reasons\nfor this situation:\n- At initial time the distance may already be zero: Change the initial\n  positions of the bodies connected by this element.\n- Hardware stops are not modeled or are modeled not stiff enough.\n  Include stops, e.g., stiff springs, or increase the stiffness\n  if already present.\n- Another error in your model may lead to unrealistically large forces\n  and torques that would in reality destroy the stops.\n- The flange_b connector might be defined by a pre-defined motion,\n  e.g., with Modelica.Mechanics.Translational.Position and the\n  predefined flange_b.s is zero or negative.\n", AssertionLevel.error);
     'damper1.r_rel_0[1]' = 'damper1.frame_b.r_0[1]' - 'damper1.frame_a.r_0[1]';
     'damper1.r_rel_0[2]' = 'damper1.frame_b.r_0[2]' - 'damper1.frame_a.r_0[2]';
     'damper1.r_rel_0[3]' = 'damper1.frame_b.r_0[3]' - 'damper1.frame_a.r_0[3]';
     'damper1.length' = sqrt('damper1.r_rel_0[1]' * 'damper1.r_rel_0[1]' + 'damper1.r_rel_0[2]' * 'damper1.r_rel_0[2]' + 'damper1.r_rel_0[3]' * 'damper1.r_rel_0[3]');
-    'damper1.s' = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent'('damper1.length', 1e-10);
+    'damper1.s' = if 'damper1.length' > 1e-10 then 'damper1.length' else 1e-10;
     'damper1.e_rel_0[1]' = 'damper1.r_rel_0[1]' / 'damper1.s';
     'damper1.e_rel_0[2]' = 'damper1.r_rel_0[2]' / 'damper1.s';
     'damper1.e_rel_0[3]' = 'damper1.r_rel_0[3]' / 'damper1.s';
@@ -2921,18 +2828,18 @@ package 'PendulumWithSpringDamper'
     'revolute.frame_b.r_0[1]' = 'revolute.frame_a.r_0[1]';
     'revolute.frame_b.r_0[2]' = 'revolute.frame_a.r_0[2]';
     'revolute.frame_b.r_0[3]' = 'revolute.frame_a.r_0[3]';
-    'revolute.R_rel.T[1,1]' = cos('revolute.phi');
-    'revolute.R_rel.T[1,2]' = -(-1.0) * sin('revolute.phi');
-    'revolute.R_rel.T[1,3]' = 0.0;
-    'revolute.R_rel.T[2,1]' = -sin('revolute.phi');
-    'revolute.R_rel.T[2,2]' = cos('revolute.phi');
-    'revolute.R_rel.T[2,3]' = 0.0;
-    'revolute.R_rel.T[3,1]' = 0.0;
-    'revolute.R_rel.T[3,2]' = 0.0;
+    'revolute.R_rel.T[1,1]' = 'Modelica.Math.cos'('revolute.phi');
+    'revolute.R_rel.T[1,2]' = -(-1.0) * 'Modelica.Math.sin'('revolute.phi');
+    'revolute.R_rel.T[1,3]' = -0.0 * 'Modelica.Math.sin'('revolute.phi');
+    'revolute.R_rel.T[2,1]' = -1.0 * 'Modelica.Math.sin'('revolute.phi');
+    'revolute.R_rel.T[2,2]' = 'Modelica.Math.cos'('revolute.phi');
+    'revolute.R_rel.T[2,3]' = -(-0.0) * 'Modelica.Math.sin'('revolute.phi');
+    'revolute.R_rel.T[3,1]' = -(-0.0) * 'Modelica.Math.sin'('revolute.phi');
+    'revolute.R_rel.T[3,2]' = -0.0 * 'Modelica.Math.sin'('revolute.phi');
     'revolute.R_rel.T[3,3]' = 1.0;
-    'revolute.R_rel.w[1]' = 0.0;
-    'revolute.R_rel.w[2]' = 0.0;
-    'revolute.R_rel.w[3]' = 'revolute.w';
+    'revolute.R_rel.w[1]' = 0.0 * 'revolute.w';
+    'revolute.R_rel.w[2]' = 0.0 * 'revolute.w';
+    'revolute.R_rel.w[3]' = 1.0 * 'revolute.w';
     'revolute.frame_b.R.T[1,1]' = 'revolute.R_rel.T[1,1]' * 'revolute.frame_a.R.T[1,1]' + 'revolute.R_rel.T[1,2]' * 'revolute.frame_a.R.T[2,1]' + 'revolute.R_rel.T[1,3]' * 'revolute.frame_a.R.T[3,1]';
     'revolute.frame_b.R.T[1,2]' = 'revolute.R_rel.T[1,1]' * 'revolute.frame_a.R.T[1,2]' + 'revolute.R_rel.T[1,2]' * 'revolute.frame_a.R.T[2,2]' + 'revolute.R_rel.T[1,3]' * 'revolute.frame_a.R.T[3,2]';
     'revolute.frame_b.R.T[1,3]' = 'revolute.R_rel.T[1,1]' * 'revolute.frame_a.R.T[1,3]' + 'revolute.R_rel.T[1,2]' * 'revolute.frame_a.R.T[2,3]' + 'revolute.R_rel.T[1,3]' * 'revolute.frame_a.R.T[3,3]';

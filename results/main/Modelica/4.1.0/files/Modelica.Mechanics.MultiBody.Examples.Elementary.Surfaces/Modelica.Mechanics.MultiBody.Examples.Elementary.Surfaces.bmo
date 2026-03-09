@@ -1,54 +1,5 @@
 //! base 0.1.0
 package 'Surfaces'
-  function 'Modelica.Math.sin' "Sine"
-    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    output Real 'y';
-  algorithm
-    'y' := sin('u');
-    annotation(Inline = true);
-  end 'Modelica.Math.sin';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.resolve1' "Transform vector from frame 2 to frame 1"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v2';
-    output Real[3] 'v1';
-  algorithm
-    'v1' := {'R'.'T'[1,1] * 'v2'[1] + 'R'.'T'[2,1] * 'v2'[2] + 'R'.'T'[3,1] * 'v2'[3], 'R'.'T'[1,2] * 'v2'[1] + 'R'.'T'[2,2] * 'v2'[2] + 'R'.'T'[3,2] * 'v2'[3], 'R'.'T'[1,3] * 'v2'[1] + 'R'.'T'[2,3] * 'v2'[2] + 'R'.'T'[3,3] * 'v2'[3]};
-    annotation(derivative(order = 1, noDerivative = 'R') = 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.resolve1';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der' "Derivative of function Frames.resolve1(..)"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v2';
-    input Real[3] 'v2_der';
-    output Real[3] 'v1_der';
-  algorithm
-    'v1_der' := 'Modelica.Mechanics.MultiBody.Frames.resolve1'('R', {'v2_der'[1] + 'R'.'w'[2] * 'v2'[3] - 'R'.'w'[3] * 'v2'[2], 'v2_der'[2] + 'R'.'w'[3] * 'v2'[1] - 'R'.'w'[1] * 'v2'[3], 'v2_der'[3] + 'R'.'w'[1] * 'v2'[2] - 'R'.'w'[2] * 'v2'[1]});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
-    input Real[3] 'n_x';
-    input Real[3] 'n_y';
-    output Real[3, 3] 'T';
-    Real[3] 'e_x'(each unit = "1") = if sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]) < 1e-10 then {1.0, 0.0, 0.0} else smooth(0, if sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]) >= 2.220446049250313e-14 then {'n_x'[1] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]), 'n_x'[2] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]), 'n_x'[3] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3])} else {'n_x'[1] / 2.220446049250313e-14, 'n_x'[2] / 2.220446049250313e-14, 'n_x'[3] / 2.220446049250313e-14});
-    Real[3] 'e_y'(each unit = "1") = if sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]) < 1e-10 then {0.0, 1.0, 0.0} else smooth(0, if sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]) >= 2.220446049250313e-14 then {'n_y'[1] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]), 'n_y'[2] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]), 'n_y'[3] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3])} else {'n_y'[1] / 2.220446049250313e-14, 'n_y'[2] / 2.220446049250313e-14, 'n_y'[3] / 2.220446049250313e-14});
-    Real[3] 'n_z_aux'(each unit = "1") = {'e_x'[2] * 'e_y'[3] - 'e_x'[3] * 'e_y'[2], 'e_x'[3] * 'e_y'[1] - 'e_x'[1] * 'e_y'[3], 'e_x'[1] * 'e_y'[2] - 'e_x'[2] * 'e_y'[1]};
-    Real[3] 'n_y_aux'(each unit = "1") = if 'n_z_aux'[1] * 'n_z_aux'[1] + 'n_z_aux'[2] * 'n_z_aux'[2] + 'n_z_aux'[3] * 'n_z_aux'[3] > 1e-6 then 'e_y' else if abs('e_x'[1]) > 1e-6 then {0.0, 1.0, 0.0} else {1.0, 0.0, 0.0};
-    Real[3] 'e_z_aux'(each unit = "1") = {'e_x'[2] * 'n_y_aux'[3] - 'e_x'[3] * 'n_y_aux'[2], 'e_x'[3] * 'n_y_aux'[1] - 'e_x'[1] * 'n_y_aux'[3], 'e_x'[1] * 'n_y_aux'[2] - 'e_x'[2] * 'n_y_aux'[1]};
-    Real[3] 'e_z'(each unit = "1") = smooth(0, if sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]) >= 2.220446049250313e-14 then {'e_z_aux'[1] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]), 'e_z_aux'[2] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]), 'e_z_aux'[3] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3])} else {'e_z_aux'[1] / 2.220446049250313e-14, 'e_z_aux'[2] / 2.220446049250313e-14, 'e_z_aux'[3] / 2.220446049250313e-14});
-  algorithm
-    'T' := {'e_x', {'e_z'[2] * 'e_x'[3] - 'e_z'[3] * 'e_x'[2], 'e_z'[3] * 'e_x'[1] - 'e_z'[1] * 'e_x'[3], 'e_z'[1] * 'e_x'[2] - 'e_z'[2] * 'e_x'[1]}, 'e_z'};
-  end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
-
-  function 'Modelica.Units.Conversions.to_unit1' "Change the unit of a Real number to unit=\"1\""
-    input Real 'r';
-    output Real 'result'(unit = "1");
-  algorithm
-    'result' := 'r';
-    annotation(Inline = true);
-  end 'Modelica.Units.Conversions.to_unit1';
-
   type 'Modelica.Mechanics.MultiBody.Types.GravityTypes' = enumeration('NoGravity', 'UniformGravity', 'PointGravity');
 
   record 'Modelica.Mechanics.MultiBody.Frames.Orientation'
@@ -1558,12 +1509,12 @@ package 'Surfaces'
     'world.x_arrowHead.specularCoefficient' = 0.0;
     'world.x_label.diameter' = 0.025;
     'world.x_label.specularCoefficient' = 0.0;
-    'world.x_label.cylinders[1].length' = sqrt(('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'));
+    'world.x_label.cylinders[1].length' = sqrt({'world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'} * {'world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'});
     'world.x_label.cylinders[1].width' = 'world.x_label.diameter';
     'world.x_label.cylinders[1].height' = 'world.x_label.diameter';
     'world.x_label.cylinders[1].extra' = 0.0;
     'world.x_label.cylinders[1].specularCoefficient' = 'world.x_label.specularCoefficient';
-    'world.x_label.cylinders[2].length' = sqrt(('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'));
+    'world.x_label.cylinders[2].length' = sqrt({'world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'} * {'world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'});
     'world.x_label.cylinders[2].width' = 'world.x_label.diameter';
     'world.x_label.cylinders[2].height' = 'world.x_label.diameter';
     'world.x_label.cylinders[2].extra' = 0.0;
@@ -1580,12 +1531,12 @@ package 'Surfaces'
     'world.y_arrowHead.specularCoefficient' = 0.0;
     'world.y_label.diameter' = 0.025;
     'world.y_label.specularCoefficient' = 0.0;
-    'world.y_label.cylinders[1].length' = sqrt(('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'));
+    'world.y_label.cylinders[1].length' = sqrt({'world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'} * {'world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'});
     'world.y_label.cylinders[1].width' = 'world.y_label.diameter';
     'world.y_label.cylinders[1].height' = 'world.y_label.diameter';
     'world.y_label.cylinders[1].extra' = 0.0;
     'world.y_label.cylinders[1].specularCoefficient' = 'world.y_label.specularCoefficient';
-    'world.y_label.cylinders[2].length' = sqrt(('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'));
+    'world.y_label.cylinders[2].length' = sqrt({'world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'} * {'world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'});
     'world.y_label.cylinders[2].width' = 'world.y_label.diameter';
     'world.y_label.cylinders[2].height' = 'world.y_label.diameter';
     'world.y_label.cylinders[2].extra' = 0.0;
@@ -1602,17 +1553,17 @@ package 'Surfaces'
     'world.z_arrowHead.specularCoefficient' = 0.0;
     'world.z_label.diameter' = 0.025;
     'world.z_label.specularCoefficient' = 0.0;
-    'world.z_label.cylinders[1].length' = sqrt(('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'));
+    'world.z_label.cylinders[1].length' = sqrt({'world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'} * {'world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'});
     'world.z_label.cylinders[1].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[1].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[1].extra' = 0.0;
     'world.z_label.cylinders[1].specularCoefficient' = 'world.z_label.specularCoefficient';
-    'world.z_label.cylinders[2].length' = sqrt(('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'));
+    'world.z_label.cylinders[2].length' = sqrt({'world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'} * {'world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'});
     'world.z_label.cylinders[2].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[2].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[2].extra' = 0.0;
     'world.z_label.cylinders[2].specularCoefficient' = 'world.z_label.specularCoefficient';
-    'world.z_label.cylinders[3].length' = sqrt(('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'));
+    'world.z_label.cylinders[3].length' = sqrt({'world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'} * {'world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'});
     'world.z_label.cylinders[3].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[3].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[3].extra' = 0.0;
@@ -1933,9 +1884,9 @@ package 'Surfaces'
     'world.x_label.R_lines[3,1]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,1]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,1]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,1]';
     'world.x_label.R_lines[3,2]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,2]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,2]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,2]';
     'world.x_label.R_lines[3,3]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,3]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,3]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,3]';
-    'world.x_label.r_abs[1]' = 'world.x_label.r[1]' + 'world.x_label.R.T[1,1]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,1]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,1]' * 'world.x_label.r_lines[3]';
-    'world.x_label.r_abs[2]' = 'world.x_label.r[2]' + 'world.x_label.R.T[1,2]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,2]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,2]' * 'world.x_label.r_lines[3]';
-    'world.x_label.r_abs[3]' = 'world.x_label.r[3]' + 'world.x_label.R.T[1,3]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,3]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,3]' * 'world.x_label.r_lines[3]';
+    'world.x_label.r_abs[1]' = 'world.x_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[1];
+    'world.x_label.r_abs[2]' = 'world.x_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[2];
+    'world.x_label.r_abs[3]' = 'world.x_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[3];
     'world.x_label.cylinders[1].R.T[1,1]' = 'world.x_label.R.T[1,1]';
     'world.x_label.cylinders[1].R.T[1,2]' = 'world.x_label.R.T[1,2]';
     'world.x_label.cylinders[1].R.T[1,3]' = 'world.x_label.R.T[1,3]';
@@ -1948,15 +1899,15 @@ package 'Surfaces'
     'world.x_label.cylinders[1].R.w[1]' = 'world.x_label.R.w[1]';
     'world.x_label.cylinders[1].R.w[2]' = 'world.x_label.R.w[2]';
     'world.x_label.cylinders[1].R.w[3]' = 'world.x_label.R.w[3]';
-    'world.x_label.cylinders[1].r[1]' = 'world.x_label.r_abs[1]' + 'world.x_label.R_lines[1,1]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,1]' * 'world.x_label.lines[1,1,2]';
-    'world.x_label.cylinders[1].r[2]' = 'world.x_label.r_abs[2]' + 'world.x_label.R_lines[1,2]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,2]' * 'world.x_label.lines[1,1,2]';
-    'world.x_label.cylinders[1].r[3]' = 'world.x_label.r_abs[3]' + 'world.x_label.R_lines[1,3]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,3]' * 'world.x_label.lines[1,1,2]';
+    'world.x_label.cylinders[1].r[1]' = 'world.x_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[1];
+    'world.x_label.cylinders[1].r[2]' = 'world.x_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[2];
+    'world.x_label.cylinders[1].r[3]' = 'world.x_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[3];
     'world.x_label.cylinders[1].r_shape[1]' = 0.0;
     'world.x_label.cylinders[1].r_shape[2]' = 0.0;
     'world.x_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.x_label.cylinders[1].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
-    'world.x_label.cylinders[1].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
-    'world.x_label.cylinders[1].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
+    'world.x_label.cylinders[1].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,1]' * 0.0;
+    'world.x_label.cylinders[1].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,2]' * 0.0;
+    'world.x_label.cylinders[1].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,3]' * 0.0;
     'world.x_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.x_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.x_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -1975,15 +1926,15 @@ package 'Surfaces'
     'world.x_label.cylinders[2].R.w[1]' = 'world.x_label.R.w[1]';
     'world.x_label.cylinders[2].R.w[2]' = 'world.x_label.R.w[2]';
     'world.x_label.cylinders[2].R.w[3]' = 'world.x_label.R.w[3]';
-    'world.x_label.cylinders[2].r[1]' = 'world.x_label.r_abs[1]' + 'world.x_label.R_lines[1,1]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,1]' * 'world.x_label.lines[2,1,2]';
-    'world.x_label.cylinders[2].r[2]' = 'world.x_label.r_abs[2]' + 'world.x_label.R_lines[1,2]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,2]' * 'world.x_label.lines[2,1,2]';
-    'world.x_label.cylinders[2].r[3]' = 'world.x_label.r_abs[3]' + 'world.x_label.R_lines[1,3]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,3]' * 'world.x_label.lines[2,1,2]';
+    'world.x_label.cylinders[2].r[1]' = 'world.x_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[1];
+    'world.x_label.cylinders[2].r[2]' = 'world.x_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[2];
+    'world.x_label.cylinders[2].r[3]' = 'world.x_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[3];
     'world.x_label.cylinders[2].r_shape[1]' = 0.0;
     'world.x_label.cylinders[2].r_shape[2]' = 0.0;
     'world.x_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.x_label.cylinders[2].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
-    'world.x_label.cylinders[2].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
-    'world.x_label.cylinders[2].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
+    'world.x_label.cylinders[2].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,1]' * 0.0;
+    'world.x_label.cylinders[2].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,2]' * 0.0;
+    'world.x_label.cylinders[2].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,3]' * 0.0;
     'world.x_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.x_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.x_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -2097,9 +2048,9 @@ package 'Surfaces'
     'world.y_label.R_lines[3,1]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,1]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,1]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,1]';
     'world.y_label.R_lines[3,2]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,2]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,2]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,2]';
     'world.y_label.R_lines[3,3]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,3]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,3]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,3]';
-    'world.y_label.r_abs[1]' = 'world.y_label.r[1]' + 'world.y_label.R.T[1,1]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,1]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,1]' * 'world.y_label.r_lines[3]';
-    'world.y_label.r_abs[2]' = 'world.y_label.r[2]' + 'world.y_label.R.T[1,2]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,2]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,2]' * 'world.y_label.r_lines[3]';
-    'world.y_label.r_abs[3]' = 'world.y_label.r[3]' + 'world.y_label.R.T[1,3]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,3]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,3]' * 'world.y_label.r_lines[3]';
+    'world.y_label.r_abs[1]' = 'world.y_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[1];
+    'world.y_label.r_abs[2]' = 'world.y_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[2];
+    'world.y_label.r_abs[3]' = 'world.y_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[3];
     'world.y_label.cylinders[1].R.T[1,1]' = 'world.y_label.R.T[1,1]';
     'world.y_label.cylinders[1].R.T[1,2]' = 'world.y_label.R.T[1,2]';
     'world.y_label.cylinders[1].R.T[1,3]' = 'world.y_label.R.T[1,3]';
@@ -2112,15 +2063,15 @@ package 'Surfaces'
     'world.y_label.cylinders[1].R.w[1]' = 'world.y_label.R.w[1]';
     'world.y_label.cylinders[1].R.w[2]' = 'world.y_label.R.w[2]';
     'world.y_label.cylinders[1].R.w[3]' = 'world.y_label.R.w[3]';
-    'world.y_label.cylinders[1].r[1]' = 'world.y_label.r_abs[1]' + 'world.y_label.R_lines[1,1]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,1]' * 'world.y_label.lines[1,1,2]';
-    'world.y_label.cylinders[1].r[2]' = 'world.y_label.r_abs[2]' + 'world.y_label.R_lines[1,2]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,2]' * 'world.y_label.lines[1,1,2]';
-    'world.y_label.cylinders[1].r[3]' = 'world.y_label.r_abs[3]' + 'world.y_label.R_lines[1,3]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,3]' * 'world.y_label.lines[1,1,2]';
+    'world.y_label.cylinders[1].r[1]' = 'world.y_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[1];
+    'world.y_label.cylinders[1].r[2]' = 'world.y_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[2];
+    'world.y_label.cylinders[1].r[3]' = 'world.y_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[3];
     'world.y_label.cylinders[1].r_shape[1]' = 0.0;
     'world.y_label.cylinders[1].r_shape[2]' = 0.0;
     'world.y_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.y_label.cylinders[1].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
-    'world.y_label.cylinders[1].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
-    'world.y_label.cylinders[1].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
+    'world.y_label.cylinders[1].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,1]' * 0.0;
+    'world.y_label.cylinders[1].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,2]' * 0.0;
+    'world.y_label.cylinders[1].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,3]' * 0.0;
     'world.y_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.y_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.y_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -2139,15 +2090,15 @@ package 'Surfaces'
     'world.y_label.cylinders[2].R.w[1]' = 'world.y_label.R.w[1]';
     'world.y_label.cylinders[2].R.w[2]' = 'world.y_label.R.w[2]';
     'world.y_label.cylinders[2].R.w[3]' = 'world.y_label.R.w[3]';
-    'world.y_label.cylinders[2].r[1]' = 'world.y_label.r_abs[1]' + 'world.y_label.R_lines[1,1]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,1]' * 'world.y_label.lines[2,1,2]';
-    'world.y_label.cylinders[2].r[2]' = 'world.y_label.r_abs[2]' + 'world.y_label.R_lines[1,2]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,2]' * 'world.y_label.lines[2,1,2]';
-    'world.y_label.cylinders[2].r[3]' = 'world.y_label.r_abs[3]' + 'world.y_label.R_lines[1,3]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,3]' * 'world.y_label.lines[2,1,2]';
+    'world.y_label.cylinders[2].r[1]' = 'world.y_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[1];
+    'world.y_label.cylinders[2].r[2]' = 'world.y_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[2];
+    'world.y_label.cylinders[2].r[3]' = 'world.y_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[3];
     'world.y_label.cylinders[2].r_shape[1]' = 0.0;
     'world.y_label.cylinders[2].r_shape[2]' = 0.0;
     'world.y_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.y_label.cylinders[2].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
-    'world.y_label.cylinders[2].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
-    'world.y_label.cylinders[2].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
+    'world.y_label.cylinders[2].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,1]' * 0.0;
+    'world.y_label.cylinders[2].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,2]' * 0.0;
+    'world.y_label.cylinders[2].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,3]' * 0.0;
     'world.y_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.y_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.y_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -2265,9 +2216,9 @@ package 'Surfaces'
     'world.z_label.R_lines[3,1]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,1]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,1]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,1]';
     'world.z_label.R_lines[3,2]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,2]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,2]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,2]';
     'world.z_label.R_lines[3,3]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,3]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,3]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,3]';
-    'world.z_label.r_abs[1]' = 'world.z_label.r[1]' + 'world.z_label.R.T[1,1]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,1]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,1]' * 'world.z_label.r_lines[3]';
-    'world.z_label.r_abs[2]' = 'world.z_label.r[2]' + 'world.z_label.R.T[1,2]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,2]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,2]' * 'world.z_label.r_lines[3]';
-    'world.z_label.r_abs[3]' = 'world.z_label.r[3]' + 'world.z_label.R.T[1,3]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,3]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,3]' * 'world.z_label.r_lines[3]';
+    'world.z_label.r_abs[1]' = 'world.z_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[1];
+    'world.z_label.r_abs[2]' = 'world.z_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[2];
+    'world.z_label.r_abs[3]' = 'world.z_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[3];
     'world.z_label.cylinders[1].R.T[1,1]' = 'world.z_label.R.T[1,1]';
     'world.z_label.cylinders[1].R.T[1,2]' = 'world.z_label.R.T[1,2]';
     'world.z_label.cylinders[1].R.T[1,3]' = 'world.z_label.R.T[1,3]';
@@ -2280,15 +2231,15 @@ package 'Surfaces'
     'world.z_label.cylinders[1].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[1].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[1].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[1].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[1,1,2]';
-    'world.z_label.cylinders[1].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[1,1,2]';
-    'world.z_label.cylinders[1].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[1,1,2]';
+    'world.z_label.cylinders[1].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[1].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[1].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[3];
     'world.z_label.cylinders[1].r_shape[1]' = 0.0;
     'world.z_label.cylinders[1].r_shape[2]' = 0.0;
     'world.z_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[1].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
-    'world.z_label.cylinders[1].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
-    'world.z_label.cylinders[1].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
+    'world.z_label.cylinders[1].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[1].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[1].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -2307,15 +2258,15 @@ package 'Surfaces'
     'world.z_label.cylinders[2].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[2].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[2].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[2].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[2,1,2]';
-    'world.z_label.cylinders[2].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[2,1,2]';
-    'world.z_label.cylinders[2].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[2,1,2]';
+    'world.z_label.cylinders[2].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[2].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[2].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[3];
     'world.z_label.cylinders[2].r_shape[1]' = 0.0;
     'world.z_label.cylinders[2].r_shape[2]' = 0.0;
     'world.z_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[2].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
-    'world.z_label.cylinders[2].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
-    'world.z_label.cylinders[2].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
+    'world.z_label.cylinders[2].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[2].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[2].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -2334,15 +2285,15 @@ package 'Surfaces'
     'world.z_label.cylinders[3].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[3].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[3].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[3].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[3,1,2]';
-    'world.z_label.cylinders[3].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[3,1,2]';
-    'world.z_label.cylinders[3].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[3,1,2]';
+    'world.z_label.cylinders[3].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[3].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[3].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[3];
     'world.z_label.cylinders[3].r_shape[1]' = 0.0;
     'world.z_label.cylinders[3].r_shape[2]' = 0.0;
     'world.z_label.cylinders[3].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[3].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
-    'world.z_label.cylinders[3].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
-    'world.z_label.cylinders[3].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
+    'world.z_label.cylinders[3].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[3].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[3].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[3].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[3].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[3].widthDirection[3]' = 0.0;
@@ -2499,7 +2450,7 @@ package 'Surfaces'
     'position.a' = (('position.s_ref' - 'position.s') * 314.1592653589793 - 1.3617 * 'position.v') * 508.34832582359115;
     'position.s' = 'position.flange.s' - 'position.s_support';
     'position.s_support' = 0.0;
-    'sine.y' = if time < 0.0 then 0.0 else 2.0 * sin(3.141592653589793 * time);
+    'sine.y' = if time < 0.0 then 0.0 else 2.0 * 'Modelica.Math.sin'(3.141592653589793 * time);
     'fixedTranslation1.color[1]' = 155;
     'fixedTranslation1.color[2]' = 155;
     'fixedTranslation1.color[3]' = 155;
@@ -2600,17 +2551,17 @@ package 'Surfaces'
     'wheel.frame_a.t[2]' = 0.0;
     'wheel.frame_a.t[3]' = 0.0;
     'pipeWithScalarField.T[1]' = 1.0;
-    'pipeWithScalarField.T[2]' = 0.15643446504023087 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[3]' = 0.4539904997395468 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[4]' = 0.7071067811865475 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[5]' = 0.8910065241883678 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[6]' = 0.9876883405951378 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[7]' = 0.9876883405951377 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[8]' = 0.8910065241883679 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[9]' = 0.7071067811865476 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[10]' = 0.45399049973954647 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[11]' = 0.15643446504023098 * cos(3.141592653589793 * time) + 1.0;
-    'pipeWithScalarField.T[12]' = 1.2246467991473532e-16 * cos(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[2]' = 0.15643446504023087 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[3]' = 0.4539904997395468 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[4]' = 0.7071067811865475 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[5]' = 0.8910065241883678 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[6]' = 0.9876883405951378 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[7]' = 0.9876883405951377 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[8]' = 0.8910065241883679 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[9]' = 0.7071067811865476 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[10]' = 0.45399049973954647 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[11]' = 0.15643446504023098 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
+    'pipeWithScalarField.T[12]' = 1.2246467991473532e-16 * 'Modelica.Math.cos'(3.141592653589793 * time) + 1.0;
     'pipeWithScalarField.pipe.R.T[1,1]' = 'pipeWithScalarField.frame_a.R.T[1,1]';
     'pipeWithScalarField.pipe.R.T[1,2]' = 'pipeWithScalarField.frame_a.R.T[1,2]';
     'pipeWithScalarField.pipe.R.T[1,3]' = 'pipeWithScalarField.frame_a.R.T[1,3]';

@@ -1,128 +1,9 @@
 //! base 0.1.0
 package 'TransformerTestbench'
-  function 'Complex.\'+\'' "Add two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Complex.\'+\'';
-
-  function 'Complex.\'*\'.scalarProduct' "Scalar product of two complex vectors c1 and c2"
-    input 'Complex'[:] 'c1';
-    input 'Complex'[size('c1', 1)] 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'(0.0, 0.0);
-
-    for 'i' in 1:size('c1', 1) loop
-      'c3' := 'Complex'('c3'.'re' + 'c1['i']'.'re' * 'c2['i']'.'re' + 'c1['i']'.'im' * 'c2['i']'.'im', 'c3'.'im' + 'c1['i']'.'re' * 'c2['i']'.'im' - 'c1['i']'.'im' * 'c2['i']'.'re');
-    end for;
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Complex.\'*\'.scalarProduct';
-
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.ComplexMath.abs' "Absolute value of complex number"
-    input 'Complex' 'c';
-    output Real 'result';
-  algorithm
-    'result' := sqrt('c'.'re' ^ 2.0 + 'c'.'im' ^ 2.0);
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.abs';
-
-  function 'Modelica.ComplexMath.arg' "Phase angle of complex number"
-    input 'Complex' 'c';
-    input Real 'phi0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'phi' := 'Modelica.Math.atan3'('c'.'im', 'c'.'re', 'phi0');
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.arg';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'+\'' "Add two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexCurrent.\'+\'';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'/\'' "Divide two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'(('c1'.'re' * 'c2'.'re' + 'c1'.'im' * 'c2'.'im') / ('c2'.'re' * 'c2'.'re' + 'c2'.'im' * 'c2'.'im'), ('c1'.'im' * 'c2'.'re' - 'c1'.'re' * 'c2'.'im') / ('c2'.'re' * 'c2'.'re' + 'c2'.'im' * 'c2'.'im'));
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexCurrent.\'/\'';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract' "Subtract two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'*\'.multiply' "Multiply two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' * 'c2'.'re' - 'c1'.'im' * 'c2'.'im', 'c1'.'re' * 'c2'.'im' + 'c1'.'im' * 'c2'.'re');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexVoltage.\'*\'.multiply';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
 
   record 'Modelica.Units.SI.ComplexVoltage'
     Real 're';
@@ -133,16 +14,6 @@ package 'TransformerTestbench'
     Real 're';
     Real 'im';
   end 'Modelica.Units.SI.ComplexCurrent';
-
-  record 'Modelica.Units.SI.ComplexElectricPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexElectricPotential';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
 
   record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
     Real 're';
@@ -5814,7 +5685,7 @@ package 'TransformerTestbench'
     'earth.P' = 'earth.v.re' * 'earth.i.re' - 'earth.v.im' * (-'earth.i.im');
     'earth.Q' = 'earth.v.re' * (-'earth.i.im') + 'earth.v.im' * 'earth.i.re';
     'earth.S' = sqrt(('earth.v.re' * 'earth.i.re' - 'earth.v.im' * (-'earth.i.im')) ^ 2.0 + ('earth.v.re' * (-'earth.i.im') + 'earth.v.im' * 'earth.i.re') ^ 2.0);
-    'earth.pf' = cos('Modelica.Math.atan3'('earth.Q', 'earth.P', 0.0));
+    'earth.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('earth.P', 'earth.Q'), 0.0));
     'voltageSensorL.voltageSensor[1].abs_v' = sqrt('voltageSensorL.voltageSensor[1].v.re' ^ 2.0 + 'voltageSensorL.voltageSensor[1].v.im' ^ 2.0);
     'voltageSensorL.voltageSensor[1].arg_v' = 'Modelica.Math.atan3'('voltageSensorL.voltageSensor[1].v.im', 'voltageSensorL.voltageSensor[1].v.re', 0.0);
     'voltageSensorL.voltageSensor[2].abs_v' = sqrt('voltageSensorL.voltageSensor[2].v.re' ^ 2.0 + 'voltageSensorL.voltageSensor[2].v.im' ^ 2.0);
@@ -5852,7 +5723,7 @@ package 'TransformerTestbench'
     'load.resistor[1].P' = 'load.resistor[1].v.re' * 'load.resistor[1].i.re' - 'load.resistor[1].v.im' * (-'load.resistor[1].i.im');
     'load.resistor[1].Q' = 'load.resistor[1].v.re' * (-'load.resistor[1].i.im') + 'load.resistor[1].v.im' * 'load.resistor[1].i.re';
     'load.resistor[1].S' = sqrt(('load.resistor[1].v.re' * 'load.resistor[1].i.re' - 'load.resistor[1].v.im' * (-'load.resistor[1].i.im')) ^ 2.0 + ('load.resistor[1].v.re' * (-'load.resistor[1].i.im') + 'load.resistor[1].v.im' * 'load.resistor[1].i.re') ^ 2.0);
-    'load.resistor[1].pf' = cos('Modelica.Math.atan3'('load.resistor[1].Q', 'load.resistor[1].P', 0.0));
+    'load.resistor[1].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('load.resistor[1].P', 'load.resistor[1].Q'), 0.0));
     'load.resistor[2].abs_v' = sqrt('load.resistor[2].v.re' ^ 2.0 + 'load.resistor[2].v.im' ^ 2.0);
     'load.resistor[2].arg_v' = 'Modelica.Math.atan3'('load.resistor[2].v.im', 'load.resistor[2].v.re', 0.0);
     'load.resistor[2].abs_i' = sqrt('load.resistor[2].i.re' ^ 2.0 + 'load.resistor[2].i.im' ^ 2.0);
@@ -5860,7 +5731,7 @@ package 'TransformerTestbench'
     'load.resistor[2].P' = 'load.resistor[2].v.re' * 'load.resistor[2].i.re' - 'load.resistor[2].v.im' * (-'load.resistor[2].i.im');
     'load.resistor[2].Q' = 'load.resistor[2].v.re' * (-'load.resistor[2].i.im') + 'load.resistor[2].v.im' * 'load.resistor[2].i.re';
     'load.resistor[2].S' = sqrt(('load.resistor[2].v.re' * 'load.resistor[2].i.re' - 'load.resistor[2].v.im' * (-'load.resistor[2].i.im')) ^ 2.0 + ('load.resistor[2].v.re' * (-'load.resistor[2].i.im') + 'load.resistor[2].v.im' * 'load.resistor[2].i.re') ^ 2.0);
-    'load.resistor[2].pf' = cos('Modelica.Math.atan3'('load.resistor[2].Q', 'load.resistor[2].P', 0.0));
+    'load.resistor[2].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('load.resistor[2].P', 'load.resistor[2].Q'), 0.0));
     'load.resistor[3].abs_v' = sqrt('load.resistor[3].v.re' ^ 2.0 + 'load.resistor[3].v.im' ^ 2.0);
     'load.resistor[3].arg_v' = 'Modelica.Math.atan3'('load.resistor[3].v.im', 'load.resistor[3].v.re', 0.0);
     'load.resistor[3].abs_i' = sqrt('load.resistor[3].i.re' ^ 2.0 + 'load.resistor[3].i.im' ^ 2.0);
@@ -5868,9 +5739,9 @@ package 'TransformerTestbench'
     'load.resistor[3].P' = 'load.resistor[3].v.re' * 'load.resistor[3].i.re' - 'load.resistor[3].v.im' * (-'load.resistor[3].i.im');
     'load.resistor[3].Q' = 'load.resistor[3].v.re' * (-'load.resistor[3].i.im') + 'load.resistor[3].v.im' * 'load.resistor[3].i.re';
     'load.resistor[3].S' = sqrt(('load.resistor[3].v.re' * 'load.resistor[3].i.re' - 'load.resistor[3].v.im' * (-'load.resistor[3].i.im')) ^ 2.0 + ('load.resistor[3].v.re' * (-'load.resistor[3].i.im') + 'load.resistor[3].v.im' * 'load.resistor[3].i.re') ^ 2.0);
-    'load.resistor[3].pf' = cos('Modelica.Math.atan3'('load.resistor[3].Q', 'load.resistor[3].P', 0.0));
-    'transformer.powerBalance.power1' = 'transformer.v1[1].re' * 'transformer.i1[1].re' - 'transformer.v1[1].im' * (-'transformer.i1[1].im') + 'transformer.v1[2].re' * 'transformer.i1[2].re' - 'transformer.v1[2].im' * (-'transformer.i1[2].im') + 'transformer.v1[3].re' * 'transformer.i1[3].re' - 'transformer.v1[3].im' * (-'transformer.i1[3].im');
-    'transformer.powerBalance.power2' = 'transformer.v2[1].re' * (-'transformer.i2[1].re') - 'transformer.v2[1].im' * 'transformer.i2[1].im' + 'transformer.v2[2].re' * (-'transformer.i2[2].re') - 'transformer.v2[2].im' * 'transformer.i2[2].im' + 'transformer.v2[3].re' * (-'transformer.i2[3].re') - 'transformer.v2[3].im' * 'transformer.i2[3].im';
+    'load.resistor[3].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('load.resistor[3].P', 'load.resistor[3].Q'), 0.0));
+    'transformer.powerBalance.power1' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.v1[1]', 'Modelica.ComplexMath.conj'('transformer.i1[1]'))) + 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.v1[2]', 'Modelica.ComplexMath.conj'('transformer.i1[2]'))) + 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.v1[3]', 'Modelica.ComplexMath.conj'('transformer.i1[3]')));
+    'transformer.powerBalance.power2' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.v2[1]', 'Modelica.ComplexMath.conj'('Modelica.Units.SI.ComplexCurrent.\'-\'.negate'('transformer.i2[1]')))) + 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.v2[2]', 'Modelica.ComplexMath.conj'('Modelica.Units.SI.ComplexCurrent.\'-\'.negate'('transformer.i2[2]')))) + 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.v2[3]', 'Modelica.ComplexMath.conj'('Modelica.Units.SI.ComplexCurrent.\'-\'.negate'('transformer.i2[3]'))));
     'transformer.powerBalance.lossPowerTotal' = 'transformer.powerBalance.lossPower1' + 'transformer.powerBalance.lossPower2' + 'transformer.powerBalance.lossPowerCore';
     'transformer.powerBalance.lossPower1' = -('transformer.r1.resistor[1].LossPower' + 'transformer.r1.resistor[2].LossPower' + 'transformer.r1.resistor[3].LossPower');
     'transformer.powerBalance.lossPower2' = -('transformer.r2.resistor[1].LossPower' + 'transformer.r2.resistor[2].LossPower' + 'transformer.r2.resistor[3].LossPower');
@@ -5909,7 +5780,7 @@ package 'TransformerTestbench'
     'transformer.r1.resistor[1].P' = 'transformer.r1.resistor[1].v.re' * 'transformer.r1.resistor[1].i.re' - 'transformer.r1.resistor[1].v.im' * (-'transformer.r1.resistor[1].i.im');
     'transformer.r1.resistor[1].Q' = 'transformer.r1.resistor[1].v.re' * (-'transformer.r1.resistor[1].i.im') + 'transformer.r1.resistor[1].v.im' * 'transformer.r1.resistor[1].i.re';
     'transformer.r1.resistor[1].S' = sqrt(('transformer.r1.resistor[1].v.re' * 'transformer.r1.resistor[1].i.re' - 'transformer.r1.resistor[1].v.im' * (-'transformer.r1.resistor[1].i.im')) ^ 2.0 + ('transformer.r1.resistor[1].v.re' * (-'transformer.r1.resistor[1].i.im') + 'transformer.r1.resistor[1].v.im' * 'transformer.r1.resistor[1].i.re') ^ 2.0);
-    'transformer.r1.resistor[1].pf' = cos('Modelica.Math.atan3'('transformer.r1.resistor[1].Q', 'transformer.r1.resistor[1].P', 0.0));
+    'transformer.r1.resistor[1].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r1.resistor[1].P', 'transformer.r1.resistor[1].Q'), 0.0));
     'transformer.r1.resistor[1].heatPort.T' = 'transformer.r1.resistor[1].T_heatPort';
     'transformer.r1.resistor[1].heatPort.Q_flow' = -'transformer.r1.resistor[1].LossPower';
     'transformer.r1.resistor[2].abs_v' = sqrt('transformer.r1.resistor[2].v.re' ^ 2.0 + 'transformer.r1.resistor[2].v.im' ^ 2.0);
@@ -5919,7 +5790,7 @@ package 'TransformerTestbench'
     'transformer.r1.resistor[2].P' = 'transformer.r1.resistor[2].v.re' * 'transformer.r1.resistor[2].i.re' - 'transformer.r1.resistor[2].v.im' * (-'transformer.r1.resistor[2].i.im');
     'transformer.r1.resistor[2].Q' = 'transformer.r1.resistor[2].v.re' * (-'transformer.r1.resistor[2].i.im') + 'transformer.r1.resistor[2].v.im' * 'transformer.r1.resistor[2].i.re';
     'transformer.r1.resistor[2].S' = sqrt(('transformer.r1.resistor[2].v.re' * 'transformer.r1.resistor[2].i.re' - 'transformer.r1.resistor[2].v.im' * (-'transformer.r1.resistor[2].i.im')) ^ 2.0 + ('transformer.r1.resistor[2].v.re' * (-'transformer.r1.resistor[2].i.im') + 'transformer.r1.resistor[2].v.im' * 'transformer.r1.resistor[2].i.re') ^ 2.0);
-    'transformer.r1.resistor[2].pf' = cos('Modelica.Math.atan3'('transformer.r1.resistor[2].Q', 'transformer.r1.resistor[2].P', 0.0));
+    'transformer.r1.resistor[2].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r1.resistor[2].P', 'transformer.r1.resistor[2].Q'), 0.0));
     'transformer.r1.resistor[2].heatPort.T' = 'transformer.r1.resistor[2].T_heatPort';
     'transformer.r1.resistor[2].heatPort.Q_flow' = -'transformer.r1.resistor[2].LossPower';
     'transformer.r1.resistor[3].abs_v' = sqrt('transformer.r1.resistor[3].v.re' ^ 2.0 + 'transformer.r1.resistor[3].v.im' ^ 2.0);
@@ -5929,7 +5800,7 @@ package 'TransformerTestbench'
     'transformer.r1.resistor[3].P' = 'transformer.r1.resistor[3].v.re' * 'transformer.r1.resistor[3].i.re' - 'transformer.r1.resistor[3].v.im' * (-'transformer.r1.resistor[3].i.im');
     'transformer.r1.resistor[3].Q' = 'transformer.r1.resistor[3].v.re' * (-'transformer.r1.resistor[3].i.im') + 'transformer.r1.resistor[3].v.im' * 'transformer.r1.resistor[3].i.re';
     'transformer.r1.resistor[3].S' = sqrt(('transformer.r1.resistor[3].v.re' * 'transformer.r1.resistor[3].i.re' - 'transformer.r1.resistor[3].v.im' * (-'transformer.r1.resistor[3].i.im')) ^ 2.0 + ('transformer.r1.resistor[3].v.re' * (-'transformer.r1.resistor[3].i.im') + 'transformer.r1.resistor[3].v.im' * 'transformer.r1.resistor[3].i.re') ^ 2.0);
-    'transformer.r1.resistor[3].pf' = cos('Modelica.Math.atan3'('transformer.r1.resistor[3].Q', 'transformer.r1.resistor[3].P', 0.0));
+    'transformer.r1.resistor[3].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r1.resistor[3].P', 'transformer.r1.resistor[3].Q'), 0.0));
     'transformer.r1.resistor[3].heatPort.T' = 'transformer.r1.resistor[3].T_heatPort';
     'transformer.r1.resistor[3].heatPort.Q_flow' = -'transformer.r1.resistor[3].LossPower';
     'transformer.l1sigma.P_total' = 'transformer.l1sigma.P[1]' + 'transformer.l1sigma.P[2]' + 'transformer.l1sigma.P[3]';
@@ -5942,7 +5813,7 @@ package 'TransformerTestbench'
     'transformer.l1sigma.inductor[1].P' = 'transformer.l1sigma.inductor[1].v.re' * 'transformer.l1sigma.inductor[1].i.re' - 'transformer.l1sigma.inductor[1].v.im' * (-'transformer.l1sigma.inductor[1].i.im');
     'transformer.l1sigma.inductor[1].Q' = 'transformer.l1sigma.inductor[1].v.re' * (-'transformer.l1sigma.inductor[1].i.im') + 'transformer.l1sigma.inductor[1].v.im' * 'transformer.l1sigma.inductor[1].i.re';
     'transformer.l1sigma.inductor[1].S' = sqrt(('transformer.l1sigma.inductor[1].v.re' * 'transformer.l1sigma.inductor[1].i.re' - 'transformer.l1sigma.inductor[1].v.im' * (-'transformer.l1sigma.inductor[1].i.im')) ^ 2.0 + ('transformer.l1sigma.inductor[1].v.re' * (-'transformer.l1sigma.inductor[1].i.im') + 'transformer.l1sigma.inductor[1].v.im' * 'transformer.l1sigma.inductor[1].i.re') ^ 2.0);
-    'transformer.l1sigma.inductor[1].pf' = cos('Modelica.Math.atan3'('transformer.l1sigma.inductor[1].Q', 'transformer.l1sigma.inductor[1].P', 0.0));
+    'transformer.l1sigma.inductor[1].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l1sigma.inductor[1].P', 'transformer.l1sigma.inductor[1].Q'), 0.0));
     'transformer.l1sigma.inductor[2].abs_v' = sqrt('transformer.l1sigma.inductor[2].v.re' ^ 2.0 + 'transformer.l1sigma.inductor[2].v.im' ^ 2.0);
     'transformer.l1sigma.inductor[2].arg_v' = 'Modelica.Math.atan3'('transformer.l1sigma.inductor[2].v.im', 'transformer.l1sigma.inductor[2].v.re', 0.0);
     'transformer.l1sigma.inductor[2].abs_i' = sqrt('transformer.l1sigma.inductor[2].i.re' ^ 2.0 + 'transformer.l1sigma.inductor[2].i.im' ^ 2.0);
@@ -5950,7 +5821,7 @@ package 'TransformerTestbench'
     'transformer.l1sigma.inductor[2].P' = 'transformer.l1sigma.inductor[2].v.re' * 'transformer.l1sigma.inductor[2].i.re' - 'transformer.l1sigma.inductor[2].v.im' * (-'transformer.l1sigma.inductor[2].i.im');
     'transformer.l1sigma.inductor[2].Q' = 'transformer.l1sigma.inductor[2].v.re' * (-'transformer.l1sigma.inductor[2].i.im') + 'transformer.l1sigma.inductor[2].v.im' * 'transformer.l1sigma.inductor[2].i.re';
     'transformer.l1sigma.inductor[2].S' = sqrt(('transformer.l1sigma.inductor[2].v.re' * 'transformer.l1sigma.inductor[2].i.re' - 'transformer.l1sigma.inductor[2].v.im' * (-'transformer.l1sigma.inductor[2].i.im')) ^ 2.0 + ('transformer.l1sigma.inductor[2].v.re' * (-'transformer.l1sigma.inductor[2].i.im') + 'transformer.l1sigma.inductor[2].v.im' * 'transformer.l1sigma.inductor[2].i.re') ^ 2.0);
-    'transformer.l1sigma.inductor[2].pf' = cos('Modelica.Math.atan3'('transformer.l1sigma.inductor[2].Q', 'transformer.l1sigma.inductor[2].P', 0.0));
+    'transformer.l1sigma.inductor[2].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l1sigma.inductor[2].P', 'transformer.l1sigma.inductor[2].Q'), 0.0));
     'transformer.l1sigma.inductor[3].abs_v' = sqrt('transformer.l1sigma.inductor[3].v.re' ^ 2.0 + 'transformer.l1sigma.inductor[3].v.im' ^ 2.0);
     'transformer.l1sigma.inductor[3].arg_v' = 'Modelica.Math.atan3'('transformer.l1sigma.inductor[3].v.im', 'transformer.l1sigma.inductor[3].v.re', 0.0);
     'transformer.l1sigma.inductor[3].abs_i' = sqrt('transformer.l1sigma.inductor[3].i.re' ^ 2.0 + 'transformer.l1sigma.inductor[3].i.im' ^ 2.0);
@@ -5958,7 +5829,7 @@ package 'TransformerTestbench'
     'transformer.l1sigma.inductor[3].P' = 'transformer.l1sigma.inductor[3].v.re' * 'transformer.l1sigma.inductor[3].i.re' - 'transformer.l1sigma.inductor[3].v.im' * (-'transformer.l1sigma.inductor[3].i.im');
     'transformer.l1sigma.inductor[3].Q' = 'transformer.l1sigma.inductor[3].v.re' * (-'transformer.l1sigma.inductor[3].i.im') + 'transformer.l1sigma.inductor[3].v.im' * 'transformer.l1sigma.inductor[3].i.re';
     'transformer.l1sigma.inductor[3].S' = sqrt(('transformer.l1sigma.inductor[3].v.re' * 'transformer.l1sigma.inductor[3].i.re' - 'transformer.l1sigma.inductor[3].v.im' * (-'transformer.l1sigma.inductor[3].i.im')) ^ 2.0 + ('transformer.l1sigma.inductor[3].v.re' * (-'transformer.l1sigma.inductor[3].i.im') + 'transformer.l1sigma.inductor[3].v.im' * 'transformer.l1sigma.inductor[3].i.re') ^ 2.0);
-    'transformer.l1sigma.inductor[3].pf' = cos('Modelica.Math.atan3'('transformer.l1sigma.inductor[3].Q', 'transformer.l1sigma.inductor[3].P', 0.0));
+    'transformer.l1sigma.inductor[3].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l1sigma.inductor[3].P', 'transformer.l1sigma.inductor[3].Q'), 0.0));
     'transformer.r2.P_total' = 'transformer.r2.P[1]' + 'transformer.r2.P[2]' + 'transformer.r2.P[3]';
     'transformer.r2.Q_total' = 'transformer.r2.Q[1]' + 'transformer.r2.Q[2]' + 'transformer.r2.Q[3]';
     'transformer.r2.S_total' = sqrt('transformer.r2.P_total' ^ 2.0 + 'transformer.r2.Q_total' ^ 2.0);
@@ -5969,7 +5840,7 @@ package 'TransformerTestbench'
     'transformer.r2.resistor[1].P' = 'transformer.r2.resistor[1].v.re' * 'transformer.r2.resistor[1].i.re' - 'transformer.r2.resistor[1].v.im' * (-'transformer.r2.resistor[1].i.im');
     'transformer.r2.resistor[1].Q' = 'transformer.r2.resistor[1].v.re' * (-'transformer.r2.resistor[1].i.im') + 'transformer.r2.resistor[1].v.im' * 'transformer.r2.resistor[1].i.re';
     'transformer.r2.resistor[1].S' = sqrt(('transformer.r2.resistor[1].v.re' * 'transformer.r2.resistor[1].i.re' - 'transformer.r2.resistor[1].v.im' * (-'transformer.r2.resistor[1].i.im')) ^ 2.0 + ('transformer.r2.resistor[1].v.re' * (-'transformer.r2.resistor[1].i.im') + 'transformer.r2.resistor[1].v.im' * 'transformer.r2.resistor[1].i.re') ^ 2.0);
-    'transformer.r2.resistor[1].pf' = cos('Modelica.Math.atan3'('transformer.r2.resistor[1].Q', 'transformer.r2.resistor[1].P', 0.0));
+    'transformer.r2.resistor[1].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r2.resistor[1].P', 'transformer.r2.resistor[1].Q'), 0.0));
     'transformer.r2.resistor[1].heatPort.T' = 'transformer.r2.resistor[1].T_heatPort';
     'transformer.r2.resistor[1].heatPort.Q_flow' = -'transformer.r2.resistor[1].LossPower';
     'transformer.r2.resistor[2].abs_v' = sqrt('transformer.r2.resistor[2].v.re' ^ 2.0 + 'transformer.r2.resistor[2].v.im' ^ 2.0);
@@ -5979,7 +5850,7 @@ package 'TransformerTestbench'
     'transformer.r2.resistor[2].P' = 'transformer.r2.resistor[2].v.re' * 'transformer.r2.resistor[2].i.re' - 'transformer.r2.resistor[2].v.im' * (-'transformer.r2.resistor[2].i.im');
     'transformer.r2.resistor[2].Q' = 'transformer.r2.resistor[2].v.re' * (-'transformer.r2.resistor[2].i.im') + 'transformer.r2.resistor[2].v.im' * 'transformer.r2.resistor[2].i.re';
     'transformer.r2.resistor[2].S' = sqrt(('transformer.r2.resistor[2].v.re' * 'transformer.r2.resistor[2].i.re' - 'transformer.r2.resistor[2].v.im' * (-'transformer.r2.resistor[2].i.im')) ^ 2.0 + ('transformer.r2.resistor[2].v.re' * (-'transformer.r2.resistor[2].i.im') + 'transformer.r2.resistor[2].v.im' * 'transformer.r2.resistor[2].i.re') ^ 2.0);
-    'transformer.r2.resistor[2].pf' = cos('Modelica.Math.atan3'('transformer.r2.resistor[2].Q', 'transformer.r2.resistor[2].P', 0.0));
+    'transformer.r2.resistor[2].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r2.resistor[2].P', 'transformer.r2.resistor[2].Q'), 0.0));
     'transformer.r2.resistor[2].heatPort.T' = 'transformer.r2.resistor[2].T_heatPort';
     'transformer.r2.resistor[2].heatPort.Q_flow' = -'transformer.r2.resistor[2].LossPower';
     'transformer.r2.resistor[3].abs_v' = sqrt('transformer.r2.resistor[3].v.re' ^ 2.0 + 'transformer.r2.resistor[3].v.im' ^ 2.0);
@@ -5989,7 +5860,7 @@ package 'TransformerTestbench'
     'transformer.r2.resistor[3].P' = 'transformer.r2.resistor[3].v.re' * 'transformer.r2.resistor[3].i.re' - 'transformer.r2.resistor[3].v.im' * (-'transformer.r2.resistor[3].i.im');
     'transformer.r2.resistor[3].Q' = 'transformer.r2.resistor[3].v.re' * (-'transformer.r2.resistor[3].i.im') + 'transformer.r2.resistor[3].v.im' * 'transformer.r2.resistor[3].i.re';
     'transformer.r2.resistor[3].S' = sqrt(('transformer.r2.resistor[3].v.re' * 'transformer.r2.resistor[3].i.re' - 'transformer.r2.resistor[3].v.im' * (-'transformer.r2.resistor[3].i.im')) ^ 2.0 + ('transformer.r2.resistor[3].v.re' * (-'transformer.r2.resistor[3].i.im') + 'transformer.r2.resistor[3].v.im' * 'transformer.r2.resistor[3].i.re') ^ 2.0);
-    'transformer.r2.resistor[3].pf' = cos('Modelica.Math.atan3'('transformer.r2.resistor[3].Q', 'transformer.r2.resistor[3].P', 0.0));
+    'transformer.r2.resistor[3].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r2.resistor[3].P', 'transformer.r2.resistor[3].Q'), 0.0));
     'transformer.r2.resistor[3].heatPort.T' = 'transformer.r2.resistor[3].T_heatPort';
     'transformer.r2.resistor[3].heatPort.Q_flow' = -'transformer.r2.resistor[3].LossPower';
     'transformer.l2sigma.P_total' = 'transformer.l2sigma.P[1]' + 'transformer.l2sigma.P[2]' + 'transformer.l2sigma.P[3]';
@@ -6002,7 +5873,7 @@ package 'TransformerTestbench'
     'transformer.l2sigma.inductor[1].P' = 'transformer.l2sigma.inductor[1].v.re' * 'transformer.l2sigma.inductor[1].i.re' - 'transformer.l2sigma.inductor[1].v.im' * (-'transformer.l2sigma.inductor[1].i.im');
     'transformer.l2sigma.inductor[1].Q' = 'transformer.l2sigma.inductor[1].v.re' * (-'transformer.l2sigma.inductor[1].i.im') + 'transformer.l2sigma.inductor[1].v.im' * 'transformer.l2sigma.inductor[1].i.re';
     'transformer.l2sigma.inductor[1].S' = sqrt(('transformer.l2sigma.inductor[1].v.re' * 'transformer.l2sigma.inductor[1].i.re' - 'transformer.l2sigma.inductor[1].v.im' * (-'transformer.l2sigma.inductor[1].i.im')) ^ 2.0 + ('transformer.l2sigma.inductor[1].v.re' * (-'transformer.l2sigma.inductor[1].i.im') + 'transformer.l2sigma.inductor[1].v.im' * 'transformer.l2sigma.inductor[1].i.re') ^ 2.0);
-    'transformer.l2sigma.inductor[1].pf' = cos('Modelica.Math.atan3'('transformer.l2sigma.inductor[1].Q', 'transformer.l2sigma.inductor[1].P', 0.0));
+    'transformer.l2sigma.inductor[1].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l2sigma.inductor[1].P', 'transformer.l2sigma.inductor[1].Q'), 0.0));
     'transformer.l2sigma.inductor[2].abs_v' = sqrt('transformer.l2sigma.inductor[2].v.re' ^ 2.0 + 'transformer.l2sigma.inductor[2].v.im' ^ 2.0);
     'transformer.l2sigma.inductor[2].arg_v' = 'Modelica.Math.atan3'('transformer.l2sigma.inductor[2].v.im', 'transformer.l2sigma.inductor[2].v.re', 0.0);
     'transformer.l2sigma.inductor[2].abs_i' = sqrt('transformer.l2sigma.inductor[2].i.re' ^ 2.0 + 'transformer.l2sigma.inductor[2].i.im' ^ 2.0);
@@ -6010,7 +5881,7 @@ package 'TransformerTestbench'
     'transformer.l2sigma.inductor[2].P' = 'transformer.l2sigma.inductor[2].v.re' * 'transformer.l2sigma.inductor[2].i.re' - 'transformer.l2sigma.inductor[2].v.im' * (-'transformer.l2sigma.inductor[2].i.im');
     'transformer.l2sigma.inductor[2].Q' = 'transformer.l2sigma.inductor[2].v.re' * (-'transformer.l2sigma.inductor[2].i.im') + 'transformer.l2sigma.inductor[2].v.im' * 'transformer.l2sigma.inductor[2].i.re';
     'transformer.l2sigma.inductor[2].S' = sqrt(('transformer.l2sigma.inductor[2].v.re' * 'transformer.l2sigma.inductor[2].i.re' - 'transformer.l2sigma.inductor[2].v.im' * (-'transformer.l2sigma.inductor[2].i.im')) ^ 2.0 + ('transformer.l2sigma.inductor[2].v.re' * (-'transformer.l2sigma.inductor[2].i.im') + 'transformer.l2sigma.inductor[2].v.im' * 'transformer.l2sigma.inductor[2].i.re') ^ 2.0);
-    'transformer.l2sigma.inductor[2].pf' = cos('Modelica.Math.atan3'('transformer.l2sigma.inductor[2].Q', 'transformer.l2sigma.inductor[2].P', 0.0));
+    'transformer.l2sigma.inductor[2].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l2sigma.inductor[2].P', 'transformer.l2sigma.inductor[2].Q'), 0.0));
     'transformer.l2sigma.inductor[3].abs_v' = sqrt('transformer.l2sigma.inductor[3].v.re' ^ 2.0 + 'transformer.l2sigma.inductor[3].v.im' ^ 2.0);
     'transformer.l2sigma.inductor[3].arg_v' = 'Modelica.Math.atan3'('transformer.l2sigma.inductor[3].v.im', 'transformer.l2sigma.inductor[3].v.re', 0.0);
     'transformer.l2sigma.inductor[3].abs_i' = sqrt('transformer.l2sigma.inductor[3].i.re' ^ 2.0 + 'transformer.l2sigma.inductor[3].i.im' ^ 2.0);
@@ -6018,7 +5889,7 @@ package 'TransformerTestbench'
     'transformer.l2sigma.inductor[3].P' = 'transformer.l2sigma.inductor[3].v.re' * 'transformer.l2sigma.inductor[3].i.re' - 'transformer.l2sigma.inductor[3].v.im' * (-'transformer.l2sigma.inductor[3].i.im');
     'transformer.l2sigma.inductor[3].Q' = 'transformer.l2sigma.inductor[3].v.re' * (-'transformer.l2sigma.inductor[3].i.im') + 'transformer.l2sigma.inductor[3].v.im' * 'transformer.l2sigma.inductor[3].i.re';
     'transformer.l2sigma.inductor[3].S' = sqrt(('transformer.l2sigma.inductor[3].v.re' * 'transformer.l2sigma.inductor[3].i.re' - 'transformer.l2sigma.inductor[3].v.im' * (-'transformer.l2sigma.inductor[3].i.im')) ^ 2.0 + ('transformer.l2sigma.inductor[3].v.re' * (-'transformer.l2sigma.inductor[3].i.im') + 'transformer.l2sigma.inductor[3].v.im' * 'transformer.l2sigma.inductor[3].i.re') ^ 2.0);
-    'transformer.l2sigma.inductor[3].pf' = cos('Modelica.Math.atan3'('transformer.l2sigma.inductor[3].Q', 'transformer.l2sigma.inductor[3].P', 0.0));
+    'transformer.l2sigma.inductor[3].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l2sigma.inductor[3].P', 'transformer.l2sigma.inductor[3].Q'), 0.0));
     'transformer.thermalAmbient.Q_flow1' = 'transformer.thermalAmbient.temperature1.port.Q_flow';
     'transformer.thermalAmbient.Q_flow2' = 'transformer.thermalAmbient.temperature2.port.Q_flow';
     'transformer.thermalAmbient.Q_flowCore' = 'transformer.thermalAmbient.temperatureCore.port.Q_flow';
@@ -8867,45 +8738,45 @@ package 'TransformerTestbench'
     'source.arg_i[1]' = 'Modelica.ComplexMath.arg'('source.i[1]', 0.0);
     'source.arg_i[2]' = 'Modelica.ComplexMath.arg'('source.i[2]', 0.0);
     'source.arg_i[3]' = 'Modelica.ComplexMath.arg'('source.i[3]', 0.0);
-    'source.P[1]' = 'source.v[1].re' * 'source.i[1].re' - 'source.v[1].im' * (-'source.i[1].im');
-    'source.P[2]' = 'source.v[2].re' * 'source.i[2].re' - 'source.v[2].im' * (-'source.i[2].im');
-    'source.P[3]' = 'source.v[3].re' * 'source.i[3].re' - 'source.v[3].im' * (-'source.i[3].im');
-    'source.Q[1]' = 'source.v[1].re' * (-'source.i[1].im') + 'source.v[1].im' * 'source.i[1].re';
-    'source.Q[2]' = 'source.v[2].re' * (-'source.i[2].im') + 'source.v[2].im' * 'source.i[2].re';
-    'source.Q[3]' = 'source.v[3].re' * (-'source.i[3].im') + 'source.v[3].im' * 'source.i[3].re';
-    'source.S[1]' = sqrt(('source.v[1].re' * 'source.i[1].re' - 'source.v[1].im' * (-'source.i[1].im')) ^ 2.0 + ('source.v[1].re' * (-'source.i[1].im') + 'source.v[1].im' * 'source.i[1].re') ^ 2.0);
-    'source.S[2]' = sqrt(('source.v[2].re' * 'source.i[2].re' - 'source.v[2].im' * (-'source.i[2].im')) ^ 2.0 + ('source.v[2].re' * (-'source.i[2].im') + 'source.v[2].im' * 'source.i[2].re') ^ 2.0);
-    'source.S[3]' = sqrt(('source.v[3].re' * 'source.i[3].re' - 'source.v[3].im' * (-'source.i[3].im')) ^ 2.0 + ('source.v[3].re' * (-'source.i[3].im') + 'source.v[3].im' * 'source.i[3].re') ^ 2.0);
-    'source.pf[1]' = cos('Modelica.Math.atan3'('source.Q[1]', 'source.P[1]', 0.0));
-    'source.pf[2]' = cos('Modelica.Math.atan3'('source.Q[2]', 'source.P[2]', 0.0));
-    'source.pf[3]' = cos('Modelica.Math.atan3'('source.Q[3]', 'source.P[3]', 0.0));
+    'source.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('source.v[1]', 'Modelica.ComplexMath.conj'('source.i[1]')));
+    'source.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('source.v[2]', 'Modelica.ComplexMath.conj'('source.i[2]')));
+    'source.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('source.v[3]', 'Modelica.ComplexMath.conj'('source.i[3]')));
+    'source.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('source.v[1]', 'Modelica.ComplexMath.conj'('source.i[1]')));
+    'source.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('source.v[2]', 'Modelica.ComplexMath.conj'('source.i[2]')));
+    'source.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('source.v[3]', 'Modelica.ComplexMath.conj'('source.i[3]')));
+    'source.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('source.v[1]', 'Modelica.ComplexMath.conj'('source.i[1]')));
+    'source.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('source.v[2]', 'Modelica.ComplexMath.conj'('source.i[2]')));
+    'source.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('source.v[3]', 'Modelica.ComplexMath.conj'('source.i[3]')));
+    'source.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('source.P[1]', 'source.Q[1]'), 0.0));
+    'source.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('source.P[2]', 'source.Q[2]'), 0.0));
+    'source.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('source.P[3]', 'source.Q[3]'), 0.0));
     'source.omega' = 314.1592653589793;
     'source.v[1].re' = 57.73502691896258;
     'source.v[2].re' = -28.867513459481277;
     'source.v[3].re' = -28.867513459481316;
-    'source.v[1].im' = -0.0;
+    'source.v[1].im' = 0.0;
     'source.v[2].im' = -50.00000000000001;
     'source.v[3].im' = 49.999999999999986;
     'source.plug_p.reference.gamma' = 'source.plug_n.reference.gamma';
     'source.omega' = der('source.plug_p.reference.gamma');
-    'source.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('source.plug_p.pin[1].v', 'source.plug_n.pin[1].v')).re;
-    'source.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('source.plug_p.pin[1].v', 'source.plug_n.pin[1].v')).im;
-    'source.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('source.plug_p.pin[2].v', 'source.plug_n.pin[2].v')).re;
-    'source.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('source.plug_p.pin[2].v', 'source.plug_n.pin[2].v')).im;
-    'source.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('source.plug_p.pin[3].v', 'source.plug_n.pin[3].v')).re;
-    'source.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('source.plug_p.pin[3].v', 'source.plug_n.pin[3].v')).im;
+    'source.v[1].re' = 'source.plug_p.pin[1].v.re' - 'source.plug_n.pin[1].v.re';
+    'source.v[1].im' = 'source.plug_p.pin[1].v.im' - 'source.plug_n.pin[1].v.im';
+    'source.v[2].re' = 'source.plug_p.pin[2].v.re' - 'source.plug_n.pin[2].v.re';
+    'source.v[2].im' = 'source.plug_p.pin[2].v.im' - 'source.plug_n.pin[2].v.im';
+    'source.v[3].re' = 'source.plug_p.pin[3].v.re' - 'source.plug_n.pin[3].v.re';
+    'source.v[3].im' = 'source.plug_p.pin[3].v.im' - 'source.plug_n.pin[3].v.im';
     'source.i[1].re' = 'source.plug_p.pin[1].i.re';
     'source.i[1].im' = 'source.plug_p.pin[1].i.im';
     'source.i[2].re' = 'source.plug_p.pin[2].i.re';
     'source.i[2].im' = 'source.plug_p.pin[2].i.im';
     'source.i[3].re' = 'source.plug_p.pin[3].i.re';
     'source.i[3].im' = 'source.plug_p.pin[3].i.im';
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('source.plug_p.pin[1].i', 'source.plug_n.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('source.plug_p.pin[1].i', 'source.plug_n.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('source.plug_p.pin[2].i', 'source.plug_n.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('source.plug_p.pin[2].i', 'source.plug_n.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('source.plug_p.pin[3].i', 'source.plug_n.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('source.plug_p.pin[3].i', 'source.plug_n.pin[3].i')).im = 0.0;
+    'source.plug_p.pin[1].i.re' + 'source.plug_n.pin[1].i.re' = 0.0;
+    'source.plug_p.pin[1].i.im' + 'source.plug_n.pin[1].i.im' = 0.0;
+    'source.plug_p.pin[2].i.re' + 'source.plug_n.pin[2].i.re' = 0.0;
+    'source.plug_p.pin[2].i.im' + 'source.plug_n.pin[2].i.im' = 0.0;
+    'source.plug_p.pin[3].i.re' + 'source.plug_n.pin[3].i.re' = 0.0;
+    'source.plug_p.pin[3].i.im' + 'source.plug_n.pin[3].i.im' = 0.0;
     'starS.plugToPins_p.plugToPin_p[1].plug_p.reference.gamma' = 'starS.plugToPins_p.plugToPin_p[1].pin_p.reference.gamma';
     'starS.plugToPins_p.plugToPin_p[1].pin_p.v.re' = 'starS.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.re';
     'starS.plugToPins_p.plugToPin_p[1].pin_p.v.im' = 'starS.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.im';
@@ -9337,8 +9208,8 @@ package 'TransformerTestbench'
     'deltaS.plugToPins_n.plugToPin_n[3].plug_n.pin[3].i.re' = -'deltaS.plugToPins_n.plugToPin_n[3].pin_n.i.re';
     'deltaS.plugToPins_n.plugToPin_n[3].plug_n.pin[3].i.im' = -'deltaS.plugToPins_n.plugToPin_n[3].pin_n.i.im';
     'earth.R_actual' = 1e6;
-    'earth.v.re' = 'earth.R_actual' * 'earth.i.re';
-    'earth.v.im' = 'earth.R_actual' * 'earth.i.im';
+    'earth.v.re' = 'earth.R_actual' * 'earth.i.re' - 0.0 * 'earth.i.im';
+    'earth.v.im' = 'earth.R_actual' * 'earth.i.im' + 0.0 * 'earth.i.re';
     'earth.LossPower' = 'earth.v.re' * 'earth.i.re' - 'earth.v.im' * (-'earth.i.im');
     'earth.T_heatPort' = 293.15;
     'earth.pin_p.i.re' + 'earth.pin_n.i.re' = 0.0;
@@ -9819,21 +9690,21 @@ package 'TransformerTestbench'
     'load.arg_i[1]' = 'Modelica.ComplexMath.arg'('load.i[1]', 0.0);
     'load.arg_i[2]' = 'Modelica.ComplexMath.arg'('load.i[2]', 0.0);
     'load.arg_i[3]' = 'Modelica.ComplexMath.arg'('load.i[3]', 0.0);
-    'load.P[1]' = 'load.v[1].re' * 'load.i[1].re' - 'load.v[1].im' * (-'load.i[1].im');
-    'load.P[2]' = 'load.v[2].re' * 'load.i[2].re' - 'load.v[2].im' * (-'load.i[2].im');
-    'load.P[3]' = 'load.v[3].re' * 'load.i[3].re' - 'load.v[3].im' * (-'load.i[3].im');
-    'load.Q[1]' = 'load.v[1].re' * (-'load.i[1].im') + 'load.v[1].im' * 'load.i[1].re';
-    'load.Q[2]' = 'load.v[2].re' * (-'load.i[2].im') + 'load.v[2].im' * 'load.i[2].re';
-    'load.Q[3]' = 'load.v[3].re' * (-'load.i[3].im') + 'load.v[3].im' * 'load.i[3].re';
-    'load.S[1]' = sqrt(('load.v[1].re' * 'load.i[1].re' - 'load.v[1].im' * (-'load.i[1].im')) ^ 2.0 + ('load.v[1].re' * (-'load.i[1].im') + 'load.v[1].im' * 'load.i[1].re') ^ 2.0);
-    'load.S[2]' = sqrt(('load.v[2].re' * 'load.i[2].re' - 'load.v[2].im' * (-'load.i[2].im')) ^ 2.0 + ('load.v[2].re' * (-'load.i[2].im') + 'load.v[2].im' * 'load.i[2].re') ^ 2.0);
-    'load.S[3]' = sqrt(('load.v[3].re' * 'load.i[3].re' - 'load.v[3].im' * (-'load.i[3].im')) ^ 2.0 + ('load.v[3].re' * (-'load.i[3].im') + 'load.v[3].im' * 'load.i[3].re') ^ 2.0);
-    'load.pf[1]' = cos('Modelica.Math.atan3'('load.Q[1]', 'load.P[1]', 0.0));
-    'load.pf[2]' = cos('Modelica.Math.atan3'('load.Q[2]', 'load.P[2]', 0.0));
-    'load.pf[3]' = cos('Modelica.Math.atan3'('load.Q[3]', 'load.P[3]', 0.0));
+    'load.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('load.v[1]', 'Modelica.ComplexMath.conj'('load.i[1]')));
+    'load.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('load.v[2]', 'Modelica.ComplexMath.conj'('load.i[2]')));
+    'load.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('load.v[3]', 'Modelica.ComplexMath.conj'('load.i[3]')));
+    'load.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('load.v[1]', 'Modelica.ComplexMath.conj'('load.i[1]')));
+    'load.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('load.v[2]', 'Modelica.ComplexMath.conj'('load.i[2]')));
+    'load.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('load.v[3]', 'Modelica.ComplexMath.conj'('load.i[3]')));
+    'load.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('load.v[1]', 'Modelica.ComplexMath.conj'('load.i[1]')));
+    'load.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('load.v[2]', 'Modelica.ComplexMath.conj'('load.i[2]')));
+    'load.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('load.v[3]', 'Modelica.ComplexMath.conj'('load.i[3]')));
+    'load.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('load.P[1]', 'load.Q[1]'), 0.0));
+    'load.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('load.P[2]', 'load.Q[2]'), 0.0));
+    'load.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('load.P[3]', 'load.Q[3]'), 0.0));
     'load.resistor[1].R_actual' = 0.3333333333333333;
-    'load.resistor[1].v.re' = 'load.resistor[1].R_actual' * 'load.resistor[1].i.re';
-    'load.resistor[1].v.im' = 'load.resistor[1].R_actual' * 'load.resistor[1].i.im';
+    'load.resistor[1].v.re' = 'load.resistor[1].R_actual' * 'load.resistor[1].i.re' - 0.0 * 'load.resistor[1].i.im';
+    'load.resistor[1].v.im' = 'load.resistor[1].R_actual' * 'load.resistor[1].i.im' + 0.0 * 'load.resistor[1].i.re';
     'load.resistor[1].LossPower' = 'load.resistor[1].v.re' * 'load.resistor[1].i.re' - 'load.resistor[1].v.im' * (-'load.resistor[1].i.im');
     'load.resistor[1].T_heatPort' = 293.15;
     'load.resistor[1].pin_p.i.re' + 'load.resistor[1].pin_n.i.re' = 0.0;
@@ -9845,8 +9716,8 @@ package 'TransformerTestbench'
     'load.resistor[1].pin_p.reference.gamma' = 'load.resistor[1].pin_n.reference.gamma';
     'load.resistor[1].omega' = der('load.resistor[1].pin_p.reference.gamma');
     'load.resistor[2].R_actual' = 0.3333333333333333;
-    'load.resistor[2].v.re' = 'load.resistor[2].R_actual' * 'load.resistor[2].i.re';
-    'load.resistor[2].v.im' = 'load.resistor[2].R_actual' * 'load.resistor[2].i.im';
+    'load.resistor[2].v.re' = 'load.resistor[2].R_actual' * 'load.resistor[2].i.re' - 0.0 * 'load.resistor[2].i.im';
+    'load.resistor[2].v.im' = 'load.resistor[2].R_actual' * 'load.resistor[2].i.im' + 0.0 * 'load.resistor[2].i.re';
     'load.resistor[2].LossPower' = 'load.resistor[2].v.re' * 'load.resistor[2].i.re' - 'load.resistor[2].v.im' * (-'load.resistor[2].i.im');
     'load.resistor[2].T_heatPort' = 293.15;
     'load.resistor[2].pin_p.i.re' + 'load.resistor[2].pin_n.i.re' = 0.0;
@@ -9858,8 +9729,8 @@ package 'TransformerTestbench'
     'load.resistor[2].pin_p.reference.gamma' = 'load.resistor[2].pin_n.reference.gamma';
     'load.resistor[2].omega' = der('load.resistor[2].pin_p.reference.gamma');
     'load.resistor[3].R_actual' = 0.3333333333333333;
-    'load.resistor[3].v.re' = 'load.resistor[3].R_actual' * 'load.resistor[3].i.re';
-    'load.resistor[3].v.im' = 'load.resistor[3].R_actual' * 'load.resistor[3].i.im';
+    'load.resistor[3].v.re' = 'load.resistor[3].R_actual' * 'load.resistor[3].i.re' - 0.0 * 'load.resistor[3].i.im';
+    'load.resistor[3].v.im' = 'load.resistor[3].R_actual' * 'load.resistor[3].i.im' + 0.0 * 'load.resistor[3].i.re';
     'load.resistor[3].LossPower' = 'load.resistor[3].v.re' * 'load.resistor[3].i.re' - 'load.resistor[3].v.im' * (-'load.resistor[3].i.im');
     'load.resistor[3].T_heatPort' = 293.15;
     'load.resistor[3].pin_p.i.re' + 'load.resistor[3].pin_n.i.re' = 0.0;
@@ -9870,12 +9741,12 @@ package 'TransformerTestbench'
     'load.resistor[3].i.im' = 'load.resistor[3].pin_p.i.im';
     'load.resistor[3].pin_p.reference.gamma' = 'load.resistor[3].pin_n.reference.gamma';
     'load.resistor[3].omega' = der('load.resistor[3].pin_p.reference.gamma');
-    'load.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('load.plug_p.pin[1].v', 'load.plug_n.pin[1].v')).re;
-    'load.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('load.plug_p.pin[1].v', 'load.plug_n.pin[1].v')).im;
-    'load.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('load.plug_p.pin[2].v', 'load.plug_n.pin[2].v')).re;
-    'load.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('load.plug_p.pin[2].v', 'load.plug_n.pin[2].v')).im;
-    'load.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('load.plug_p.pin[3].v', 'load.plug_n.pin[3].v')).re;
-    'load.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('load.plug_p.pin[3].v', 'load.plug_n.pin[3].v')).im;
+    'load.v[1].re' = 'load.plug_p.pin[1].v.re' - 'load.plug_n.pin[1].v.re';
+    'load.v[1].im' = 'load.plug_p.pin[1].v.im' - 'load.plug_n.pin[1].v.im';
+    'load.v[2].re' = 'load.plug_p.pin[2].v.re' - 'load.plug_n.pin[2].v.re';
+    'load.v[2].im' = 'load.plug_p.pin[2].v.im' - 'load.plug_n.pin[2].v.im';
+    'load.v[3].re' = 'load.plug_p.pin[3].v.re' - 'load.plug_n.pin[3].v.re';
+    'load.v[3].im' = 'load.plug_p.pin[3].v.im' - 'load.plug_n.pin[3].v.im';
     'load.i[1].re' = 'load.plug_p.pin[1].i.re';
     'load.i[1].im' = 'load.plug_p.pin[1].i.im';
     'load.i[2].re' = 'load.plug_p.pin[2].i.re';
@@ -9978,21 +9849,21 @@ package 'TransformerTestbench'
     'transformer.r1.arg_i[1]' = 'Modelica.ComplexMath.arg'('transformer.r1.i[1]', 0.0);
     'transformer.r1.arg_i[2]' = 'Modelica.ComplexMath.arg'('transformer.r1.i[2]', 0.0);
     'transformer.r1.arg_i[3]' = 'Modelica.ComplexMath.arg'('transformer.r1.i[3]', 0.0);
-    'transformer.r1.P[1]' = 'transformer.r1.v[1].re' * 'transformer.r1.i[1].re' - 'transformer.r1.v[1].im' * (-'transformer.r1.i[1].im');
-    'transformer.r1.P[2]' = 'transformer.r1.v[2].re' * 'transformer.r1.i[2].re' - 'transformer.r1.v[2].im' * (-'transformer.r1.i[2].im');
-    'transformer.r1.P[3]' = 'transformer.r1.v[3].re' * 'transformer.r1.i[3].re' - 'transformer.r1.v[3].im' * (-'transformer.r1.i[3].im');
-    'transformer.r1.Q[1]' = 'transformer.r1.v[1].re' * (-'transformer.r1.i[1].im') + 'transformer.r1.v[1].im' * 'transformer.r1.i[1].re';
-    'transformer.r1.Q[2]' = 'transformer.r1.v[2].re' * (-'transformer.r1.i[2].im') + 'transformer.r1.v[2].im' * 'transformer.r1.i[2].re';
-    'transformer.r1.Q[3]' = 'transformer.r1.v[3].re' * (-'transformer.r1.i[3].im') + 'transformer.r1.v[3].im' * 'transformer.r1.i[3].re';
-    'transformer.r1.S[1]' = sqrt(('transformer.r1.v[1].re' * 'transformer.r1.i[1].re' - 'transformer.r1.v[1].im' * (-'transformer.r1.i[1].im')) ^ 2.0 + ('transformer.r1.v[1].re' * (-'transformer.r1.i[1].im') + 'transformer.r1.v[1].im' * 'transformer.r1.i[1].re') ^ 2.0);
-    'transformer.r1.S[2]' = sqrt(('transformer.r1.v[2].re' * 'transformer.r1.i[2].re' - 'transformer.r1.v[2].im' * (-'transformer.r1.i[2].im')) ^ 2.0 + ('transformer.r1.v[2].re' * (-'transformer.r1.i[2].im') + 'transformer.r1.v[2].im' * 'transformer.r1.i[2].re') ^ 2.0);
-    'transformer.r1.S[3]' = sqrt(('transformer.r1.v[3].re' * 'transformer.r1.i[3].re' - 'transformer.r1.v[3].im' * (-'transformer.r1.i[3].im')) ^ 2.0 + ('transformer.r1.v[3].re' * (-'transformer.r1.i[3].im') + 'transformer.r1.v[3].im' * 'transformer.r1.i[3].re') ^ 2.0);
-    'transformer.r1.pf[1]' = cos('Modelica.Math.atan3'('transformer.r1.Q[1]', 'transformer.r1.P[1]', 0.0));
-    'transformer.r1.pf[2]' = cos('Modelica.Math.atan3'('transformer.r1.Q[2]', 'transformer.r1.P[2]', 0.0));
-    'transformer.r1.pf[3]' = cos('Modelica.Math.atan3'('transformer.r1.Q[3]', 'transformer.r1.P[3]', 0.0));
+    'transformer.r1.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r1.v[1]', 'Modelica.ComplexMath.conj'('transformer.r1.i[1]')));
+    'transformer.r1.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r1.v[2]', 'Modelica.ComplexMath.conj'('transformer.r1.i[2]')));
+    'transformer.r1.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r1.v[3]', 'Modelica.ComplexMath.conj'('transformer.r1.i[3]')));
+    'transformer.r1.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r1.v[1]', 'Modelica.ComplexMath.conj'('transformer.r1.i[1]')));
+    'transformer.r1.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r1.v[2]', 'Modelica.ComplexMath.conj'('transformer.r1.i[2]')));
+    'transformer.r1.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r1.v[3]', 'Modelica.ComplexMath.conj'('transformer.r1.i[3]')));
+    'transformer.r1.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r1.v[1]', 'Modelica.ComplexMath.conj'('transformer.r1.i[1]')));
+    'transformer.r1.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r1.v[2]', 'Modelica.ComplexMath.conj'('transformer.r1.i[2]')));
+    'transformer.r1.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r1.v[3]', 'Modelica.ComplexMath.conj'('transformer.r1.i[3]')));
+    'transformer.r1.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r1.P[1]', 'transformer.r1.Q[1]'), 0.0));
+    'transformer.r1.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r1.P[2]', 'transformer.r1.Q[2]'), 0.0));
+    'transformer.r1.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r1.P[3]', 'transformer.r1.Q[3]'), 0.0));
     'transformer.r1.resistor[1].R_actual' = 0.0016666666666666672;
-    'transformer.r1.resistor[1].v.re' = 'transformer.r1.resistor[1].R_actual' * 'transformer.r1.resistor[1].i.re';
-    'transformer.r1.resistor[1].v.im' = 'transformer.r1.resistor[1].R_actual' * 'transformer.r1.resistor[1].i.im';
+    'transformer.r1.resistor[1].v.re' = 'transformer.r1.resistor[1].R_actual' * 'transformer.r1.resistor[1].i.re' - 0.0 * 'transformer.r1.resistor[1].i.im';
+    'transformer.r1.resistor[1].v.im' = 'transformer.r1.resistor[1].R_actual' * 'transformer.r1.resistor[1].i.im' + 0.0 * 'transformer.r1.resistor[1].i.re';
     'transformer.r1.resistor[1].LossPower' = 'transformer.r1.resistor[1].v.re' * 'transformer.r1.resistor[1].i.re' - 'transformer.r1.resistor[1].v.im' * (-'transformer.r1.resistor[1].i.im');
     'transformer.r1.resistor[1].pin_p.i.re' + 'transformer.r1.resistor[1].pin_n.i.re' = 0.0;
     'transformer.r1.resistor[1].pin_p.i.im' + 'transformer.r1.resistor[1].pin_n.i.im' = 0.0;
@@ -10003,8 +9874,8 @@ package 'TransformerTestbench'
     'transformer.r1.resistor[1].pin_p.reference.gamma' = 'transformer.r1.resistor[1].pin_n.reference.gamma';
     'transformer.r1.resistor[1].omega' = der('transformer.r1.resistor[1].pin_p.reference.gamma');
     'transformer.r1.resistor[2].R_actual' = 0.0016666666666666672;
-    'transformer.r1.resistor[2].v.re' = 'transformer.r1.resistor[2].R_actual' * 'transformer.r1.resistor[2].i.re';
-    'transformer.r1.resistor[2].v.im' = 'transformer.r1.resistor[2].R_actual' * 'transformer.r1.resistor[2].i.im';
+    'transformer.r1.resistor[2].v.re' = 'transformer.r1.resistor[2].R_actual' * 'transformer.r1.resistor[2].i.re' - 0.0 * 'transformer.r1.resistor[2].i.im';
+    'transformer.r1.resistor[2].v.im' = 'transformer.r1.resistor[2].R_actual' * 'transformer.r1.resistor[2].i.im' + 0.0 * 'transformer.r1.resistor[2].i.re';
     'transformer.r1.resistor[2].LossPower' = 'transformer.r1.resistor[2].v.re' * 'transformer.r1.resistor[2].i.re' - 'transformer.r1.resistor[2].v.im' * (-'transformer.r1.resistor[2].i.im');
     'transformer.r1.resistor[2].pin_p.i.re' + 'transformer.r1.resistor[2].pin_n.i.re' = 0.0;
     'transformer.r1.resistor[2].pin_p.i.im' + 'transformer.r1.resistor[2].pin_n.i.im' = 0.0;
@@ -10015,8 +9886,8 @@ package 'TransformerTestbench'
     'transformer.r1.resistor[2].pin_p.reference.gamma' = 'transformer.r1.resistor[2].pin_n.reference.gamma';
     'transformer.r1.resistor[2].omega' = der('transformer.r1.resistor[2].pin_p.reference.gamma');
     'transformer.r1.resistor[3].R_actual' = 0.0016666666666666672;
-    'transformer.r1.resistor[3].v.re' = 'transformer.r1.resistor[3].R_actual' * 'transformer.r1.resistor[3].i.re';
-    'transformer.r1.resistor[3].v.im' = 'transformer.r1.resistor[3].R_actual' * 'transformer.r1.resistor[3].i.im';
+    'transformer.r1.resistor[3].v.re' = 'transformer.r1.resistor[3].R_actual' * 'transformer.r1.resistor[3].i.re' - 0.0 * 'transformer.r1.resistor[3].i.im';
+    'transformer.r1.resistor[3].v.im' = 'transformer.r1.resistor[3].R_actual' * 'transformer.r1.resistor[3].i.im' + 0.0 * 'transformer.r1.resistor[3].i.re';
     'transformer.r1.resistor[3].LossPower' = 'transformer.r1.resistor[3].v.re' * 'transformer.r1.resistor[3].i.re' - 'transformer.r1.resistor[3].v.im' * (-'transformer.r1.resistor[3].i.im');
     'transformer.r1.resistor[3].pin_p.i.re' + 'transformer.r1.resistor[3].pin_n.i.re' = 0.0;
     'transformer.r1.resistor[3].pin_p.i.im' + 'transformer.r1.resistor[3].pin_n.i.im' = 0.0;
@@ -10026,12 +9897,12 @@ package 'TransformerTestbench'
     'transformer.r1.resistor[3].i.im' = 'transformer.r1.resistor[3].pin_p.i.im';
     'transformer.r1.resistor[3].pin_p.reference.gamma' = 'transformer.r1.resistor[3].pin_n.reference.gamma';
     'transformer.r1.resistor[3].omega' = der('transformer.r1.resistor[3].pin_p.reference.gamma');
-    'transformer.r1.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r1.plug_p.pin[1].v', 'transformer.r1.plug_n.pin[1].v')).re;
-    'transformer.r1.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r1.plug_p.pin[1].v', 'transformer.r1.plug_n.pin[1].v')).im;
-    'transformer.r1.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r1.plug_p.pin[2].v', 'transformer.r1.plug_n.pin[2].v')).re;
-    'transformer.r1.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r1.plug_p.pin[2].v', 'transformer.r1.plug_n.pin[2].v')).im;
-    'transformer.r1.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r1.plug_p.pin[3].v', 'transformer.r1.plug_n.pin[3].v')).re;
-    'transformer.r1.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r1.plug_p.pin[3].v', 'transformer.r1.plug_n.pin[3].v')).im;
+    'transformer.r1.v[1].re' = 'transformer.r1.plug_p.pin[1].v.re' - 'transformer.r1.plug_n.pin[1].v.re';
+    'transformer.r1.v[1].im' = 'transformer.r1.plug_p.pin[1].v.im' - 'transformer.r1.plug_n.pin[1].v.im';
+    'transformer.r1.v[2].re' = 'transformer.r1.plug_p.pin[2].v.re' - 'transformer.r1.plug_n.pin[2].v.re';
+    'transformer.r1.v[2].im' = 'transformer.r1.plug_p.pin[2].v.im' - 'transformer.r1.plug_n.pin[2].v.im';
+    'transformer.r1.v[3].re' = 'transformer.r1.plug_p.pin[3].v.re' - 'transformer.r1.plug_n.pin[3].v.re';
+    'transformer.r1.v[3].im' = 'transformer.r1.plug_p.pin[3].v.im' - 'transformer.r1.plug_n.pin[3].v.im';
     'transformer.r1.i[1].re' = 'transformer.r1.plug_p.pin[1].i.re';
     'transformer.r1.i[1].im' = 'transformer.r1.plug_p.pin[1].i.im';
     'transformer.r1.i[2].re' = 'transformer.r1.plug_p.pin[2].i.re';
@@ -10105,20 +9976,20 @@ package 'TransformerTestbench'
     'transformer.l1sigma.arg_i[1]' = 'Modelica.ComplexMath.arg'('transformer.l1sigma.i[1]', 0.0);
     'transformer.l1sigma.arg_i[2]' = 'Modelica.ComplexMath.arg'('transformer.l1sigma.i[2]', 0.0);
     'transformer.l1sigma.arg_i[3]' = 'Modelica.ComplexMath.arg'('transformer.l1sigma.i[3]', 0.0);
-    'transformer.l1sigma.P[1]' = 'transformer.l1sigma.v[1].re' * 'transformer.l1sigma.i[1].re' - 'transformer.l1sigma.v[1].im' * (-'transformer.l1sigma.i[1].im');
-    'transformer.l1sigma.P[2]' = 'transformer.l1sigma.v[2].re' * 'transformer.l1sigma.i[2].re' - 'transformer.l1sigma.v[2].im' * (-'transformer.l1sigma.i[2].im');
-    'transformer.l1sigma.P[3]' = 'transformer.l1sigma.v[3].re' * 'transformer.l1sigma.i[3].re' - 'transformer.l1sigma.v[3].im' * (-'transformer.l1sigma.i[3].im');
-    'transformer.l1sigma.Q[1]' = 'transformer.l1sigma.v[1].re' * (-'transformer.l1sigma.i[1].im') + 'transformer.l1sigma.v[1].im' * 'transformer.l1sigma.i[1].re';
-    'transformer.l1sigma.Q[2]' = 'transformer.l1sigma.v[2].re' * (-'transformer.l1sigma.i[2].im') + 'transformer.l1sigma.v[2].im' * 'transformer.l1sigma.i[2].re';
-    'transformer.l1sigma.Q[3]' = 'transformer.l1sigma.v[3].re' * (-'transformer.l1sigma.i[3].im') + 'transformer.l1sigma.v[3].im' * 'transformer.l1sigma.i[3].re';
-    'transformer.l1sigma.S[1]' = sqrt(('transformer.l1sigma.v[1].re' * 'transformer.l1sigma.i[1].re' - 'transformer.l1sigma.v[1].im' * (-'transformer.l1sigma.i[1].im')) ^ 2.0 + ('transformer.l1sigma.v[1].re' * (-'transformer.l1sigma.i[1].im') + 'transformer.l1sigma.v[1].im' * 'transformer.l1sigma.i[1].re') ^ 2.0);
-    'transformer.l1sigma.S[2]' = sqrt(('transformer.l1sigma.v[2].re' * 'transformer.l1sigma.i[2].re' - 'transformer.l1sigma.v[2].im' * (-'transformer.l1sigma.i[2].im')) ^ 2.0 + ('transformer.l1sigma.v[2].re' * (-'transformer.l1sigma.i[2].im') + 'transformer.l1sigma.v[2].im' * 'transformer.l1sigma.i[2].re') ^ 2.0);
-    'transformer.l1sigma.S[3]' = sqrt(('transformer.l1sigma.v[3].re' * 'transformer.l1sigma.i[3].re' - 'transformer.l1sigma.v[3].im' * (-'transformer.l1sigma.i[3].im')) ^ 2.0 + ('transformer.l1sigma.v[3].re' * (-'transformer.l1sigma.i[3].im') + 'transformer.l1sigma.v[3].im' * 'transformer.l1sigma.i[3].re') ^ 2.0);
-    'transformer.l1sigma.pf[1]' = cos('Modelica.Math.atan3'('transformer.l1sigma.Q[1]', 'transformer.l1sigma.P[1]', 0.0));
-    'transformer.l1sigma.pf[2]' = cos('Modelica.Math.atan3'('transformer.l1sigma.Q[2]', 'transformer.l1sigma.P[2]', 0.0));
-    'transformer.l1sigma.pf[3]' = cos('Modelica.Math.atan3'('transformer.l1sigma.Q[3]', 'transformer.l1sigma.P[3]', 0.0));
-    'transformer.l1sigma.inductor[1].v.re' = -'transformer.l1sigma.inductor[1].omega' * 2.598989337445588e-5 * 'transformer.l1sigma.inductor[1].i.im';
-    'transformer.l1sigma.inductor[1].v.im' = 'transformer.l1sigma.inductor[1].omega' * 2.598989337445588e-5 * 'transformer.l1sigma.inductor[1].i.re';
+    'transformer.l1sigma.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l1sigma.v[1]', 'Modelica.ComplexMath.conj'('transformer.l1sigma.i[1]')));
+    'transformer.l1sigma.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l1sigma.v[2]', 'Modelica.ComplexMath.conj'('transformer.l1sigma.i[2]')));
+    'transformer.l1sigma.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l1sigma.v[3]', 'Modelica.ComplexMath.conj'('transformer.l1sigma.i[3]')));
+    'transformer.l1sigma.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l1sigma.v[1]', 'Modelica.ComplexMath.conj'('transformer.l1sigma.i[1]')));
+    'transformer.l1sigma.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l1sigma.v[2]', 'Modelica.ComplexMath.conj'('transformer.l1sigma.i[2]')));
+    'transformer.l1sigma.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l1sigma.v[3]', 'Modelica.ComplexMath.conj'('transformer.l1sigma.i[3]')));
+    'transformer.l1sigma.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l1sigma.v[1]', 'Modelica.ComplexMath.conj'('transformer.l1sigma.i[1]')));
+    'transformer.l1sigma.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l1sigma.v[2]', 'Modelica.ComplexMath.conj'('transformer.l1sigma.i[2]')));
+    'transformer.l1sigma.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l1sigma.v[3]', 'Modelica.ComplexMath.conj'('transformer.l1sigma.i[3]')));
+    'transformer.l1sigma.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l1sigma.P[1]', 'transformer.l1sigma.Q[1]'), 0.0));
+    'transformer.l1sigma.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l1sigma.P[2]', 'transformer.l1sigma.Q[2]'), 0.0));
+    'transformer.l1sigma.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l1sigma.P[3]', 'transformer.l1sigma.Q[3]'), 0.0));
+    'transformer.l1sigma.inductor[1].v.re' = ((0.0 * 'transformer.l1sigma.inductor[1].omega' - 1.0 * 0.0) * 2.598989337445588e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[1].omega') * 0.0) * 'transformer.l1sigma.inductor[1].i.re' - ((0.0 * 'transformer.l1sigma.inductor[1].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[1].omega') * 2.598989337445588e-5) * 'transformer.l1sigma.inductor[1].i.im';
+    'transformer.l1sigma.inductor[1].v.im' = ((0.0 * 'transformer.l1sigma.inductor[1].omega' - 1.0 * 0.0) * 2.598989337445588e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[1].omega') * 0.0) * 'transformer.l1sigma.inductor[1].i.im' + ((0.0 * 'transformer.l1sigma.inductor[1].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[1].omega') * 2.598989337445588e-5) * 'transformer.l1sigma.inductor[1].i.re';
     'transformer.l1sigma.inductor[1].pin_p.i.re' + 'transformer.l1sigma.inductor[1].pin_n.i.re' = 0.0;
     'transformer.l1sigma.inductor[1].pin_p.i.im' + 'transformer.l1sigma.inductor[1].pin_n.i.im' = 0.0;
     'transformer.l1sigma.inductor[1].v.re' = 'transformer.l1sigma.inductor[1].pin_p.v.re' - 'transformer.l1sigma.inductor[1].pin_n.v.re';
@@ -10127,8 +9998,8 @@ package 'TransformerTestbench'
     'transformer.l1sigma.inductor[1].i.im' = 'transformer.l1sigma.inductor[1].pin_p.i.im';
     'transformer.l1sigma.inductor[1].pin_p.reference.gamma' = 'transformer.l1sigma.inductor[1].pin_n.reference.gamma';
     'transformer.l1sigma.inductor[1].omega' = der('transformer.l1sigma.inductor[1].pin_p.reference.gamma');
-    'transformer.l1sigma.inductor[2].v.re' = -'transformer.l1sigma.inductor[2].omega' * 2.598989337445588e-5 * 'transformer.l1sigma.inductor[2].i.im';
-    'transformer.l1sigma.inductor[2].v.im' = 'transformer.l1sigma.inductor[2].omega' * 2.598989337445588e-5 * 'transformer.l1sigma.inductor[2].i.re';
+    'transformer.l1sigma.inductor[2].v.re' = ((0.0 * 'transformer.l1sigma.inductor[2].omega' - 1.0 * 0.0) * 2.598989337445588e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[2].omega') * 0.0) * 'transformer.l1sigma.inductor[2].i.re' - ((0.0 * 'transformer.l1sigma.inductor[2].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[2].omega') * 2.598989337445588e-5) * 'transformer.l1sigma.inductor[2].i.im';
+    'transformer.l1sigma.inductor[2].v.im' = ((0.0 * 'transformer.l1sigma.inductor[2].omega' - 1.0 * 0.0) * 2.598989337445588e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[2].omega') * 0.0) * 'transformer.l1sigma.inductor[2].i.im' + ((0.0 * 'transformer.l1sigma.inductor[2].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[2].omega') * 2.598989337445588e-5) * 'transformer.l1sigma.inductor[2].i.re';
     'transformer.l1sigma.inductor[2].pin_p.i.re' + 'transformer.l1sigma.inductor[2].pin_n.i.re' = 0.0;
     'transformer.l1sigma.inductor[2].pin_p.i.im' + 'transformer.l1sigma.inductor[2].pin_n.i.im' = 0.0;
     'transformer.l1sigma.inductor[2].v.re' = 'transformer.l1sigma.inductor[2].pin_p.v.re' - 'transformer.l1sigma.inductor[2].pin_n.v.re';
@@ -10137,8 +10008,8 @@ package 'TransformerTestbench'
     'transformer.l1sigma.inductor[2].i.im' = 'transformer.l1sigma.inductor[2].pin_p.i.im';
     'transformer.l1sigma.inductor[2].pin_p.reference.gamma' = 'transformer.l1sigma.inductor[2].pin_n.reference.gamma';
     'transformer.l1sigma.inductor[2].omega' = der('transformer.l1sigma.inductor[2].pin_p.reference.gamma');
-    'transformer.l1sigma.inductor[3].v.re' = -'transformer.l1sigma.inductor[3].omega' * 2.598989337445588e-5 * 'transformer.l1sigma.inductor[3].i.im';
-    'transformer.l1sigma.inductor[3].v.im' = 'transformer.l1sigma.inductor[3].omega' * 2.598989337445588e-5 * 'transformer.l1sigma.inductor[3].i.re';
+    'transformer.l1sigma.inductor[3].v.re' = ((0.0 * 'transformer.l1sigma.inductor[3].omega' - 1.0 * 0.0) * 2.598989337445588e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[3].omega') * 0.0) * 'transformer.l1sigma.inductor[3].i.re' - ((0.0 * 'transformer.l1sigma.inductor[3].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[3].omega') * 2.598989337445588e-5) * 'transformer.l1sigma.inductor[3].i.im';
+    'transformer.l1sigma.inductor[3].v.im' = ((0.0 * 'transformer.l1sigma.inductor[3].omega' - 1.0 * 0.0) * 2.598989337445588e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[3].omega') * 0.0) * 'transformer.l1sigma.inductor[3].i.im' + ((0.0 * 'transformer.l1sigma.inductor[3].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l1sigma.inductor[3].omega') * 2.598989337445588e-5) * 'transformer.l1sigma.inductor[3].i.re';
     'transformer.l1sigma.inductor[3].pin_p.i.re' + 'transformer.l1sigma.inductor[3].pin_n.i.re' = 0.0;
     'transformer.l1sigma.inductor[3].pin_p.i.im' + 'transformer.l1sigma.inductor[3].pin_n.i.im' = 0.0;
     'transformer.l1sigma.inductor[3].v.re' = 'transformer.l1sigma.inductor[3].pin_p.v.re' - 'transformer.l1sigma.inductor[3].pin_n.v.re';
@@ -10147,12 +10018,12 @@ package 'TransformerTestbench'
     'transformer.l1sigma.inductor[3].i.im' = 'transformer.l1sigma.inductor[3].pin_p.i.im';
     'transformer.l1sigma.inductor[3].pin_p.reference.gamma' = 'transformer.l1sigma.inductor[3].pin_n.reference.gamma';
     'transformer.l1sigma.inductor[3].omega' = der('transformer.l1sigma.inductor[3].pin_p.reference.gamma');
-    'transformer.l1sigma.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l1sigma.plug_p.pin[1].v', 'transformer.l1sigma.plug_n.pin[1].v')).re;
-    'transformer.l1sigma.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l1sigma.plug_p.pin[1].v', 'transformer.l1sigma.plug_n.pin[1].v')).im;
-    'transformer.l1sigma.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l1sigma.plug_p.pin[2].v', 'transformer.l1sigma.plug_n.pin[2].v')).re;
-    'transformer.l1sigma.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l1sigma.plug_p.pin[2].v', 'transformer.l1sigma.plug_n.pin[2].v')).im;
-    'transformer.l1sigma.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l1sigma.plug_p.pin[3].v', 'transformer.l1sigma.plug_n.pin[3].v')).re;
-    'transformer.l1sigma.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l1sigma.plug_p.pin[3].v', 'transformer.l1sigma.plug_n.pin[3].v')).im;
+    'transformer.l1sigma.v[1].re' = 'transformer.l1sigma.plug_p.pin[1].v.re' - 'transformer.l1sigma.plug_n.pin[1].v.re';
+    'transformer.l1sigma.v[1].im' = 'transformer.l1sigma.plug_p.pin[1].v.im' - 'transformer.l1sigma.plug_n.pin[1].v.im';
+    'transformer.l1sigma.v[2].re' = 'transformer.l1sigma.plug_p.pin[2].v.re' - 'transformer.l1sigma.plug_n.pin[2].v.re';
+    'transformer.l1sigma.v[2].im' = 'transformer.l1sigma.plug_p.pin[2].v.im' - 'transformer.l1sigma.plug_n.pin[2].v.im';
+    'transformer.l1sigma.v[3].re' = 'transformer.l1sigma.plug_p.pin[3].v.re' - 'transformer.l1sigma.plug_n.pin[3].v.re';
+    'transformer.l1sigma.v[3].im' = 'transformer.l1sigma.plug_p.pin[3].v.im' - 'transformer.l1sigma.plug_n.pin[3].v.im';
     'transformer.l1sigma.i[1].re' = 'transformer.l1sigma.plug_p.pin[1].i.re';
     'transformer.l1sigma.i[1].im' = 'transformer.l1sigma.plug_p.pin[1].i.im';
     'transformer.l1sigma.i[2].re' = 'transformer.l1sigma.plug_p.pin[2].i.re';
@@ -10226,21 +10097,21 @@ package 'TransformerTestbench'
     'transformer.r2.arg_i[1]' = 'Modelica.ComplexMath.arg'('transformer.r2.i[1]', 0.0);
     'transformer.r2.arg_i[2]' = 'Modelica.ComplexMath.arg'('transformer.r2.i[2]', 0.0);
     'transformer.r2.arg_i[3]' = 'Modelica.ComplexMath.arg'('transformer.r2.i[3]', 0.0);
-    'transformer.r2.P[1]' = 'transformer.r2.v[1].re' * 'transformer.r2.i[1].re' - 'transformer.r2.v[1].im' * (-'transformer.r2.i[1].im');
-    'transformer.r2.P[2]' = 'transformer.r2.v[2].re' * 'transformer.r2.i[2].re' - 'transformer.r2.v[2].im' * (-'transformer.r2.i[2].im');
-    'transformer.r2.P[3]' = 'transformer.r2.v[3].re' * 'transformer.r2.i[3].re' - 'transformer.r2.v[3].im' * (-'transformer.r2.i[3].im');
-    'transformer.r2.Q[1]' = 'transformer.r2.v[1].re' * (-'transformer.r2.i[1].im') + 'transformer.r2.v[1].im' * 'transformer.r2.i[1].re';
-    'transformer.r2.Q[2]' = 'transformer.r2.v[2].re' * (-'transformer.r2.i[2].im') + 'transformer.r2.v[2].im' * 'transformer.r2.i[2].re';
-    'transformer.r2.Q[3]' = 'transformer.r2.v[3].re' * (-'transformer.r2.i[3].im') + 'transformer.r2.v[3].im' * 'transformer.r2.i[3].re';
-    'transformer.r2.S[1]' = sqrt(('transformer.r2.v[1].re' * 'transformer.r2.i[1].re' - 'transformer.r2.v[1].im' * (-'transformer.r2.i[1].im')) ^ 2.0 + ('transformer.r2.v[1].re' * (-'transformer.r2.i[1].im') + 'transformer.r2.v[1].im' * 'transformer.r2.i[1].re') ^ 2.0);
-    'transformer.r2.S[2]' = sqrt(('transformer.r2.v[2].re' * 'transformer.r2.i[2].re' - 'transformer.r2.v[2].im' * (-'transformer.r2.i[2].im')) ^ 2.0 + ('transformer.r2.v[2].re' * (-'transformer.r2.i[2].im') + 'transformer.r2.v[2].im' * 'transformer.r2.i[2].re') ^ 2.0);
-    'transformer.r2.S[3]' = sqrt(('transformer.r2.v[3].re' * 'transformer.r2.i[3].re' - 'transformer.r2.v[3].im' * (-'transformer.r2.i[3].im')) ^ 2.0 + ('transformer.r2.v[3].re' * (-'transformer.r2.i[3].im') + 'transformer.r2.v[3].im' * 'transformer.r2.i[3].re') ^ 2.0);
-    'transformer.r2.pf[1]' = cos('Modelica.Math.atan3'('transformer.r2.Q[1]', 'transformer.r2.P[1]', 0.0));
-    'transformer.r2.pf[2]' = cos('Modelica.Math.atan3'('transformer.r2.Q[2]', 'transformer.r2.P[2]', 0.0));
-    'transformer.r2.pf[3]' = cos('Modelica.Math.atan3'('transformer.r2.Q[3]', 'transformer.r2.P[3]', 0.0));
+    'transformer.r2.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r2.v[1]', 'Modelica.ComplexMath.conj'('transformer.r2.i[1]')));
+    'transformer.r2.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r2.v[2]', 'Modelica.ComplexMath.conj'('transformer.r2.i[2]')));
+    'transformer.r2.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r2.v[3]', 'Modelica.ComplexMath.conj'('transformer.r2.i[3]')));
+    'transformer.r2.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r2.v[1]', 'Modelica.ComplexMath.conj'('transformer.r2.i[1]')));
+    'transformer.r2.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r2.v[2]', 'Modelica.ComplexMath.conj'('transformer.r2.i[2]')));
+    'transformer.r2.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r2.v[3]', 'Modelica.ComplexMath.conj'('transformer.r2.i[3]')));
+    'transformer.r2.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r2.v[1]', 'Modelica.ComplexMath.conj'('transformer.r2.i[1]')));
+    'transformer.r2.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r2.v[2]', 'Modelica.ComplexMath.conj'('transformer.r2.i[2]')));
+    'transformer.r2.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.r2.v[3]', 'Modelica.ComplexMath.conj'('transformer.r2.i[3]')));
+    'transformer.r2.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r2.P[1]', 'transformer.r2.Q[1]'), 0.0));
+    'transformer.r2.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r2.P[2]', 'transformer.r2.Q[2]'), 0.0));
+    'transformer.r2.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.r2.P[3]', 'transformer.r2.Q[3]'), 0.0));
     'transformer.r2.resistor[1].R_actual' = 0.005;
-    'transformer.r2.resistor[1].v.re' = 'transformer.r2.resistor[1].R_actual' * 'transformer.r2.resistor[1].i.re';
-    'transformer.r2.resistor[1].v.im' = 'transformer.r2.resistor[1].R_actual' * 'transformer.r2.resistor[1].i.im';
+    'transformer.r2.resistor[1].v.re' = 'transformer.r2.resistor[1].R_actual' * 'transformer.r2.resistor[1].i.re' - 0.0 * 'transformer.r2.resistor[1].i.im';
+    'transformer.r2.resistor[1].v.im' = 'transformer.r2.resistor[1].R_actual' * 'transformer.r2.resistor[1].i.im' + 0.0 * 'transformer.r2.resistor[1].i.re';
     'transformer.r2.resistor[1].LossPower' = 'transformer.r2.resistor[1].v.re' * 'transformer.r2.resistor[1].i.re' - 'transformer.r2.resistor[1].v.im' * (-'transformer.r2.resistor[1].i.im');
     'transformer.r2.resistor[1].pin_p.i.re' + 'transformer.r2.resistor[1].pin_n.i.re' = 0.0;
     'transformer.r2.resistor[1].pin_p.i.im' + 'transformer.r2.resistor[1].pin_n.i.im' = 0.0;
@@ -10251,8 +10122,8 @@ package 'TransformerTestbench'
     'transformer.r2.resistor[1].pin_p.reference.gamma' = 'transformer.r2.resistor[1].pin_n.reference.gamma';
     'transformer.r2.resistor[1].omega' = der('transformer.r2.resistor[1].pin_p.reference.gamma');
     'transformer.r2.resistor[2].R_actual' = 0.005;
-    'transformer.r2.resistor[2].v.re' = 'transformer.r2.resistor[2].R_actual' * 'transformer.r2.resistor[2].i.re';
-    'transformer.r2.resistor[2].v.im' = 'transformer.r2.resistor[2].R_actual' * 'transformer.r2.resistor[2].i.im';
+    'transformer.r2.resistor[2].v.re' = 'transformer.r2.resistor[2].R_actual' * 'transformer.r2.resistor[2].i.re' - 0.0 * 'transformer.r2.resistor[2].i.im';
+    'transformer.r2.resistor[2].v.im' = 'transformer.r2.resistor[2].R_actual' * 'transformer.r2.resistor[2].i.im' + 0.0 * 'transformer.r2.resistor[2].i.re';
     'transformer.r2.resistor[2].LossPower' = 'transformer.r2.resistor[2].v.re' * 'transformer.r2.resistor[2].i.re' - 'transformer.r2.resistor[2].v.im' * (-'transformer.r2.resistor[2].i.im');
     'transformer.r2.resistor[2].pin_p.i.re' + 'transformer.r2.resistor[2].pin_n.i.re' = 0.0;
     'transformer.r2.resistor[2].pin_p.i.im' + 'transformer.r2.resistor[2].pin_n.i.im' = 0.0;
@@ -10263,8 +10134,8 @@ package 'TransformerTestbench'
     'transformer.r2.resistor[2].pin_p.reference.gamma' = 'transformer.r2.resistor[2].pin_n.reference.gamma';
     'transformer.r2.resistor[2].omega' = der('transformer.r2.resistor[2].pin_p.reference.gamma');
     'transformer.r2.resistor[3].R_actual' = 0.005;
-    'transformer.r2.resistor[3].v.re' = 'transformer.r2.resistor[3].R_actual' * 'transformer.r2.resistor[3].i.re';
-    'transformer.r2.resistor[3].v.im' = 'transformer.r2.resistor[3].R_actual' * 'transformer.r2.resistor[3].i.im';
+    'transformer.r2.resistor[3].v.re' = 'transformer.r2.resistor[3].R_actual' * 'transformer.r2.resistor[3].i.re' - 0.0 * 'transformer.r2.resistor[3].i.im';
+    'transformer.r2.resistor[3].v.im' = 'transformer.r2.resistor[3].R_actual' * 'transformer.r2.resistor[3].i.im' + 0.0 * 'transformer.r2.resistor[3].i.re';
     'transformer.r2.resistor[3].LossPower' = 'transformer.r2.resistor[3].v.re' * 'transformer.r2.resistor[3].i.re' - 'transformer.r2.resistor[3].v.im' * (-'transformer.r2.resistor[3].i.im');
     'transformer.r2.resistor[3].pin_p.i.re' + 'transformer.r2.resistor[3].pin_n.i.re' = 0.0;
     'transformer.r2.resistor[3].pin_p.i.im' + 'transformer.r2.resistor[3].pin_n.i.im' = 0.0;
@@ -10274,12 +10145,12 @@ package 'TransformerTestbench'
     'transformer.r2.resistor[3].i.im' = 'transformer.r2.resistor[3].pin_p.i.im';
     'transformer.r2.resistor[3].pin_p.reference.gamma' = 'transformer.r2.resistor[3].pin_n.reference.gamma';
     'transformer.r2.resistor[3].omega' = der('transformer.r2.resistor[3].pin_p.reference.gamma');
-    'transformer.r2.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r2.plug_p.pin[1].v', 'transformer.r2.plug_n.pin[1].v')).re;
-    'transformer.r2.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r2.plug_p.pin[1].v', 'transformer.r2.plug_n.pin[1].v')).im;
-    'transformer.r2.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r2.plug_p.pin[2].v', 'transformer.r2.plug_n.pin[2].v')).re;
-    'transformer.r2.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r2.plug_p.pin[2].v', 'transformer.r2.plug_n.pin[2].v')).im;
-    'transformer.r2.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r2.plug_p.pin[3].v', 'transformer.r2.plug_n.pin[3].v')).re;
-    'transformer.r2.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.r2.plug_p.pin[3].v', 'transformer.r2.plug_n.pin[3].v')).im;
+    'transformer.r2.v[1].re' = 'transformer.r2.plug_p.pin[1].v.re' - 'transformer.r2.plug_n.pin[1].v.re';
+    'transformer.r2.v[1].im' = 'transformer.r2.plug_p.pin[1].v.im' - 'transformer.r2.plug_n.pin[1].v.im';
+    'transformer.r2.v[2].re' = 'transformer.r2.plug_p.pin[2].v.re' - 'transformer.r2.plug_n.pin[2].v.re';
+    'transformer.r2.v[2].im' = 'transformer.r2.plug_p.pin[2].v.im' - 'transformer.r2.plug_n.pin[2].v.im';
+    'transformer.r2.v[3].re' = 'transformer.r2.plug_p.pin[3].v.re' - 'transformer.r2.plug_n.pin[3].v.re';
+    'transformer.r2.v[3].im' = 'transformer.r2.plug_p.pin[3].v.im' - 'transformer.r2.plug_n.pin[3].v.im';
     'transformer.r2.i[1].re' = 'transformer.r2.plug_p.pin[1].i.re';
     'transformer.r2.i[1].im' = 'transformer.r2.plug_p.pin[1].i.im';
     'transformer.r2.i[2].re' = 'transformer.r2.plug_p.pin[2].i.re';
@@ -10353,20 +10224,20 @@ package 'TransformerTestbench'
     'transformer.l2sigma.arg_i[1]' = 'Modelica.ComplexMath.arg'('transformer.l2sigma.i[1]', 0.0);
     'transformer.l2sigma.arg_i[2]' = 'Modelica.ComplexMath.arg'('transformer.l2sigma.i[2]', 0.0);
     'transformer.l2sigma.arg_i[3]' = 'Modelica.ComplexMath.arg'('transformer.l2sigma.i[3]', 0.0);
-    'transformer.l2sigma.P[1]' = 'transformer.l2sigma.v[1].re' * 'transformer.l2sigma.i[1].re' - 'transformer.l2sigma.v[1].im' * (-'transformer.l2sigma.i[1].im');
-    'transformer.l2sigma.P[2]' = 'transformer.l2sigma.v[2].re' * 'transformer.l2sigma.i[2].re' - 'transformer.l2sigma.v[2].im' * (-'transformer.l2sigma.i[2].im');
-    'transformer.l2sigma.P[3]' = 'transformer.l2sigma.v[3].re' * 'transformer.l2sigma.i[3].re' - 'transformer.l2sigma.v[3].im' * (-'transformer.l2sigma.i[3].im');
-    'transformer.l2sigma.Q[1]' = 'transformer.l2sigma.v[1].re' * (-'transformer.l2sigma.i[1].im') + 'transformer.l2sigma.v[1].im' * 'transformer.l2sigma.i[1].re';
-    'transformer.l2sigma.Q[2]' = 'transformer.l2sigma.v[2].re' * (-'transformer.l2sigma.i[2].im') + 'transformer.l2sigma.v[2].im' * 'transformer.l2sigma.i[2].re';
-    'transformer.l2sigma.Q[3]' = 'transformer.l2sigma.v[3].re' * (-'transformer.l2sigma.i[3].im') + 'transformer.l2sigma.v[3].im' * 'transformer.l2sigma.i[3].re';
-    'transformer.l2sigma.S[1]' = sqrt(('transformer.l2sigma.v[1].re' * 'transformer.l2sigma.i[1].re' - 'transformer.l2sigma.v[1].im' * (-'transformer.l2sigma.i[1].im')) ^ 2.0 + ('transformer.l2sigma.v[1].re' * (-'transformer.l2sigma.i[1].im') + 'transformer.l2sigma.v[1].im' * 'transformer.l2sigma.i[1].re') ^ 2.0);
-    'transformer.l2sigma.S[2]' = sqrt(('transformer.l2sigma.v[2].re' * 'transformer.l2sigma.i[2].re' - 'transformer.l2sigma.v[2].im' * (-'transformer.l2sigma.i[2].im')) ^ 2.0 + ('transformer.l2sigma.v[2].re' * (-'transformer.l2sigma.i[2].im') + 'transformer.l2sigma.v[2].im' * 'transformer.l2sigma.i[2].re') ^ 2.0);
-    'transformer.l2sigma.S[3]' = sqrt(('transformer.l2sigma.v[3].re' * 'transformer.l2sigma.i[3].re' - 'transformer.l2sigma.v[3].im' * (-'transformer.l2sigma.i[3].im')) ^ 2.0 + ('transformer.l2sigma.v[3].re' * (-'transformer.l2sigma.i[3].im') + 'transformer.l2sigma.v[3].im' * 'transformer.l2sigma.i[3].re') ^ 2.0);
-    'transformer.l2sigma.pf[1]' = cos('Modelica.Math.atan3'('transformer.l2sigma.Q[1]', 'transformer.l2sigma.P[1]', 0.0));
-    'transformer.l2sigma.pf[2]' = cos('Modelica.Math.atan3'('transformer.l2sigma.Q[2]', 'transformer.l2sigma.P[2]', 0.0));
-    'transformer.l2sigma.pf[3]' = cos('Modelica.Math.atan3'('transformer.l2sigma.Q[3]', 'transformer.l2sigma.P[3]', 0.0));
-    'transformer.l2sigma.inductor[1].v.re' = -'transformer.l2sigma.inductor[1].omega' * 7.796968012336763e-5 * 'transformer.l2sigma.inductor[1].i.im';
-    'transformer.l2sigma.inductor[1].v.im' = 'transformer.l2sigma.inductor[1].omega' * 7.796968012336763e-5 * 'transformer.l2sigma.inductor[1].i.re';
+    'transformer.l2sigma.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l2sigma.v[1]', 'Modelica.ComplexMath.conj'('transformer.l2sigma.i[1]')));
+    'transformer.l2sigma.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l2sigma.v[2]', 'Modelica.ComplexMath.conj'('transformer.l2sigma.i[2]')));
+    'transformer.l2sigma.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l2sigma.v[3]', 'Modelica.ComplexMath.conj'('transformer.l2sigma.i[3]')));
+    'transformer.l2sigma.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l2sigma.v[1]', 'Modelica.ComplexMath.conj'('transformer.l2sigma.i[1]')));
+    'transformer.l2sigma.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l2sigma.v[2]', 'Modelica.ComplexMath.conj'('transformer.l2sigma.i[2]')));
+    'transformer.l2sigma.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l2sigma.v[3]', 'Modelica.ComplexMath.conj'('transformer.l2sigma.i[3]')));
+    'transformer.l2sigma.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l2sigma.v[1]', 'Modelica.ComplexMath.conj'('transformer.l2sigma.i[1]')));
+    'transformer.l2sigma.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l2sigma.v[2]', 'Modelica.ComplexMath.conj'('transformer.l2sigma.i[2]')));
+    'transformer.l2sigma.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('transformer.l2sigma.v[3]', 'Modelica.ComplexMath.conj'('transformer.l2sigma.i[3]')));
+    'transformer.l2sigma.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l2sigma.P[1]', 'transformer.l2sigma.Q[1]'), 0.0));
+    'transformer.l2sigma.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l2sigma.P[2]', 'transformer.l2sigma.Q[2]'), 0.0));
+    'transformer.l2sigma.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('transformer.l2sigma.P[3]', 'transformer.l2sigma.Q[3]'), 0.0));
+    'transformer.l2sigma.inductor[1].v.re' = ((0.0 * 'transformer.l2sigma.inductor[1].omega' - 1.0 * 0.0) * 7.796968012336763e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[1].omega') * 0.0) * 'transformer.l2sigma.inductor[1].i.re' - ((0.0 * 'transformer.l2sigma.inductor[1].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[1].omega') * 7.796968012336763e-5) * 'transformer.l2sigma.inductor[1].i.im';
+    'transformer.l2sigma.inductor[1].v.im' = ((0.0 * 'transformer.l2sigma.inductor[1].omega' - 1.0 * 0.0) * 7.796968012336763e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[1].omega') * 0.0) * 'transformer.l2sigma.inductor[1].i.im' + ((0.0 * 'transformer.l2sigma.inductor[1].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[1].omega') * 7.796968012336763e-5) * 'transformer.l2sigma.inductor[1].i.re';
     'transformer.l2sigma.inductor[1].pin_p.i.re' + 'transformer.l2sigma.inductor[1].pin_n.i.re' = 0.0;
     'transformer.l2sigma.inductor[1].pin_p.i.im' + 'transformer.l2sigma.inductor[1].pin_n.i.im' = 0.0;
     'transformer.l2sigma.inductor[1].v.re' = 'transformer.l2sigma.inductor[1].pin_p.v.re' - 'transformer.l2sigma.inductor[1].pin_n.v.re';
@@ -10375,8 +10246,8 @@ package 'TransformerTestbench'
     'transformer.l2sigma.inductor[1].i.im' = 'transformer.l2sigma.inductor[1].pin_p.i.im';
     'transformer.l2sigma.inductor[1].pin_p.reference.gamma' = 'transformer.l2sigma.inductor[1].pin_n.reference.gamma';
     'transformer.l2sigma.inductor[1].omega' = der('transformer.l2sigma.inductor[1].pin_p.reference.gamma');
-    'transformer.l2sigma.inductor[2].v.re' = -'transformer.l2sigma.inductor[2].omega' * 7.796968012336763e-5 * 'transformer.l2sigma.inductor[2].i.im';
-    'transformer.l2sigma.inductor[2].v.im' = 'transformer.l2sigma.inductor[2].omega' * 7.796968012336763e-5 * 'transformer.l2sigma.inductor[2].i.re';
+    'transformer.l2sigma.inductor[2].v.re' = ((0.0 * 'transformer.l2sigma.inductor[2].omega' - 1.0 * 0.0) * 7.796968012336763e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[2].omega') * 0.0) * 'transformer.l2sigma.inductor[2].i.re' - ((0.0 * 'transformer.l2sigma.inductor[2].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[2].omega') * 7.796968012336763e-5) * 'transformer.l2sigma.inductor[2].i.im';
+    'transformer.l2sigma.inductor[2].v.im' = ((0.0 * 'transformer.l2sigma.inductor[2].omega' - 1.0 * 0.0) * 7.796968012336763e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[2].omega') * 0.0) * 'transformer.l2sigma.inductor[2].i.im' + ((0.0 * 'transformer.l2sigma.inductor[2].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[2].omega') * 7.796968012336763e-5) * 'transformer.l2sigma.inductor[2].i.re';
     'transformer.l2sigma.inductor[2].pin_p.i.re' + 'transformer.l2sigma.inductor[2].pin_n.i.re' = 0.0;
     'transformer.l2sigma.inductor[2].pin_p.i.im' + 'transformer.l2sigma.inductor[2].pin_n.i.im' = 0.0;
     'transformer.l2sigma.inductor[2].v.re' = 'transformer.l2sigma.inductor[2].pin_p.v.re' - 'transformer.l2sigma.inductor[2].pin_n.v.re';
@@ -10385,8 +10256,8 @@ package 'TransformerTestbench'
     'transformer.l2sigma.inductor[2].i.im' = 'transformer.l2sigma.inductor[2].pin_p.i.im';
     'transformer.l2sigma.inductor[2].pin_p.reference.gamma' = 'transformer.l2sigma.inductor[2].pin_n.reference.gamma';
     'transformer.l2sigma.inductor[2].omega' = der('transformer.l2sigma.inductor[2].pin_p.reference.gamma');
-    'transformer.l2sigma.inductor[3].v.re' = -'transformer.l2sigma.inductor[3].omega' * 7.796968012336763e-5 * 'transformer.l2sigma.inductor[3].i.im';
-    'transformer.l2sigma.inductor[3].v.im' = 'transformer.l2sigma.inductor[3].omega' * 7.796968012336763e-5 * 'transformer.l2sigma.inductor[3].i.re';
+    'transformer.l2sigma.inductor[3].v.re' = ((0.0 * 'transformer.l2sigma.inductor[3].omega' - 1.0 * 0.0) * 7.796968012336763e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[3].omega') * 0.0) * 'transformer.l2sigma.inductor[3].i.re' - ((0.0 * 'transformer.l2sigma.inductor[3].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[3].omega') * 7.796968012336763e-5) * 'transformer.l2sigma.inductor[3].i.im';
+    'transformer.l2sigma.inductor[3].v.im' = ((0.0 * 'transformer.l2sigma.inductor[3].omega' - 1.0 * 0.0) * 7.796968012336763e-5 - (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[3].omega') * 0.0) * 'transformer.l2sigma.inductor[3].i.im' + ((0.0 * 'transformer.l2sigma.inductor[3].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.l2sigma.inductor[3].omega') * 7.796968012336763e-5) * 'transformer.l2sigma.inductor[3].i.re';
     'transformer.l2sigma.inductor[3].pin_p.i.re' + 'transformer.l2sigma.inductor[3].pin_n.i.re' = 0.0;
     'transformer.l2sigma.inductor[3].pin_p.i.im' + 'transformer.l2sigma.inductor[3].pin_n.i.im' = 0.0;
     'transformer.l2sigma.inductor[3].v.re' = 'transformer.l2sigma.inductor[3].pin_p.v.re' - 'transformer.l2sigma.inductor[3].pin_n.v.re';
@@ -10395,12 +10266,12 @@ package 'TransformerTestbench'
     'transformer.l2sigma.inductor[3].i.im' = 'transformer.l2sigma.inductor[3].pin_p.i.im';
     'transformer.l2sigma.inductor[3].pin_p.reference.gamma' = 'transformer.l2sigma.inductor[3].pin_n.reference.gamma';
     'transformer.l2sigma.inductor[3].omega' = der('transformer.l2sigma.inductor[3].pin_p.reference.gamma');
-    'transformer.l2sigma.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l2sigma.plug_p.pin[1].v', 'transformer.l2sigma.plug_n.pin[1].v')).re;
-    'transformer.l2sigma.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l2sigma.plug_p.pin[1].v', 'transformer.l2sigma.plug_n.pin[1].v')).im;
-    'transformer.l2sigma.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l2sigma.plug_p.pin[2].v', 'transformer.l2sigma.plug_n.pin[2].v')).re;
-    'transformer.l2sigma.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l2sigma.plug_p.pin[2].v', 'transformer.l2sigma.plug_n.pin[2].v')).im;
-    'transformer.l2sigma.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l2sigma.plug_p.pin[3].v', 'transformer.l2sigma.plug_n.pin[3].v')).re;
-    'transformer.l2sigma.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.l2sigma.plug_p.pin[3].v', 'transformer.l2sigma.plug_n.pin[3].v')).im;
+    'transformer.l2sigma.v[1].re' = 'transformer.l2sigma.plug_p.pin[1].v.re' - 'transformer.l2sigma.plug_n.pin[1].v.re';
+    'transformer.l2sigma.v[1].im' = 'transformer.l2sigma.plug_p.pin[1].v.im' - 'transformer.l2sigma.plug_n.pin[1].v.im';
+    'transformer.l2sigma.v[2].re' = 'transformer.l2sigma.plug_p.pin[2].v.re' - 'transformer.l2sigma.plug_n.pin[2].v.re';
+    'transformer.l2sigma.v[2].im' = 'transformer.l2sigma.plug_p.pin[2].v.im' - 'transformer.l2sigma.plug_n.pin[2].v.im';
+    'transformer.l2sigma.v[3].re' = 'transformer.l2sigma.plug_p.pin[3].v.re' - 'transformer.l2sigma.plug_n.pin[3].v.re';
+    'transformer.l2sigma.v[3].im' = 'transformer.l2sigma.plug_p.pin[3].v.im' - 'transformer.l2sigma.plug_n.pin[3].v.im';
     'transformer.l2sigma.i[1].re' = 'transformer.l2sigma.plug_p.pin[1].i.re';
     'transformer.l2sigma.i[1].im' = 'transformer.l2sigma.plug_p.pin[1].i.im';
     'transformer.l2sigma.i[2].re' = 'transformer.l2sigma.plug_p.pin[2].i.re';
@@ -10414,83 +10285,83 @@ package 'TransformerTestbench'
     'transformer.core.im[2].im' = 0.0;
     'transformer.core.im[3].re' = 0.0;
     'transformer.core.im[3].im' = 0.0;
-    'transformer.core.v1[1].re' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v2[1]')).re;
-    'transformer.core.v1[1].im' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v2[1]')).im;
-    'transformer.core.v1[2].re' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v2[2]')).re;
-    'transformer.core.v1[2].im' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v2[2]')).im;
-    'transformer.core.v1[3].re' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v2[3]')).re;
-    'transformer.core.v1[3].im' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v2[3]')).im;
-    'transformer.core.v1[1].re' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v3[1]')).re;
-    'transformer.core.v1[1].im' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v3[1]')).im;
-    'transformer.core.v1[2].re' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v3[2]')).re;
-    'transformer.core.v1[2].im' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v3[2]')).im;
-    'transformer.core.v1[3].re' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v3[3]')).re;
-    'transformer.core.v1[3].im' = ('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('Complex'(1.1547005383792517, 0.0), 'transformer.core.v3[3]')).im;
-    'transformer.core.v1[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p1.pin[1].v', 'transformer.core.plug_n1.pin[1].v')).re;
-    'transformer.core.v1[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p1.pin[1].v', 'transformer.core.plug_n1.pin[1].v')).im;
-    'transformer.core.v1[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p1.pin[2].v', 'transformer.core.plug_n1.pin[2].v')).re;
-    'transformer.core.v1[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p1.pin[2].v', 'transformer.core.plug_n1.pin[2].v')).im;
-    'transformer.core.v1[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p1.pin[3].v', 'transformer.core.plug_n1.pin[3].v')).re;
-    'transformer.core.v1[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p1.pin[3].v', 'transformer.core.plug_n1.pin[3].v')).im;
+    'transformer.core.v1[1].re' = 1.1547005383792517 * 'transformer.core.v2[1].re' - 0.0 * 'transformer.core.v2[1].im';
+    'transformer.core.v1[1].im' = 1.1547005383792517 * 'transformer.core.v2[1].im' + 0.0 * 'transformer.core.v2[1].re';
+    'transformer.core.v1[2].re' = 1.1547005383792517 * 'transformer.core.v2[2].re' - 0.0 * 'transformer.core.v2[2].im';
+    'transformer.core.v1[2].im' = 1.1547005383792517 * 'transformer.core.v2[2].im' + 0.0 * 'transformer.core.v2[2].re';
+    'transformer.core.v1[3].re' = 1.1547005383792517 * 'transformer.core.v2[3].re' - 0.0 * 'transformer.core.v2[3].im';
+    'transformer.core.v1[3].im' = 1.1547005383792517 * 'transformer.core.v2[3].im' + 0.0 * 'transformer.core.v2[3].re';
+    'transformer.core.v1[1].re' = 1.1547005383792517 * 'transformer.core.v3[1].re' - 0.0 * 'transformer.core.v3[1].im';
+    'transformer.core.v1[1].im' = 1.1547005383792517 * 'transformer.core.v3[1].im' + 0.0 * 'transformer.core.v3[1].re';
+    'transformer.core.v1[2].re' = 1.1547005383792517 * 'transformer.core.v3[2].re' - 0.0 * 'transformer.core.v3[2].im';
+    'transformer.core.v1[2].im' = 1.1547005383792517 * 'transformer.core.v3[2].im' + 0.0 * 'transformer.core.v3[2].re';
+    'transformer.core.v1[3].re' = 1.1547005383792517 * 'transformer.core.v3[3].re' - 0.0 * 'transformer.core.v3[3].im';
+    'transformer.core.v1[3].im' = 1.1547005383792517 * 'transformer.core.v3[3].im' + 0.0 * 'transformer.core.v3[3].re';
+    'transformer.core.v1[1].re' = 'transformer.core.plug_p1.pin[1].v.re' - 'transformer.core.plug_n1.pin[1].v.re';
+    'transformer.core.v1[1].im' = 'transformer.core.plug_p1.pin[1].v.im' - 'transformer.core.plug_n1.pin[1].v.im';
+    'transformer.core.v1[2].re' = 'transformer.core.plug_p1.pin[2].v.re' - 'transformer.core.plug_n1.pin[2].v.re';
+    'transformer.core.v1[2].im' = 'transformer.core.plug_p1.pin[2].v.im' - 'transformer.core.plug_n1.pin[2].v.im';
+    'transformer.core.v1[3].re' = 'transformer.core.plug_p1.pin[3].v.re' - 'transformer.core.plug_n1.pin[3].v.re';
+    'transformer.core.v1[3].im' = 'transformer.core.plug_p1.pin[3].v.im' - 'transformer.core.plug_n1.pin[3].v.im';
     'transformer.core.i1[1].re' = 'transformer.core.plug_p1.pin[1].i.re';
     'transformer.core.i1[1].im' = 'transformer.core.plug_p1.pin[1].i.im';
     'transformer.core.i1[2].re' = 'transformer.core.plug_p1.pin[2].i.re';
     'transformer.core.i1[2].im' = 'transformer.core.plug_p1.pin[2].i.im';
     'transformer.core.i1[3].re' = 'transformer.core.plug_p1.pin[3].i.re';
     'transformer.core.i1[3].im' = 'transformer.core.plug_p1.pin[3].i.im';
-    'transformer.core.v2[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p2.pin[1].v', 'transformer.core.plug_n2.pin[1].v')).re;
-    'transformer.core.v2[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p2.pin[1].v', 'transformer.core.plug_n2.pin[1].v')).im;
-    'transformer.core.v2[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p2.pin[2].v', 'transformer.core.plug_n2.pin[2].v')).re;
-    'transformer.core.v2[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p2.pin[2].v', 'transformer.core.plug_n2.pin[2].v')).im;
-    'transformer.core.v2[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p2.pin[3].v', 'transformer.core.plug_n2.pin[3].v')).re;
-    'transformer.core.v2[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p2.pin[3].v', 'transformer.core.plug_n2.pin[3].v')).im;
+    'transformer.core.v2[1].re' = 'transformer.core.plug_p2.pin[1].v.re' - 'transformer.core.plug_n2.pin[1].v.re';
+    'transformer.core.v2[1].im' = 'transformer.core.plug_p2.pin[1].v.im' - 'transformer.core.plug_n2.pin[1].v.im';
+    'transformer.core.v2[2].re' = 'transformer.core.plug_p2.pin[2].v.re' - 'transformer.core.plug_n2.pin[2].v.re';
+    'transformer.core.v2[2].im' = 'transformer.core.plug_p2.pin[2].v.im' - 'transformer.core.plug_n2.pin[2].v.im';
+    'transformer.core.v2[3].re' = 'transformer.core.plug_p2.pin[3].v.re' - 'transformer.core.plug_n2.pin[3].v.re';
+    'transformer.core.v2[3].im' = 'transformer.core.plug_p2.pin[3].v.im' - 'transformer.core.plug_n2.pin[3].v.im';
     'transformer.core.i2[1].re' = 'transformer.core.plug_p2.pin[1].i.re';
     'transformer.core.i2[1].im' = 'transformer.core.plug_p2.pin[1].i.im';
     'transformer.core.i2[2].re' = 'transformer.core.plug_p2.pin[2].i.re';
     'transformer.core.i2[2].im' = 'transformer.core.plug_p2.pin[2].i.im';
     'transformer.core.i2[3].re' = 'transformer.core.plug_p2.pin[3].i.re';
     'transformer.core.i2[3].im' = 'transformer.core.plug_p2.pin[3].i.im';
-    'transformer.core.v3[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p3.pin[1].v', 'transformer.core.plug_n3.pin[1].v')).re;
-    'transformer.core.v3[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p3.pin[1].v', 'transformer.core.plug_n3.pin[1].v')).im;
-    'transformer.core.v3[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p3.pin[2].v', 'transformer.core.plug_n3.pin[2].v')).re;
-    'transformer.core.v3[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p3.pin[2].v', 'transformer.core.plug_n3.pin[2].v')).im;
-    'transformer.core.v3[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p3.pin[3].v', 'transformer.core.plug_n3.pin[3].v')).re;
-    'transformer.core.v3[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('transformer.core.plug_p3.pin[3].v', 'transformer.core.plug_n3.pin[3].v')).im;
+    'transformer.core.v3[1].re' = 'transformer.core.plug_p3.pin[1].v.re' - 'transformer.core.plug_n3.pin[1].v.re';
+    'transformer.core.v3[1].im' = 'transformer.core.plug_p3.pin[1].v.im' - 'transformer.core.plug_n3.pin[1].v.im';
+    'transformer.core.v3[2].re' = 'transformer.core.plug_p3.pin[2].v.re' - 'transformer.core.plug_n3.pin[2].v.re';
+    'transformer.core.v3[2].im' = 'transformer.core.plug_p3.pin[2].v.im' - 'transformer.core.plug_n3.pin[2].v.im';
+    'transformer.core.v3[3].re' = 'transformer.core.plug_p3.pin[3].v.re' - 'transformer.core.plug_n3.pin[3].v.re';
+    'transformer.core.v3[3].im' = 'transformer.core.plug_p3.pin[3].v.im' - 'transformer.core.plug_n3.pin[3].v.im';
     'transformer.core.i3[1].re' = 'transformer.core.plug_p3.pin[1].i.re';
     'transformer.core.i3[1].im' = 'transformer.core.plug_p3.pin[1].i.im';
     'transformer.core.i3[2].re' = 'transformer.core.plug_p3.pin[2].i.re';
     'transformer.core.i3[2].im' = 'transformer.core.plug_p3.pin[2].i.im';
     'transformer.core.i3[3].re' = 'transformer.core.plug_p3.pin[3].i.re';
     'transformer.core.i3[3].im' = 'transformer.core.plug_p3.pin[3].i.im';
-    'transformer.core.im[1].re' = ('Complex.\'+\''('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.i1[1]', 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i2[1]', 'Complex'(1.1547005383792517, 0.0))), 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i3[1]', 'Complex'(1.1547005383792517, 0.0)))).re;
-    'transformer.core.im[1].im' = ('Complex.\'+\''('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.i1[1]', 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i2[1]', 'Complex'(1.1547005383792517, 0.0))), 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i3[1]', 'Complex'(1.1547005383792517, 0.0)))).im;
-    'transformer.core.im[2].re' = ('Complex.\'+\''('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.i1[2]', 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i2[2]', 'Complex'(1.1547005383792517, 0.0))), 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i3[2]', 'Complex'(1.1547005383792517, 0.0)))).re;
-    'transformer.core.im[2].im' = ('Complex.\'+\''('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.i1[2]', 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i2[2]', 'Complex'(1.1547005383792517, 0.0))), 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i3[2]', 'Complex'(1.1547005383792517, 0.0)))).im;
-    'transformer.core.im[3].re' = ('Complex.\'+\''('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.i1[3]', 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i2[3]', 'Complex'(1.1547005383792517, 0.0))), 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i3[3]', 'Complex'(1.1547005383792517, 0.0)))).re;
-    'transformer.core.im[3].im' = ('Complex.\'+\''('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.i1[3]', 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i2[3]', 'Complex'(1.1547005383792517, 0.0))), 'Modelica.Units.SI.ComplexCurrent.\'/\''('transformer.core.i3[3]', 'Complex'(1.1547005383792517, 0.0)))).im;
+    'transformer.core.im[1].re' = 'transformer.core.i1[1].re' + ('transformer.core.i2[1].re' * 1.1547005383792517 + 'transformer.core.i2[1].im' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0) + ('transformer.core.i3[1].re' * 1.1547005383792517 + 'transformer.core.i3[1].im' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0);
+    'transformer.core.im[1].im' = 'transformer.core.i1[1].im' + ('transformer.core.i2[1].im' * 1.1547005383792517 - 'transformer.core.i2[1].re' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0) + ('transformer.core.i3[1].im' * 1.1547005383792517 - 'transformer.core.i3[1].re' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0);
+    'transformer.core.im[2].re' = 'transformer.core.i1[2].re' + ('transformer.core.i2[2].re' * 1.1547005383792517 + 'transformer.core.i2[2].im' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0) + ('transformer.core.i3[2].re' * 1.1547005383792517 + 'transformer.core.i3[2].im' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0);
+    'transformer.core.im[2].im' = 'transformer.core.i1[2].im' + ('transformer.core.i2[2].im' * 1.1547005383792517 - 'transformer.core.i2[2].re' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0) + ('transformer.core.i3[2].im' * 1.1547005383792517 - 'transformer.core.i3[2].re' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0);
+    'transformer.core.im[3].re' = 'transformer.core.i1[3].re' + ('transformer.core.i2[3].re' * 1.1547005383792517 + 'transformer.core.i2[3].im' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0) + ('transformer.core.i3[3].re' * 1.1547005383792517 + 'transformer.core.i3[3].im' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0);
+    'transformer.core.im[3].im' = 'transformer.core.i1[3].im' + ('transformer.core.i2[3].im' * 1.1547005383792517 - 'transformer.core.i2[3].re' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0) + ('transformer.core.i3[3].im' * 1.1547005383792517 - 'transformer.core.i3[3].re' * 0.0) / (1.1547005383792517 * 1.1547005383792517 + 0.0 * 0.0);
     'transformer.core.plug_p1.reference.gamma' = 'transformer.core.plug_n1.reference.gamma';
     'transformer.core.plug_p2.reference.gamma' = 'transformer.core.plug_n2.reference.gamma';
     'transformer.core.plug_p3.reference.gamma' = 'transformer.core.plug_n3.reference.gamma';
     'transformer.core.plug_p1.reference.gamma' = 'transformer.core.plug_p2.reference.gamma';
     'transformer.core.plug_p1.reference.gamma' = 'transformer.core.plug_p3.reference.gamma';
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p1.pin[1].i', 'transformer.core.plug_n1.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p1.pin[1].i', 'transformer.core.plug_n1.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p1.pin[2].i', 'transformer.core.plug_n1.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p1.pin[2].i', 'transformer.core.plug_n1.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p1.pin[3].i', 'transformer.core.plug_n1.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p1.pin[3].i', 'transformer.core.plug_n1.pin[3].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p2.pin[1].i', 'transformer.core.plug_n2.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p2.pin[1].i', 'transformer.core.plug_n2.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p2.pin[2].i', 'transformer.core.plug_n2.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p2.pin[2].i', 'transformer.core.plug_n2.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p2.pin[3].i', 'transformer.core.plug_n2.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p2.pin[3].i', 'transformer.core.plug_n2.pin[3].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p3.pin[1].i', 'transformer.core.plug_n3.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p3.pin[1].i', 'transformer.core.plug_n3.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p3.pin[2].i', 'transformer.core.plug_n3.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p3.pin[2].i', 'transformer.core.plug_n3.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p3.pin[3].i', 'transformer.core.plug_n3.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('transformer.core.plug_p3.pin[3].i', 'transformer.core.plug_n3.pin[3].i')).im = 0.0;
+    'transformer.core.plug_p1.pin[1].i.re' + 'transformer.core.plug_n1.pin[1].i.re' = 0.0;
+    'transformer.core.plug_p1.pin[1].i.im' + 'transformer.core.plug_n1.pin[1].i.im' = 0.0;
+    'transformer.core.plug_p1.pin[2].i.re' + 'transformer.core.plug_n1.pin[2].i.re' = 0.0;
+    'transformer.core.plug_p1.pin[2].i.im' + 'transformer.core.plug_n1.pin[2].i.im' = 0.0;
+    'transformer.core.plug_p1.pin[3].i.re' + 'transformer.core.plug_n1.pin[3].i.re' = 0.0;
+    'transformer.core.plug_p1.pin[3].i.im' + 'transformer.core.plug_n1.pin[3].i.im' = 0.0;
+    'transformer.core.plug_p2.pin[1].i.re' + 'transformer.core.plug_n2.pin[1].i.re' = 0.0;
+    'transformer.core.plug_p2.pin[1].i.im' + 'transformer.core.plug_n2.pin[1].i.im' = 0.0;
+    'transformer.core.plug_p2.pin[2].i.re' + 'transformer.core.plug_n2.pin[2].i.re' = 0.0;
+    'transformer.core.plug_p2.pin[2].i.im' + 'transformer.core.plug_n2.pin[2].i.im' = 0.0;
+    'transformer.core.plug_p2.pin[3].i.re' + 'transformer.core.plug_n2.pin[3].i.re' = 0.0;
+    'transformer.core.plug_p2.pin[3].i.im' + 'transformer.core.plug_n2.pin[3].i.im' = 0.0;
+    'transformer.core.plug_p3.pin[1].i.re' + 'transformer.core.plug_n3.pin[1].i.re' = 0.0;
+    'transformer.core.plug_p3.pin[1].i.im' + 'transformer.core.plug_n3.pin[1].i.im' = 0.0;
+    'transformer.core.plug_p3.pin[2].i.re' + 'transformer.core.plug_n3.pin[2].i.re' = 0.0;
+    'transformer.core.plug_p3.pin[2].i.im' + 'transformer.core.plug_n3.pin[2].i.im' = 0.0;
+    'transformer.core.plug_p3.pin[3].i.re' + 'transformer.core.plug_n3.pin[3].i.re' = 0.0;
+    'transformer.core.plug_p3.pin[3].i.im' + 'transformer.core.plug_n3.pin[3].i.im' = 0.0;
     'transformer.thermalAmbient.temperature1.port.T' = 'transformer.thermalAmbient.temperature1.T';
     'transformer.thermalAmbient.constT1.y' = 293.15;
     'transformer.thermalAmbient.temperature2.port.T' = 'transformer.thermalAmbient.temperature2.T';

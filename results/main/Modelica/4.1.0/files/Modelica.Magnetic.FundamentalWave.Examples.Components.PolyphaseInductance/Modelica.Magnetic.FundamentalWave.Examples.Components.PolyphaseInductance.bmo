@@ -1,74 +1,5 @@
 //! base 0.1.0
 package 'PolyphaseInductance'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotential';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
-
   model 'PolyphaseInductance' "Polyphase inductance"
     parameter Integer 'm' = 3 "Number of phases" annotation(Evaluate = true);
     parameter Real 'f'(unit = "Hz", quantity = "Frequency") = 1.0 "Supply frequency";
@@ -999,8 +930,6 @@ package 'PolyphaseInductance'
     'converter_s[3].arg_V_m' = 'Modelica.Math.atan3'('converter_s[3].V_m.im', 'converter_s[3].V_m.re', 0.0);
     'converter_s[3].abs_Phi' = sqrt('converter_s[3].Phi.re' ^ 2.0 + 'converter_s[3].Phi.im' ^ 2.0);
     'converter_s[3].arg_Phi' = 'Modelica.Math.atan3'('converter_s[3].Phi.im', 'converter_s[3].Phi.re', 0.0);
-    'converter_m.V_m.re' = 'converter_m.port_p.V_m.re' - 'converter_m.port_n.V_m.re';
-    'converter_m.V_m.im' = 'converter_m.port_p.V_m.im' - 'converter_m.port_n.V_m.im';
     'converter_m.abs_V_m' = sqrt('converter_m.V_m.re' ^ 2.0 + 'converter_m.V_m.im' ^ 2.0);
     'converter_m.arg_V_m' = 'Modelica.Math.atan3'('converter_m.V_m.im', 'converter_m.V_m.re', 0.0);
     'converter_m.Phi.re' = 'converter_m.port_p.Phi.re';
@@ -1019,32 +948,24 @@ package 'PolyphaseInductance'
     'converter_m.singlePhaseElectroMagneticConverter[3].arg_V_m' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[3].V_m.im', 'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re', 0.0);
     'converter_m.singlePhaseElectroMagneticConverter[3].abs_Phi' = sqrt('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.im' ^ 2.0);
     'converter_m.singlePhaseElectroMagneticConverter[3].arg_Phi' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im', 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.re', 0.0);
-    'reluctance_m.V_m.re' = 'reluctance_m.port_p.V_m.re' - 'reluctance_m.port_n.V_m.re';
-    'reluctance_m.V_m.im' = 'reluctance_m.port_p.V_m.im' - 'reluctance_m.port_n.V_m.im';
     'reluctance_m.abs_V_m' = sqrt('reluctance_m.V_m.re' ^ 2.0 + 'reluctance_m.V_m.im' ^ 2.0);
     'reluctance_m.arg_V_m' = 'Modelica.Math.atan3'('reluctance_m.V_m.im', 'reluctance_m.V_m.re', 0.0);
     'reluctance_m.Phi.re' = 'reluctance_m.port_p.Phi.re';
     'reluctance_m.Phi.im' = 'reluctance_m.port_p.Phi.im';
     'reluctance_m.abs_Phi' = sqrt('reluctance_m.Phi.re' ^ 2.0 + 'reluctance_m.Phi.im' ^ 2.0);
     'reluctance_m.arg_Phi' = 'Modelica.Math.atan3'('reluctance_m.Phi.im', 'reluctance_m.Phi.re', 0.0);
-    'reluctance_s[1].V_m.re' = 'reluctance_s[1].port_p.V_m.re' - 'reluctance_s[1].port_n.V_m.re';
-    'reluctance_s[1].V_m.im' = 'reluctance_s[1].port_p.V_m.im' - 'reluctance_s[1].port_n.V_m.im';
     'reluctance_s[1].abs_V_m' = sqrt('reluctance_s[1].V_m.re' ^ 2.0 + 'reluctance_s[1].V_m.im' ^ 2.0);
     'reluctance_s[1].arg_V_m' = 'Modelica.Math.atan3'('reluctance_s[1].V_m.im', 'reluctance_s[1].V_m.re', 0.0);
     'reluctance_s[1].Phi.re' = 'reluctance_s[1].port_p.Phi.re';
     'reluctance_s[1].Phi.im' = 'reluctance_s[1].port_p.Phi.im';
     'reluctance_s[1].abs_Phi' = sqrt('reluctance_s[1].Phi.re' ^ 2.0 + 'reluctance_s[1].Phi.im' ^ 2.0);
     'reluctance_s[1].arg_Phi' = 'Modelica.Math.atan3'('reluctance_s[1].Phi.im', 'reluctance_s[1].Phi.re', 0.0);
-    'reluctance_s[2].V_m.re' = 'reluctance_s[2].port_p.V_m.re' - 'reluctance_s[2].port_n.V_m.re';
-    'reluctance_s[2].V_m.im' = 'reluctance_s[2].port_p.V_m.im' - 'reluctance_s[2].port_n.V_m.im';
     'reluctance_s[2].abs_V_m' = sqrt('reluctance_s[2].V_m.re' ^ 2.0 + 'reluctance_s[2].V_m.im' ^ 2.0);
     'reluctance_s[2].arg_V_m' = 'Modelica.Math.atan3'('reluctance_s[2].V_m.im', 'reluctance_s[2].V_m.re', 0.0);
     'reluctance_s[2].Phi.re' = 'reluctance_s[2].port_p.Phi.re';
     'reluctance_s[2].Phi.im' = 'reluctance_s[2].port_p.Phi.im';
     'reluctance_s[2].abs_Phi' = sqrt('reluctance_s[2].Phi.re' ^ 2.0 + 'reluctance_s[2].Phi.im' ^ 2.0);
     'reluctance_s[2].arg_Phi' = 'Modelica.Math.atan3'('reluctance_s[2].Phi.im', 'reluctance_s[2].Phi.re', 0.0);
-    'reluctance_s[3].V_m.re' = 'reluctance_s[3].port_p.V_m.re' - 'reluctance_s[3].port_n.V_m.re';
-    'reluctance_s[3].V_m.im' = 'reluctance_s[3].port_p.V_m.im' - 'reluctance_s[3].port_n.V_m.im';
     'reluctance_s[3].abs_V_m' = sqrt('reluctance_s[3].V_m.re' ^ 2.0 + 'reluctance_s[3].V_m.im' ^ 2.0);
     'reluctance_s[3].arg_V_m' = 'Modelica.Math.atan3'('reluctance_s[3].V_m.im', 'reluctance_s[3].V_m.re', 0.0);
     'reluctance_s[3].Phi.re' = 'reluctance_s[3].port_p.Phi.re';
@@ -1299,17 +1220,17 @@ package 'PolyphaseInductance'
     'ground_e.p.v' = 0.0;
     'ground_s.p.v' = 0.0;
     'ground_m.p.v' = 0.0;
-    'voltageSource_e.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time + 1.5707963267948966);
+    'voltageSource_e.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time + 1.5707963267948966);
     'voltageSource_e.sineVoltage[1].v' = 'voltageSource_e.sineVoltage[1].signalSource.y';
     0.0 = 'voltageSource_e.sineVoltage[1].p.i' + 'voltageSource_e.sineVoltage[1].n.i';
     'voltageSource_e.sineVoltage[1].i' = 'voltageSource_e.sineVoltage[1].p.i';
     'voltageSource_e.sineVoltage[1].v' = 'voltageSource_e.sineVoltage[1].p.v' - 'voltageSource_e.sineVoltage[1].n.v';
-    'voltageSource_e.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time - 0.5235987755982987);
+    'voltageSource_e.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time - 0.5235987755982987);
     'voltageSource_e.sineVoltage[2].v' = 'voltageSource_e.sineVoltage[2].signalSource.y';
     0.0 = 'voltageSource_e.sineVoltage[2].p.i' + 'voltageSource_e.sineVoltage[2].n.i';
     'voltageSource_e.sineVoltage[2].i' = 'voltageSource_e.sineVoltage[2].p.i';
     'voltageSource_e.sineVoltage[2].v' = 'voltageSource_e.sineVoltage[2].p.v' - 'voltageSource_e.sineVoltage[2].n.v';
-    'voltageSource_e.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time - 2.617993877991494);
+    'voltageSource_e.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time - 2.617993877991494);
     'voltageSource_e.sineVoltage[3].v' = 'voltageSource_e.sineVoltage[3].signalSource.y';
     0.0 = 'voltageSource_e.sineVoltage[3].p.i' + 'voltageSource_e.sineVoltage[3].n.i';
     'voltageSource_e.sineVoltage[3].i' = 'voltageSource_e.sineVoltage[3].p.i';
@@ -1320,17 +1241,17 @@ package 'PolyphaseInductance'
     'voltageSource_e.i[1]' = 'voltageSource_e.plug_p.pin[1].i';
     'voltageSource_e.i[2]' = 'voltageSource_e.plug_p.pin[2].i';
     'voltageSource_e.i[3]' = 'voltageSource_e.plug_p.pin[3].i';
-    'voltageSource_s.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time + 1.5707963267948966);
+    'voltageSource_s.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time + 1.5707963267948966);
     'voltageSource_s.sineVoltage[1].v' = 'voltageSource_s.sineVoltage[1].signalSource.y';
     0.0 = 'voltageSource_s.sineVoltage[1].p.i' + 'voltageSource_s.sineVoltage[1].n.i';
     'voltageSource_s.sineVoltage[1].i' = 'voltageSource_s.sineVoltage[1].p.i';
     'voltageSource_s.sineVoltage[1].v' = 'voltageSource_s.sineVoltage[1].p.v' - 'voltageSource_s.sineVoltage[1].n.v';
-    'voltageSource_s.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time - 0.5235987755982987);
+    'voltageSource_s.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time - 0.5235987755982987);
     'voltageSource_s.sineVoltage[2].v' = 'voltageSource_s.sineVoltage[2].signalSource.y';
     0.0 = 'voltageSource_s.sineVoltage[2].p.i' + 'voltageSource_s.sineVoltage[2].n.i';
     'voltageSource_s.sineVoltage[2].i' = 'voltageSource_s.sineVoltage[2].p.i';
     'voltageSource_s.sineVoltage[2].v' = 'voltageSource_s.sineVoltage[2].p.v' - 'voltageSource_s.sineVoltage[2].n.v';
-    'voltageSource_s.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time - 2.617993877991494);
+    'voltageSource_s.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time - 2.617993877991494);
     'voltageSource_s.sineVoltage[3].v' = 'voltageSource_s.sineVoltage[3].signalSource.y';
     0.0 = 'voltageSource_s.sineVoltage[3].p.i' + 'voltageSource_s.sineVoltage[3].n.i';
     'voltageSource_s.sineVoltage[3].i' = 'voltageSource_s.sineVoltage[3].p.i';
@@ -1341,17 +1262,17 @@ package 'PolyphaseInductance'
     'voltageSource_s.i[1]' = 'voltageSource_s.plug_p.pin[1].i';
     'voltageSource_s.i[2]' = 'voltageSource_s.plug_p.pin[2].i';
     'voltageSource_s.i[3]' = 'voltageSource_s.plug_p.pin[3].i';
-    'voltageSource_m.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time + 1.5707963267948966);
+    'voltageSource_m.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time + 1.5707963267948966);
     'voltageSource_m.sineVoltage[1].v' = 'voltageSource_m.sineVoltage[1].signalSource.y';
     0.0 = 'voltageSource_m.sineVoltage[1].p.i' + 'voltageSource_m.sineVoltage[1].n.i';
     'voltageSource_m.sineVoltage[1].i' = 'voltageSource_m.sineVoltage[1].p.i';
     'voltageSource_m.sineVoltage[1].v' = 'voltageSource_m.sineVoltage[1].p.v' - 'voltageSource_m.sineVoltage[1].n.v';
-    'voltageSource_m.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time - 0.5235987755982987);
+    'voltageSource_m.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time - 0.5235987755982987);
     'voltageSource_m.sineVoltage[2].v' = 'voltageSource_m.sineVoltage[2].signalSource.y';
     0.0 = 'voltageSource_m.sineVoltage[2].p.i' + 'voltageSource_m.sineVoltage[2].n.i';
     'voltageSource_m.sineVoltage[2].i' = 'voltageSource_m.sineVoltage[2].p.i';
     'voltageSource_m.sineVoltage[2].v' = 'voltageSource_m.sineVoltage[2].p.v' - 'voltageSource_m.sineVoltage[2].n.v';
-    'voltageSource_m.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(6.283185307179586 * time - 2.617993877991494);
+    'voltageSource_m.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(6.283185307179586 * time - 2.617993877991494);
     'voltageSource_m.sineVoltage[3].v' = 'voltageSource_m.sineVoltage[3].signalSource.y';
     0.0 = 'voltageSource_m.sineVoltage[3].p.i' + 'voltageSource_m.sineVoltage[3].n.i';
     'voltageSource_m.sineVoltage[3].i' = 'voltageSource_m.sineVoltage[3].p.i';
@@ -1482,9 +1403,9 @@ package 'PolyphaseInductance'
     'converter_s[1].v' = 'converter_s[1].pin_p.v' - 'converter_s[1].pin_n.v';
     'converter_s[1].i' = 'converter_s[1].pin_p.i';
     'converter_s[1].pin_p.i' + 'converter_s[1].pin_n.i' = 0.0;
-    'converter_s[1].V_m.re' = 0.6366197723675814 * 'converter_s[1].N.re' * 'converter_s[1].i';
-    'converter_s[1].V_m.im' = 0.6366197723675814 * 'converter_s[1].N.im' * 'converter_s[1].i';
-    -'converter_s[1].v' = 'converter_s[1].N.re' * der('converter_s[1].Phi.re') - (-'converter_s[1].N.im') * der('converter_s[1].Phi.im');
+    'converter_s[1].V_m.re' = 3.183098861837907 * 'converter_s[1].i' - 0.0 * 0.0;
+    'converter_s[1].V_m.im' = 3.183098861837907 * 0.0 + 0.0 * 'converter_s[1].i';
+    -'converter_s[1].v' = 5.0 * der('converter_s[1].Phi.re') - 0.0 * der('converter_s[1].Phi.im');
     'converter_s[2].port_p.Phi.re' = 'converter_s[2].Phi.re';
     'converter_s[2].port_p.Phi.im' = 'converter_s[2].Phi.im';
     'converter_s[2].port_p.Phi.re' + 'converter_s[2].port_n.Phi.re' = 0.0;
@@ -1494,9 +1415,9 @@ package 'PolyphaseInductance'
     'converter_s[2].v' = 'converter_s[2].pin_p.v' - 'converter_s[2].pin_n.v';
     'converter_s[2].i' = 'converter_s[2].pin_p.i';
     'converter_s[2].pin_p.i' + 'converter_s[2].pin_n.i' = 0.0;
-    'converter_s[2].V_m.re' = 0.6366197723675814 * 'converter_s[2].N.re' * 'converter_s[2].i';
-    'converter_s[2].V_m.im' = 0.6366197723675814 * 'converter_s[2].N.im' * 'converter_s[2].i';
-    -'converter_s[2].v' = 'converter_s[2].N.re' * der('converter_s[2].Phi.re') - (-'converter_s[2].N.im') * der('converter_s[2].Phi.im');
+    'converter_s[2].V_m.re' = (-1.5915494309189528) * 'converter_s[2].i' - 2.756644477108961 * 0.0;
+    'converter_s[2].V_m.im' = (-1.5915494309189528) * 0.0 + 2.756644477108961 * 'converter_s[2].i';
+    -'converter_s[2].v' = (-2.499999999999999) * der('converter_s[2].Phi.re') - (-4.330127018922194) * der('converter_s[2].Phi.im');
     'converter_s[3].port_p.Phi.re' = 'converter_s[3].Phi.re';
     'converter_s[3].port_p.Phi.im' = 'converter_s[3].Phi.im';
     'converter_s[3].port_p.Phi.re' + 'converter_s[3].port_n.Phi.re' = 0.0;
@@ -1506,15 +1427,17 @@ package 'PolyphaseInductance'
     'converter_s[3].v' = 'converter_s[3].pin_p.v' - 'converter_s[3].pin_n.v';
     'converter_s[3].i' = 'converter_s[3].pin_p.i';
     'converter_s[3].pin_p.i' + 'converter_s[3].pin_n.i' = 0.0;
-    'converter_s[3].V_m.re' = 0.6366197723675814 * 'converter_s[3].N.re' * 'converter_s[3].i';
-    'converter_s[3].V_m.im' = 0.6366197723675814 * 'converter_s[3].N.im' * 'converter_s[3].i';
-    -'converter_s[3].v' = 'converter_s[3].N.re' * der('converter_s[3].Phi.re') - (-'converter_s[3].N.im') * der('converter_s[3].Phi.im');
+    'converter_s[3].V_m.re' = (-1.5915494309189548) * 'converter_s[3].i' - (-2.7566444771089595) * 0.0;
+    'converter_s[3].V_m.im' = (-1.5915494309189548) * 0.0 + (-2.7566444771089595) * 'converter_s[3].i';
+    -'converter_s[3].v' = (-2.500000000000002) * der('converter_s[3].Phi.re') - 4.330127018922192 * der('converter_s[3].Phi.im');
     'converter_m.v[1]' = 'converter_m.plug_p.pin[1].v' - 'converter_m.plug_n.pin[1].v';
     'converter_m.v[2]' = 'converter_m.plug_p.pin[2].v' - 'converter_m.plug_n.pin[2].v';
     'converter_m.v[3]' = 'converter_m.plug_p.pin[3].v' - 'converter_m.plug_n.pin[3].v';
     'converter_m.i[1]' = 'converter_m.plug_p.pin[1].i';
     'converter_m.i[2]' = 'converter_m.plug_p.pin[2].i';
     'converter_m.i[3]' = 'converter_m.plug_p.pin[3].i';
+    'converter_m.V_m.re' = 'converter_m.port_p.V_m.re' - 'converter_m.port_n.V_m.re';
+    'converter_m.V_m.im' = 'converter_m.port_p.V_m.im' - 'converter_m.port_n.V_m.im';
     'converter_m.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' = 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.re';
     'converter_m.singlePhaseElectroMagneticConverter[1].port_p.Phi.im' = 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.im';
     'converter_m.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' + 'converter_m.singlePhaseElectroMagneticConverter[1].port_n.Phi.re' = 0.0;
@@ -1524,9 +1447,9 @@ package 'PolyphaseInductance'
     'converter_m.singlePhaseElectroMagneticConverter[1].v' = 'converter_m.singlePhaseElectroMagneticConverter[1].pin_p.v' - 'converter_m.singlePhaseElectroMagneticConverter[1].pin_n.v';
     'converter_m.singlePhaseElectroMagneticConverter[1].i' = 'converter_m.singlePhaseElectroMagneticConverter[1].pin_p.i';
     'converter_m.singlePhaseElectroMagneticConverter[1].pin_p.i' + 'converter_m.singlePhaseElectroMagneticConverter[1].pin_n.i' = 0.0;
-    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[1].N.re' * 'converter_m.singlePhaseElectroMagneticConverter[1].i';
-    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[1].N.im' * 'converter_m.singlePhaseElectroMagneticConverter[1].i';
-    -'converter_m.singlePhaseElectroMagneticConverter[1].v' = 'converter_m.singlePhaseElectroMagneticConverter[1].N.re' * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.re') - (-'converter_m.singlePhaseElectroMagneticConverter[1].N.im') * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.im');
+    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.re' = 3.183098861837907 * 'converter_m.singlePhaseElectroMagneticConverter[1].i' - 0.0 * 0.0;
+    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.im' = 3.183098861837907 * 0.0 + 0.0 * 'converter_m.singlePhaseElectroMagneticConverter[1].i';
+    -'converter_m.singlePhaseElectroMagneticConverter[1].v' = 5.0 * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.re') - 0.0 * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.im');
     'converter_m.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' = 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.re';
     'converter_m.singlePhaseElectroMagneticConverter[2].port_p.Phi.im' = 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.im';
     'converter_m.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' + 'converter_m.singlePhaseElectroMagneticConverter[2].port_n.Phi.re' = 0.0;
@@ -1536,9 +1459,9 @@ package 'PolyphaseInductance'
     'converter_m.singlePhaseElectroMagneticConverter[2].v' = 'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.v' - 'converter_m.singlePhaseElectroMagneticConverter[2].pin_n.v';
     'converter_m.singlePhaseElectroMagneticConverter[2].i' = 'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.i';
     'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.i' + 'converter_m.singlePhaseElectroMagneticConverter[2].pin_n.i' = 0.0;
-    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[2].N.re' * 'converter_m.singlePhaseElectroMagneticConverter[2].i';
-    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.im' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[2].N.im' * 'converter_m.singlePhaseElectroMagneticConverter[2].i';
-    -'converter_m.singlePhaseElectroMagneticConverter[2].v' = 'converter_m.singlePhaseElectroMagneticConverter[2].N.re' * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.re') - (-'converter_m.singlePhaseElectroMagneticConverter[2].N.im') * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.im');
+    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.re' = (-1.5915494309189528) * 'converter_m.singlePhaseElectroMagneticConverter[2].i' - 2.756644477108961 * 0.0;
+    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.im' = (-1.5915494309189528) * 0.0 + 2.756644477108961 * 'converter_m.singlePhaseElectroMagneticConverter[2].i';
+    -'converter_m.singlePhaseElectroMagneticConverter[2].v' = (-2.499999999999999) * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.re') - (-4.330127018922194) * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.im');
     'converter_m.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' = 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.re';
     'converter_m.singlePhaseElectroMagneticConverter[3].port_p.Phi.im' = 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.im';
     'converter_m.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' + 'converter_m.singlePhaseElectroMagneticConverter[3].port_n.Phi.re' = 0.0;
@@ -1548,21 +1471,29 @@ package 'PolyphaseInductance'
     'converter_m.singlePhaseElectroMagneticConverter[3].v' = 'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.v' - 'converter_m.singlePhaseElectroMagneticConverter[3].pin_n.v';
     'converter_m.singlePhaseElectroMagneticConverter[3].i' = 'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.i';
     'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.i' + 'converter_m.singlePhaseElectroMagneticConverter[3].pin_n.i' = 0.0;
-    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[3].N.re' * 'converter_m.singlePhaseElectroMagneticConverter[3].i';
-    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.im' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[3].N.im' * 'converter_m.singlePhaseElectroMagneticConverter[3].i';
-    -'converter_m.singlePhaseElectroMagneticConverter[3].v' = 'converter_m.singlePhaseElectroMagneticConverter[3].N.re' * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re') - (-'converter_m.singlePhaseElectroMagneticConverter[3].N.im') * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im');
+    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re' = (-1.5915494309189548) * 'converter_m.singlePhaseElectroMagneticConverter[3].i' - (-2.7566444771089595) * 0.0;
+    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.im' = (-1.5915494309189548) * 0.0 + (-2.7566444771089595) * 'converter_m.singlePhaseElectroMagneticConverter[3].i';
+    -'converter_m.singlePhaseElectroMagneticConverter[3].v' = (-2.500000000000002) * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re') - 4.330127018922192 * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im');
+    'reluctance_m.V_m.re' = 'reluctance_m.port_p.V_m.re' - 'reluctance_m.port_n.V_m.re';
+    'reluctance_m.V_m.im' = 'reluctance_m.port_p.V_m.im' - 'reluctance_m.port_n.V_m.im';
     1.5707963267948966 * 'reluctance_m.V_m.re' = 37.5 * 'reluctance_m.Phi.re';
     1.5707963267948966 * 'reluctance_m.V_m.im' = 37.5 * 'reluctance_m.Phi.im';
     'reluctance_m.port_p.Phi.re' + 'reluctance_m.port_n.Phi.re' = 0.0;
     'reluctance_m.port_p.Phi.im' + 'reluctance_m.port_n.Phi.im' = 0.0;
+    'reluctance_s[1].V_m.re' = 'reluctance_s[1].port_p.V_m.re' - 'reluctance_s[1].port_n.V_m.re';
+    'reluctance_s[1].V_m.im' = 'reluctance_s[1].port_p.V_m.im' - 'reluctance_s[1].port_n.V_m.im';
     1.5707963267948966 * 'reluctance_s[1].V_m.re' = 25.0 * 'reluctance_s[1].Phi.re';
     1.5707963267948966 * 'reluctance_s[1].V_m.im' = 25.0 * 'reluctance_s[1].Phi.im';
     'reluctance_s[1].port_p.Phi.re' + 'reluctance_s[1].port_n.Phi.re' = 0.0;
     'reluctance_s[1].port_p.Phi.im' + 'reluctance_s[1].port_n.Phi.im' = 0.0;
+    'reluctance_s[2].V_m.re' = 'reluctance_s[2].port_p.V_m.re' - 'reluctance_s[2].port_n.V_m.re';
+    'reluctance_s[2].V_m.im' = 'reluctance_s[2].port_p.V_m.im' - 'reluctance_s[2].port_n.V_m.im';
     1.5707963267948966 * 'reluctance_s[2].V_m.re' = 25.0 * 'reluctance_s[2].Phi.re';
     1.5707963267948966 * 'reluctance_s[2].V_m.im' = 25.0 * 'reluctance_s[2].Phi.im';
     'reluctance_s[2].port_p.Phi.re' + 'reluctance_s[2].port_n.Phi.re' = 0.0;
     'reluctance_s[2].port_p.Phi.im' + 'reluctance_s[2].port_n.Phi.im' = 0.0;
+    'reluctance_s[3].V_m.re' = 'reluctance_s[3].port_p.V_m.re' - 'reluctance_s[3].port_n.V_m.re';
+    'reluctance_s[3].V_m.im' = 'reluctance_s[3].port_p.V_m.im' - 'reluctance_s[3].port_n.V_m.im';
     1.5707963267948966 * 'reluctance_s[3].V_m.re' = 25.0 * 'reluctance_s[3].Phi.re';
     1.5707963267948966 * 'reluctance_s[3].V_m.im' = 25.0 * 'reluctance_s[3].Phi.im';
     'reluctance_s[3].port_p.Phi.re' + 'reluctance_s[3].port_n.Phi.re' = 0.0;

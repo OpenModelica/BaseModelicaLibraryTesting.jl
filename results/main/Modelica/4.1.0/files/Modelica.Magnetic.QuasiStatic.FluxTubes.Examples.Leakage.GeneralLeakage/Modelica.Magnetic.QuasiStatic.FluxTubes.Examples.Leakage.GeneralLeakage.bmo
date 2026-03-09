@@ -1,73 +1,19 @@
 //! base 0.1.0
 package 'GeneralLeakage'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
-
   record 'Complex'
     Real 're';
     Real 'im';
   end 'Complex';
 
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotential';
-
   record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
     Real 're';
     Real 'im';
   end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
+
+  record 'Modelica.Units.SI.ComplexMagneticFlux'
+    Real 're';
+    Real 'im';
+  end 'Modelica.Units.SI.ComplexMagneticFlux';
 
   model 'GeneralLeakage' "Magnetic circuit with generic leakage mode"
     Real 'constantReluctance.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
@@ -203,8 +149,8 @@ package 'GeneralLeakage'
     'ground.port.Phi.im' + 'constantSource.port_n.Phi.im' + 'leakageWithCoefficient.port_n.Phi.im' = 0.0;
     'eddyCurrent.port_n.Phi.re' + 'leakageWithCoefficient.port_p.Phi.re' = 0.0;
     'eddyCurrent.port_n.Phi.im' + 'leakageWithCoefficient.port_p.Phi.im' = 0.0;
-    'constantReluctance.V_m.re' = 'constantReluctance.Phi.re' * 1e-5;
-    'constantReluctance.V_m.im' = 'constantReluctance.Phi.im' * 1e-5;
+    'constantReluctance.V_m.re' = 'constantReluctance.Phi.re' * 1e-5 - 'constantReluctance.Phi.im' * 0.0;
+    'constantReluctance.V_m.im' = 'constantReluctance.Phi.re' * 0.0 + 'constantReluctance.Phi.im' * 1e-5;
     0.0 = 'constantReluctance.port_p.Phi.re' + 'constantReluctance.port_n.Phi.re';
     0.0 = 'constantReluctance.port_p.Phi.im' + 'constantReluctance.port_n.Phi.im';
     'constantReluctance.port_p.reference.gamma' = 'constantReluctance.port_n.reference.gamma';
@@ -214,8 +160,8 @@ package 'GeneralLeakage'
     'constantReluctance.Phi.re' = 'constantReluctance.port_p.Phi.re';
     'constantReluctance.Phi.im' = 'constantReluctance.port_p.Phi.im';
     0.30000000000000004 * 'leakageWithCoefficient.R_m' = 0.7 * 'leakageWithCoefficient.R_mUsefulTot';
-    'leakageWithCoefficient.V_m.re' = 'leakageWithCoefficient.Phi.re' * 'leakageWithCoefficient.R_m';
-    'leakageWithCoefficient.V_m.im' = 'leakageWithCoefficient.Phi.im' * 'leakageWithCoefficient.R_m';
+    'leakageWithCoefficient.V_m.re' = 'leakageWithCoefficient.Phi.re' * 'leakageWithCoefficient.R_m' - 'leakageWithCoefficient.Phi.im' * 0.0;
+    'leakageWithCoefficient.V_m.im' = 'leakageWithCoefficient.Phi.re' * 0.0 + 'leakageWithCoefficient.Phi.im' * 'leakageWithCoefficient.R_m';
     'leakageWithCoefficient.R_m' = 1.0 / 'leakageWithCoefficient.G_m';
     0.0 = 'leakageWithCoefficient.port_p.Phi.re' + 'leakageWithCoefficient.port_n.Phi.re';
     0.0 = 'leakageWithCoefficient.port_p.Phi.im' + 'leakageWithCoefficient.port_n.Phi.im';
@@ -225,9 +171,9 @@ package 'GeneralLeakage'
     'leakageWithCoefficient.V_m.im' = 'leakageWithCoefficient.port_p.V_m.im' - 'leakageWithCoefficient.port_n.V_m.im';
     'leakageWithCoefficient.Phi.re' = 'leakageWithCoefficient.port_p.Phi.re';
     'leakageWithCoefficient.Phi.im' = 'leakageWithCoefficient.port_p.Phi.im';
-    'eddyCurrent.lossPower' = 1.5707963267948966 * ('eddyCurrent.omega' * 'eddyCurrent.V_m.re' * (-'eddyCurrent.Phi.im') + 'eddyCurrent.omega' * 'eddyCurrent.V_m.im' * 'eddyCurrent.Phi.re');
-    1.5707963267948966 * 'eddyCurrent.V_m.re' = (-'eddyCurrent.omega' * 'eddyCurrent.Phi.im') * 1e4;
-    1.5707963267948966 * 'eddyCurrent.V_m.im' = 'eddyCurrent.omega' * 'eddyCurrent.Phi.re' * 1e4;
+    'eddyCurrent.lossPower' = 1.5707963267948966 * 'Modelica.ComplexMath.imag'('Complex.\'*\'.multiply'('Modelica.Units.SI.ComplexMagneticPotentialDifference.\'*\'.multiply'('Complex.\'constructor\'.fromReal'('eddyCurrent.omega', 0.0), 'eddyCurrent.V_m'), 'Modelica.ComplexMath.conj'('eddyCurrent.Phi')));
+    1.5707963267948966 * 'eddyCurrent.V_m.re' - 0.0 * 'eddyCurrent.V_m.im' = ((0.0 * 'eddyCurrent.omega' - 1.0 * 0.0) * 'eddyCurrent.Phi.re' - (0.0 * 0.0 + 1.0 * 'eddyCurrent.omega') * 'eddyCurrent.Phi.im') * 1e4 - ((0.0 * 'eddyCurrent.omega' - 1.0 * 0.0) * 'eddyCurrent.Phi.im' + (0.0 * 0.0 + 1.0 * 'eddyCurrent.omega') * 'eddyCurrent.Phi.re') * 0.0;
+    1.5707963267948966 * 'eddyCurrent.V_m.im' + 0.0 * 'eddyCurrent.V_m.re' = ((0.0 * 'eddyCurrent.omega' - 1.0 * 0.0) * 'eddyCurrent.Phi.re' - (0.0 * 0.0 + 1.0 * 'eddyCurrent.omega') * 'eddyCurrent.Phi.im') * 0.0 + ((0.0 * 'eddyCurrent.omega' - 1.0 * 0.0) * 'eddyCurrent.Phi.im' + (0.0 * 0.0 + 1.0 * 'eddyCurrent.omega') * 'eddyCurrent.Phi.re') * 1e4;
     'eddyCurrent.TheatPort' = 273.15;
     0.0 = 'eddyCurrent.port_p.Phi.re' + 'eddyCurrent.port_n.Phi.re';
     0.0 = 'eddyCurrent.port_p.Phi.im' + 'eddyCurrent.port_n.Phi.im';

@@ -1,43 +1,5 @@
 //! base 0.1.0
 package 'SimpleLiquidWater'
-  function 'Modelica.Media.Examples.SimpleLiquidWater.Medium.dynamicViscosity' "Return dynamic viscosity"
-    input 'Medium.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-  algorithm
-    'eta' := 0.001;
-  end 'Modelica.Media.Examples.SimpleLiquidWater.Medium.dynamicViscosity';
-
-  function 'Modelica.Media.Examples.SimpleLiquidWater.Medium.setSmoothState' "Return thermodynamic state so that it smoothly approximates: if x > 0 then state_a else state_b"
-    input Real 'x';
-    input 'Medium.ThermodynamicState' 'state_a';
-    input 'Medium.ThermodynamicState' 'state_b';
-    input Real 'x_small'(min = 0.0);
-    output 'Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'Medium.ThermodynamicState'(smooth(1, if 'x' > 'x_small' then 'state_a'.'p' else if 'x' < (-'x_small') then 'state_b'.'p' else if abs('x_small') > 0.0 then 'x' / 'x_small' * (('x' / 'x_small') ^ 2.0 - 3.0) * ('state_b'.'p' - 'state_a'.'p') / 4.0 + ('state_a'.'p' + 'state_b'.'p') / 2.0 else ('state_a'.'p' + 'state_b'.'p') / 2.0), smooth(1, if 'x' > 'x_small' then 'state_a'.'T' else if 'x' < (-'x_small') then 'state_b'.'T' else if abs('x_small') > 0.0 then 'x' / 'x_small' * (('x' / 'x_small') ^ 2.0 - 3.0) * ('state_b'.'T' - 'state_a'.'T') / 4.0 + ('state_a'.'T' + 'state_b'.'T') / 2.0 else ('state_a'.'T' + 'state_b'.'T') / 2.0));
-  end 'Modelica.Media.Examples.SimpleLiquidWater.Medium.setSmoothState';
-
-  function 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(nominal = 1e6, max = 1e6, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 4184.0 * ('T' - 273.15);
-  end 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificHeatCapacityCv' "Return specific heat capacity at constant volume"
-    input 'Medium.ThermodynamicState' 'state';
-    output Real 'cv'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
-  algorithm
-    'cv' := 4184.0;
-  end 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificHeatCapacityCv';
-
-  record 'Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'Medium.ThermodynamicState';
-
   model 'SimpleLiquidWater' "Example for Water.SimpleLiquidWater medium model"
     constant Real 'pressureRate'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope") = 1e4;
     parameter Real 'V'(unit = "m3", quantity = "Volume") = 1.0 "Volume";
@@ -85,10 +47,10 @@ package 'SimpleLiquidWater'
     'medium.p_bar' = 'medium.p' / 1e5;
     'medium2.T_degC' = 'medium2.T' - 273.15;
     'medium2.p_bar' = 'medium2.p' / 1e5;
-    'eta' = 'Modelica.Media.Examples.SimpleLiquidWater.Medium.dynamicViscosity'('state');
-    'cv' = 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificHeatCapacityCv'('state');
+    'eta' = 0.001;
+    'cv' = 4184.0;
     assert('medium.T' >= 272.15 and 'medium.T' <= 403.15, "\nTemperature T (= " + String('medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
-    'medium.h' = 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificEnthalpy_pTX'('medium.p', 'medium.T', {'medium.X[1]'});
+    'medium.h' = 4184.0 * ('medium.T' - 273.15);
     'medium.u' = 4184.0 * ('medium.T' - 273.15);
     'medium.d' = 995.586;
     'medium.R_s' = 0.0;
@@ -99,7 +61,7 @@ package 'SimpleLiquidWater'
     assert('medium.X[1]' >= (-1e-5) and 'medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('medium.X[1]') + "of substance " + "SimpleLiquidWater" + "\nof medium " + "SimpleLiquidWater" + " is not in the range 0..1", AssertionLevel.error);
     assert('medium.p' >= 0.0, "Pressure (= " + String('medium.p') + " Pa) of medium \"" + "SimpleLiquidWater" + "\" is negative\n(Temperature = " + String('medium.T') + " K)", AssertionLevel.error);
     assert('medium2.T' >= 272.15 and 'medium2.T' <= 403.15, "\nTemperature T (= " + String('medium2.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
-    'medium2.h' = 'Modelica.Media.Examples.SimpleLiquidWater.Medium.specificEnthalpy_pTX'('medium2.p', 'medium2.T', {'medium2.X[1]'});
+    'medium2.h' = 4184.0 * ('medium2.T' - 273.15);
     'medium2.u' = 4184.0 * ('medium2.T' - 273.15);
     'medium2.d' = 995.586;
     'medium2.R_s' = 0.0;
@@ -117,8 +79,8 @@ package 'SimpleLiquidWater'
     'medium2.p' = 1e4 * time;
     'medium2.T' = 330.0;
     'm_flow_ext2' = time - 30.0;
-    'state.p' = ('Modelica.Media.Examples.SimpleLiquidWater.Medium.setSmoothState'('m_flow_ext2', 'medium.state', 'medium2.state', 10.0)).p;
-    'state.T' = ('Modelica.Media.Examples.SimpleLiquidWater.Medium.setSmoothState'('m_flow_ext2', 'medium.state', 'medium2.state', 10.0)).T;
+    'state.p' = 'Modelica.Media.Common.smoothStep'('m_flow_ext2', 'medium.state.p', 'medium2.state.p', 10.0);
+    'state.T' = 'Modelica.Media.Common.smoothStep'('m_flow_ext2', 'medium.state.T', 'medium2.state.T', 10.0);
     'der_p' = der('state.p');
     'der_T' = der('state.T');
     annotation(experiment(StopTime = 100));

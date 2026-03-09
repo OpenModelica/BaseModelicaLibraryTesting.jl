@@ -49,7 +49,7 @@ package 'ShowSaturatingInductor'
     Real 'Inductance1.i'(fixed = true, start = 0.0, unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Real 'Inductance1.L'(start = 1.0, unit = "H", quantity = "Inductance") = 1.0 "Inductance";
   initial equation
-    0.3333333333333333 = 'SaturatingInductance1.Ipar' * (1.5707963267948966 - atan('SaturatingInductance1.Ipar'));
+    0.3333333333333333 = 'SaturatingInductance1.Ipar' * (1.5707963267948966 - 'Modelica.Math.atan'('SaturatingInductance1.Ipar'));
   equation
     'Inductance1.n.v' = 'SineVoltage1.n.v';
     'Inductance1.n.v' = 'SaturatingInductance1.n.v';
@@ -58,14 +58,14 @@ package 'ShowSaturatingInductor'
     'Inductance1.p.v' = 'SaturatingInductance1.p.v';
     'Inductance1.p.i' + 'SaturatingInductance1.p.i' + 'SineVoltage1.p.i' = 0.0;
     'Inductance1.n.i' + 'SaturatingInductance1.n.i' + 'Ground1.p.i' + 'SineVoltage1.n.i' = 0.0;
-    'SineVoltage1.signalSource.y' = if time < 0.0 then 0.0 else 1.25 * sin(time + 1.5707963267948966);
+    'SineVoltage1.signalSource.y' = if time < 0.0 then 0.0 else 1.25 * 'Modelica.Math.sin'(time + 1.5707963267948966);
     'SineVoltage1.v' = 'SineVoltage1.signalSource.y';
     0.0 = 'SineVoltage1.p.i' + 'SineVoltage1.n.i';
     'SineVoltage1.i' = 'SineVoltage1.p.i';
     'SineVoltage1.v' = 'SineVoltage1.p.v' - 'SineVoltage1.n.v';
     'Ground1.p.v' = 0.0;
-    'SaturatingInductance1.Lact' = 0.5 + 1.5 * (if noEvent(abs('SaturatingInductance1.i') / 'SaturatingInductance1.Ipar' < 2.2250738585072014e-308) then 1.0 else atan('SaturatingInductance1.i' / 'SaturatingInductance1.Ipar') / ('SaturatingInductance1.i' / 'SaturatingInductance1.Ipar'));
-    'SaturatingInductance1.Psi' = 0.5 * 'SaturatingInductance1.i' + 1.5 * 'SaturatingInductance1.Ipar' * atan('SaturatingInductance1.i' / 'SaturatingInductance1.Ipar');
+    'SaturatingInductance1.Lact' = 0.5 + 1.5 * (if noEvent(abs('SaturatingInductance1.i') / 'SaturatingInductance1.Ipar' < 2.2250738585072014e-308) then 1.0 else 'Modelica.Math.atan'('SaturatingInductance1.i' / 'SaturatingInductance1.Ipar') / ('SaturatingInductance1.i' / 'SaturatingInductance1.Ipar'));
+    'SaturatingInductance1.Psi' = 0.5 * 'SaturatingInductance1.i' + 1.5 * 'SaturatingInductance1.Ipar' * 'Modelica.Math.atan'('SaturatingInductance1.i' / 'SaturatingInductance1.Ipar');
     'SaturatingInductance1.v' = der('SaturatingInductance1.Psi');
     0.0 = 'SaturatingInductance1.p.i' + 'SaturatingInductance1.n.i';
     'SaturatingInductance1.i' = 'SaturatingInductance1.p.i';

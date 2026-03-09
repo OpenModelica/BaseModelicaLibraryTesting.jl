@@ -1,119 +1,5 @@
 //! base 0.1.0
 package 'TestSensors'
-  function 'Complex.\'*\'.scalarProduct' "Scalar product of two complex vectors c1 and c2"
-    input 'Complex'[:] 'c1';
-    input 'Complex'[size('c1', 1)] 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'(0.0, 0.0);
-
-    for 'i' in 1:size('c1', 1) loop
-      'c3' := 'Complex'('c3'.'re' + 'c1['i']'.'re' * 'c2['i']'.'re' + 'c1['i']'.'im' * 'c2['i']'.'im', 'c3'.'im' + 'c1['i']'.'re' * 'c2['i']'.'im' - 'c1['i']'.'im' * 'c2['i']'.'re');
-    end for;
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Complex.\'*\'.scalarProduct';
-
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.ComplexMath.abs' "Absolute value of complex number"
-    input 'Complex' 'c';
-    output Real 'result';
-  algorithm
-    'result' := sqrt('c'.'re' ^ 2.0 + 'c'.'im' ^ 2.0);
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.abs';
-
-  function 'Modelica.ComplexMath.arg' "Phase angle of complex number"
-    input 'Complex' 'c';
-    input Real 'phi0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'phi' := 'Modelica.Math.atan3'('c'.'im', 'c'.'re', 'phi0');
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.arg';
-
-  function 'Modelica.ComplexMath.real' "Real part of complex number"
-    input 'Complex' 'c';
-    output Real 'r';
-  algorithm
-    'r' := 'c'.'re';
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.real';
-
-  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
-    input 'Complex'[:] 'u';
-    output Real 'y';
-    Integer 'm' = size('u', 1);
-  algorithm
-    'y' := sum(sqrt('u['k']'.'re' ^ 2.0 + 'u['k']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
-    annotation(Inline = true);
-  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'+\'' "Add two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexCurrent.\'+\'';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract' "Subtract two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
-
   record 'Complex'
     Real 're';
     Real 'im';
@@ -129,20 +15,10 @@ package 'TestSensors'
     Real 'im';
   end 'Modelica.Units.SI.ComplexCurrent';
 
-  record 'Modelica.Units.SI.ComplexElectricPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexElectricPotential';
-
   record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
     Real 're';
     Real 'im';
   end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
 
   model 'TestSensors'
     constant Integer 'm' = 3 "Number of phases";
@@ -2923,7 +2799,7 @@ package 'TestSensors'
     'resistor.resistor[1].P' = 'resistor.resistor[1].v.re' * 'resistor.resistor[1].i.re' - 'resistor.resistor[1].v.im' * (-'resistor.resistor[1].i.im');
     'resistor.resistor[1].Q' = 'resistor.resistor[1].v.re' * (-'resistor.resistor[1].i.im') + 'resistor.resistor[1].v.im' * 'resistor.resistor[1].i.re';
     'resistor.resistor[1].S' = sqrt(('resistor.resistor[1].v.re' * 'resistor.resistor[1].i.re' - 'resistor.resistor[1].v.im' * (-'resistor.resistor[1].i.im')) ^ 2.0 + ('resistor.resistor[1].v.re' * (-'resistor.resistor[1].i.im') + 'resistor.resistor[1].v.im' * 'resistor.resistor[1].i.re') ^ 2.0);
-    'resistor.resistor[1].pf' = cos('Modelica.Math.atan3'('resistor.resistor[1].Q', 'resistor.resistor[1].P', 0.0));
+    'resistor.resistor[1].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor.resistor[1].P', 'resistor.resistor[1].Q'), 0.0));
     'resistor.resistor[2].abs_v' = sqrt('resistor.resistor[2].v.re' ^ 2.0 + 'resistor.resistor[2].v.im' ^ 2.0);
     'resistor.resistor[2].arg_v' = 'Modelica.Math.atan3'('resistor.resistor[2].v.im', 'resistor.resistor[2].v.re', 0.0);
     'resistor.resistor[2].abs_i' = sqrt('resistor.resistor[2].i.re' ^ 2.0 + 'resistor.resistor[2].i.im' ^ 2.0);
@@ -2931,7 +2807,7 @@ package 'TestSensors'
     'resistor.resistor[2].P' = 'resistor.resistor[2].v.re' * 'resistor.resistor[2].i.re' - 'resistor.resistor[2].v.im' * (-'resistor.resistor[2].i.im');
     'resistor.resistor[2].Q' = 'resistor.resistor[2].v.re' * (-'resistor.resistor[2].i.im') + 'resistor.resistor[2].v.im' * 'resistor.resistor[2].i.re';
     'resistor.resistor[2].S' = sqrt(('resistor.resistor[2].v.re' * 'resistor.resistor[2].i.re' - 'resistor.resistor[2].v.im' * (-'resistor.resistor[2].i.im')) ^ 2.0 + ('resistor.resistor[2].v.re' * (-'resistor.resistor[2].i.im') + 'resistor.resistor[2].v.im' * 'resistor.resistor[2].i.re') ^ 2.0);
-    'resistor.resistor[2].pf' = cos('Modelica.Math.atan3'('resistor.resistor[2].Q', 'resistor.resistor[2].P', 0.0));
+    'resistor.resistor[2].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor.resistor[2].P', 'resistor.resistor[2].Q'), 0.0));
     'resistor.resistor[3].abs_v' = sqrt('resistor.resistor[3].v.re' ^ 2.0 + 'resistor.resistor[3].v.im' ^ 2.0);
     'resistor.resistor[3].arg_v' = 'Modelica.Math.atan3'('resistor.resistor[3].v.im', 'resistor.resistor[3].v.re', 0.0);
     'resistor.resistor[3].abs_i' = sqrt('resistor.resistor[3].i.re' ^ 2.0 + 'resistor.resistor[3].i.im' ^ 2.0);
@@ -2939,7 +2815,7 @@ package 'TestSensors'
     'resistor.resistor[3].P' = 'resistor.resistor[3].v.re' * 'resistor.resistor[3].i.re' - 'resistor.resistor[3].v.im' * (-'resistor.resistor[3].i.im');
     'resistor.resistor[3].Q' = 'resistor.resistor[3].v.re' * (-'resistor.resistor[3].i.im') + 'resistor.resistor[3].v.im' * 'resistor.resistor[3].i.re';
     'resistor.resistor[3].S' = sqrt(('resistor.resistor[3].v.re' * 'resistor.resistor[3].i.re' - 'resistor.resistor[3].v.im' * (-'resistor.resistor[3].i.im')) ^ 2.0 + ('resistor.resistor[3].v.re' * (-'resistor.resistor[3].i.im') + 'resistor.resistor[3].v.im' * 'resistor.resistor[3].i.re') ^ 2.0);
-    'resistor.resistor[3].pf' = cos('Modelica.Math.atan3'('resistor.resistor[3].Q', 'resistor.resistor[3].P', 0.0));
+    'resistor.resistor[3].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor.resistor[3].P', 'resistor.resistor[3].Q'), 0.0));
     'inductor.P_total' = 'inductor.P[1]' + 'inductor.P[2]' + 'inductor.P[3]';
     'inductor.Q_total' = 'inductor.Q[1]' + 'inductor.Q[2]' + 'inductor.Q[3]';
     'inductor.S_total' = sqrt('inductor.P_total' ^ 2.0 + 'inductor.Q_total' ^ 2.0);
@@ -2950,7 +2826,7 @@ package 'TestSensors'
     'inductor.inductor[1].P' = 'inductor.inductor[1].v.re' * 'inductor.inductor[1].i.re' - 'inductor.inductor[1].v.im' * (-'inductor.inductor[1].i.im');
     'inductor.inductor[1].Q' = 'inductor.inductor[1].v.re' * (-'inductor.inductor[1].i.im') + 'inductor.inductor[1].v.im' * 'inductor.inductor[1].i.re';
     'inductor.inductor[1].S' = sqrt(('inductor.inductor[1].v.re' * 'inductor.inductor[1].i.re' - 'inductor.inductor[1].v.im' * (-'inductor.inductor[1].i.im')) ^ 2.0 + ('inductor.inductor[1].v.re' * (-'inductor.inductor[1].i.im') + 'inductor.inductor[1].v.im' * 'inductor.inductor[1].i.re') ^ 2.0);
-    'inductor.inductor[1].pf' = cos('Modelica.Math.atan3'('inductor.inductor[1].Q', 'inductor.inductor[1].P', 0.0));
+    'inductor.inductor[1].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor.inductor[1].P', 'inductor.inductor[1].Q'), 0.0));
     'inductor.inductor[2].abs_v' = sqrt('inductor.inductor[2].v.re' ^ 2.0 + 'inductor.inductor[2].v.im' ^ 2.0);
     'inductor.inductor[2].arg_v' = 'Modelica.Math.atan3'('inductor.inductor[2].v.im', 'inductor.inductor[2].v.re', 0.0);
     'inductor.inductor[2].abs_i' = sqrt('inductor.inductor[2].i.re' ^ 2.0 + 'inductor.inductor[2].i.im' ^ 2.0);
@@ -2958,7 +2834,7 @@ package 'TestSensors'
     'inductor.inductor[2].P' = 'inductor.inductor[2].v.re' * 'inductor.inductor[2].i.re' - 'inductor.inductor[2].v.im' * (-'inductor.inductor[2].i.im');
     'inductor.inductor[2].Q' = 'inductor.inductor[2].v.re' * (-'inductor.inductor[2].i.im') + 'inductor.inductor[2].v.im' * 'inductor.inductor[2].i.re';
     'inductor.inductor[2].S' = sqrt(('inductor.inductor[2].v.re' * 'inductor.inductor[2].i.re' - 'inductor.inductor[2].v.im' * (-'inductor.inductor[2].i.im')) ^ 2.0 + ('inductor.inductor[2].v.re' * (-'inductor.inductor[2].i.im') + 'inductor.inductor[2].v.im' * 'inductor.inductor[2].i.re') ^ 2.0);
-    'inductor.inductor[2].pf' = cos('Modelica.Math.atan3'('inductor.inductor[2].Q', 'inductor.inductor[2].P', 0.0));
+    'inductor.inductor[2].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor.inductor[2].P', 'inductor.inductor[2].Q'), 0.0));
     'inductor.inductor[3].abs_v' = sqrt('inductor.inductor[3].v.re' ^ 2.0 + 'inductor.inductor[3].v.im' ^ 2.0);
     'inductor.inductor[3].arg_v' = 'Modelica.Math.atan3'('inductor.inductor[3].v.im', 'inductor.inductor[3].v.re', 0.0);
     'inductor.inductor[3].abs_i' = sqrt('inductor.inductor[3].i.re' ^ 2.0 + 'inductor.inductor[3].i.im' ^ 2.0);
@@ -2966,7 +2842,7 @@ package 'TestSensors'
     'inductor.inductor[3].P' = 'inductor.inductor[3].v.re' * 'inductor.inductor[3].i.re' - 'inductor.inductor[3].v.im' * (-'inductor.inductor[3].i.im');
     'inductor.inductor[3].Q' = 'inductor.inductor[3].v.re' * (-'inductor.inductor[3].i.im') + 'inductor.inductor[3].v.im' * 'inductor.inductor[3].i.re';
     'inductor.inductor[3].S' = sqrt(('inductor.inductor[3].v.re' * 'inductor.inductor[3].i.re' - 'inductor.inductor[3].v.im' * (-'inductor.inductor[3].i.im')) ^ 2.0 + ('inductor.inductor[3].v.re' * (-'inductor.inductor[3].i.im') + 'inductor.inductor[3].v.im' * 'inductor.inductor[3].i.re') ^ 2.0);
-    'inductor.inductor[3].pf' = cos('Modelica.Math.atan3'('inductor.inductor[3].Q', 'inductor.inductor[3].P', 0.0));
+    'inductor.inductor[3].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor.inductor[3].P', 'inductor.inductor[3].Q'), 0.0));
     'currentQuasiRMSSensor.currentSensor[1].abs_i' = sqrt('currentQuasiRMSSensor.currentSensor[1].i.re' ^ 2.0 + 'currentQuasiRMSSensor.currentSensor[1].i.im' ^ 2.0);
     'currentQuasiRMSSensor.currentSensor[1].arg_i' = 'Modelica.Math.atan3'('currentQuasiRMSSensor.currentSensor[1].i.im', 'currentQuasiRMSSensor.currentSensor[1].i.re', 0.0);
     'currentQuasiRMSSensor.currentSensor[2].abs_i' = sqrt('currentQuasiRMSSensor.currentSensor[2].i.re' ^ 2.0 + 'currentQuasiRMSSensor.currentSensor[2].i.im' ^ 2.0);
@@ -3006,7 +2882,7 @@ package 'TestSensors'
     'powerSensor.sum.uInternal[3].im' = 'powerSensor.sum.u[3].im';
     'powerSensor.abs_apparentPower' = sqrt('powerSensor.apparentPower.re' ^ 2.0 + 'powerSensor.apparentPower.im' ^ 2.0);
     'powerSensor.arg_apparentPower' = 'Modelica.Math.atan3'('powerSensor.apparentPower.im', 'powerSensor.apparentPower.re', 0.0);
-    'realExpression.y' = 'Modelica.ComplexMath.real'('Complex'('voltageQuasiRMSSensor.v[1].re' * 'currentQuasiRMSSensor.i[1].re' - 'voltageQuasiRMSSensor.v[1].im' * (-'currentQuasiRMSSensor.i[1].im'), 'voltageQuasiRMSSensor.v[1].re' * (-'currentQuasiRMSSensor.i[1].im') + 'voltageQuasiRMSSensor.v[1].im' * 'currentQuasiRMSSensor.i[1].re')) + 'Modelica.ComplexMath.real'('Complex'('voltageQuasiRMSSensor.v[2].re' * 'currentQuasiRMSSensor.i[2].re' - 'voltageQuasiRMSSensor.v[2].im' * (-'currentQuasiRMSSensor.i[2].im'), 'voltageQuasiRMSSensor.v[2].re' * (-'currentQuasiRMSSensor.i[2].im') + 'voltageQuasiRMSSensor.v[2].im' * 'currentQuasiRMSSensor.i[2].re')) + 'Modelica.ComplexMath.real'('Complex'('voltageQuasiRMSSensor.v[3].re' * 'currentQuasiRMSSensor.i[3].re' - 'voltageQuasiRMSSensor.v[3].im' * (-'currentQuasiRMSSensor.i[3].im'), 'voltageQuasiRMSSensor.v[3].re' * (-'currentQuasiRMSSensor.i[3].im') + 'voltageQuasiRMSSensor.v[3].im' * 'currentQuasiRMSSensor.i[3].re'));
+    'realExpression.y' = sum('Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageQuasiRMSSensor.v[(1:size('voltageQuasiRMSSensor.v', 1))['$i479']]', 'Modelica.ComplexMath.conj'('currentQuasiRMSSensor.i[(1:size('voltageQuasiRMSSensor.v', 1))['$i479']]'))) for '$i479' in 1:size('voltageQuasiRMSSensor.v', 1));
     'aronSensor.powerSensor1.abs_apparentPower' = sqrt('aronSensor.powerSensor1.apparentPower.re' ^ 2.0 + 'aronSensor.powerSensor1.apparentPower.im' ^ 2.0);
     'aronSensor.powerSensor1.arg_apparentPower' = 'Modelica.Math.atan3'('aronSensor.powerSensor1.apparentPower.im', 'aronSensor.powerSensor1.apparentPower.re', 0.0);
     'aronSensor.powerSensor3.abs_apparentPower' = sqrt('aronSensor.powerSensor3.apparentPower.re' ^ 2.0 + 'aronSensor.powerSensor3.apparentPower.im' ^ 2.0);
@@ -4461,45 +4337,45 @@ package 'TestSensors'
     'sineVoltage.arg_i[1]' = 'Modelica.ComplexMath.arg'('sineVoltage.i[1]', 0.0);
     'sineVoltage.arg_i[2]' = 'Modelica.ComplexMath.arg'('sineVoltage.i[2]', 0.0);
     'sineVoltage.arg_i[3]' = 'Modelica.ComplexMath.arg'('sineVoltage.i[3]', 0.0);
-    'sineVoltage.P[1]' = 'sineVoltage.v[1].re' * 'sineVoltage.i[1].re' - 'sineVoltage.v[1].im' * (-'sineVoltage.i[1].im');
-    'sineVoltage.P[2]' = 'sineVoltage.v[2].re' * 'sineVoltage.i[2].re' - 'sineVoltage.v[2].im' * (-'sineVoltage.i[2].im');
-    'sineVoltage.P[3]' = 'sineVoltage.v[3].re' * 'sineVoltage.i[3].re' - 'sineVoltage.v[3].im' * (-'sineVoltage.i[3].im');
-    'sineVoltage.Q[1]' = 'sineVoltage.v[1].re' * (-'sineVoltage.i[1].im') + 'sineVoltage.v[1].im' * 'sineVoltage.i[1].re';
-    'sineVoltage.Q[2]' = 'sineVoltage.v[2].re' * (-'sineVoltage.i[2].im') + 'sineVoltage.v[2].im' * 'sineVoltage.i[2].re';
-    'sineVoltage.Q[3]' = 'sineVoltage.v[3].re' * (-'sineVoltage.i[3].im') + 'sineVoltage.v[3].im' * 'sineVoltage.i[3].re';
-    'sineVoltage.S[1]' = sqrt(('sineVoltage.v[1].re' * 'sineVoltage.i[1].re' - 'sineVoltage.v[1].im' * (-'sineVoltage.i[1].im')) ^ 2.0 + ('sineVoltage.v[1].re' * (-'sineVoltage.i[1].im') + 'sineVoltage.v[1].im' * 'sineVoltage.i[1].re') ^ 2.0);
-    'sineVoltage.S[2]' = sqrt(('sineVoltage.v[2].re' * 'sineVoltage.i[2].re' - 'sineVoltage.v[2].im' * (-'sineVoltage.i[2].im')) ^ 2.0 + ('sineVoltage.v[2].re' * (-'sineVoltage.i[2].im') + 'sineVoltage.v[2].im' * 'sineVoltage.i[2].re') ^ 2.0);
-    'sineVoltage.S[3]' = sqrt(('sineVoltage.v[3].re' * 'sineVoltage.i[3].re' - 'sineVoltage.v[3].im' * (-'sineVoltage.i[3].im')) ^ 2.0 + ('sineVoltage.v[3].re' * (-'sineVoltage.i[3].im') + 'sineVoltage.v[3].im' * 'sineVoltage.i[3].re') ^ 2.0);
-    'sineVoltage.pf[1]' = cos('Modelica.Math.atan3'('sineVoltage.Q[1]', 'sineVoltage.P[1]', 0.0));
-    'sineVoltage.pf[2]' = cos('Modelica.Math.atan3'('sineVoltage.Q[2]', 'sineVoltage.P[2]', 0.0));
-    'sineVoltage.pf[3]' = cos('Modelica.Math.atan3'('sineVoltage.Q[3]', 'sineVoltage.P[3]', 0.0));
+    'sineVoltage.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('sineVoltage.v[1]', 'Modelica.ComplexMath.conj'('sineVoltage.i[1]')));
+    'sineVoltage.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('sineVoltage.v[2]', 'Modelica.ComplexMath.conj'('sineVoltage.i[2]')));
+    'sineVoltage.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('sineVoltage.v[3]', 'Modelica.ComplexMath.conj'('sineVoltage.i[3]')));
+    'sineVoltage.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('sineVoltage.v[1]', 'Modelica.ComplexMath.conj'('sineVoltage.i[1]')));
+    'sineVoltage.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('sineVoltage.v[2]', 'Modelica.ComplexMath.conj'('sineVoltage.i[2]')));
+    'sineVoltage.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('sineVoltage.v[3]', 'Modelica.ComplexMath.conj'('sineVoltage.i[3]')));
+    'sineVoltage.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('sineVoltage.v[1]', 'Modelica.ComplexMath.conj'('sineVoltage.i[1]')));
+    'sineVoltage.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('sineVoltage.v[2]', 'Modelica.ComplexMath.conj'('sineVoltage.i[2]')));
+    'sineVoltage.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('sineVoltage.v[3]', 'Modelica.ComplexMath.conj'('sineVoltage.i[3]')));
+    'sineVoltage.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('sineVoltage.P[1]', 'sineVoltage.Q[1]'), 0.0));
+    'sineVoltage.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('sineVoltage.P[2]', 'sineVoltage.Q[2]'), 0.0));
+    'sineVoltage.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('sineVoltage.P[3]', 'sineVoltage.Q[3]'), 0.0));
     'sineVoltage.omega' = 314.1592653589793;
     'sineVoltage.v[1].re' = 100.0;
     'sineVoltage.v[2].re' = -49.99999999999998;
     'sineVoltage.v[3].re' = -50.00000000000004;
-    'sineVoltage.v[1].im' = -0.0;
+    'sineVoltage.v[1].im' = 0.0;
     'sineVoltage.v[2].im' = -86.60254037844388;
     'sineVoltage.v[3].im' = 86.60254037844383;
     'sineVoltage.plug_p.reference.gamma' = 'sineVoltage.plug_n.reference.gamma';
     'sineVoltage.omega' = der('sineVoltage.plug_p.reference.gamma');
-    'sineVoltage.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('sineVoltage.plug_p.pin[1].v', 'sineVoltage.plug_n.pin[1].v')).re;
-    'sineVoltage.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('sineVoltage.plug_p.pin[1].v', 'sineVoltage.plug_n.pin[1].v')).im;
-    'sineVoltage.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('sineVoltage.plug_p.pin[2].v', 'sineVoltage.plug_n.pin[2].v')).re;
-    'sineVoltage.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('sineVoltage.plug_p.pin[2].v', 'sineVoltage.plug_n.pin[2].v')).im;
-    'sineVoltage.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('sineVoltage.plug_p.pin[3].v', 'sineVoltage.plug_n.pin[3].v')).re;
-    'sineVoltage.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('sineVoltage.plug_p.pin[3].v', 'sineVoltage.plug_n.pin[3].v')).im;
+    'sineVoltage.v[1].re' = 'sineVoltage.plug_p.pin[1].v.re' - 'sineVoltage.plug_n.pin[1].v.re';
+    'sineVoltage.v[1].im' = 'sineVoltage.plug_p.pin[1].v.im' - 'sineVoltage.plug_n.pin[1].v.im';
+    'sineVoltage.v[2].re' = 'sineVoltage.plug_p.pin[2].v.re' - 'sineVoltage.plug_n.pin[2].v.re';
+    'sineVoltage.v[2].im' = 'sineVoltage.plug_p.pin[2].v.im' - 'sineVoltage.plug_n.pin[2].v.im';
+    'sineVoltage.v[3].re' = 'sineVoltage.plug_p.pin[3].v.re' - 'sineVoltage.plug_n.pin[3].v.re';
+    'sineVoltage.v[3].im' = 'sineVoltage.plug_p.pin[3].v.im' - 'sineVoltage.plug_n.pin[3].v.im';
     'sineVoltage.i[1].re' = 'sineVoltage.plug_p.pin[1].i.re';
     'sineVoltage.i[1].im' = 'sineVoltage.plug_p.pin[1].i.im';
     'sineVoltage.i[2].re' = 'sineVoltage.plug_p.pin[2].i.re';
     'sineVoltage.i[2].im' = 'sineVoltage.plug_p.pin[2].i.im';
     'sineVoltage.i[3].re' = 'sineVoltage.plug_p.pin[3].i.re';
     'sineVoltage.i[3].im' = 'sineVoltage.plug_p.pin[3].i.im';
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('sineVoltage.plug_p.pin[1].i', 'sineVoltage.plug_n.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('sineVoltage.plug_p.pin[1].i', 'sineVoltage.plug_n.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('sineVoltage.plug_p.pin[2].i', 'sineVoltage.plug_n.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('sineVoltage.plug_p.pin[2].i', 'sineVoltage.plug_n.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('sineVoltage.plug_p.pin[3].i', 'sineVoltage.plug_n.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('sineVoltage.plug_p.pin[3].i', 'sineVoltage.plug_n.pin[3].i')).im = 0.0;
+    'sineVoltage.plug_p.pin[1].i.re' + 'sineVoltage.plug_n.pin[1].i.re' = 0.0;
+    'sineVoltage.plug_p.pin[1].i.im' + 'sineVoltage.plug_n.pin[1].i.im' = 0.0;
+    'sineVoltage.plug_p.pin[2].i.re' + 'sineVoltage.plug_n.pin[2].i.re' = 0.0;
+    'sineVoltage.plug_p.pin[2].i.im' + 'sineVoltage.plug_n.pin[2].i.im' = 0.0;
+    'sineVoltage.plug_p.pin[3].i.re' + 'sineVoltage.plug_n.pin[3].i.re' = 0.0;
+    'sineVoltage.plug_p.pin[3].i.im' + 'sineVoltage.plug_n.pin[3].i.im' = 0.0;
     'star.plugToPins_p.plugToPin_p[1].plug_p.reference.gamma' = 'star.plugToPins_p.plugToPin_p[1].pin_p.reference.gamma';
     'star.plugToPins_p.plugToPin_p[1].pin_p.v.re' = 'star.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.re';
     'star.plugToPins_p.plugToPin_p[1].pin_p.v.im' = 'star.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.im';
@@ -4595,21 +4471,21 @@ package 'TestSensors'
     'resistor.arg_i[1]' = 'Modelica.ComplexMath.arg'('resistor.i[1]', 0.0);
     'resistor.arg_i[2]' = 'Modelica.ComplexMath.arg'('resistor.i[2]', 0.0);
     'resistor.arg_i[3]' = 'Modelica.ComplexMath.arg'('resistor.i[3]', 0.0);
-    'resistor.P[1]' = 'resistor.v[1].re' * 'resistor.i[1].re' - 'resistor.v[1].im' * (-'resistor.i[1].im');
-    'resistor.P[2]' = 'resistor.v[2].re' * 'resistor.i[2].re' - 'resistor.v[2].im' * (-'resistor.i[2].im');
-    'resistor.P[3]' = 'resistor.v[3].re' * 'resistor.i[3].re' - 'resistor.v[3].im' * (-'resistor.i[3].im');
-    'resistor.Q[1]' = 'resistor.v[1].re' * (-'resistor.i[1].im') + 'resistor.v[1].im' * 'resistor.i[1].re';
-    'resistor.Q[2]' = 'resistor.v[2].re' * (-'resistor.i[2].im') + 'resistor.v[2].im' * 'resistor.i[2].re';
-    'resistor.Q[3]' = 'resistor.v[3].re' * (-'resistor.i[3].im') + 'resistor.v[3].im' * 'resistor.i[3].re';
-    'resistor.S[1]' = sqrt(('resistor.v[1].re' * 'resistor.i[1].re' - 'resistor.v[1].im' * (-'resistor.i[1].im')) ^ 2.0 + ('resistor.v[1].re' * (-'resistor.i[1].im') + 'resistor.v[1].im' * 'resistor.i[1].re') ^ 2.0);
-    'resistor.S[2]' = sqrt(('resistor.v[2].re' * 'resistor.i[2].re' - 'resistor.v[2].im' * (-'resistor.i[2].im')) ^ 2.0 + ('resistor.v[2].re' * (-'resistor.i[2].im') + 'resistor.v[2].im' * 'resistor.i[2].re') ^ 2.0);
-    'resistor.S[3]' = sqrt(('resistor.v[3].re' * 'resistor.i[3].re' - 'resistor.v[3].im' * (-'resistor.i[3].im')) ^ 2.0 + ('resistor.v[3].re' * (-'resistor.i[3].im') + 'resistor.v[3].im' * 'resistor.i[3].re') ^ 2.0);
-    'resistor.pf[1]' = cos('Modelica.Math.atan3'('resistor.Q[1]', 'resistor.P[1]', 0.0));
-    'resistor.pf[2]' = cos('Modelica.Math.atan3'('resistor.Q[2]', 'resistor.P[2]', 0.0));
-    'resistor.pf[3]' = cos('Modelica.Math.atan3'('resistor.Q[3]', 'resistor.P[3]', 0.0));
+    'resistor.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v[1]', 'Modelica.ComplexMath.conj'('resistor.i[1]')));
+    'resistor.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v[2]', 'Modelica.ComplexMath.conj'('resistor.i[2]')));
+    'resistor.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v[3]', 'Modelica.ComplexMath.conj'('resistor.i[3]')));
+    'resistor.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v[1]', 'Modelica.ComplexMath.conj'('resistor.i[1]')));
+    'resistor.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v[2]', 'Modelica.ComplexMath.conj'('resistor.i[2]')));
+    'resistor.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v[3]', 'Modelica.ComplexMath.conj'('resistor.i[3]')));
+    'resistor.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v[1]', 'Modelica.ComplexMath.conj'('resistor.i[1]')));
+    'resistor.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v[2]', 'Modelica.ComplexMath.conj'('resistor.i[2]')));
+    'resistor.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('resistor.v[3]', 'Modelica.ComplexMath.conj'('resistor.i[3]')));
+    'resistor.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor.P[1]', 'resistor.Q[1]'), 0.0));
+    'resistor.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor.P[2]', 'resistor.Q[2]'), 0.0));
+    'resistor.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor.P[3]', 'resistor.Q[3]'), 0.0));
     'resistor.resistor[1].R_actual' = 0.7071067811865475;
-    'resistor.resistor[1].v.re' = 'resistor.resistor[1].R_actual' * 'resistor.resistor[1].i.re';
-    'resistor.resistor[1].v.im' = 'resistor.resistor[1].R_actual' * 'resistor.resistor[1].i.im';
+    'resistor.resistor[1].v.re' = 'resistor.resistor[1].R_actual' * 'resistor.resistor[1].i.re' - 0.0 * 'resistor.resistor[1].i.im';
+    'resistor.resistor[1].v.im' = 'resistor.resistor[1].R_actual' * 'resistor.resistor[1].i.im' + 0.0 * 'resistor.resistor[1].i.re';
     'resistor.resistor[1].LossPower' = 'resistor.resistor[1].v.re' * 'resistor.resistor[1].i.re' - 'resistor.resistor[1].v.im' * (-'resistor.resistor[1].i.im');
     'resistor.resistor[1].T_heatPort' = 293.15;
     'resistor.resistor[1].pin_p.i.re' + 'resistor.resistor[1].pin_n.i.re' = 0.0;
@@ -4621,8 +4497,8 @@ package 'TestSensors'
     'resistor.resistor[1].pin_p.reference.gamma' = 'resistor.resistor[1].pin_n.reference.gamma';
     'resistor.resistor[1].omega' = der('resistor.resistor[1].pin_p.reference.gamma');
     'resistor.resistor[2].R_actual' = 0.7071067811865475;
-    'resistor.resistor[2].v.re' = 'resistor.resistor[2].R_actual' * 'resistor.resistor[2].i.re';
-    'resistor.resistor[2].v.im' = 'resistor.resistor[2].R_actual' * 'resistor.resistor[2].i.im';
+    'resistor.resistor[2].v.re' = 'resistor.resistor[2].R_actual' * 'resistor.resistor[2].i.re' - 0.0 * 'resistor.resistor[2].i.im';
+    'resistor.resistor[2].v.im' = 'resistor.resistor[2].R_actual' * 'resistor.resistor[2].i.im' + 0.0 * 'resistor.resistor[2].i.re';
     'resistor.resistor[2].LossPower' = 'resistor.resistor[2].v.re' * 'resistor.resistor[2].i.re' - 'resistor.resistor[2].v.im' * (-'resistor.resistor[2].i.im');
     'resistor.resistor[2].T_heatPort' = 293.15;
     'resistor.resistor[2].pin_p.i.re' + 'resistor.resistor[2].pin_n.i.re' = 0.0;
@@ -4634,8 +4510,8 @@ package 'TestSensors'
     'resistor.resistor[2].pin_p.reference.gamma' = 'resistor.resistor[2].pin_n.reference.gamma';
     'resistor.resistor[2].omega' = der('resistor.resistor[2].pin_p.reference.gamma');
     'resistor.resistor[3].R_actual' = 0.7071067811865475;
-    'resistor.resistor[3].v.re' = 'resistor.resistor[3].R_actual' * 'resistor.resistor[3].i.re';
-    'resistor.resistor[3].v.im' = 'resistor.resistor[3].R_actual' * 'resistor.resistor[3].i.im';
+    'resistor.resistor[3].v.re' = 'resistor.resistor[3].R_actual' * 'resistor.resistor[3].i.re' - 0.0 * 'resistor.resistor[3].i.im';
+    'resistor.resistor[3].v.im' = 'resistor.resistor[3].R_actual' * 'resistor.resistor[3].i.im' + 0.0 * 'resistor.resistor[3].i.re';
     'resistor.resistor[3].LossPower' = 'resistor.resistor[3].v.re' * 'resistor.resistor[3].i.re' - 'resistor.resistor[3].v.im' * (-'resistor.resistor[3].i.im');
     'resistor.resistor[3].T_heatPort' = 293.15;
     'resistor.resistor[3].pin_p.i.re' + 'resistor.resistor[3].pin_n.i.re' = 0.0;
@@ -4646,12 +4522,12 @@ package 'TestSensors'
     'resistor.resistor[3].i.im' = 'resistor.resistor[3].pin_p.i.im';
     'resistor.resistor[3].pin_p.reference.gamma' = 'resistor.resistor[3].pin_n.reference.gamma';
     'resistor.resistor[3].omega' = der('resistor.resistor[3].pin_p.reference.gamma');
-    'resistor.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('resistor.plug_p.pin[1].v', 'resistor.plug_n.pin[1].v')).re;
-    'resistor.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('resistor.plug_p.pin[1].v', 'resistor.plug_n.pin[1].v')).im;
-    'resistor.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('resistor.plug_p.pin[2].v', 'resistor.plug_n.pin[2].v')).re;
-    'resistor.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('resistor.plug_p.pin[2].v', 'resistor.plug_n.pin[2].v')).im;
-    'resistor.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('resistor.plug_p.pin[3].v', 'resistor.plug_n.pin[3].v')).re;
-    'resistor.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('resistor.plug_p.pin[3].v', 'resistor.plug_n.pin[3].v')).im;
+    'resistor.v[1].re' = 'resistor.plug_p.pin[1].v.re' - 'resistor.plug_n.pin[1].v.re';
+    'resistor.v[1].im' = 'resistor.plug_p.pin[1].v.im' - 'resistor.plug_n.pin[1].v.im';
+    'resistor.v[2].re' = 'resistor.plug_p.pin[2].v.re' - 'resistor.plug_n.pin[2].v.re';
+    'resistor.v[2].im' = 'resistor.plug_p.pin[2].v.im' - 'resistor.plug_n.pin[2].v.im';
+    'resistor.v[3].re' = 'resistor.plug_p.pin[3].v.re' - 'resistor.plug_n.pin[3].v.re';
+    'resistor.v[3].im' = 'resistor.plug_p.pin[3].v.im' - 'resistor.plug_n.pin[3].v.im';
     'resistor.i[1].re' = 'resistor.plug_p.pin[1].i.re';
     'resistor.i[1].im' = 'resistor.plug_p.pin[1].i.im';
     'resistor.i[2].re' = 'resistor.plug_p.pin[2].i.re';
@@ -4725,20 +4601,20 @@ package 'TestSensors'
     'inductor.arg_i[1]' = 'Modelica.ComplexMath.arg'('inductor.i[1]', 0.0);
     'inductor.arg_i[2]' = 'Modelica.ComplexMath.arg'('inductor.i[2]', 0.0);
     'inductor.arg_i[3]' = 'Modelica.ComplexMath.arg'('inductor.i[3]', 0.0);
-    'inductor.P[1]' = 'inductor.v[1].re' * 'inductor.i[1].re' - 'inductor.v[1].im' * (-'inductor.i[1].im');
-    'inductor.P[2]' = 'inductor.v[2].re' * 'inductor.i[2].re' - 'inductor.v[2].im' * (-'inductor.i[2].im');
-    'inductor.P[3]' = 'inductor.v[3].re' * 'inductor.i[3].re' - 'inductor.v[3].im' * (-'inductor.i[3].im');
-    'inductor.Q[1]' = 'inductor.v[1].re' * (-'inductor.i[1].im') + 'inductor.v[1].im' * 'inductor.i[1].re';
-    'inductor.Q[2]' = 'inductor.v[2].re' * (-'inductor.i[2].im') + 'inductor.v[2].im' * 'inductor.i[2].re';
-    'inductor.Q[3]' = 'inductor.v[3].re' * (-'inductor.i[3].im') + 'inductor.v[3].im' * 'inductor.i[3].re';
-    'inductor.S[1]' = sqrt(('inductor.v[1].re' * 'inductor.i[1].re' - 'inductor.v[1].im' * (-'inductor.i[1].im')) ^ 2.0 + ('inductor.v[1].re' * (-'inductor.i[1].im') + 'inductor.v[1].im' * 'inductor.i[1].re') ^ 2.0);
-    'inductor.S[2]' = sqrt(('inductor.v[2].re' * 'inductor.i[2].re' - 'inductor.v[2].im' * (-'inductor.i[2].im')) ^ 2.0 + ('inductor.v[2].re' * (-'inductor.i[2].im') + 'inductor.v[2].im' * 'inductor.i[2].re') ^ 2.0);
-    'inductor.S[3]' = sqrt(('inductor.v[3].re' * 'inductor.i[3].re' - 'inductor.v[3].im' * (-'inductor.i[3].im')) ^ 2.0 + ('inductor.v[3].re' * (-'inductor.i[3].im') + 'inductor.v[3].im' * 'inductor.i[3].re') ^ 2.0);
-    'inductor.pf[1]' = cos('Modelica.Math.atan3'('inductor.Q[1]', 'inductor.P[1]', 0.0));
-    'inductor.pf[2]' = cos('Modelica.Math.atan3'('inductor.Q[2]', 'inductor.P[2]', 0.0));
-    'inductor.pf[3]' = cos('Modelica.Math.atan3'('inductor.Q[3]', 'inductor.P[3]', 0.0));
-    'inductor.inductor[1].v.re' = -'inductor.inductor[1].omega' * 0.002250790790392765 * 'inductor.inductor[1].i.im';
-    'inductor.inductor[1].v.im' = 'inductor.inductor[1].omega' * 0.002250790790392765 * 'inductor.inductor[1].i.re';
+    'inductor.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v[1]', 'Modelica.ComplexMath.conj'('inductor.i[1]')));
+    'inductor.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v[2]', 'Modelica.ComplexMath.conj'('inductor.i[2]')));
+    'inductor.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v[3]', 'Modelica.ComplexMath.conj'('inductor.i[3]')));
+    'inductor.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v[1]', 'Modelica.ComplexMath.conj'('inductor.i[1]')));
+    'inductor.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v[2]', 'Modelica.ComplexMath.conj'('inductor.i[2]')));
+    'inductor.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v[3]', 'Modelica.ComplexMath.conj'('inductor.i[3]')));
+    'inductor.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v[1]', 'Modelica.ComplexMath.conj'('inductor.i[1]')));
+    'inductor.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v[2]', 'Modelica.ComplexMath.conj'('inductor.i[2]')));
+    'inductor.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('inductor.v[3]', 'Modelica.ComplexMath.conj'('inductor.i[3]')));
+    'inductor.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor.P[1]', 'inductor.Q[1]'), 0.0));
+    'inductor.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor.P[2]', 'inductor.Q[2]'), 0.0));
+    'inductor.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor.P[3]', 'inductor.Q[3]'), 0.0));
+    'inductor.inductor[1].v.re' = ((0.0 * 'inductor.inductor[1].omega' - 1.0 * 0.0) * 0.002250790790392765 - (0.0 * 0.0 + 1.0 * 'inductor.inductor[1].omega') * 0.0) * 'inductor.inductor[1].i.re' - ((0.0 * 'inductor.inductor[1].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.inductor[1].omega') * 0.002250790790392765) * 'inductor.inductor[1].i.im';
+    'inductor.inductor[1].v.im' = ((0.0 * 'inductor.inductor[1].omega' - 1.0 * 0.0) * 0.002250790790392765 - (0.0 * 0.0 + 1.0 * 'inductor.inductor[1].omega') * 0.0) * 'inductor.inductor[1].i.im' + ((0.0 * 'inductor.inductor[1].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.inductor[1].omega') * 0.002250790790392765) * 'inductor.inductor[1].i.re';
     'inductor.inductor[1].pin_p.i.re' + 'inductor.inductor[1].pin_n.i.re' = 0.0;
     'inductor.inductor[1].pin_p.i.im' + 'inductor.inductor[1].pin_n.i.im' = 0.0;
     'inductor.inductor[1].v.re' = 'inductor.inductor[1].pin_p.v.re' - 'inductor.inductor[1].pin_n.v.re';
@@ -4747,8 +4623,8 @@ package 'TestSensors'
     'inductor.inductor[1].i.im' = 'inductor.inductor[1].pin_p.i.im';
     'inductor.inductor[1].pin_p.reference.gamma' = 'inductor.inductor[1].pin_n.reference.gamma';
     'inductor.inductor[1].omega' = der('inductor.inductor[1].pin_p.reference.gamma');
-    'inductor.inductor[2].v.re' = -'inductor.inductor[2].omega' * 0.002250790790392765 * 'inductor.inductor[2].i.im';
-    'inductor.inductor[2].v.im' = 'inductor.inductor[2].omega' * 0.002250790790392765 * 'inductor.inductor[2].i.re';
+    'inductor.inductor[2].v.re' = ((0.0 * 'inductor.inductor[2].omega' - 1.0 * 0.0) * 0.002250790790392765 - (0.0 * 0.0 + 1.0 * 'inductor.inductor[2].omega') * 0.0) * 'inductor.inductor[2].i.re' - ((0.0 * 'inductor.inductor[2].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.inductor[2].omega') * 0.002250790790392765) * 'inductor.inductor[2].i.im';
+    'inductor.inductor[2].v.im' = ((0.0 * 'inductor.inductor[2].omega' - 1.0 * 0.0) * 0.002250790790392765 - (0.0 * 0.0 + 1.0 * 'inductor.inductor[2].omega') * 0.0) * 'inductor.inductor[2].i.im' + ((0.0 * 'inductor.inductor[2].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.inductor[2].omega') * 0.002250790790392765) * 'inductor.inductor[2].i.re';
     'inductor.inductor[2].pin_p.i.re' + 'inductor.inductor[2].pin_n.i.re' = 0.0;
     'inductor.inductor[2].pin_p.i.im' + 'inductor.inductor[2].pin_n.i.im' = 0.0;
     'inductor.inductor[2].v.re' = 'inductor.inductor[2].pin_p.v.re' - 'inductor.inductor[2].pin_n.v.re';
@@ -4757,8 +4633,8 @@ package 'TestSensors'
     'inductor.inductor[2].i.im' = 'inductor.inductor[2].pin_p.i.im';
     'inductor.inductor[2].pin_p.reference.gamma' = 'inductor.inductor[2].pin_n.reference.gamma';
     'inductor.inductor[2].omega' = der('inductor.inductor[2].pin_p.reference.gamma');
-    'inductor.inductor[3].v.re' = -'inductor.inductor[3].omega' * 0.002250790790392765 * 'inductor.inductor[3].i.im';
-    'inductor.inductor[3].v.im' = 'inductor.inductor[3].omega' * 0.002250790790392765 * 'inductor.inductor[3].i.re';
+    'inductor.inductor[3].v.re' = ((0.0 * 'inductor.inductor[3].omega' - 1.0 * 0.0) * 0.002250790790392765 - (0.0 * 0.0 + 1.0 * 'inductor.inductor[3].omega') * 0.0) * 'inductor.inductor[3].i.re' - ((0.0 * 'inductor.inductor[3].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.inductor[3].omega') * 0.002250790790392765) * 'inductor.inductor[3].i.im';
+    'inductor.inductor[3].v.im' = ((0.0 * 'inductor.inductor[3].omega' - 1.0 * 0.0) * 0.002250790790392765 - (0.0 * 0.0 + 1.0 * 'inductor.inductor[3].omega') * 0.0) * 'inductor.inductor[3].i.im' + ((0.0 * 'inductor.inductor[3].omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.inductor[3].omega') * 0.002250790790392765) * 'inductor.inductor[3].i.re';
     'inductor.inductor[3].pin_p.i.re' + 'inductor.inductor[3].pin_n.i.re' = 0.0;
     'inductor.inductor[3].pin_p.i.im' + 'inductor.inductor[3].pin_n.i.im' = 0.0;
     'inductor.inductor[3].v.re' = 'inductor.inductor[3].pin_p.v.re' - 'inductor.inductor[3].pin_n.v.re';
@@ -4767,12 +4643,12 @@ package 'TestSensors'
     'inductor.inductor[3].i.im' = 'inductor.inductor[3].pin_p.i.im';
     'inductor.inductor[3].pin_p.reference.gamma' = 'inductor.inductor[3].pin_n.reference.gamma';
     'inductor.inductor[3].omega' = der('inductor.inductor[3].pin_p.reference.gamma');
-    'inductor.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('inductor.plug_p.pin[1].v', 'inductor.plug_n.pin[1].v')).re;
-    'inductor.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('inductor.plug_p.pin[1].v', 'inductor.plug_n.pin[1].v')).im;
-    'inductor.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('inductor.plug_p.pin[2].v', 'inductor.plug_n.pin[2].v')).re;
-    'inductor.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('inductor.plug_p.pin[2].v', 'inductor.plug_n.pin[2].v')).im;
-    'inductor.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('inductor.plug_p.pin[3].v', 'inductor.plug_n.pin[3].v')).re;
-    'inductor.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('inductor.plug_p.pin[3].v', 'inductor.plug_n.pin[3].v')).im;
+    'inductor.v[1].re' = 'inductor.plug_p.pin[1].v.re' - 'inductor.plug_n.pin[1].v.re';
+    'inductor.v[1].im' = 'inductor.plug_p.pin[1].v.im' - 'inductor.plug_n.pin[1].v.im';
+    'inductor.v[2].re' = 'inductor.plug_p.pin[2].v.re' - 'inductor.plug_n.pin[2].v.re';
+    'inductor.v[2].im' = 'inductor.plug_p.pin[2].v.im' - 'inductor.plug_n.pin[2].v.im';
+    'inductor.v[3].re' = 'inductor.plug_p.pin[3].v.re' - 'inductor.plug_n.pin[3].v.re';
+    'inductor.v[3].im' = 'inductor.plug_p.pin[3].v.im' - 'inductor.plug_n.pin[3].v.im';
     'inductor.i[1].re' = 'inductor.plug_p.pin[1].i.re';
     'inductor.i[1].im' = 'inductor.plug_p.pin[1].i.im';
     'inductor.i[2].re' = 'inductor.plug_p.pin[2].i.re';
@@ -4892,12 +4768,12 @@ package 'TestSensors'
     'currentQuasiRMSSensor.currentSensor[3].pin_p.reference.gamma' = 'currentQuasiRMSSensor.currentSensor[3].pin_n.reference.gamma';
     'currentQuasiRMSSensor.currentSensor[3].omega' = der('currentQuasiRMSSensor.currentSensor[3].pin_p.reference.gamma');
     'currentQuasiRMSSensor.quasiRMS.y' = 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS'({'currentQuasiRMSSensor.quasiRMS.u[1]', 'currentQuasiRMSSensor.quasiRMS.u[2]', 'currentQuasiRMSSensor.quasiRMS.u[3]'});
-    'currentQuasiRMSSensor.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[1].v', 'currentQuasiRMSSensor.plug_n.pin[1].v')).re;
-    'currentQuasiRMSSensor.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[1].v', 'currentQuasiRMSSensor.plug_n.pin[1].v')).im;
-    'currentQuasiRMSSensor.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[2].v', 'currentQuasiRMSSensor.plug_n.pin[2].v')).re;
-    'currentQuasiRMSSensor.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[2].v', 'currentQuasiRMSSensor.plug_n.pin[2].v')).im;
-    'currentQuasiRMSSensor.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[3].v', 'currentQuasiRMSSensor.plug_n.pin[3].v')).re;
-    'currentQuasiRMSSensor.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[3].v', 'currentQuasiRMSSensor.plug_n.pin[3].v')).im;
+    'currentQuasiRMSSensor.v[1].re' = 'currentQuasiRMSSensor.plug_p.pin[1].v.re' - 'currentQuasiRMSSensor.plug_n.pin[1].v.re';
+    'currentQuasiRMSSensor.v[1].im' = 'currentQuasiRMSSensor.plug_p.pin[1].v.im' - 'currentQuasiRMSSensor.plug_n.pin[1].v.im';
+    'currentQuasiRMSSensor.v[2].re' = 'currentQuasiRMSSensor.plug_p.pin[2].v.re' - 'currentQuasiRMSSensor.plug_n.pin[2].v.re';
+    'currentQuasiRMSSensor.v[2].im' = 'currentQuasiRMSSensor.plug_p.pin[2].v.im' - 'currentQuasiRMSSensor.plug_n.pin[2].v.im';
+    'currentQuasiRMSSensor.v[3].re' = 'currentQuasiRMSSensor.plug_p.pin[3].v.re' - 'currentQuasiRMSSensor.plug_n.pin[3].v.re';
+    'currentQuasiRMSSensor.v[3].im' = 'currentQuasiRMSSensor.plug_p.pin[3].v.im' - 'currentQuasiRMSSensor.plug_n.pin[3].v.im';
     'currentQuasiRMSSensor.omega' = der('currentQuasiRMSSensor.plug_p.reference.gamma');
     'feedbackI.y' = 'feedbackI.u1' - 'feedbackI.u2';
     'constI.y' = 100.00000000000001;
@@ -4986,12 +4862,12 @@ package 'TestSensors'
     'voltageQuasiRMSSensor.voltageSensor[3].pin_p.reference.gamma' = 'voltageQuasiRMSSensor.voltageSensor[3].pin_n.reference.gamma';
     'voltageQuasiRMSSensor.voltageSensor[3].omega' = der('voltageQuasiRMSSensor.voltageSensor[3].pin_p.reference.gamma');
     'voltageQuasiRMSSensor.quasiRMS.y' = 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS'({'voltageQuasiRMSSensor.quasiRMS.u[1]', 'voltageQuasiRMSSensor.quasiRMS.u[2]', 'voltageQuasiRMSSensor.quasiRMS.u[3]'});
-    'voltageQuasiRMSSensor.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageQuasiRMSSensor.plug_p.pin[1].v', 'voltageQuasiRMSSensor.plug_n.pin[1].v')).re;
-    'voltageQuasiRMSSensor.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageQuasiRMSSensor.plug_p.pin[1].v', 'voltageQuasiRMSSensor.plug_n.pin[1].v')).im;
-    'voltageQuasiRMSSensor.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageQuasiRMSSensor.plug_p.pin[2].v', 'voltageQuasiRMSSensor.plug_n.pin[2].v')).re;
-    'voltageQuasiRMSSensor.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageQuasiRMSSensor.plug_p.pin[2].v', 'voltageQuasiRMSSensor.plug_n.pin[2].v')).im;
-    'voltageQuasiRMSSensor.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageQuasiRMSSensor.plug_p.pin[3].v', 'voltageQuasiRMSSensor.plug_n.pin[3].v')).re;
-    'voltageQuasiRMSSensor.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageQuasiRMSSensor.plug_p.pin[3].v', 'voltageQuasiRMSSensor.plug_n.pin[3].v')).im;
+    'voltageQuasiRMSSensor.v[1].re' = 'voltageQuasiRMSSensor.plug_p.pin[1].v.re' - 'voltageQuasiRMSSensor.plug_n.pin[1].v.re';
+    'voltageQuasiRMSSensor.v[1].im' = 'voltageQuasiRMSSensor.plug_p.pin[1].v.im' - 'voltageQuasiRMSSensor.plug_n.pin[1].v.im';
+    'voltageQuasiRMSSensor.v[2].re' = 'voltageQuasiRMSSensor.plug_p.pin[2].v.re' - 'voltageQuasiRMSSensor.plug_n.pin[2].v.re';
+    'voltageQuasiRMSSensor.v[2].im' = 'voltageQuasiRMSSensor.plug_p.pin[2].v.im' - 'voltageQuasiRMSSensor.plug_n.pin[2].v.im';
+    'voltageQuasiRMSSensor.v[3].re' = 'voltageQuasiRMSSensor.plug_p.pin[3].v.re' - 'voltageQuasiRMSSensor.plug_n.pin[3].v.re';
+    'voltageQuasiRMSSensor.v[3].im' = 'voltageQuasiRMSSensor.plug_p.pin[3].v.im' - 'voltageQuasiRMSSensor.plug_n.pin[3].v.im';
     'voltageQuasiRMSSensor.omega' = der('voltageQuasiRMSSensor.plug_p.reference.gamma');
     'feedbackV.y' = 'feedbackV.u1' - 'feedbackV.u2';
     'constV.y' = 100.0;

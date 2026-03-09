@@ -1,78 +1,9 @@
 //! base 0.1.0
 package 'Rectifier'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
-
   record 'Complex'
     Real 're';
     Real 'im';
   end 'Complex';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
-
-  record 'Modelica.Units.SI.ComplexCurrent'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexCurrent';
-
-  record 'Modelica.Units.SI.ComplexElectricPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexElectricPotential';
-
-  record 'Modelica.Units.SI.ComplexVoltage'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexVoltage';
 
   model 'Rectifier' "Rectifier example"
     parameter Real 'VAC'(unit = "V", quantity = "ElectricPotential") = 100.0 "AC rms voltage";
@@ -458,7 +389,7 @@ package 'Rectifier'
     'voltageQS.P' = 'voltageQS.v.re' * 'voltageQS.i.re' - 'voltageQS.v.im' * (-'voltageQS.i.im');
     'voltageQS.Q' = 'voltageQS.v.re' * (-'voltageQS.i.im') + 'voltageQS.v.im' * 'voltageQS.i.re';
     'voltageQS.S' = sqrt(('voltageQS.v.re' * 'voltageQS.i.re' - 'voltageQS.v.im' * (-'voltageQS.i.im')) ^ 2.0 + ('voltageQS.v.re' * (-'voltageQS.i.im') + 'voltageQS.v.im' * 'voltageQS.i.re') ^ 2.0);
-    'voltageQS.pf' = cos('Modelica.Math.atan3'('voltageQS.Q', 'voltageQS.P', 0.0));
+    'voltageQS.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageQS.P', 'voltageQS.Q'), 0.0));
     'voltageQS.gamma' = 'voltageQS.pin_p.reference.gamma';
     'resistorQS.abs_v' = sqrt('resistorQS.v.re' ^ 2.0 + 'resistorQS.v.im' ^ 2.0);
     'resistorQS.arg_v' = 'Modelica.Math.atan3'('resistorQS.v.im', 'resistorQS.v.re', 0.0);
@@ -467,17 +398,13 @@ package 'Rectifier'
     'resistorQS.P' = 'resistorQS.v.re' * 'resistorQS.i.re' - 'resistorQS.v.im' * (-'resistorQS.i.im');
     'resistorQS.Q' = 'resistorQS.v.re' * (-'resistorQS.i.im') + 'resistorQS.v.im' * 'resistorQS.i.re';
     'resistorQS.S' = sqrt(('resistorQS.v.re' * 'resistorQS.i.re' - 'resistorQS.v.im' * (-'resistorQS.i.im')) ^ 2.0 + ('resistorQS.v.re' * (-'resistorQS.i.im') + 'resistorQS.v.im' * 'resistorQS.i.re') ^ 2.0);
-    'resistorQS.pf' = cos('Modelica.Math.atan3'('resistorQS.Q', 'resistorQS.P', 0.0));
+    'resistorQS.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistorQS.P', 'resistorQS.Q'), 0.0));
     'currentSensorQS.abs_i' = sqrt('currentSensorQS.i.re' ^ 2.0 + 'currentSensorQS.i.im' ^ 2.0);
     'currentSensorQS.arg_i' = 'Modelica.Math.atan3'('currentSensorQS.i.im', 'currentSensorQS.i.re', 0.0);
-    'rectifierQS.vQS.re' = 'rectifierQS.pin_pQS.v.re' - 'rectifierQS.pin_nQS.v.re';
-    'rectifierQS.vQS.im' = 'rectifierQS.pin_pQS.v.im' - 'rectifierQS.pin_nQS.v.im';
     'rectifierQS.iQS.re' = 'rectifierQS.pin_pQS.i.re';
     'rectifierQS.iQS.im' = 'rectifierQS.pin_pQS.i.im';
     'rectifierQS.vQSabs' = sqrt('rectifierQS.vQS.re' ^ 2.0 + 'rectifierQS.vQS.im' ^ 2.0);
     'rectifierQS.iQSabs' = sqrt('rectifierQS.iQS.re' ^ 2.0 + 'rectifierQS.iQS.im' ^ 2.0);
-    'rectifierQS.sQS.re' = 'rectifierQS.vQS.re' * 'rectifierQS.iQS.re' - 'rectifierQS.vQS.im' * (-'rectifierQS.iQS.im');
-    'rectifierQS.sQS.im' = 'rectifierQS.vQS.re' * (-'rectifierQS.iQS.im') + 'rectifierQS.vQS.im' * 'rectifierQS.iQS.re';
     'rectifierQS.pQS' = 'rectifierQS.sQS.re';
     'rectifierQS.qQS' = 'rectifierQS.sQS.im';
     'rectifierQS.vDC' = 'rectifierQS.pin_pDC.v' - 'rectifierQS.pin_nDC.v';
@@ -579,8 +506,8 @@ package 'Rectifier'
     'voltageQS.pin_p.reference.gamma' = 'voltageQS.pin_n.reference.gamma';
     'voltageQS.omega' = der('voltageQS.pin_p.reference.gamma');
     'resistorQS.R_actual' = 0.05;
-    'resistorQS.v.re' = 'resistorQS.R_actual' * 'resistorQS.i.re';
-    'resistorQS.v.im' = 'resistorQS.R_actual' * 'resistorQS.i.im';
+    'resistorQS.v.re' = 'resistorQS.R_actual' * 'resistorQS.i.re' - 0.0 * 'resistorQS.i.im';
+    'resistorQS.v.im' = 'resistorQS.R_actual' * 'resistorQS.i.im' + 0.0 * 'resistorQS.i.re';
     'resistorQS.LossPower' = 'resistorQS.v.re' * 'resistorQS.i.re' - 'resistorQS.v.im' * (-'resistorQS.i.im');
     'resistorQS.T_heatPort' = 293.15;
     'resistorQS.pin_p.i.re' + 'resistorQS.pin_n.i.re' = 0.0;
@@ -605,6 +532,10 @@ package 'Rectifier'
     'iQS.phi' = atan2('iQS.u.im', 'iQS.u.re');
     'groundQS.pin.v.re' = 0.0;
     'groundQS.pin.v.im' = 0.0;
+    'rectifierQS.vQS.re' = 'rectifierQS.pin_pQS.v.re' - 'rectifierQS.pin_nQS.v.re';
+    'rectifierQS.vQS.im' = 'rectifierQS.pin_pQS.v.im' - 'rectifierQS.pin_nQS.v.im';
+    'rectifierQS.sQS.re' = 'rectifierQS.vQS.re' * 'rectifierQS.iQS.re' - 'rectifierQS.vQS.im' * (-'rectifierQS.iQS.im');
+    'rectifierQS.sQS.im' = 'rectifierQS.vQS.re' * (-'rectifierQS.iQS.im') + 'rectifierQS.vQS.im' * 'rectifierQS.iQS.re';
     'rectifierQS.pin_pQS.reference.gamma' = 'rectifierQS.pin_nQS.reference.gamma';
     'rectifierQS.pin_pQS.i.re' + 'rectifierQS.pin_nQS.i.re' = 0.0;
     'rectifierQS.pin_pQS.i.im' + 'rectifierQS.pin_nQS.i.im' = 0.0;
@@ -623,7 +554,7 @@ package 'Rectifier'
     0.0 = 'load1.p.i' + 'load1.n.i';
     'load1.i' = 'load1.p.i';
     'load1.v' = 'load1.p.v' - 'load1.n.v';
-    'voltageAC.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(314.1592653589793 * time + 1.5707963267948966);
+    'voltageAC.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(314.1592653589793 * time + 1.5707963267948966);
     'voltageAC.v' = 'voltageAC.signalSource.y';
     0.0 = 'voltageAC.p.i' + 'voltageAC.n.i';
     'voltageAC.i' = 'voltageAC.p.i';
@@ -638,8 +569,8 @@ package 'Rectifier'
     'currentSensorAC.p.v' = 'currentSensorAC.n.v';
     'currentSensorAC.p.i' = 'currentSensorAC.i';
     'currentSensorAC.n.i' = -'currentSensorAC.i';
-    'iAC.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * cos(314.1592653589793 * time);
-    'iAC.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * sin(314.1592653589793 * time);
+    'iAC.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.cos'(314.1592653589793 * time);
+    'iAC.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.sin'(314.1592653589793 * time);
     'iAC.product1.y' = 'iAC.product1.u[1]' * 'iAC.product1.u[2]';
     'iAC.product2.y' = 'iAC.product2.u[1]' * 'iAC.product2.u[2]';
     der('iAC.mean1.x') = 'iAC.mean1.u';

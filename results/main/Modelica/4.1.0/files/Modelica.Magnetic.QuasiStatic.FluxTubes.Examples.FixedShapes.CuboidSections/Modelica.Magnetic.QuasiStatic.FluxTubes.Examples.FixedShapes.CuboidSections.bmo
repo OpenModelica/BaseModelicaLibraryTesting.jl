@@ -1,110 +1,5 @@
 //! base 0.1.0
 package 'CuboidSections'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexMagneticFieldStrength.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFieldStrength.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
-
-  record 'Modelica.Units.SI.ComplexMagneticFieldStrength'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFieldStrength';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
-  record 'Modelica.Units.SI.ComplexMagneticFluxDensity'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFluxDensity';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotential';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
-
   model 'CuboidSections' "Magnetic circuit using different cuboid sections"
     parameter Real 'mu_rConst'(unit = "1", quantity = "RelativePermeability") = 100.0 "Relative permeability";
     Real 'ground.port.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
@@ -415,12 +310,12 @@ package 'CuboidSections'
     'cuboidBottom.G_m' = 1.25663706212e-6 * 'cuboidBottom.mu_r' * 'cuboidBottom.A' / 0.1;
     'cuboidBottom.mu_r' = 100.0;
     'cuboidBottom.R_m' = 1.0 / 'cuboidBottom.G_m';
-    'cuboidBottom.V_m.re' = 'cuboidBottom.Phi.re' * 'cuboidBottom.R_m';
-    'cuboidBottom.V_m.im' = 'cuboidBottom.Phi.im' * 'cuboidBottom.R_m';
-    'cuboidBottom.B.re' = 'cuboidBottom.Phi.re' * 'cuboidBottom.A' / ('cuboidBottom.A' * 'cuboidBottom.A');
-    'cuboidBottom.B.im' = 'cuboidBottom.Phi.im' * 'cuboidBottom.A' / ('cuboidBottom.A' * 'cuboidBottom.A');
-    'cuboidBottom.H.re' = 'cuboidBottom.B.re' * (1.25663706212e-6 * 'cuboidBottom.mu_r') / (1.25663706212e-6 * 'cuboidBottom.mu_r' * (1.25663706212e-6 * 'cuboidBottom.mu_r'));
-    'cuboidBottom.H.im' = 'cuboidBottom.B.im' * (1.25663706212e-6 * 'cuboidBottom.mu_r') / (1.25663706212e-6 * 'cuboidBottom.mu_r' * (1.25663706212e-6 * 'cuboidBottom.mu_r'));
+    'cuboidBottom.V_m.re' = 'cuboidBottom.Phi.re' * 'cuboidBottom.R_m' - 'cuboidBottom.Phi.im' * 0.0;
+    'cuboidBottom.V_m.im' = 'cuboidBottom.Phi.re' * 0.0 + 'cuboidBottom.Phi.im' * 'cuboidBottom.R_m';
+    'cuboidBottom.B.re' = ('cuboidBottom.Phi.re' * 'cuboidBottom.A' + 'cuboidBottom.Phi.im' * 0.0) / ('cuboidBottom.A' * 'cuboidBottom.A' + 0.0 * 0.0);
+    'cuboidBottom.B.im' = ('cuboidBottom.Phi.im' * 'cuboidBottom.A' - 'cuboidBottom.Phi.re' * 0.0) / ('cuboidBottom.A' * 'cuboidBottom.A' + 0.0 * 0.0);
+    'cuboidBottom.H.re' = ('cuboidBottom.B.re' * (1.25663706212e-6 * 'cuboidBottom.mu_r') + 'cuboidBottom.B.im' * 0.0) / (1.25663706212e-6 * 'cuboidBottom.mu_r' * (1.25663706212e-6 * 'cuboidBottom.mu_r') + 0.0 * 0.0);
+    'cuboidBottom.H.im' = ('cuboidBottom.B.im' * (1.25663706212e-6 * 'cuboidBottom.mu_r') - 'cuboidBottom.B.re' * 0.0) / (1.25663706212e-6 * 'cuboidBottom.mu_r' * (1.25663706212e-6 * 'cuboidBottom.mu_r') + 0.0 * 0.0);
     0.0 = 'cuboidBottom.port_p.Phi.re' + 'cuboidBottom.port_n.Phi.re';
     0.0 = 'cuboidBottom.port_p.Phi.im' + 'cuboidBottom.port_n.Phi.im';
     'cuboidBottom.port_p.reference.gamma' = 'cuboidBottom.port_n.reference.gamma';
@@ -433,12 +328,12 @@ package 'CuboidSections'
     'cuboidTop.G_m' = 1.25663706212e-6 * 'cuboidTop.mu_r' * 'cuboidTop.A' / 0.1;
     'cuboidTop.mu_r' = 100.0;
     'cuboidTop.R_m' = 1.0 / 'cuboidTop.G_m';
-    'cuboidTop.V_m.re' = 'cuboidTop.Phi.re' * 'cuboidTop.R_m';
-    'cuboidTop.V_m.im' = 'cuboidTop.Phi.im' * 'cuboidTop.R_m';
-    'cuboidTop.B.re' = 'cuboidTop.Phi.re' * 'cuboidTop.A' / ('cuboidTop.A' * 'cuboidTop.A');
-    'cuboidTop.B.im' = 'cuboidTop.Phi.im' * 'cuboidTop.A' / ('cuboidTop.A' * 'cuboidTop.A');
-    'cuboidTop.H.re' = 'cuboidTop.B.re' * (1.25663706212e-6 * 'cuboidTop.mu_r') / (1.25663706212e-6 * 'cuboidTop.mu_r' * (1.25663706212e-6 * 'cuboidTop.mu_r'));
-    'cuboidTop.H.im' = 'cuboidTop.B.im' * (1.25663706212e-6 * 'cuboidTop.mu_r') / (1.25663706212e-6 * 'cuboidTop.mu_r' * (1.25663706212e-6 * 'cuboidTop.mu_r'));
+    'cuboidTop.V_m.re' = 'cuboidTop.Phi.re' * 'cuboidTop.R_m' - 'cuboidTop.Phi.im' * 0.0;
+    'cuboidTop.V_m.im' = 'cuboidTop.Phi.re' * 0.0 + 'cuboidTop.Phi.im' * 'cuboidTop.R_m';
+    'cuboidTop.B.re' = ('cuboidTop.Phi.re' * 'cuboidTop.A' + 'cuboidTop.Phi.im' * 0.0) / ('cuboidTop.A' * 'cuboidTop.A' + 0.0 * 0.0);
+    'cuboidTop.B.im' = ('cuboidTop.Phi.im' * 'cuboidTop.A' - 'cuboidTop.Phi.re' * 0.0) / ('cuboidTop.A' * 'cuboidTop.A' + 0.0 * 0.0);
+    'cuboidTop.H.re' = ('cuboidTop.B.re' * (1.25663706212e-6 * 'cuboidTop.mu_r') + 'cuboidTop.B.im' * 0.0) / (1.25663706212e-6 * 'cuboidTop.mu_r' * (1.25663706212e-6 * 'cuboidTop.mu_r') + 0.0 * 0.0);
+    'cuboidTop.H.im' = ('cuboidTop.B.im' * (1.25663706212e-6 * 'cuboidTop.mu_r') - 'cuboidTop.B.re' * 0.0) / (1.25663706212e-6 * 'cuboidTop.mu_r' * (1.25663706212e-6 * 'cuboidTop.mu_r') + 0.0 * 0.0);
     0.0 = 'cuboidTop.port_p.Phi.re' + 'cuboidTop.port_n.Phi.re';
     0.0 = 'cuboidTop.port_p.Phi.im' + 'cuboidTop.port_n.Phi.im';
     'cuboidTop.port_p.reference.gamma' = 'cuboidTop.port_n.reference.gamma';
@@ -451,12 +346,12 @@ package 'CuboidSections'
     'cuboidRight.G_m' = 1.25663706212e-6 * 'cuboidRight.mu_r' * 'cuboidRight.A' / 0.005;
     'cuboidRight.mu_r' = 100.0;
     'cuboidRight.R_m' = 1.0 / 'cuboidRight.G_m';
-    'cuboidRight.V_m.re' = 'cuboidRight.Phi.re' * 'cuboidRight.R_m';
-    'cuboidRight.V_m.im' = 'cuboidRight.Phi.im' * 'cuboidRight.R_m';
-    'cuboidRight.B.re' = 'cuboidRight.Phi.re' * 'cuboidRight.A' / ('cuboidRight.A' * 'cuboidRight.A');
-    'cuboidRight.B.im' = 'cuboidRight.Phi.im' * 'cuboidRight.A' / ('cuboidRight.A' * 'cuboidRight.A');
-    'cuboidRight.H.re' = 'cuboidRight.B.re' * (1.25663706212e-6 * 'cuboidRight.mu_r') / (1.25663706212e-6 * 'cuboidRight.mu_r' * (1.25663706212e-6 * 'cuboidRight.mu_r'));
-    'cuboidRight.H.im' = 'cuboidRight.B.im' * (1.25663706212e-6 * 'cuboidRight.mu_r') / (1.25663706212e-6 * 'cuboidRight.mu_r' * (1.25663706212e-6 * 'cuboidRight.mu_r'));
+    'cuboidRight.V_m.re' = 'cuboidRight.Phi.re' * 'cuboidRight.R_m' - 'cuboidRight.Phi.im' * 0.0;
+    'cuboidRight.V_m.im' = 'cuboidRight.Phi.re' * 0.0 + 'cuboidRight.Phi.im' * 'cuboidRight.R_m';
+    'cuboidRight.B.re' = ('cuboidRight.Phi.re' * 'cuboidRight.A' + 'cuboidRight.Phi.im' * 0.0) / ('cuboidRight.A' * 'cuboidRight.A' + 0.0 * 0.0);
+    'cuboidRight.B.im' = ('cuboidRight.Phi.im' * 'cuboidRight.A' - 'cuboidRight.Phi.re' * 0.0) / ('cuboidRight.A' * 'cuboidRight.A' + 0.0 * 0.0);
+    'cuboidRight.H.re' = ('cuboidRight.B.re' * (1.25663706212e-6 * 'cuboidRight.mu_r') + 'cuboidRight.B.im' * 0.0) / (1.25663706212e-6 * 'cuboidRight.mu_r' * (1.25663706212e-6 * 'cuboidRight.mu_r') + 0.0 * 0.0);
+    'cuboidRight.H.im' = ('cuboidRight.B.im' * (1.25663706212e-6 * 'cuboidRight.mu_r') - 'cuboidRight.B.re' * 0.0) / (1.25663706212e-6 * 'cuboidRight.mu_r' * (1.25663706212e-6 * 'cuboidRight.mu_r') + 0.0 * 0.0);
     0.0 = 'cuboidRight.port_p.Phi.re' + 'cuboidRight.port_n.Phi.re';
     0.0 = 'cuboidRight.port_p.Phi.im' + 'cuboidRight.port_n.Phi.im';
     'cuboidRight.port_p.reference.gamma' = 'cuboidRight.port_n.reference.gamma';
@@ -469,12 +364,12 @@ package 'CuboidSections'
     'cuboidLeft.G_m' = 1.25663706212e-6 * 'cuboidLeft.mu_r' * 'cuboidLeft.A' / 0.005;
     'cuboidLeft.mu_r' = 100.0;
     'cuboidLeft.R_m' = 1.0 / 'cuboidLeft.G_m';
-    'cuboidLeft.V_m.re' = 'cuboidLeft.Phi.re' * 'cuboidLeft.R_m';
-    'cuboidLeft.V_m.im' = 'cuboidLeft.Phi.im' * 'cuboidLeft.R_m';
-    'cuboidLeft.B.re' = 'cuboidLeft.Phi.re' * 'cuboidLeft.A' / ('cuboidLeft.A' * 'cuboidLeft.A');
-    'cuboidLeft.B.im' = 'cuboidLeft.Phi.im' * 'cuboidLeft.A' / ('cuboidLeft.A' * 'cuboidLeft.A');
-    'cuboidLeft.H.re' = 'cuboidLeft.B.re' * (1.25663706212e-6 * 'cuboidLeft.mu_r') / (1.25663706212e-6 * 'cuboidLeft.mu_r' * (1.25663706212e-6 * 'cuboidLeft.mu_r'));
-    'cuboidLeft.H.im' = 'cuboidLeft.B.im' * (1.25663706212e-6 * 'cuboidLeft.mu_r') / (1.25663706212e-6 * 'cuboidLeft.mu_r' * (1.25663706212e-6 * 'cuboidLeft.mu_r'));
+    'cuboidLeft.V_m.re' = 'cuboidLeft.Phi.re' * 'cuboidLeft.R_m' - 'cuboidLeft.Phi.im' * 0.0;
+    'cuboidLeft.V_m.im' = 'cuboidLeft.Phi.re' * 0.0 + 'cuboidLeft.Phi.im' * 'cuboidLeft.R_m';
+    'cuboidLeft.B.re' = ('cuboidLeft.Phi.re' * 'cuboidLeft.A' + 'cuboidLeft.Phi.im' * 0.0) / ('cuboidLeft.A' * 'cuboidLeft.A' + 0.0 * 0.0);
+    'cuboidLeft.B.im' = ('cuboidLeft.Phi.im' * 'cuboidLeft.A' - 'cuboidLeft.Phi.re' * 0.0) / ('cuboidLeft.A' * 'cuboidLeft.A' + 0.0 * 0.0);
+    'cuboidLeft.H.re' = ('cuboidLeft.B.re' * (1.25663706212e-6 * 'cuboidLeft.mu_r') + 'cuboidLeft.B.im' * 0.0) / (1.25663706212e-6 * 'cuboidLeft.mu_r' * (1.25663706212e-6 * 'cuboidLeft.mu_r') + 0.0 * 0.0);
+    'cuboidLeft.H.im' = ('cuboidLeft.B.im' * (1.25663706212e-6 * 'cuboidLeft.mu_r') - 'cuboidLeft.B.re' * 0.0) / (1.25663706212e-6 * 'cuboidLeft.mu_r' * (1.25663706212e-6 * 'cuboidLeft.mu_r') + 0.0 * 0.0);
     0.0 = 'cuboidLeft.port_p.Phi.re' + 'cuboidLeft.port_n.Phi.re';
     0.0 = 'cuboidLeft.port_p.Phi.im' + 'cuboidLeft.port_n.Phi.im';
     'cuboidLeft.port_p.reference.gamma' = 'cuboidLeft.port_n.reference.gamma';
@@ -505,8 +400,8 @@ package 'CuboidSections'
     'idle.Phi.re' = 'idle.port_p.Phi.re';
     'idle.Phi.im' = 'idle.port_p.Phi.im';
     'complexRamp.magnitude' = if time < 0.0 then 0.0 else if time < 1.0 then time * 8e-4 else 8e-4;
-    'complexRamp.y.re' = 'complexRamp.magnitude';
-    'complexRamp.y.im' = 0.0;
+    'complexRamp.y.re' = 'complexRamp.magnitude' * 1.0 - 0.0 * 0.0;
+    'complexRamp.y.im' = 'complexRamp.magnitude' * 0.0 + 0.0 * 1.0;
     annotation(experiment(StopTime = 1, Interval = 0.001));
   end 'CuboidSections';
 end 'CuboidSections';

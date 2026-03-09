@@ -1,110 +1,5 @@
 //! base 0.1.0
 package 'CylinderSections'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexMagneticFieldStrength.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFieldStrength.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFluxDensity.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
-
-  record 'Modelica.Units.SI.ComplexMagneticFieldStrength'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFieldStrength';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
-  record 'Modelica.Units.SI.ComplexMagneticFluxDensity'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFluxDensity';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotential';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
-
   model 'CylinderSections' "Magnetic circuit using different cylinder sections"
     parameter Real 'mu_rConst'(unit = "1", quantity = "RelativePermeability") = 100.0 "Relative permeability";
     Real 'hollowCylinderAxialInner.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
@@ -382,12 +277,12 @@ package 'CylinderSections'
     'hollowCylinderAxialInner.G_m' = 1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r' * 'hollowCylinderAxialInner.A' / 0.01;
     'hollowCylinderAxialInner.mu_r' = 100.0;
     'hollowCylinderAxialInner.R_m' = 1.0 / 'hollowCylinderAxialInner.G_m';
-    'hollowCylinderAxialInner.V_m.re' = 'hollowCylinderAxialInner.Phi.re' * 'hollowCylinderAxialInner.R_m';
-    'hollowCylinderAxialInner.V_m.im' = 'hollowCylinderAxialInner.Phi.im' * 'hollowCylinderAxialInner.R_m';
-    'hollowCylinderAxialInner.B.re' = 'hollowCylinderAxialInner.Phi.re' * 'hollowCylinderAxialInner.A' / ('hollowCylinderAxialInner.A' * 'hollowCylinderAxialInner.A');
-    'hollowCylinderAxialInner.B.im' = 'hollowCylinderAxialInner.Phi.im' * 'hollowCylinderAxialInner.A' / ('hollowCylinderAxialInner.A' * 'hollowCylinderAxialInner.A');
-    'hollowCylinderAxialInner.H.re' = 'hollowCylinderAxialInner.B.re' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r') / (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r'));
-    'hollowCylinderAxialInner.H.im' = 'hollowCylinderAxialInner.B.im' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r') / (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r'));
+    'hollowCylinderAxialInner.V_m.re' = 'hollowCylinderAxialInner.Phi.re' * 'hollowCylinderAxialInner.R_m' - 'hollowCylinderAxialInner.Phi.im' * 0.0;
+    'hollowCylinderAxialInner.V_m.im' = 'hollowCylinderAxialInner.Phi.re' * 0.0 + 'hollowCylinderAxialInner.Phi.im' * 'hollowCylinderAxialInner.R_m';
+    'hollowCylinderAxialInner.B.re' = ('hollowCylinderAxialInner.Phi.re' * 'hollowCylinderAxialInner.A' + 'hollowCylinderAxialInner.Phi.im' * 0.0) / ('hollowCylinderAxialInner.A' * 'hollowCylinderAxialInner.A' + 0.0 * 0.0);
+    'hollowCylinderAxialInner.B.im' = ('hollowCylinderAxialInner.Phi.im' * 'hollowCylinderAxialInner.A' - 'hollowCylinderAxialInner.Phi.re' * 0.0) / ('hollowCylinderAxialInner.A' * 'hollowCylinderAxialInner.A' + 0.0 * 0.0);
+    'hollowCylinderAxialInner.H.re' = ('hollowCylinderAxialInner.B.re' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r') + 'hollowCylinderAxialInner.B.im' * 0.0) / (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r') + 0.0 * 0.0);
+    'hollowCylinderAxialInner.H.im' = ('hollowCylinderAxialInner.B.im' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r') - 'hollowCylinderAxialInner.B.re' * 0.0) / (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialInner.mu_r') + 0.0 * 0.0);
     0.0 = 'hollowCylinderAxialInner.port_p.Phi.re' + 'hollowCylinderAxialInner.port_n.Phi.re';
     0.0 = 'hollowCylinderAxialInner.port_p.Phi.im' + 'hollowCylinderAxialInner.port_n.Phi.im';
     'hollowCylinderAxialInner.port_p.reference.gamma' = 'hollowCylinderAxialInner.port_n.reference.gamma';
@@ -400,12 +295,12 @@ package 'CylinderSections'
     'hollowCylinderRadiaLRight.G_m' = 1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r' * 6.283185307179586 * 0.02 / 1.2992829841302609;
     'hollowCylinderRadiaLRight.mu_r' = 100.0;
     'hollowCylinderRadiaLRight.R_m' = 1.0 / 'hollowCylinderRadiaLRight.G_m';
-    'hollowCylinderRadiaLRight.V_m.re' = 'hollowCylinderRadiaLRight.Phi.re' * 'hollowCylinderRadiaLRight.R_m';
-    'hollowCylinderRadiaLRight.V_m.im' = 'hollowCylinderRadiaLRight.Phi.im' * 'hollowCylinderRadiaLRight.R_m';
-    'hollowCylinderRadiaLRight.B.re' = 'hollowCylinderRadiaLRight.Phi.re' * 'hollowCylinderRadiaLRight.A' / ('hollowCylinderRadiaLRight.A' * 'hollowCylinderRadiaLRight.A');
-    'hollowCylinderRadiaLRight.B.im' = 'hollowCylinderRadiaLRight.Phi.im' * 'hollowCylinderRadiaLRight.A' / ('hollowCylinderRadiaLRight.A' * 'hollowCylinderRadiaLRight.A');
-    'hollowCylinderRadiaLRight.H.re' = 'hollowCylinderRadiaLRight.B.re' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r') / (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r'));
-    'hollowCylinderRadiaLRight.H.im' = 'hollowCylinderRadiaLRight.B.im' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r') / (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r'));
+    'hollowCylinderRadiaLRight.V_m.re' = 'hollowCylinderRadiaLRight.Phi.re' * 'hollowCylinderRadiaLRight.R_m' - 'hollowCylinderRadiaLRight.Phi.im' * 0.0;
+    'hollowCylinderRadiaLRight.V_m.im' = 'hollowCylinderRadiaLRight.Phi.re' * 0.0 + 'hollowCylinderRadiaLRight.Phi.im' * 'hollowCylinderRadiaLRight.R_m';
+    'hollowCylinderRadiaLRight.B.re' = ('hollowCylinderRadiaLRight.Phi.re' * 'hollowCylinderRadiaLRight.A' + 'hollowCylinderRadiaLRight.Phi.im' * 0.0) / ('hollowCylinderRadiaLRight.A' * 'hollowCylinderRadiaLRight.A' + 0.0 * 0.0);
+    'hollowCylinderRadiaLRight.B.im' = ('hollowCylinderRadiaLRight.Phi.im' * 'hollowCylinderRadiaLRight.A' - 'hollowCylinderRadiaLRight.Phi.re' * 0.0) / ('hollowCylinderRadiaLRight.A' * 'hollowCylinderRadiaLRight.A' + 0.0 * 0.0);
+    'hollowCylinderRadiaLRight.H.re' = ('hollowCylinderRadiaLRight.B.re' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r') + 'hollowCylinderRadiaLRight.B.im' * 0.0) / (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r') + 0.0 * 0.0);
+    'hollowCylinderRadiaLRight.H.im' = ('hollowCylinderRadiaLRight.B.im' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r') - 'hollowCylinderRadiaLRight.B.re' * 0.0) / (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadiaLRight.mu_r') + 0.0 * 0.0);
     0.0 = 'hollowCylinderRadiaLRight.port_p.Phi.re' + 'hollowCylinderRadiaLRight.port_n.Phi.re';
     0.0 = 'hollowCylinderRadiaLRight.port_p.Phi.im' + 'hollowCylinderRadiaLRight.port_n.Phi.im';
     'hollowCylinderRadiaLRight.port_p.reference.gamma' = 'hollowCylinderRadiaLRight.port_n.reference.gamma';
@@ -418,12 +313,12 @@ package 'CylinderSections'
     'hollowCylinderRadialLeft.G_m' = 1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r' * 6.283185307179586 * 0.02 / 1.2992829841302609;
     'hollowCylinderRadialLeft.mu_r' = 100.0;
     'hollowCylinderRadialLeft.R_m' = 1.0 / 'hollowCylinderRadialLeft.G_m';
-    'hollowCylinderRadialLeft.V_m.re' = 'hollowCylinderRadialLeft.Phi.re' * 'hollowCylinderRadialLeft.R_m';
-    'hollowCylinderRadialLeft.V_m.im' = 'hollowCylinderRadialLeft.Phi.im' * 'hollowCylinderRadialLeft.R_m';
-    'hollowCylinderRadialLeft.B.re' = 'hollowCylinderRadialLeft.Phi.re' * 'hollowCylinderRadialLeft.A' / ('hollowCylinderRadialLeft.A' * 'hollowCylinderRadialLeft.A');
-    'hollowCylinderRadialLeft.B.im' = 'hollowCylinderRadialLeft.Phi.im' * 'hollowCylinderRadialLeft.A' / ('hollowCylinderRadialLeft.A' * 'hollowCylinderRadialLeft.A');
-    'hollowCylinderRadialLeft.H.re' = 'hollowCylinderRadialLeft.B.re' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r') / (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r'));
-    'hollowCylinderRadialLeft.H.im' = 'hollowCylinderRadialLeft.B.im' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r') / (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r'));
+    'hollowCylinderRadialLeft.V_m.re' = 'hollowCylinderRadialLeft.Phi.re' * 'hollowCylinderRadialLeft.R_m' - 'hollowCylinderRadialLeft.Phi.im' * 0.0;
+    'hollowCylinderRadialLeft.V_m.im' = 'hollowCylinderRadialLeft.Phi.re' * 0.0 + 'hollowCylinderRadialLeft.Phi.im' * 'hollowCylinderRadialLeft.R_m';
+    'hollowCylinderRadialLeft.B.re' = ('hollowCylinderRadialLeft.Phi.re' * 'hollowCylinderRadialLeft.A' + 'hollowCylinderRadialLeft.Phi.im' * 0.0) / ('hollowCylinderRadialLeft.A' * 'hollowCylinderRadialLeft.A' + 0.0 * 0.0);
+    'hollowCylinderRadialLeft.B.im' = ('hollowCylinderRadialLeft.Phi.im' * 'hollowCylinderRadialLeft.A' - 'hollowCylinderRadialLeft.Phi.re' * 0.0) / ('hollowCylinderRadialLeft.A' * 'hollowCylinderRadialLeft.A' + 0.0 * 0.0);
+    'hollowCylinderRadialLeft.H.re' = ('hollowCylinderRadialLeft.B.re' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r') + 'hollowCylinderRadialLeft.B.im' * 0.0) / (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r') + 0.0 * 0.0);
+    'hollowCylinderRadialLeft.H.im' = ('hollowCylinderRadialLeft.B.im' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r') - 'hollowCylinderRadialLeft.B.re' * 0.0) / (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r' * (1.25663706212e-6 * 'hollowCylinderRadialLeft.mu_r') + 0.0 * 0.0);
     0.0 = 'hollowCylinderRadialLeft.port_p.Phi.re' + 'hollowCylinderRadialLeft.port_n.Phi.re';
     0.0 = 'hollowCylinderRadialLeft.port_p.Phi.im' + 'hollowCylinderRadialLeft.port_n.Phi.im';
     'hollowCylinderRadialLeft.port_p.reference.gamma' = 'hollowCylinderRadialLeft.port_n.reference.gamma';
@@ -436,12 +331,12 @@ package 'CylinderSections'
     'hollowCylinderAxialOuter.G_m' = 1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r' * 'hollowCylinderAxialOuter.A' / 0.01;
     'hollowCylinderAxialOuter.mu_r' = 100.0;
     'hollowCylinderAxialOuter.R_m' = 1.0 / 'hollowCylinderAxialOuter.G_m';
-    'hollowCylinderAxialOuter.V_m.re' = 'hollowCylinderAxialOuter.Phi.re' * 'hollowCylinderAxialOuter.R_m';
-    'hollowCylinderAxialOuter.V_m.im' = 'hollowCylinderAxialOuter.Phi.im' * 'hollowCylinderAxialOuter.R_m';
-    'hollowCylinderAxialOuter.B.re' = 'hollowCylinderAxialOuter.Phi.re' * 'hollowCylinderAxialOuter.A' / ('hollowCylinderAxialOuter.A' * 'hollowCylinderAxialOuter.A');
-    'hollowCylinderAxialOuter.B.im' = 'hollowCylinderAxialOuter.Phi.im' * 'hollowCylinderAxialOuter.A' / ('hollowCylinderAxialOuter.A' * 'hollowCylinderAxialOuter.A');
-    'hollowCylinderAxialOuter.H.re' = 'hollowCylinderAxialOuter.B.re' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r') / (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r'));
-    'hollowCylinderAxialOuter.H.im' = 'hollowCylinderAxialOuter.B.im' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r') / (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r'));
+    'hollowCylinderAxialOuter.V_m.re' = 'hollowCylinderAxialOuter.Phi.re' * 'hollowCylinderAxialOuter.R_m' - 'hollowCylinderAxialOuter.Phi.im' * 0.0;
+    'hollowCylinderAxialOuter.V_m.im' = 'hollowCylinderAxialOuter.Phi.re' * 0.0 + 'hollowCylinderAxialOuter.Phi.im' * 'hollowCylinderAxialOuter.R_m';
+    'hollowCylinderAxialOuter.B.re' = ('hollowCylinderAxialOuter.Phi.re' * 'hollowCylinderAxialOuter.A' + 'hollowCylinderAxialOuter.Phi.im' * 0.0) / ('hollowCylinderAxialOuter.A' * 'hollowCylinderAxialOuter.A' + 0.0 * 0.0);
+    'hollowCylinderAxialOuter.B.im' = ('hollowCylinderAxialOuter.Phi.im' * 'hollowCylinderAxialOuter.A' - 'hollowCylinderAxialOuter.Phi.re' * 0.0) / ('hollowCylinderAxialOuter.A' * 'hollowCylinderAxialOuter.A' + 0.0 * 0.0);
+    'hollowCylinderAxialOuter.H.re' = ('hollowCylinderAxialOuter.B.re' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r') + 'hollowCylinderAxialOuter.B.im' * 0.0) / (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r') + 0.0 * 0.0);
+    'hollowCylinderAxialOuter.H.im' = ('hollowCylinderAxialOuter.B.im' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r') - 'hollowCylinderAxialOuter.B.re' * 0.0) / (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r' * (1.25663706212e-6 * 'hollowCylinderAxialOuter.mu_r') + 0.0 * 0.0);
     0.0 = 'hollowCylinderAxialOuter.port_p.Phi.re' + 'hollowCylinderAxialOuter.port_n.Phi.re';
     0.0 = 'hollowCylinderAxialOuter.port_p.Phi.im' + 'hollowCylinderAxialOuter.port_n.Phi.im';
     'hollowCylinderAxialOuter.port_p.reference.gamma' = 'hollowCylinderAxialOuter.port_n.reference.gamma';
@@ -473,8 +368,8 @@ package 'CylinderSections'
     'crossing.port_n1.Phi.re' + 'crossing.port_n2.Phi.re' = 0.0;
     'crossing.port_n1.Phi.im' + 'crossing.port_n2.Phi.im' = 0.0;
     'complexRamp.magnitude' = if time < 0.0 then 0.0 else if time < 1.0 then time * 8e-4 else 8e-4;
-    'complexRamp.y.re' = 'complexRamp.magnitude';
-    'complexRamp.y.im' = 0.0;
+    'complexRamp.y.re' = 'complexRamp.magnitude' * 1.0 - 0.0 * 0.0;
+    'complexRamp.y.im' = 'complexRamp.magnitude' * 0.0 + 0.0 * 1.0;
     annotation(experiment(StopTime = 1, Interval = 0.001));
   end 'CylinderSections';
 end 'CylinderSections';

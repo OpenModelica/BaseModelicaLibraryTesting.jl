@@ -1,35 +1,5 @@
 //! base 0.1.0
 package 'Rectifier'
-  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
-    input Real[:] 'x';
-    output Real[2] 'y';
-    output Real 'y0';
-    Integer 'm' = size('x', 1);
-    Real['m'] 'phi'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
-    Real[2, 'm'] 'TransformationMatrix' = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
-  algorithm
-    'y' := 'TransformationMatrix' * 'x';
-    'y0' := 1.0 / 'm' * sum('x');
-    annotation(Inline = true);
-  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor';
-
-  function 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation' "Orientations of the resulting fundamental wave field phasors"
-    input Integer 'm';
-    output Real['m'] 'orientation'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm'));
-  algorithm
-    if mod('m', 2) == 0 then
-      if 'm' == 2 then
-        'orientation'[1] := 0.0;
-        'orientation'[2] := 1.5707963267948966;
-      elseif true then
-        'orientation'[1:integer('m' / 2.0)] := 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'(integer('m' / 2.0));
-        'orientation'[integer('m' / 2.0) + 1:'m'] := 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'(integer('m' / 2.0)) - fill(3.141592653589793 / 'm', integer('m' / 2.0));
-      end if;
-    elseif true then
-      'orientation' := {('k' - 1) * 2 * 3.141592653589793 / 'm' for 'k' in 1:'m'};
-    end if;
-  end 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation';
-
   model 'Rectifier' "Test example with polyphase components"
     parameter Integer 'm' = 3 "Number of phases" annotation(Evaluate = true);
     parameter Real 'V'(unit = "V", quantity = "ElectricPotential") = 100.0 "RMS of Star-Voltage";
@@ -1085,17 +1055,17 @@ package 'Rectifier'
     'reactivePowerSensor.powerSensor3.nc.i' + 'reactivePowerSensor.plugToPins_n.pin_n[3].i' = 0.0;
     'reactivePowerSensor.powerSensor3.voltageSensor.n.i' - 'reactivePowerSensor.powerSensor3.nv.i' = 0.0;
     'reactivePowerSensor.powerSensor3.currentSensor.n.i' - 'reactivePowerSensor.powerSensor3.nc.i' = 0.0;
-    'sineVoltage.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(314.1592653589793 * time);
+    'sineVoltage.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(314.1592653589793 * time);
     'sineVoltage.sineVoltage[1].v' = 'sineVoltage.sineVoltage[1].signalSource.y';
     0.0 = 'sineVoltage.sineVoltage[1].p.i' + 'sineVoltage.sineVoltage[1].n.i';
     'sineVoltage.sineVoltage[1].i' = 'sineVoltage.sineVoltage[1].p.i';
     'sineVoltage.sineVoltage[1].v' = 'sineVoltage.sineVoltage[1].p.v' - 'sineVoltage.sineVoltage[1].n.v';
-    'sineVoltage.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(314.1592653589793 * time - 2.0943951023931953);
+    'sineVoltage.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(314.1592653589793 * time - 2.0943951023931953);
     'sineVoltage.sineVoltage[2].v' = 'sineVoltage.sineVoltage[2].signalSource.y';
     0.0 = 'sineVoltage.sineVoltage[2].p.i' + 'sineVoltage.sineVoltage[2].n.i';
     'sineVoltage.sineVoltage[2].i' = 'sineVoltage.sineVoltage[2].p.i';
     'sineVoltage.sineVoltage[2].v' = 'sineVoltage.sineVoltage[2].p.v' - 'sineVoltage.sineVoltage[2].n.v';
-    'sineVoltage.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(314.1592653589793 * time - 4.1887902047863905);
+    'sineVoltage.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(314.1592653589793 * time - 4.1887902047863905);
     'sineVoltage.sineVoltage[3].v' = 'sineVoltage.sineVoltage[3].signalSource.y';
     0.0 = 'sineVoltage.sineVoltage[3].p.i' + 'sineVoltage.sineVoltage[3].n.i';
     'sineVoltage.sineVoltage[3].i' = 'sineVoltage.sineVoltage[3].p.i';

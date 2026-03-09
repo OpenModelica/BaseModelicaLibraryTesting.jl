@@ -1,35 +1,5 @@
 //! base 0.1.0
 package 'Dimmer_RL'
-  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    input Real 'der_u';
-    output Real 'der_y';
-  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMax';
-  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMin';
-  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
-
   type 'Modelica.Blocks.Types.LimiterHomotopy' = enumeration('NoHomotopy', 'Linear', 'UpperLimit', 'LowerLimit');
 
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
@@ -911,7 +881,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'loadResistor.p.i' + 'multiSensor.nc.i' = 0.0;
     'loadInductor.p.i' + 'loadResistor.n.i' = 0.0;
     'loadInductor.n.i' + 'multiSensor.nv.i' + 'voltageSensor.n.i' + 'ground.p.i' + 'sineVoltage.n.i' = 0.0;
-    'sineVoltage.signalSource.y' = if time < 0.0 then 0.0 else 155.56349186104046 * sin(314.1592653589793 * time);
+    'sineVoltage.signalSource.y' = if time < 0.0 then 0.0 else 155.56349186104046 * 'Modelica.Math.sin'(314.1592653589793 * time);
     'sineVoltage.v' = 'sineVoltage.signalSource.y';
     0.0 = 'sineVoltage.p.i' + 'sineVoltage.n.i';
     'sineVoltage.i' = 'sineVoltage.p.i';
@@ -1003,8 +973,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
 
     'vRMS.mean.y' = 'vRMS.mean.y_last';
     'vRMS.sqrt1.y' = sqrt('vRMS.sqrt1.u');
-    'vH01.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * cos(314.1592653589793 * time);
-    'vH01.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * sin(314.1592653589793 * time);
+    'vH01.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.cos'(314.1592653589793 * time);
+    'vH01.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.sin'(314.1592653589793 * time);
     'vH01.product1.y' = 'vH01.product1.u[1]' * 'vH01.product1.u[2]';
     'vH01.product2.y' = 'vH01.product2.u[1]' * 'vH01.product2.u[2]';
     der('vH01.mean1.x') = 'vH01.mean1.u';
@@ -1036,8 +1006,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
 
     'iRMS.mean.y' = 'iRMS.mean.y_last';
     'iRMS.sqrt1.y' = sqrt('iRMS.sqrt1.u');
-    'iH01.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * cos(314.1592653589793 * time);
-    'iH01.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * sin(314.1592653589793 * time);
+    'iH01.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.cos'(314.1592653589793 * time);
+    'iH01.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.sin'(314.1592653589793 * time);
     'iH01.product1.y' = 'iH01.product1.u[1]' * 'iH01.product1.u[2]';
     'iH01.product2.y' = 'iH01.product2.u[1]' * 'iH01.product2.u[2]';
     der('iH01.mean1.x') = 'iH01.mean1.u';

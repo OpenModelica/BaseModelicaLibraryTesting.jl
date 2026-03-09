@@ -490,8 +490,8 @@ package 'LogicalSample'
     'sample_disjunctive.u' = 'sine_angle_input.y';
     'sample_disjunctive.u' = 'sample_conjunctive.u';
     'sample_disjunctive.u' = 'rotational_clock_1.angle';
-    'sine_angle_input.y' = if time < 0.0 then 0.0 else 10.0 * sin(6.283185307179586 * time);
-    'cosine_angle_input.y' = if time < 0.0 then 0.0 else 10.0 * cos(6.283185307179586 * time);
+    'sine_angle_input.y' = if time < 0.0 then 0.0 else 10.0 * 'Modelica.Math.sin'(6.283185307179586 * time);
+    'cosine_angle_input.y' = if time < 0.0 then 0.0 else 10.0 * 'Modelica.Math.cos'(6.283185307179586 * time);
 
     when time >= (pre('trigger_interval_input.count') + 1) then
       'trigger_interval_input.count' = pre('trigger_interval_input.count') + 1;
@@ -533,7 +533,7 @@ package 'LogicalSample'
     end if;
 
     'rotational_clock_2.update_direction.y' = sample('rotational_clock_2.update_direction.u', 'rotational_clock_2.update_direction.clock');
-    'conjunctiveClock.combinator.y' = min({'conjunctiveClock.combinator.u[1]', 'conjunctiveClock.combinator.u[2]'});
+    'conjunctiveClock.combinator.y' = size('conjunctiveClock.combinator.u', 1) == 0 or min('conjunctiveClock.combinator.u');
     'conjunctiveClock.clock.y' = Clock('conjunctiveClock.clock.u', 0.0);
     'conjunctiveClock.input_ticked[1].input_sample.y' = sample('conjunctiveClock.input_ticked[1].input_sample.u', 'conjunctiveClock.input_ticked[1].input_sample.clock');
     'conjunctiveClock.input_ticked[1].input_tick.y' = not 'conjunctiveClock.input_ticked[1].input_tick.u';
@@ -561,7 +561,7 @@ package 'LogicalSample'
     'conjunctiveClock.reset_ticked.input_ticked.y' = change('conjunctiveClock.reset_ticked.input_ticked.u');
     'conjunctiveClock.splitter.y[1]' = 'conjunctiveClock.splitter.u';
     'conjunctiveClock.splitter.y[2]' = 'conjunctiveClock.splitter.u';
-    'disjunctiveClock.combinator.y' = max({'disjunctiveClock.combinator.u[1]', 'disjunctiveClock.combinator.u[2]'});
+    'disjunctiveClock.combinator.y' = size('disjunctiveClock.combinator.u', 1) > 0 and max('disjunctiveClock.combinator.u');
     'disjunctiveClock.clock.y' = Clock('disjunctiveClock.clock.u', 0.0);
     'disjunctiveClock.input_ticked[1].input_sample.y' = sample('disjunctiveClock.input_ticked[1].input_sample.u', 'disjunctiveClock.input_ticked[1].input_sample.clock');
     'disjunctiveClock.input_ticked[1].input_tick.y' = not 'disjunctiveClock.input_ticked[1].input_tick.u';

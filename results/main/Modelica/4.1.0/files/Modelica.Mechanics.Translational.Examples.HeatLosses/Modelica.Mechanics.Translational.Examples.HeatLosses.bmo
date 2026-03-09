@@ -1,23 +1,5 @@
 //! base 0.1.0
 package 'HeatLosses'
-  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    input Real 'der_u';
-    output Real 'der_y';
-  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
-
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   class 'Modelica.Blocks.Types.ExternalCombiTable1D'
@@ -404,7 +386,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'force.flange.f' = -'force.f';
     'force.s' = 'force.flange.s' - 'force.s_support';
     'force.s_support' = 0.0;
-    'sine1.y' = if time < 0.0 then 0.0 else 20.0 * sin(6.283185307179586 * time);
+    'sine1.y' = if time < 0.0 then 0.0 else 20.0 * 'Modelica.Math.sin'(6.283185307179586 * time);
     'mass2.v' = der('mass2.s');
     'mass2.a' = der('mass2.v');
     'mass2.a' = 'mass2.flange_a.f' + 'mass2.flange_b.f';
@@ -465,7 +447,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'brake.s_a' = 'brake.flange_a.s' - 'brake.s_support';
     'brake.s_b' = 'brake.flange_b.s' - 'brake.s_support';
     'brake.s_support' = 0.0;
-    'sine2.y' = if time < 0.0 then 0.0 else 10.0 * sin(12.566370614359172 * time);
+    'sine2.y' = if time < 0.0 then 0.0 else 10.0 * 'Modelica.Math.sin'(12.566370614359172 * time);
     'massWithStopAndFriction.f0' = 3.0;
     'massWithStopAndFriction.f0_max' = 'massWithStopAndFriction.f0' * 1.001;
     'massWithStopAndFriction.free' = false;
@@ -474,7 +456,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'massWithStopAndFriction.v_relfric' = 'massWithStopAndFriction.v';
     'massWithStopAndFriction.a_relfric' = 'massWithStopAndFriction.a';
     0.0 = 'massWithStopAndFriction.flange_a.f' + 'massWithStopAndFriction.flange_b.f' - 'massWithStopAndFriction.f' - der('massWithStopAndFriction.v');
-    'massWithStopAndFriction.f' = if 'massWithStopAndFriction.locked' then 'massWithStopAndFriction.sa' else if 'massWithStopAndFriction.free' then 0.0 else if 'massWithStopAndFriction.startForward' then 0.5 * 'massWithStopAndFriction.v' + 1.0 + 2.0 else if 'massWithStopAndFriction.startBackward' then 0.5 * 'massWithStopAndFriction.v' - 1.0 - 2.0 else if pre('massWithStopAndFriction.mode') == 1 then 0.5 * 'massWithStopAndFriction.v' + 1.0 + 2.0 * exp(-2.0 * abs('massWithStopAndFriction.v')) else 0.5 * 'massWithStopAndFriction.v' - 1.0 - 2.0 * exp(-2.0 * abs('massWithStopAndFriction.v'));
+    'massWithStopAndFriction.f' = if 'massWithStopAndFriction.locked' then 'massWithStopAndFriction.sa' else if 'massWithStopAndFriction.free' then 0.0 else if 'massWithStopAndFriction.startForward' then 0.5 * 'massWithStopAndFriction.v' + 1.0 + 2.0 else if 'massWithStopAndFriction.startBackward' then 0.5 * 'massWithStopAndFriction.v' - 1.0 - 2.0 else if pre('massWithStopAndFriction.mode') == 1 then 0.5 * 'massWithStopAndFriction.v' + 1.0 + 2.0 * 'Modelica.Math.exp'(-2.0 * abs('massWithStopAndFriction.v')) else 0.5 * 'massWithStopAndFriction.v' - 1.0 - 2.0 * 'Modelica.Math.exp'(-2.0 * abs('massWithStopAndFriction.v'));
     'massWithStopAndFriction.lossPower' = 'massWithStopAndFriction.f' * 'massWithStopAndFriction.v_relfric';
 
     when initial() then

@@ -1,134 +1,5 @@
 //! base 0.1.0
 package 'PrismaticConstraint'
-  function 'Modelica.Mechanics.MultiBody.Frames.axesRotationsAngles' "Return the 3 angles to rotate in sequence around 3 axes to construct the given orientation object"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Integer[3] 'sequence'(max = {3, 3, 3}, min = {1, 1, 1}) = {1, 2, 3};
-    input Real 'guessAngle1'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real[3] 'angles'(displayUnit = {"deg", "deg", "deg"}, unit = {"rad", "rad", "rad"}, quantity = {"Angle", "Angle", "Angle"});
-    Real[3] 'e1_1'(each unit = "1");
-    Real[3] 'e2_1a'(each unit = "1");
-    Real[3] 'e3_1'(each unit = "1");
-    Real[3] 'e3_2'(each unit = "1");
-    Real 'A';
-    Real 'B';
-    Real 'angle_1a'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    Real 'angle_1b'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    Real[3, 3] 'T_1a';
-  algorithm
-    assert('sequence'[1] <> 'sequence'[2] and 'sequence'[2] <> 'sequence'[3], "input argument 'sequence[1:3]' is not valid", AssertionLevel.error);
-    'e1_1' := if 'sequence'[1] == 1 then {1.0, 0.0, 0.0} else if 'sequence'[1] == 2 then {0.0, 1.0, 0.0} else {0.0, 0.0, 1.0};
-    'e2_1a' := if 'sequence'[2] == 1 then {1.0, 0.0, 0.0} else if 'sequence'[2] == 2 then {0.0, 1.0, 0.0} else {0.0, 0.0, 1.0};
-    'e3_1' := 'R'.'T'['sequence'[3],:];
-    'e3_2' := if 'sequence'[3] == 1 then {1.0, 0.0, 0.0} else if 'sequence'[3] == 2 then {0.0, 1.0, 0.0} else {0.0, 0.0, 1.0};
-    'A' := 'e2_1a'[1] * 'e3_1'[1] + 'e2_1a'[2] * 'e3_1'[2] + 'e2_1a'[3] * 'e3_1'[3];
-    'B' := ('e1_1'[2] * 'e2_1a'[3] - 'e1_1'[3] * 'e2_1a'[2]) * 'e3_1'[1] + ('e1_1'[3] * 'e2_1a'[1] - 'e1_1'[1] * 'e2_1a'[3]) * 'e3_1'[2] + ('e1_1'[1] * 'e2_1a'[2] - 'e1_1'[2] * 'e2_1a'[1]) * 'e3_1'[3];
-
-    if abs('A') <= 1e-12 and abs('B') <= 1e-12 then
-      'angles'[1] := 'guessAngle1';
-    elseif true then
-      'angle_1a' := atan2('A', -'B');
-      'angle_1b' := atan2(-'A', 'B');
-      'angles'[1] := if abs('angle_1a' - 'guessAngle1') <= abs('angle_1b' - 'guessAngle1') then 'angle_1a' else 'angle_1b';
-    end if;
-
-    'T_1a' := promote('e1_1', 2) * transpose(promote('e1_1', 2)) + ({{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}} - promote('e1_1', 2) * transpose(promote('e1_1', 2))) .* cos('angles'[1]) - {{0.0, (-'e1_1'[3]) * sin('angles'[1]), 'e1_1'[2] * sin('angles'[1])}, {'e1_1'[3] * sin('angles'[1]), 0.0, (-'e1_1'[1]) * sin('angles'[1])}, {(-'e1_1'[2]) * sin('angles'[1]), 'e1_1'[1] * sin('angles'[1]), 0.0}};
-    'angles'[2] := atan2(-(('e2_1a'[2] * ('T_1a'[3,1] * 'e3_1'[1] + 'T_1a'[3,2] * 'e3_1'[2] + 'T_1a'[3,3] * 'e3_1'[3]) - 'e2_1a'[3] * ('T_1a'[2,1] * 'e3_1'[1] + 'T_1a'[2,2] * 'e3_1'[2] + 'T_1a'[2,3] * 'e3_1'[3])) * 'e3_2'[1] + ('e2_1a'[3] * ('T_1a'[1,1] * 'e3_1'[1] + 'T_1a'[1,2] * 'e3_1'[2] + 'T_1a'[1,3] * 'e3_1'[3]) - 'e2_1a'[1] * ('T_1a'[3,1] * 'e3_1'[1] + 'T_1a'[3,2] * 'e3_1'[2] + 'T_1a'[3,3] * 'e3_1'[3])) * 'e3_2'[2] + ('e2_1a'[1] * ('T_1a'[2,1] * 'e3_1'[1] + 'T_1a'[2,2] * 'e3_1'[2] + 'T_1a'[2,3] * 'e3_1'[3]) - 'e2_1a'[2] * ('T_1a'[1,1] * 'e3_1'[1] + 'T_1a'[1,2] * 'e3_1'[2] + 'T_1a'[1,3] * 'e3_1'[3])) * 'e3_2'[3]), ('T_1a'[1,1] * 'e3_1'[1] + 'T_1a'[1,2] * 'e3_1'[2] + 'T_1a'[1,3] * 'e3_1'[3]) * 'e3_2'[1] + ('T_1a'[2,1] * 'e3_1'[1] + 'T_1a'[2,2] * 'e3_1'[2] + 'T_1a'[2,3] * 'e3_1'[3]) * 'e3_2'[2] + ('T_1a'[3,1] * 'e3_1'[1] + 'T_1a'[3,2] * 'e3_1'[2] + 'T_1a'[3,3] * 'e3_1'[3]) * 'e3_2'[3] - ('e2_1a'[1] * ('T_1a'[1,1] * 'e3_1'[1] + 'T_1a'[1,2] * 'e3_1'[2] + 'T_1a'[1,3] * 'e3_1'[3]) + 'e2_1a'[2] * ('T_1a'[2,1] * 'e3_1'[1] + 'T_1a'[2,2] * 'e3_1'[2] + 'T_1a'[2,3] * 'e3_1'[3]) + 'e2_1a'[3] * ('T_1a'[3,1] * 'e3_1'[1] + 'T_1a'[3,2] * 'e3_1'[2] + 'T_1a'[3,3] * 'e3_1'[3])) * ('e2_1a'[1] * 'e3_2'[1] + 'e2_1a'[2] * 'e3_2'[2] + 'e2_1a'[3] * 'e3_2'[3]));
-    'angles'[3] := atan2(-(('e3_2'[2] * 'e2_1a'[3] - 'e3_2'[3] * 'e2_1a'[2]) * ('R'.'T'[1,1] * ('T_1a'[1,1] * 'e2_1a'[1] + 'T_1a'[2,1] * 'e2_1a'[2] + 'T_1a'[3,1] * 'e2_1a'[3]) + 'R'.'T'[1,2] * ('T_1a'[1,2] * 'e2_1a'[1] + 'T_1a'[2,2] * 'e2_1a'[2] + 'T_1a'[3,2] * 'e2_1a'[3]) + 'R'.'T'[1,3] * ('T_1a'[1,3] * 'e2_1a'[1] + 'T_1a'[2,3] * 'e2_1a'[2] + 'T_1a'[3,3] * 'e2_1a'[3])) + ('e3_2'[3] * 'e2_1a'[1] - 'e3_2'[1] * 'e2_1a'[3]) * ('R'.'T'[2,1] * ('T_1a'[1,1] * 'e2_1a'[1] + 'T_1a'[2,1] * 'e2_1a'[2] + 'T_1a'[3,1] * 'e2_1a'[3]) + 'R'.'T'[2,2] * ('T_1a'[1,2] * 'e2_1a'[1] + 'T_1a'[2,2] * 'e2_1a'[2] + 'T_1a'[3,2] * 'e2_1a'[3]) + 'R'.'T'[2,3] * ('T_1a'[1,3] * 'e2_1a'[1] + 'T_1a'[2,3] * 'e2_1a'[2] + 'T_1a'[3,3] * 'e2_1a'[3])) + ('e3_2'[1] * 'e2_1a'[2] - 'e3_2'[2] * 'e2_1a'[1]) * ('R'.'T'[3,1] * ('T_1a'[1,1] * 'e2_1a'[1] + 'T_1a'[2,1] * 'e2_1a'[2] + 'T_1a'[3,1] * 'e2_1a'[3]) + 'R'.'T'[3,2] * ('T_1a'[1,2] * 'e2_1a'[1] + 'T_1a'[2,2] * 'e2_1a'[2] + 'T_1a'[3,2] * 'e2_1a'[3]) + 'R'.'T'[3,3] * ('T_1a'[1,3] * 'e2_1a'[1] + 'T_1a'[2,3] * 'e2_1a'[2] + 'T_1a'[3,3] * 'e2_1a'[3]))), 'e2_1a'[1] * ('R'.'T'[1,1] * ('T_1a'[1,1] * 'e2_1a'[1] + 'T_1a'[2,1] * 'e2_1a'[2] + 'T_1a'[3,1] * 'e2_1a'[3]) + 'R'.'T'[1,2] * ('T_1a'[1,2] * 'e2_1a'[1] + 'T_1a'[2,2] * 'e2_1a'[2] + 'T_1a'[3,2] * 'e2_1a'[3]) + 'R'.'T'[1,3] * ('T_1a'[1,3] * 'e2_1a'[1] + 'T_1a'[2,3] * 'e2_1a'[2] + 'T_1a'[3,3] * 'e2_1a'[3])) + 'e2_1a'[2] * ('R'.'T'[2,1] * ('T_1a'[1,1] * 'e2_1a'[1] + 'T_1a'[2,1] * 'e2_1a'[2] + 'T_1a'[3,1] * 'e2_1a'[3]) + 'R'.'T'[2,2] * ('T_1a'[1,2] * 'e2_1a'[1] + 'T_1a'[2,2] * 'e2_1a'[2] + 'T_1a'[3,2] * 'e2_1a'[3]) + 'R'.'T'[2,3] * ('T_1a'[1,3] * 'e2_1a'[1] + 'T_1a'[2,3] * 'e2_1a'[2] + 'T_1a'[3,3] * 'e2_1a'[3])) + 'e2_1a'[3] * ('R'.'T'[3,1] * ('T_1a'[1,1] * 'e2_1a'[1] + 'T_1a'[2,1] * 'e2_1a'[2] + 'T_1a'[3,1] * 'e2_1a'[3]) + 'R'.'T'[3,2] * ('T_1a'[1,2] * 'e2_1a'[1] + 'T_1a'[2,2] * 'e2_1a'[2] + 'T_1a'[3,2] * 'e2_1a'[3]) + 'R'.'T'[3,3] * ('T_1a'[1,3] * 'e2_1a'[1] + 'T_1a'[2,3] * 'e2_1a'[2] + 'T_1a'[3,3] * 'e2_1a'[3])) - ('e3_2'[1] * 'e2_1a'[1] + 'e3_2'[2] * 'e2_1a'[2] + 'e3_2'[3] * 'e2_1a'[3]) * ('e3_2'[1] * ('R'.'T'[1,1] * ('T_1a'[1,1] * 'e2_1a'[1] + 'T_1a'[2,1] * 'e2_1a'[2] + 'T_1a'[3,1] * 'e2_1a'[3]) + 'R'.'T'[1,2] * ('T_1a'[1,2] * 'e2_1a'[1] + 'T_1a'[2,2] * 'e2_1a'[2] + 'T_1a'[3,2] * 'e2_1a'[3]) + 'R'.'T'[1,3] * ('T_1a'[1,3] * 'e2_1a'[1] + 'T_1a'[2,3] * 'e2_1a'[2] + 'T_1a'[3,3] * 'e2_1a'[3])) + 'e3_2'[2] * ('R'.'T'[2,1] * ('T_1a'[1,1] * 'e2_1a'[1] + 'T_1a'[2,1] * 'e2_1a'[2] + 'T_1a'[3,1] * 'e2_1a'[3]) + 'R'.'T'[2,2] * ('T_1a'[1,2] * 'e2_1a'[1] + 'T_1a'[2,2] * 'e2_1a'[2] + 'T_1a'[3,2] * 'e2_1a'[3]) + 'R'.'T'[2,3] * ('T_1a'[1,3] * 'e2_1a'[1] + 'T_1a'[2,3] * 'e2_1a'[2] + 'T_1a'[3,3] * 'e2_1a'[3])) + 'e3_2'[3] * ('R'.'T'[3,1] * ('T_1a'[1,1] * 'e2_1a'[1] + 'T_1a'[2,1] * 'e2_1a'[2] + 'T_1a'[3,1] * 'e2_1a'[3]) + 'R'.'T'[3,2] * ('T_1a'[1,2] * 'e2_1a'[1] + 'T_1a'[2,2] * 'e2_1a'[2] + 'T_1a'[3,2] * 'e2_1a'[3]) + 'R'.'T'[3,3] * ('T_1a'[1,3] * 'e2_1a'[1] + 'T_1a'[2,3] * 'e2_1a'[2] + 'T_1a'[3,3] * 'e2_1a'[3]))));
-  end 'Modelica.Mechanics.MultiBody.Frames.axesRotationsAngles';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.resolve1' "Transform vector from frame 2 to frame 1"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v2';
-    output Real[3] 'v1';
-  algorithm
-    'v1' := {'R'.'T'[1,1] * 'v2'[1] + 'R'.'T'[2,1] * 'v2'[2] + 'R'.'T'[3,1] * 'v2'[3], 'R'.'T'[1,2] * 'v2'[1] + 'R'.'T'[2,2] * 'v2'[2] + 'R'.'T'[3,2] * 'v2'[3], 'R'.'T'[1,3] * 'v2'[1] + 'R'.'T'[2,3] * 'v2'[2] + 'R'.'T'[3,3] * 'v2'[3]};
-    annotation(derivative(order = 1, noDerivative = 'R') = 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.resolve1';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.resolve2' "Transform vector from frame 1 to frame 2"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v1';
-    output Real[3] 'v2';
-  algorithm
-    'v2' := {'R'.'T'[1,1] * 'v1'[1] + 'R'.'T'[1,2] * 'v1'[2] + 'R'.'T'[1,3] * 'v1'[3], 'R'.'T'[2,1] * 'v1'[1] + 'R'.'T'[2,2] * 'v1'[2] + 'R'.'T'[2,3] * 'v1'[3], 'R'.'T'[3,1] * 'v1'[1] + 'R'.'T'[3,2] * 'v1'[2] + 'R'.'T'[3,3] * 'v1'[3]};
-    annotation(derivative(order = 1, noDerivative = 'R') = 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve2_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.resolve2';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent' "Maximum of the input arguments, without event and function can be differentiated"
-    input Real 'u1';
-    input Real 'u2';
-    output Real 'y';
-  algorithm
-    'y' := if 'u1' > 'u2' then 'u1' else 'u2';
-    annotation(derivative(order = 1) = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_d', LateInline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_d' "First derivative of function maxWithoutEvent(..)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'u1_d';
-    input Real 'u2_d';
-    output Real 'y_d';
-  algorithm
-    'y_d' := if 'u1' > 'u2' then 'u1_d' else 'u2_d';
-    annotation(derivative(order = 2) = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_dd', LateInline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_d';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_dd' "First derivative of function maxWithoutEvent_d(..)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'u1_d';
-    input Real 'u2_d';
-    input Real 'u1_dd';
-    input Real 'u2_dd';
-    output Real 'y_dd';
-  algorithm
-    'y_dd' := if 'u1' > 'u2' then 'u1_dd' else 'u2_dd';
-    annotation(LateInline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_dd';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der' "Derivative of function Frames.resolve1(..)"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v2';
-    input Real[3] 'v2_der';
-    output Real[3] 'v1_der';
-  algorithm
-    'v1_der' := 'Modelica.Mechanics.MultiBody.Frames.resolve1'('R', {'v2_der'[1] + 'R'.'w'[2] * 'v2'[3] - 'R'.'w'[3] * 'v2'[2], 'v2_der'[2] + 'R'.'w'[3] * 'v2'[1] - 'R'.'w'[1] * 'v2'[3], 'v2_der'[3] + 'R'.'w'[1] * 'v2'[2] - 'R'.'w'[2] * 'v2'[1]});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve2_der' "Derivative of function Frames.resolve2(..)"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v1';
-    input Real[3] 'v1_der';
-    output Real[3] 'v2_der';
-  algorithm
-    'v2_der' := 'Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1_der') - {'R'.'w'[2] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[3] - 'R'.'w'[3] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[2], 'R'.'w'[3] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[1] - 'R'.'w'[1] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[3], 'R'.'w'[1] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[2] - 'R'.'w'[2] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[1]};
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve2_der';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
-    input Real[3] 'n_x';
-    input Real[3] 'n_y';
-    output Real[3, 3] 'T';
-    Real[3] 'e_x'(each unit = "1") = if sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]) < 1e-10 then {1.0, 0.0, 0.0} else smooth(0, if sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]) >= 2.220446049250313e-14 then {'n_x'[1] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]), 'n_x'[2] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]), 'n_x'[3] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3])} else {'n_x'[1] / 2.220446049250313e-14, 'n_x'[2] / 2.220446049250313e-14, 'n_x'[3] / 2.220446049250313e-14});
-    Real[3] 'e_y'(each unit = "1") = if sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]) < 1e-10 then {0.0, 1.0, 0.0} else smooth(0, if sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]) >= 2.220446049250313e-14 then {'n_y'[1] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]), 'n_y'[2] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]), 'n_y'[3] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3])} else {'n_y'[1] / 2.220446049250313e-14, 'n_y'[2] / 2.220446049250313e-14, 'n_y'[3] / 2.220446049250313e-14});
-    Real[3] 'n_z_aux'(each unit = "1") = {'e_x'[2] * 'e_y'[3] - 'e_x'[3] * 'e_y'[2], 'e_x'[3] * 'e_y'[1] - 'e_x'[1] * 'e_y'[3], 'e_x'[1] * 'e_y'[2] - 'e_x'[2] * 'e_y'[1]};
-    Real[3] 'n_y_aux'(each unit = "1") = if 'n_z_aux'[1] * 'n_z_aux'[1] + 'n_z_aux'[2] * 'n_z_aux'[2] + 'n_z_aux'[3] * 'n_z_aux'[3] > 1e-6 then 'e_y' else if abs('e_x'[1]) > 1e-6 then {0.0, 1.0, 0.0} else {1.0, 0.0, 0.0};
-    Real[3] 'e_z_aux'(each unit = "1") = {'e_x'[2] * 'n_y_aux'[3] - 'e_x'[3] * 'n_y_aux'[2], 'e_x'[3] * 'n_y_aux'[1] - 'e_x'[1] * 'n_y_aux'[3], 'e_x'[1] * 'n_y_aux'[2] - 'e_x'[2] * 'n_y_aux'[1]};
-    Real[3] 'e_z'(each unit = "1") = smooth(0, if sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]) >= 2.220446049250313e-14 then {'e_z_aux'[1] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]), 'e_z_aux'[2] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]), 'e_z_aux'[3] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3])} else {'e_z_aux'[1] / 2.220446049250313e-14, 'e_z_aux'[2] / 2.220446049250313e-14, 'e_z_aux'[3] / 2.220446049250313e-14});
-  algorithm
-    'T' := {'e_x', {'e_z'[2] * 'e_x'[3] - 'e_z'[3] * 'e_x'[2], 'e_z'[3] * 'e_x'[1] - 'e_z'[1] * 'e_x'[3], 'e_z'[1] * 'e_x'[2] - 'e_z'[2] * 'e_x'[1]}, 'e_z'};
-  end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
-
-  function 'Modelica.Units.Conversions.to_unit1' "Change the unit of a Real number to unit=\"1\""
-    input Real 'r';
-    output Real 'result'(unit = "1");
-  algorithm
-    'result' := 'r';
-    annotation(Inline = true);
-  end 'Modelica.Units.Conversions.to_unit1';
-
   type 'Modelica.Mechanics.MultiBody.Types.ResolveInFrameAB' = enumeration('world', 'frame_a', 'frame_b', 'frame_resolve');
 
   type 'Modelica.Mechanics.MultiBody.Types.VectorQuantity' = enumeration('Force', 'Torque', 'Velocity', 'Acceleration', 'AngularVelocity', 'AngularAcceleration', 'RelativePosition');
@@ -3205,12 +3076,12 @@ package 'PrismaticConstraint'
     'world.x_arrowHead.specularCoefficient' = 0.0;
     'world.x_label.diameter' = 0.0125;
     'world.x_label.specularCoefficient' = 0.0;
-    'world.x_label.cylinders[1].length' = sqrt(('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'));
+    'world.x_label.cylinders[1].length' = sqrt({'world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'} * {'world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'});
     'world.x_label.cylinders[1].width' = 'world.x_label.diameter';
     'world.x_label.cylinders[1].height' = 'world.x_label.diameter';
     'world.x_label.cylinders[1].extra' = 0.0;
     'world.x_label.cylinders[1].specularCoefficient' = 'world.x_label.specularCoefficient';
-    'world.x_label.cylinders[2].length' = sqrt(('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'));
+    'world.x_label.cylinders[2].length' = sqrt({'world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'} * {'world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'});
     'world.x_label.cylinders[2].width' = 'world.x_label.diameter';
     'world.x_label.cylinders[2].height' = 'world.x_label.diameter';
     'world.x_label.cylinders[2].extra' = 0.0;
@@ -3227,12 +3098,12 @@ package 'PrismaticConstraint'
     'world.y_arrowHead.specularCoefficient' = 0.0;
     'world.y_label.diameter' = 0.0125;
     'world.y_label.specularCoefficient' = 0.0;
-    'world.y_label.cylinders[1].length' = sqrt(('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'));
+    'world.y_label.cylinders[1].length' = sqrt({'world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'} * {'world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'});
     'world.y_label.cylinders[1].width' = 'world.y_label.diameter';
     'world.y_label.cylinders[1].height' = 'world.y_label.diameter';
     'world.y_label.cylinders[1].extra' = 0.0;
     'world.y_label.cylinders[1].specularCoefficient' = 'world.y_label.specularCoefficient';
-    'world.y_label.cylinders[2].length' = sqrt(('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'));
+    'world.y_label.cylinders[2].length' = sqrt({'world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'} * {'world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'});
     'world.y_label.cylinders[2].width' = 'world.y_label.diameter';
     'world.y_label.cylinders[2].height' = 'world.y_label.diameter';
     'world.y_label.cylinders[2].extra' = 0.0;
@@ -3249,17 +3120,17 @@ package 'PrismaticConstraint'
     'world.z_arrowHead.specularCoefficient' = 0.0;
     'world.z_label.diameter' = 0.0125;
     'world.z_label.specularCoefficient' = 0.0;
-    'world.z_label.cylinders[1].length' = sqrt(('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'));
+    'world.z_label.cylinders[1].length' = sqrt({'world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'} * {'world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'});
     'world.z_label.cylinders[1].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[1].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[1].extra' = 0.0;
     'world.z_label.cylinders[1].specularCoefficient' = 'world.z_label.specularCoefficient';
-    'world.z_label.cylinders[2].length' = sqrt(('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'));
+    'world.z_label.cylinders[2].length' = sqrt({'world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'} * {'world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'});
     'world.z_label.cylinders[2].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[2].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[2].extra' = 0.0;
     'world.z_label.cylinders[2].specularCoefficient' = 'world.z_label.specularCoefficient';
-    'world.z_label.cylinders[3].length' = sqrt(('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'));
+    'world.z_label.cylinders[3].length' = sqrt({'world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'} * {'world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'});
     'world.z_label.cylinders[3].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[3].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[3].extra' = 0.0;
@@ -4184,12 +4055,12 @@ package 'PrismaticConstraint'
     'constraint.R_rel.w[1]' = 'constraint.frame_b.R.w[1]' - ('Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('constraint.frame_a.R', 'constraint.frame_a.R.w')))[1];
     'constraint.R_rel.w[2]' = 'constraint.frame_b.R.w[2]' - ('Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('constraint.frame_a.R', 'constraint.frame_a.R.w')))[2];
     'constraint.R_rel.w[3]' = 'constraint.frame_b.R.w[3]' - ('Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('constraint.frame_a.R', 'constraint.frame_a.R.w')))[3];
-    'constraint.r_rel_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_a.R', {'constraint.frame_b.r_0[1]' - 'constraint.frame_a.r_0[1]', 'constraint.frame_b.r_0[2]' - 'constraint.frame_a.r_0[2]', 'constraint.frame_b.r_0[3]' - 'constraint.frame_a.r_0[3]'}))[1];
-    'constraint.r_rel_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_a.R', {'constraint.frame_b.r_0[1]' - 'constraint.frame_a.r_0[1]', 'constraint.frame_b.r_0[2]' - 'constraint.frame_a.r_0[2]', 'constraint.frame_b.r_0[3]' - 'constraint.frame_a.r_0[3]'}))[2];
-    'constraint.r_rel_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_a.R', {'constraint.frame_b.r_0[1]' - 'constraint.frame_a.r_0[1]', 'constraint.frame_b.r_0[2]' - 'constraint.frame_a.r_0[2]', 'constraint.frame_b.r_0[3]' - 'constraint.frame_a.r_0[3]'}))[3];
-    0.0 = atan2(('constraint.frame_a.R.T[1,2]' * 'constraint.frame_a.R.T[2,3]' - 'constraint.frame_a.R.T[1,3]' * 'constraint.frame_a.R.T[2,2]') * 'constraint.frame_b.R.T[2,1]' + ('constraint.frame_a.R.T[1,3]' * 'constraint.frame_a.R.T[2,1]' - 'constraint.frame_a.R.T[1,1]' * 'constraint.frame_a.R.T[2,3]') * 'constraint.frame_b.R.T[2,2]' + ('constraint.frame_a.R.T[1,1]' * 'constraint.frame_a.R.T[2,2]' - 'constraint.frame_a.R.T[1,2]' * 'constraint.frame_a.R.T[2,1]') * 'constraint.frame_b.R.T[2,3]', 'constraint.frame_a.R.T[1,1]' * 'constraint.frame_b.R.T[1,1]' + 'constraint.frame_a.R.T[1,2]' * 'constraint.frame_b.R.T[1,2]' + 'constraint.frame_a.R.T[1,3]' * 'constraint.frame_b.R.T[1,3]');
-    0.0 = atan2(-(('constraint.frame_a.R.T[1,2]' * 'constraint.frame_a.R.T[2,3]' - 'constraint.frame_a.R.T[1,3]' * 'constraint.frame_a.R.T[2,2]') * 'constraint.frame_b.R.T[1,1]' + ('constraint.frame_a.R.T[1,3]' * 'constraint.frame_a.R.T[2,1]' - 'constraint.frame_a.R.T[1,1]' * 'constraint.frame_a.R.T[2,3]') * 'constraint.frame_b.R.T[1,2]' + ('constraint.frame_a.R.T[1,1]' * 'constraint.frame_a.R.T[2,2]' - 'constraint.frame_a.R.T[1,2]' * 'constraint.frame_a.R.T[2,1]') * 'constraint.frame_b.R.T[1,3]'), 'constraint.frame_a.R.T[2,1]' * 'constraint.frame_b.R.T[2,1]' + 'constraint.frame_a.R.T[2,2]' * 'constraint.frame_b.R.T[2,2]' + 'constraint.frame_a.R.T[2,3]' * 'constraint.frame_b.R.T[2,3]');
-    0.0 = atan2('constraint.frame_a.R.T[2,1]' * 'constraint.frame_b.R.T[1,1]' + 'constraint.frame_a.R.T[2,2]' * 'constraint.frame_b.R.T[1,2]' + 'constraint.frame_a.R.T[2,3]' * 'constraint.frame_b.R.T[1,3]', 'constraint.frame_a.R.T[3,1]' * 'constraint.frame_b.R.T[3,1]' + 'constraint.frame_a.R.T[3,2]' * 'constraint.frame_b.R.T[3,2]' + 'constraint.frame_a.R.T[3,3]' * 'constraint.frame_b.R.T[3,3]');
+    'constraint.r_rel_a[1]' = 'constraint.frame_a.R.T[1,1]' * ('constraint.frame_b.r_0[1]' - 'constraint.frame_a.r_0[1]') + 'constraint.frame_a.R.T[1,2]' * ('constraint.frame_b.r_0[2]' - 'constraint.frame_a.r_0[2]') + 'constraint.frame_a.R.T[1,3]' * ('constraint.frame_b.r_0[3]' - 'constraint.frame_a.r_0[3]');
+    'constraint.r_rel_a[2]' = 'constraint.frame_a.R.T[2,1]' * ('constraint.frame_b.r_0[1]' - 'constraint.frame_a.r_0[1]') + 'constraint.frame_a.R.T[2,2]' * ('constraint.frame_b.r_0[2]' - 'constraint.frame_a.r_0[2]') + 'constraint.frame_a.R.T[2,3]' * ('constraint.frame_b.r_0[3]' - 'constraint.frame_a.r_0[3]');
+    'constraint.r_rel_a[3]' = 'constraint.frame_a.R.T[3,1]' * ('constraint.frame_b.r_0[1]' - 'constraint.frame_a.r_0[1]') + 'constraint.frame_a.R.T[3,2]' * ('constraint.frame_b.r_0[2]' - 'constraint.frame_a.r_0[2]') + 'constraint.frame_a.R.T[3,3]' * ('constraint.frame_b.r_0[3]' - 'constraint.frame_a.r_0[3]');
+    0.0 = 'Modelica.Math.atan2'(('constraint.frame_a.R.T[1,2]' * 'constraint.frame_a.R.T[2,3]' - 'constraint.frame_a.R.T[1,3]' * 'constraint.frame_a.R.T[2,2]') * 'constraint.frame_b.R.T[2,1]' + ('constraint.frame_a.R.T[1,3]' * 'constraint.frame_a.R.T[2,1]' - 'constraint.frame_a.R.T[1,1]' * 'constraint.frame_a.R.T[2,3]') * 'constraint.frame_b.R.T[2,2]' + ('constraint.frame_a.R.T[1,1]' * 'constraint.frame_a.R.T[2,2]' - 'constraint.frame_a.R.T[1,2]' * 'constraint.frame_a.R.T[2,1]') * 'constraint.frame_b.R.T[2,3]', 'constraint.frame_a.R.T[1,1]' * 'constraint.frame_b.R.T[1,1]' + 'constraint.frame_a.R.T[1,2]' * 'constraint.frame_b.R.T[1,2]' + 'constraint.frame_a.R.T[1,3]' * 'constraint.frame_b.R.T[1,3]');
+    0.0 = 'Modelica.Math.atan2'(-(('constraint.frame_a.R.T[1,2]' * 'constraint.frame_a.R.T[2,3]' - 'constraint.frame_a.R.T[1,3]' * 'constraint.frame_a.R.T[2,2]') * 'constraint.frame_b.R.T[1,1]' + ('constraint.frame_a.R.T[1,3]' * 'constraint.frame_a.R.T[2,1]' - 'constraint.frame_a.R.T[1,1]' * 'constraint.frame_a.R.T[2,3]') * 'constraint.frame_b.R.T[1,2]' + ('constraint.frame_a.R.T[1,1]' * 'constraint.frame_a.R.T[2,2]' - 'constraint.frame_a.R.T[1,2]' * 'constraint.frame_a.R.T[2,1]') * 'constraint.frame_b.R.T[1,3]'), 'constraint.frame_a.R.T[2,1]' * 'constraint.frame_b.R.T[2,1]' + 'constraint.frame_a.R.T[2,2]' * 'constraint.frame_b.R.T[2,2]' + 'constraint.frame_a.R.T[2,3]' * 'constraint.frame_b.R.T[2,3]');
+    0.0 = 'Modelica.Math.atan2'('constraint.frame_a.R.T[2,1]' * 'constraint.frame_b.R.T[1,1]' + 'constraint.frame_a.R.T[2,2]' * 'constraint.frame_b.R.T[1,2]' + 'constraint.frame_a.R.T[2,3]' * 'constraint.frame_b.R.T[1,3]', 'constraint.frame_a.R.T[3,1]' * 'constraint.frame_b.R.T[3,1]' + 'constraint.frame_a.R.T[3,2]' * 'constraint.frame_b.R.T[3,2]' + 'constraint.frame_a.R.T[3,3]' * 'constraint.frame_b.R.T[3,3]');
     'constraint.frame_a.f[1]' = 0.0;
     'constraint.frame_a.f[2]' = 0.0;
     'constraint.r_rel_a[3]' = 0.0;
@@ -4199,13 +4070,13 @@ package 'PrismaticConstraint'
     0.0 = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('constraint.R_rel', 'constraint.frame_b.f'))[1] + 'constraint.frame_a.f[1]';
     0.0 = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('constraint.R_rel', 'constraint.frame_b.f'))[2] + 'constraint.frame_a.f[2]';
     0.0 = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('constraint.R_rel', 'constraint.frame_b.f'))[3] + 'constraint.frame_a.f[3]';
-    'constraint.P' = 'constraint.frame_a.t[1]' * 'constraint.frame_a.R.w[1]' + 'constraint.frame_a.t[2]' * 'constraint.frame_a.R.w[2]' + 'constraint.frame_a.t[3]' * 'constraint.frame_a.R.w[3]' + 'constraint.frame_b.t[1]' * 'constraint.frame_b.R.w[1]' + 'constraint.frame_b.t[2]' * 'constraint.frame_b.R.w[2]' + 'constraint.frame_b.t[3]' * 'constraint.frame_b.R.w[3]' + 'constraint.frame_b.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_b.R', der('constraint.frame_b.r_0')) + 'constraint.frame_a.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_a.R', der('constraint.frame_a.r_0'));
+    'constraint.P' = 'constraint.frame_a.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('constraint.frame_a.R') + 'constraint.frame_b.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('constraint.frame_b.R') + 'constraint.frame_b.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_b.R', der('constraint.frame_b.r_0')) + 'constraint.frame_a.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('constraint.frame_a.R', der('constraint.frame_a.r_0'));
     'sensorConstraintRelative.arrowColor[1]' = 255;
     'sensorConstraintRelative.arrowColor[2]' = 255;
     'sensorConstraintRelative.arrowColor[3]' = 0;
-    'sensorConstraintRelative.relativePosition.relativePosition.r_rel[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('sensorConstraintRelative.relativePosition.relativePosition.frame_a.R', {'sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[1]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[1]', 'sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[2]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[2]', 'sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[3]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[3]'}))[1];
-    'sensorConstraintRelative.relativePosition.relativePosition.r_rel[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('sensorConstraintRelative.relativePosition.relativePosition.frame_a.R', {'sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[1]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[1]', 'sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[2]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[2]', 'sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[3]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[3]'}))[2];
-    'sensorConstraintRelative.relativePosition.relativePosition.r_rel[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('sensorConstraintRelative.relativePosition.relativePosition.frame_a.R', {'sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[1]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[1]', 'sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[2]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[2]', 'sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[3]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[3]'}))[3];
+    'sensorConstraintRelative.relativePosition.relativePosition.r_rel[1]' = 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.R.T[1,1]' * ('sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[1]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[1]') + 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.R.T[1,2]' * ('sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[2]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[2]') + 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.R.T[1,3]' * ('sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[3]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[3]');
+    'sensorConstraintRelative.relativePosition.relativePosition.r_rel[2]' = 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.R.T[2,1]' * ('sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[1]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[1]') + 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.R.T[2,2]' * ('sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[2]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[2]') + 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.R.T[2,3]' * ('sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[3]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[3]');
+    'sensorConstraintRelative.relativePosition.relativePosition.r_rel[3]' = 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.R.T[3,1]' * ('sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[1]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[1]') + 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.R.T[3,2]' * ('sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[2]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[2]') + 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.R.T[3,3]' * ('sensorConstraintRelative.relativePosition.relativePosition.frame_b.r_0[3]' - 'sensorConstraintRelative.relativePosition.relativePosition.frame_a.r_0[3]');
     'sensorConstraintRelative.relativePosition.relativePosition.frame_a.f[1]' = 0.0;
     'sensorConstraintRelative.relativePosition.relativePosition.frame_a.f[2]' = 0.0;
     'sensorConstraintRelative.relativePosition.relativePosition.frame_a.f[3]' = 0.0;
@@ -4351,9 +4222,9 @@ package 'PrismaticConstraint'
     'bodyOfJoint.body.phi_dd[1]' = 0.0;
     'bodyOfJoint.body.phi_dd[2]' = 0.0;
     'bodyOfJoint.body.phi_dd[3]' = 0.0;
-    'bodyOfJoint.body.g_0[1]' = 0.0;
-    'bodyOfJoint.body.g_0[2]' = -9.80665;
-    'bodyOfJoint.body.g_0[3]' = 0.0;
+    'bodyOfJoint.body.g_0[1]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] * ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] + ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] * ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] + ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[3] * ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[3]) * (('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] / 'Modelica.Math.Vectors.length'('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))) else 0.0;
+    'bodyOfJoint.body.g_0[2]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then -9.80665 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] * ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] + ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] * ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] + ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[3] * ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[3]) * (('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] / 'Modelica.Math.Vectors.length'('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))) else 0.0;
+    'bodyOfJoint.body.g_0[3]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] * ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] + ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] * ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] + ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[3] * ('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[3]) * (('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))[3] / 'Modelica.Math.Vectors.length'('bodyOfJoint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfJoint.body.frame_a.R', {0.2, 0.0, 0.0}))) else 0.0;
     'bodyOfJoint.body.v_0[1]' = der('bodyOfJoint.body.frame_a.r_0[1]');
     'bodyOfJoint.body.v_0[2]' = der('bodyOfJoint.body.frame_a.r_0[2]');
     'bodyOfJoint.body.v_0[3]' = der('bodyOfJoint.body.frame_a.r_0[3]');
@@ -4496,9 +4367,9 @@ package 'PrismaticConstraint'
     'bodyOfConstraint.body.phi_dd[1]' = 0.0;
     'bodyOfConstraint.body.phi_dd[2]' = 0.0;
     'bodyOfConstraint.body.phi_dd[3]' = 0.0;
-    'bodyOfConstraint.body.g_0[1]' = 0.0;
-    'bodyOfConstraint.body.g_0[2]' = -9.80665;
-    'bodyOfConstraint.body.g_0[3]' = 0.0;
+    'bodyOfConstraint.body.g_0[1]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] * ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] + ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] * ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] + ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[3] * ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[3]) * (('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] / 'Modelica.Math.Vectors.length'('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))) else 0.0;
+    'bodyOfConstraint.body.g_0[2]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then -9.80665 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] * ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] + ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] * ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] + ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[3] * ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[3]) * (('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] / 'Modelica.Math.Vectors.length'('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))) else 0.0;
+    'bodyOfConstraint.body.g_0[3]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] * ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[1] + ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] * ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[2] + ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[3] * ('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[3]) * (('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))[3] / 'Modelica.Math.Vectors.length'('bodyOfConstraint.body.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('bodyOfConstraint.body.frame_a.R', {0.2, 0.0, 0.0}))) else 0.0;
     'bodyOfConstraint.body.v_0[1]' = der('bodyOfConstraint.body.frame_a.r_0[1]');
     'bodyOfConstraint.body.v_0[2]' = der('bodyOfConstraint.body.frame_a.r_0[2]');
     'bodyOfConstraint.body.v_0[3]' = der('bodyOfConstraint.body.frame_a.r_0[3]');
@@ -4613,9 +4484,9 @@ package 'PrismaticConstraint'
     'springOfJoint.lineForce.lineShape.lengthDirection[1]' = 'springOfJoint.lineForce.e_rel_0[1]';
     'springOfJoint.lineForce.lineShape.lengthDirection[2]' = 'springOfJoint.lineForce.e_rel_0[2]';
     'springOfJoint.lineForce.lineShape.lengthDirection[3]' = 'springOfJoint.lineForce.e_rel_0[3]';
-    'springOfJoint.lineForce.lineShape.widthDirection[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('springOfJoint.lineForce.frame_a.R', {0.0, 1.0, 0.0}))[1];
-    'springOfJoint.lineForce.lineShape.widthDirection[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('springOfJoint.lineForce.frame_a.R', {0.0, 1.0, 0.0}))[2];
-    'springOfJoint.lineForce.lineShape.widthDirection[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('springOfJoint.lineForce.frame_a.R', {0.0, 1.0, 0.0}))[3];
+    'springOfJoint.lineForce.lineShape.widthDirection[1]' = 'springOfJoint.lineForce.frame_a.R.T[1,1]' * 0.0 + 'springOfJoint.lineForce.frame_a.R.T[2,1]' * 1.0 + 'springOfJoint.lineForce.frame_a.R.T[3,1]' * 0.0;
+    'springOfJoint.lineForce.lineShape.widthDirection[2]' = 'springOfJoint.lineForce.frame_a.R.T[1,2]' * 0.0 + 'springOfJoint.lineForce.frame_a.R.T[2,2]' * 1.0 + 'springOfJoint.lineForce.frame_a.R.T[3,2]' * 0.0;
+    'springOfJoint.lineForce.lineShape.widthDirection[3]' = 'springOfJoint.lineForce.frame_a.R.T[1,3]' * 0.0 + 'springOfJoint.lineForce.frame_a.R.T[2,3]' * 1.0 + 'springOfJoint.lineForce.frame_a.R.T[3,3]' * 0.0;
     'springOfJoint.lineForce.lineShape.color[1]' = 'springOfJoint.lineForce.lineShapeColor[1]';
     'springOfJoint.lineForce.lineShape.color[2]' = 'springOfJoint.lineForce.lineShapeColor[2]';
     'springOfJoint.lineForce.lineShape.color[3]' = 'springOfJoint.lineForce.lineShapeColor[3]';
@@ -4643,7 +4514,7 @@ package 'PrismaticConstraint'
     'springOfJoint.lineForce.r_rel_0[2]' = 'springOfJoint.lineForce.frame_b.r_0[2]' - 'springOfJoint.lineForce.frame_a.r_0[2]';
     'springOfJoint.lineForce.r_rel_0[3]' = 'springOfJoint.lineForce.frame_b.r_0[3]' - 'springOfJoint.lineForce.frame_a.r_0[3]';
     'springOfJoint.lineForce.length' = sqrt('springOfJoint.lineForce.r_rel_0[1]' * 'springOfJoint.lineForce.r_rel_0[1]' + 'springOfJoint.lineForce.r_rel_0[2]' * 'springOfJoint.lineForce.r_rel_0[2]' + 'springOfJoint.lineForce.r_rel_0[3]' * 'springOfJoint.lineForce.r_rel_0[3]');
-    'springOfJoint.lineForce.s' = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent'('springOfJoint.lineForce.length', 1e-10);
+    'springOfJoint.lineForce.s' = if 'springOfJoint.lineForce.length' > 1e-10 then 'springOfJoint.lineForce.length' else 1e-10;
     'springOfJoint.lineForce.e_rel_0[1]' = 'springOfJoint.lineForce.r_rel_0[1]' / 'springOfJoint.lineForce.s';
     'springOfJoint.lineForce.e_rel_0[2]' = 'springOfJoint.lineForce.r_rel_0[2]' / 'springOfJoint.lineForce.s';
     'springOfJoint.lineForce.e_rel_0[3]' = 'springOfJoint.lineForce.r_rel_0[3]' / 'springOfJoint.lineForce.s';
@@ -4657,9 +4528,9 @@ package 'PrismaticConstraint'
     'springOfJoint.spring.s_rel' = 'springOfJoint.spring.flange_b.s' - 'springOfJoint.spring.flange_a.s';
     'springOfJoint.spring.flange_b.f' = 'springOfJoint.spring.f';
     'springOfJoint.spring.flange_a.f' = -'springOfJoint.spring.f';
-    'springOfJoint.r_rel_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('springOfJoint.frame_a.R', 'springOfJoint.r_rel_0'))[1];
-    'springOfJoint.r_rel_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('springOfJoint.frame_a.R', 'springOfJoint.r_rel_0'))[2];
-    'springOfJoint.r_rel_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('springOfJoint.frame_a.R', 'springOfJoint.r_rel_0'))[3];
+    'springOfJoint.r_rel_a[1]' = 'springOfJoint.frame_a.R.T[1,1]' * 'springOfJoint.r_rel_0[1]' + 'springOfJoint.frame_a.R.T[1,2]' * 'springOfJoint.r_rel_0[2]' + 'springOfJoint.frame_a.R.T[1,3]' * 'springOfJoint.r_rel_0[3]';
+    'springOfJoint.r_rel_a[2]' = 'springOfJoint.frame_a.R.T[2,1]' * 'springOfJoint.r_rel_0[1]' + 'springOfJoint.frame_a.R.T[2,2]' * 'springOfJoint.r_rel_0[2]' + 'springOfJoint.frame_a.R.T[2,3]' * 'springOfJoint.r_rel_0[3]';
+    'springOfJoint.r_rel_a[3]' = 'springOfJoint.frame_a.R.T[3,1]' * 'springOfJoint.r_rel_0[1]' + 'springOfJoint.frame_a.R.T[3,2]' * 'springOfJoint.r_rel_0[2]' + 'springOfJoint.frame_a.R.T[3,3]' * 'springOfJoint.r_rel_0[3]';
     'springOfJoint.e_a[1]' = 'springOfJoint.r_rel_a[1]' / 'springOfJoint.s';
     'springOfJoint.e_a[2]' = 'springOfJoint.r_rel_a[2]' / 'springOfJoint.s';
     'springOfJoint.e_a[3]' = 'springOfJoint.r_rel_a[3]' / 'springOfJoint.s';
@@ -4705,9 +4576,9 @@ package 'PrismaticConstraint'
     'springOfConstraint.lineForce.lineShape.lengthDirection[1]' = 'springOfConstraint.lineForce.e_rel_0[1]';
     'springOfConstraint.lineForce.lineShape.lengthDirection[2]' = 'springOfConstraint.lineForce.e_rel_0[2]';
     'springOfConstraint.lineForce.lineShape.lengthDirection[3]' = 'springOfConstraint.lineForce.e_rel_0[3]';
-    'springOfConstraint.lineForce.lineShape.widthDirection[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('springOfConstraint.lineForce.frame_a.R', {0.0, 1.0, 0.0}))[1];
-    'springOfConstraint.lineForce.lineShape.widthDirection[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('springOfConstraint.lineForce.frame_a.R', {0.0, 1.0, 0.0}))[2];
-    'springOfConstraint.lineForce.lineShape.widthDirection[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('springOfConstraint.lineForce.frame_a.R', {0.0, 1.0, 0.0}))[3];
+    'springOfConstraint.lineForce.lineShape.widthDirection[1]' = 'springOfConstraint.lineForce.frame_a.R.T[1,1]' * 0.0 + 'springOfConstraint.lineForce.frame_a.R.T[2,1]' * 1.0 + 'springOfConstraint.lineForce.frame_a.R.T[3,1]' * 0.0;
+    'springOfConstraint.lineForce.lineShape.widthDirection[2]' = 'springOfConstraint.lineForce.frame_a.R.T[1,2]' * 0.0 + 'springOfConstraint.lineForce.frame_a.R.T[2,2]' * 1.0 + 'springOfConstraint.lineForce.frame_a.R.T[3,2]' * 0.0;
+    'springOfConstraint.lineForce.lineShape.widthDirection[3]' = 'springOfConstraint.lineForce.frame_a.R.T[1,3]' * 0.0 + 'springOfConstraint.lineForce.frame_a.R.T[2,3]' * 1.0 + 'springOfConstraint.lineForce.frame_a.R.T[3,3]' * 0.0;
     'springOfConstraint.lineForce.lineShape.color[1]' = 'springOfConstraint.lineForce.lineShapeColor[1]';
     'springOfConstraint.lineForce.lineShape.color[2]' = 'springOfConstraint.lineForce.lineShapeColor[2]';
     'springOfConstraint.lineForce.lineShape.color[3]' = 'springOfConstraint.lineForce.lineShapeColor[3]';
@@ -4735,7 +4606,7 @@ package 'PrismaticConstraint'
     'springOfConstraint.lineForce.r_rel_0[2]' = 'springOfConstraint.lineForce.frame_b.r_0[2]' - 'springOfConstraint.lineForce.frame_a.r_0[2]';
     'springOfConstraint.lineForce.r_rel_0[3]' = 'springOfConstraint.lineForce.frame_b.r_0[3]' - 'springOfConstraint.lineForce.frame_a.r_0[3]';
     'springOfConstraint.lineForce.length' = sqrt('springOfConstraint.lineForce.r_rel_0[1]' * 'springOfConstraint.lineForce.r_rel_0[1]' + 'springOfConstraint.lineForce.r_rel_0[2]' * 'springOfConstraint.lineForce.r_rel_0[2]' + 'springOfConstraint.lineForce.r_rel_0[3]' * 'springOfConstraint.lineForce.r_rel_0[3]');
-    'springOfConstraint.lineForce.s' = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent'('springOfConstraint.lineForce.length', 1e-10);
+    'springOfConstraint.lineForce.s' = if 'springOfConstraint.lineForce.length' > 1e-10 then 'springOfConstraint.lineForce.length' else 1e-10;
     'springOfConstraint.lineForce.e_rel_0[1]' = 'springOfConstraint.lineForce.r_rel_0[1]' / 'springOfConstraint.lineForce.s';
     'springOfConstraint.lineForce.e_rel_0[2]' = 'springOfConstraint.lineForce.r_rel_0[2]' / 'springOfConstraint.lineForce.s';
     'springOfConstraint.lineForce.e_rel_0[3]' = 'springOfConstraint.lineForce.r_rel_0[3]' / 'springOfConstraint.lineForce.s';
@@ -4749,9 +4620,9 @@ package 'PrismaticConstraint'
     'springOfConstraint.spring.s_rel' = 'springOfConstraint.spring.flange_b.s' - 'springOfConstraint.spring.flange_a.s';
     'springOfConstraint.spring.flange_b.f' = 'springOfConstraint.spring.f';
     'springOfConstraint.spring.flange_a.f' = -'springOfConstraint.spring.f';
-    'springOfConstraint.r_rel_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('springOfConstraint.frame_a.R', 'springOfConstraint.r_rel_0'))[1];
-    'springOfConstraint.r_rel_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('springOfConstraint.frame_a.R', 'springOfConstraint.r_rel_0'))[2];
-    'springOfConstraint.r_rel_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('springOfConstraint.frame_a.R', 'springOfConstraint.r_rel_0'))[3];
+    'springOfConstraint.r_rel_a[1]' = 'springOfConstraint.frame_a.R.T[1,1]' * 'springOfConstraint.r_rel_0[1]' + 'springOfConstraint.frame_a.R.T[1,2]' * 'springOfConstraint.r_rel_0[2]' + 'springOfConstraint.frame_a.R.T[1,3]' * 'springOfConstraint.r_rel_0[3]';
+    'springOfConstraint.r_rel_a[2]' = 'springOfConstraint.frame_a.R.T[2,1]' * 'springOfConstraint.r_rel_0[1]' + 'springOfConstraint.frame_a.R.T[2,2]' * 'springOfConstraint.r_rel_0[2]' + 'springOfConstraint.frame_a.R.T[2,3]' * 'springOfConstraint.r_rel_0[3]';
+    'springOfConstraint.r_rel_a[3]' = 'springOfConstraint.frame_a.R.T[3,1]' * 'springOfConstraint.r_rel_0[1]' + 'springOfConstraint.frame_a.R.T[3,2]' * 'springOfConstraint.r_rel_0[2]' + 'springOfConstraint.frame_a.R.T[3,3]' * 'springOfConstraint.r_rel_0[3]';
     'springOfConstraint.e_a[1]' = 'springOfConstraint.r_rel_a[1]' / 'springOfConstraint.s';
     'springOfConstraint.e_a[2]' = 'springOfConstraint.r_rel_a[2]' / 'springOfConstraint.s';
     'springOfConstraint.e_a[3]' = 'springOfConstraint.r_rel_a[3]' / 'springOfConstraint.s';
@@ -4889,9 +4760,9 @@ package 'PrismaticConstraint'
     'world.x_label.R_lines[3,1]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,1]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,1]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,1]';
     'world.x_label.R_lines[3,2]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,2]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,2]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,2]';
     'world.x_label.R_lines[3,3]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,3]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,3]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,3]';
-    'world.x_label.r_abs[1]' = 'world.x_label.r[1]' + 'world.x_label.R.T[1,1]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,1]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,1]' * 'world.x_label.r_lines[3]';
-    'world.x_label.r_abs[2]' = 'world.x_label.r[2]' + 'world.x_label.R.T[1,2]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,2]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,2]' * 'world.x_label.r_lines[3]';
-    'world.x_label.r_abs[3]' = 'world.x_label.r[3]' + 'world.x_label.R.T[1,3]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,3]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,3]' * 'world.x_label.r_lines[3]';
+    'world.x_label.r_abs[1]' = 'world.x_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[1];
+    'world.x_label.r_abs[2]' = 'world.x_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[2];
+    'world.x_label.r_abs[3]' = 'world.x_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[3];
     'world.x_label.cylinders[1].R.T[1,1]' = 'world.x_label.R.T[1,1]';
     'world.x_label.cylinders[1].R.T[1,2]' = 'world.x_label.R.T[1,2]';
     'world.x_label.cylinders[1].R.T[1,3]' = 'world.x_label.R.T[1,3]';
@@ -4904,15 +4775,15 @@ package 'PrismaticConstraint'
     'world.x_label.cylinders[1].R.w[1]' = 'world.x_label.R.w[1]';
     'world.x_label.cylinders[1].R.w[2]' = 'world.x_label.R.w[2]';
     'world.x_label.cylinders[1].R.w[3]' = 'world.x_label.R.w[3]';
-    'world.x_label.cylinders[1].r[1]' = 'world.x_label.r_abs[1]' + 'world.x_label.R_lines[1,1]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,1]' * 'world.x_label.lines[1,1,2]';
-    'world.x_label.cylinders[1].r[2]' = 'world.x_label.r_abs[2]' + 'world.x_label.R_lines[1,2]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,2]' * 'world.x_label.lines[1,1,2]';
-    'world.x_label.cylinders[1].r[3]' = 'world.x_label.r_abs[3]' + 'world.x_label.R_lines[1,3]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,3]' * 'world.x_label.lines[1,1,2]';
+    'world.x_label.cylinders[1].r[1]' = 'world.x_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[1];
+    'world.x_label.cylinders[1].r[2]' = 'world.x_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[2];
+    'world.x_label.cylinders[1].r[3]' = 'world.x_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[3];
     'world.x_label.cylinders[1].r_shape[1]' = 0.0;
     'world.x_label.cylinders[1].r_shape[2]' = 0.0;
     'world.x_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.x_label.cylinders[1].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
-    'world.x_label.cylinders[1].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
-    'world.x_label.cylinders[1].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
+    'world.x_label.cylinders[1].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,1]' * 0.0;
+    'world.x_label.cylinders[1].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,2]' * 0.0;
+    'world.x_label.cylinders[1].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,3]' * 0.0;
     'world.x_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.x_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.x_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -4931,15 +4802,15 @@ package 'PrismaticConstraint'
     'world.x_label.cylinders[2].R.w[1]' = 'world.x_label.R.w[1]';
     'world.x_label.cylinders[2].R.w[2]' = 'world.x_label.R.w[2]';
     'world.x_label.cylinders[2].R.w[3]' = 'world.x_label.R.w[3]';
-    'world.x_label.cylinders[2].r[1]' = 'world.x_label.r_abs[1]' + 'world.x_label.R_lines[1,1]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,1]' * 'world.x_label.lines[2,1,2]';
-    'world.x_label.cylinders[2].r[2]' = 'world.x_label.r_abs[2]' + 'world.x_label.R_lines[1,2]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,2]' * 'world.x_label.lines[2,1,2]';
-    'world.x_label.cylinders[2].r[3]' = 'world.x_label.r_abs[3]' + 'world.x_label.R_lines[1,3]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,3]' * 'world.x_label.lines[2,1,2]';
+    'world.x_label.cylinders[2].r[1]' = 'world.x_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[1];
+    'world.x_label.cylinders[2].r[2]' = 'world.x_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[2];
+    'world.x_label.cylinders[2].r[3]' = 'world.x_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[3];
     'world.x_label.cylinders[2].r_shape[1]' = 0.0;
     'world.x_label.cylinders[2].r_shape[2]' = 0.0;
     'world.x_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.x_label.cylinders[2].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
-    'world.x_label.cylinders[2].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
-    'world.x_label.cylinders[2].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
+    'world.x_label.cylinders[2].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,1]' * 0.0;
+    'world.x_label.cylinders[2].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,2]' * 0.0;
+    'world.x_label.cylinders[2].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,3]' * 0.0;
     'world.x_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.x_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.x_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -5053,9 +4924,9 @@ package 'PrismaticConstraint'
     'world.y_label.R_lines[3,1]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,1]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,1]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,1]';
     'world.y_label.R_lines[3,2]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,2]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,2]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,2]';
     'world.y_label.R_lines[3,3]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,3]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,3]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,3]';
-    'world.y_label.r_abs[1]' = 'world.y_label.r[1]' + 'world.y_label.R.T[1,1]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,1]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,1]' * 'world.y_label.r_lines[3]';
-    'world.y_label.r_abs[2]' = 'world.y_label.r[2]' + 'world.y_label.R.T[1,2]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,2]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,2]' * 'world.y_label.r_lines[3]';
-    'world.y_label.r_abs[3]' = 'world.y_label.r[3]' + 'world.y_label.R.T[1,3]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,3]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,3]' * 'world.y_label.r_lines[3]';
+    'world.y_label.r_abs[1]' = 'world.y_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[1];
+    'world.y_label.r_abs[2]' = 'world.y_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[2];
+    'world.y_label.r_abs[3]' = 'world.y_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[3];
     'world.y_label.cylinders[1].R.T[1,1]' = 'world.y_label.R.T[1,1]';
     'world.y_label.cylinders[1].R.T[1,2]' = 'world.y_label.R.T[1,2]';
     'world.y_label.cylinders[1].R.T[1,3]' = 'world.y_label.R.T[1,3]';
@@ -5068,15 +4939,15 @@ package 'PrismaticConstraint'
     'world.y_label.cylinders[1].R.w[1]' = 'world.y_label.R.w[1]';
     'world.y_label.cylinders[1].R.w[2]' = 'world.y_label.R.w[2]';
     'world.y_label.cylinders[1].R.w[3]' = 'world.y_label.R.w[3]';
-    'world.y_label.cylinders[1].r[1]' = 'world.y_label.r_abs[1]' + 'world.y_label.R_lines[1,1]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,1]' * 'world.y_label.lines[1,1,2]';
-    'world.y_label.cylinders[1].r[2]' = 'world.y_label.r_abs[2]' + 'world.y_label.R_lines[1,2]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,2]' * 'world.y_label.lines[1,1,2]';
-    'world.y_label.cylinders[1].r[3]' = 'world.y_label.r_abs[3]' + 'world.y_label.R_lines[1,3]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,3]' * 'world.y_label.lines[1,1,2]';
+    'world.y_label.cylinders[1].r[1]' = 'world.y_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[1];
+    'world.y_label.cylinders[1].r[2]' = 'world.y_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[2];
+    'world.y_label.cylinders[1].r[3]' = 'world.y_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[3];
     'world.y_label.cylinders[1].r_shape[1]' = 0.0;
     'world.y_label.cylinders[1].r_shape[2]' = 0.0;
     'world.y_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.y_label.cylinders[1].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
-    'world.y_label.cylinders[1].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
-    'world.y_label.cylinders[1].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
+    'world.y_label.cylinders[1].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,1]' * 0.0;
+    'world.y_label.cylinders[1].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,2]' * 0.0;
+    'world.y_label.cylinders[1].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,3]' * 0.0;
     'world.y_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.y_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.y_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -5095,15 +4966,15 @@ package 'PrismaticConstraint'
     'world.y_label.cylinders[2].R.w[1]' = 'world.y_label.R.w[1]';
     'world.y_label.cylinders[2].R.w[2]' = 'world.y_label.R.w[2]';
     'world.y_label.cylinders[2].R.w[3]' = 'world.y_label.R.w[3]';
-    'world.y_label.cylinders[2].r[1]' = 'world.y_label.r_abs[1]' + 'world.y_label.R_lines[1,1]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,1]' * 'world.y_label.lines[2,1,2]';
-    'world.y_label.cylinders[2].r[2]' = 'world.y_label.r_abs[2]' + 'world.y_label.R_lines[1,2]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,2]' * 'world.y_label.lines[2,1,2]';
-    'world.y_label.cylinders[2].r[3]' = 'world.y_label.r_abs[3]' + 'world.y_label.R_lines[1,3]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,3]' * 'world.y_label.lines[2,1,2]';
+    'world.y_label.cylinders[2].r[1]' = 'world.y_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[1];
+    'world.y_label.cylinders[2].r[2]' = 'world.y_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[2];
+    'world.y_label.cylinders[2].r[3]' = 'world.y_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[3];
     'world.y_label.cylinders[2].r_shape[1]' = 0.0;
     'world.y_label.cylinders[2].r_shape[2]' = 0.0;
     'world.y_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.y_label.cylinders[2].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
-    'world.y_label.cylinders[2].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
-    'world.y_label.cylinders[2].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
+    'world.y_label.cylinders[2].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,1]' * 0.0;
+    'world.y_label.cylinders[2].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,2]' * 0.0;
+    'world.y_label.cylinders[2].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,3]' * 0.0;
     'world.y_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.y_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.y_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -5221,9 +5092,9 @@ package 'PrismaticConstraint'
     'world.z_label.R_lines[3,1]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,1]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,1]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,1]';
     'world.z_label.R_lines[3,2]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,2]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,2]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,2]';
     'world.z_label.R_lines[3,3]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,3]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,3]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,3]';
-    'world.z_label.r_abs[1]' = 'world.z_label.r[1]' + 'world.z_label.R.T[1,1]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,1]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,1]' * 'world.z_label.r_lines[3]';
-    'world.z_label.r_abs[2]' = 'world.z_label.r[2]' + 'world.z_label.R.T[1,2]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,2]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,2]' * 'world.z_label.r_lines[3]';
-    'world.z_label.r_abs[3]' = 'world.z_label.r[3]' + 'world.z_label.R.T[1,3]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,3]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,3]' * 'world.z_label.r_lines[3]';
+    'world.z_label.r_abs[1]' = 'world.z_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[1];
+    'world.z_label.r_abs[2]' = 'world.z_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[2];
+    'world.z_label.r_abs[3]' = 'world.z_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[3];
     'world.z_label.cylinders[1].R.T[1,1]' = 'world.z_label.R.T[1,1]';
     'world.z_label.cylinders[1].R.T[1,2]' = 'world.z_label.R.T[1,2]';
     'world.z_label.cylinders[1].R.T[1,3]' = 'world.z_label.R.T[1,3]';
@@ -5236,15 +5107,15 @@ package 'PrismaticConstraint'
     'world.z_label.cylinders[1].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[1].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[1].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[1].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[1,1,2]';
-    'world.z_label.cylinders[1].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[1,1,2]';
-    'world.z_label.cylinders[1].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[1,1,2]';
+    'world.z_label.cylinders[1].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[1].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[1].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[3];
     'world.z_label.cylinders[1].r_shape[1]' = 0.0;
     'world.z_label.cylinders[1].r_shape[2]' = 0.0;
     'world.z_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[1].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
-    'world.z_label.cylinders[1].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
-    'world.z_label.cylinders[1].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
+    'world.z_label.cylinders[1].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[1].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[1].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -5263,15 +5134,15 @@ package 'PrismaticConstraint'
     'world.z_label.cylinders[2].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[2].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[2].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[2].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[2,1,2]';
-    'world.z_label.cylinders[2].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[2,1,2]';
-    'world.z_label.cylinders[2].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[2,1,2]';
+    'world.z_label.cylinders[2].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[2].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[2].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[3];
     'world.z_label.cylinders[2].r_shape[1]' = 0.0;
     'world.z_label.cylinders[2].r_shape[2]' = 0.0;
     'world.z_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[2].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
-    'world.z_label.cylinders[2].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
-    'world.z_label.cylinders[2].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
+    'world.z_label.cylinders[2].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[2].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[2].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -5290,15 +5161,15 @@ package 'PrismaticConstraint'
     'world.z_label.cylinders[3].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[3].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[3].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[3].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[3,1,2]';
-    'world.z_label.cylinders[3].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[3,1,2]';
-    'world.z_label.cylinders[3].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[3,1,2]';
+    'world.z_label.cylinders[3].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[3].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[3].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[3];
     'world.z_label.cylinders[3].r_shape[1]' = 0.0;
     'world.z_label.cylinders[3].r_shape[2]' = 0.0;
     'world.z_label.cylinders[3].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[3].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
-    'world.z_label.cylinders[3].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
-    'world.z_label.cylinders[3].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
+    'world.z_label.cylinders[3].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[3].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[3].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[3].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[3].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[3].widthDirection[3]' = 0.0;
@@ -5416,9 +5287,9 @@ package 'PrismaticConstraint'
     'fixedRotation.frame_b.R.T[3,1]' = 0.8191520442889918 * 'fixedRotation.frame_a.R.T[1,1]' + (-0.09960050292505122) * 'fixedRotation.frame_a.R.T[2,1]' + 0.5648625214636235 * 'fixedRotation.frame_a.R.T[3,1]';
     'fixedRotation.frame_b.R.T[3,2]' = 0.8191520442889918 * 'fixedRotation.frame_a.R.T[1,2]' + (-0.09960050292505122) * 'fixedRotation.frame_a.R.T[2,2]' + 0.5648625214636235 * 'fixedRotation.frame_a.R.T[3,2]';
     'fixedRotation.frame_b.R.T[3,3]' = 0.8191520442889918 * 'fixedRotation.frame_a.R.T[1,3]' + (-0.09960050292505122) * 'fixedRotation.frame_a.R.T[2,3]' + 0.5648625214636235 * 'fixedRotation.frame_a.R.T[3,3]';
-    'fixedRotation.frame_b.R.w[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{0.21486551488510405, 0.9663834860128886, -0.14119408087712543}, {-0.5318108111446446, 0.23702889650558212, 0.8130157214783864}, {0.8191520442889918, -0.09960050292505122, 0.5648625214636235}}, {0.0, 0.0, 0.0}), 'fixedRotation.frame_a.R.w'))[1] + 'fixedRotation.R_rel.w[1]';
-    'fixedRotation.frame_b.R.w[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{0.21486551488510405, 0.9663834860128886, -0.14119408087712543}, {-0.5318108111446446, 0.23702889650558212, 0.8130157214783864}, {0.8191520442889918, -0.09960050292505122, 0.5648625214636235}}, {0.0, 0.0, 0.0}), 'fixedRotation.frame_a.R.w'))[2] + 'fixedRotation.R_rel.w[2]';
-    'fixedRotation.frame_b.R.w[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{0.21486551488510405, 0.9663834860128886, -0.14119408087712543}, {-0.5318108111446446, 0.23702889650558212, 0.8130157214783864}, {0.8191520442889918, -0.09960050292505122, 0.5648625214636235}}, {0.0, 0.0, 0.0}), 'fixedRotation.frame_a.R.w'))[3] + 'fixedRotation.R_rel.w[3]';
+    'fixedRotation.frame_b.R.w[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{0.21486551488510405, 0.9663834860128886, -0.14119408087712543}, {-0.5318108111446446, 0.23702889650558212, 0.8130157214783864}, {0.8191520442889918, -0.09960050292505122, 0.5648625214636235}}, {0.0, 0.0, 0.0}), 'fixedRotation.frame_a.R.w'))[1];
+    'fixedRotation.frame_b.R.w[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{0.21486551488510405, 0.9663834860128886, -0.14119408087712543}, {-0.5318108111446446, 0.23702889650558212, 0.8130157214783864}, {0.8191520442889918, -0.09960050292505122, 0.5648625214636235}}, {0.0, 0.0, 0.0}), 'fixedRotation.frame_a.R.w'))[2];
+    'fixedRotation.frame_b.R.w[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{0.21486551488510405, 0.9663834860128886, -0.14119408087712543}, {-0.5318108111446446, 0.23702889650558212, 0.8130157214783864}, {0.8191520442889918, -0.09960050292505122, 0.5648625214636235}}, {0.0, 0.0, 0.0}), 'fixedRotation.frame_a.R.w'))[3];
     0.0 = 'fixedRotation.frame_a.f[1]' + ('Modelica.Mechanics.MultiBody.Frames.resolve1'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{0.21486551488510405, 0.9663834860128886, -0.14119408087712543}, {-0.5318108111446446, 0.23702889650558212, 0.8130157214783864}, {0.8191520442889918, -0.09960050292505122, 0.5648625214636235}}, {0.0, 0.0, 0.0}), 'fixedRotation.frame_b.f'))[1];
     0.0 = 'fixedRotation.frame_a.f[2]' + ('Modelica.Mechanics.MultiBody.Frames.resolve1'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{0.21486551488510405, 0.9663834860128886, -0.14119408087712543}, {-0.5318108111446446, 0.23702889650558212, 0.8130157214783864}, {0.8191520442889918, -0.09960050292505122, 0.5648625214636235}}, {0.0, 0.0, 0.0}), 'fixedRotation.frame_b.f'))[2];
     0.0 = 'fixedRotation.frame_a.f[3]' + ('Modelica.Mechanics.MultiBody.Frames.resolve1'('Modelica.Mechanics.MultiBody.Frames.Orientation'({{0.21486551488510405, 0.9663834860128886, -0.14119408087712543}, {-0.5318108111446446, 0.23702889650558212, 0.8130157214783864}, {0.8191520442889918, -0.09960050292505122, 0.5648625214636235}}, {0.0, 0.0, 0.0}), 'fixedRotation.frame_b.f'))[3];
@@ -5497,9 +5368,9 @@ package 'PrismaticConstraint'
     'freeMotionScalarInit.initAngularVelocity.R_b.w[1]' = 'freeMotionScalarInit.frame_b.R.w[1]';
     'freeMotionScalarInit.initAngularVelocity.R_b.w[2]' = 'freeMotionScalarInit.frame_b.R.w[2]';
     'freeMotionScalarInit.initAngularVelocity.R_b.w[3]' = 'freeMotionScalarInit.frame_b.R.w[3]';
-    'freeMotionScalarInit.initAngularVelocity.R_b.w[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('freeMotionScalarInit.initAngularVelocity.R_b', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('freeMotionScalarInit.initAngularVelocity.R_a', 'freeMotionScalarInit.initAngularVelocity.R_a.w')))[1] + 'freeMotionScalarInit.initAngularVelocity.w_rel_b[1]';
-    'freeMotionScalarInit.initAngularVelocity.R_b.w[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('freeMotionScalarInit.initAngularVelocity.R_b', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('freeMotionScalarInit.initAngularVelocity.R_a', 'freeMotionScalarInit.initAngularVelocity.R_a.w')))[2] + 'freeMotionScalarInit.initAngularVelocity.w_rel_b[2]';
-    'freeMotionScalarInit.initAngularVelocity.R_b.w[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('freeMotionScalarInit.initAngularVelocity.R_b', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('freeMotionScalarInit.initAngularVelocity.R_a', 'freeMotionScalarInit.initAngularVelocity.R_a.w')))[3] + 'freeMotionScalarInit.initAngularVelocity.w_rel_b[3]';
+    'freeMotionScalarInit.initAngularVelocity.R_b.w[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('freeMotionScalarInit.initAngularVelocity.R_b', 'Modelica.Mechanics.MultiBody.Frames.angularVelocity1'('freeMotionScalarInit.initAngularVelocity.R_a')))[1] + 'freeMotionScalarInit.initAngularVelocity.w_rel_b[1]';
+    'freeMotionScalarInit.initAngularVelocity.R_b.w[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('freeMotionScalarInit.initAngularVelocity.R_b', 'Modelica.Mechanics.MultiBody.Frames.angularVelocity1'('freeMotionScalarInit.initAngularVelocity.R_a')))[2] + 'freeMotionScalarInit.initAngularVelocity.w_rel_b[2]';
+    'freeMotionScalarInit.initAngularVelocity.R_b.w[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('freeMotionScalarInit.initAngularVelocity.R_b', 'Modelica.Mechanics.MultiBody.Frames.angularVelocity1'('freeMotionScalarInit.initAngularVelocity.R_a')))[3] + 'freeMotionScalarInit.initAngularVelocity.w_rel_b[3]';
     'freeMotionScalarInit.derv[1].y' = der('freeMotionScalarInit.derv[1].u');
     'freeMotionScalarInit.derv[2].y' = der('freeMotionScalarInit.derv[2].u');
     'freeMotionScalarInit.derv[3].y' = der('freeMotionScalarInit.derv[3].u');
@@ -5533,9 +5404,9 @@ package 'PrismaticConstraint'
     'freeMotionScalarInit.arrow.arrow.R.w[1]' = 'freeMotionScalarInit.arrow.frame_a.R.w[1]';
     'freeMotionScalarInit.arrow.arrow.R.w[2]' = 'freeMotionScalarInit.arrow.frame_a.R.w[2]';
     'freeMotionScalarInit.arrow.arrow.R.w[3]' = 'freeMotionScalarInit.arrow.frame_a.R.w[3]';
-    'freeMotionScalarInit.arrow.arrow.r[1]' = 'freeMotionScalarInit.arrow.frame_a.r_0[1]' + 'freeMotionScalarInit.arrow.frame_a.R.T[1,1]' * 'freeMotionScalarInit.arrow.r_tail[1]' + 'freeMotionScalarInit.arrow.frame_a.R.T[2,1]' * 'freeMotionScalarInit.arrow.r_tail[2]' + 'freeMotionScalarInit.arrow.frame_a.R.T[3,1]' * 'freeMotionScalarInit.arrow.r_tail[3]';
-    'freeMotionScalarInit.arrow.arrow.r[2]' = 'freeMotionScalarInit.arrow.frame_a.r_0[2]' + 'freeMotionScalarInit.arrow.frame_a.R.T[1,2]' * 'freeMotionScalarInit.arrow.r_tail[1]' + 'freeMotionScalarInit.arrow.frame_a.R.T[2,2]' * 'freeMotionScalarInit.arrow.r_tail[2]' + 'freeMotionScalarInit.arrow.frame_a.R.T[3,2]' * 'freeMotionScalarInit.arrow.r_tail[3]';
-    'freeMotionScalarInit.arrow.arrow.r[3]' = 'freeMotionScalarInit.arrow.frame_a.r_0[3]' + 'freeMotionScalarInit.arrow.frame_a.R.T[1,3]' * 'freeMotionScalarInit.arrow.r_tail[1]' + 'freeMotionScalarInit.arrow.frame_a.R.T[2,3]' * 'freeMotionScalarInit.arrow.r_tail[2]' + 'freeMotionScalarInit.arrow.frame_a.R.T[3,3]' * 'freeMotionScalarInit.arrow.r_tail[3]';
+    'freeMotionScalarInit.arrow.arrow.r[1]' = 'freeMotionScalarInit.arrow.frame_a.r_0[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('freeMotionScalarInit.arrow.frame_a.R.T', 'freeMotionScalarInit.arrow.r_tail'))[1];
+    'freeMotionScalarInit.arrow.arrow.r[2]' = 'freeMotionScalarInit.arrow.frame_a.r_0[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('freeMotionScalarInit.arrow.frame_a.R.T', 'freeMotionScalarInit.arrow.r_tail'))[2];
+    'freeMotionScalarInit.arrow.arrow.r[3]' = 'freeMotionScalarInit.arrow.frame_a.r_0[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('freeMotionScalarInit.arrow.frame_a.R.T', 'freeMotionScalarInit.arrow.r_tail'))[3];
     'freeMotionScalarInit.arrow.arrow.coordinates[1]' = 'freeMotionScalarInit.arrow.r_head[1]';
     'freeMotionScalarInit.arrow.arrow.coordinates[2]' = 'freeMotionScalarInit.arrow.r_head[2]';
     'freeMotionScalarInit.arrow.arrow.coordinates[3]' = 'freeMotionScalarInit.arrow.r_head[3]';

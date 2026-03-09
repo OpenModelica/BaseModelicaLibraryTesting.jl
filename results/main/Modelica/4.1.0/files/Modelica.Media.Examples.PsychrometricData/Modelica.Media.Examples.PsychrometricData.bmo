@@ -1,492 +1,10 @@
 //! base 0.1.0
 package 'PsychrometricData'
-  function 'Modelica.Math.Nonlinear.solveOneNonlinearEquation' "Solve f(u) = 0 in a very reliable and efficient way (f(u_min) and f(u_max) must have different signs)"
-    input 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' 'f';
-    input Real 'u_min';
-    input Real 'u_max';
-    input Real 'tolerance' = 2.220446049250313e-14;
-    output Real 'u';
-    constant Real 'eps' = 2.220446049250313e-16;
-    Real 'a' = 'u_min';
-    Real 'b' = 'u_max';
-    Real 'c';
-    Real 'd';
-    Real 'e';
-    Real 'm';
-    Real 's';
-    Real 'p';
-    Real 'q';
-    Real 'r';
-    Real 'tol';
-    Real 'fa';
-    Real 'fb';
-    Real 'fc';
-    Boolean 'found' = false;
-  algorithm
-    'fa' := 'f'('u_min');
-    'fb' := 'f'('u_max');
-    'fc' := 'fb';
-
-    if 'fa' > 0.0 and 'fb' > 0.0 or 'fa' < 0.0 and 'fb' < 0.0 then
-      'Modelica.Utilities.Streams.error'("The arguments u_min and u_max provided in the function call\n    solveOneNonlinearEquation(f,u_min,u_max)\ndo not bracket the root of the single non-linear equation 0=f(u):\n  u_min  = " + String('u_min') + "\n" + "  u_max  = " + String('u_max') + "\n" + "  fa = f(u_min) = " + String('fa') + "\n" + "  fb = f(u_max) = " + String('fb') + "\n" + "fa and fb must have opposite sign which is not the case");
-    end if;
-
-    'c' := 'a';
-    'fc' := 'fa';
-    'e' := 'b' - 'a';
-    'd' := 'e';
-
-    while not 'found' loop
-      if abs('fc') < abs('fb') then
-        'a' := 'b';
-        'b' := 'c';
-        'c' := 'a';
-        'fa' := 'fb';
-        'fb' := 'fc';
-        'fc' := 'fa';
-      end if;
-
-      'tol' := 2.0 * 'eps' * abs('b') + 'tolerance';
-      'm' := ('c' - 'b') / 2.0;
-
-      if abs('m') <= 'tol' or 'fb' == 0.0 then
-        'found' := true;
-        'u' := 'b';
-      elseif true then
-        if abs('e') < 'tol' or abs('fa') <= abs('fb') then
-          'e' := 'm';
-          'd' := 'e';
-        elseif true then
-          's' := 'fb' / 'fa';
-
-          if 'a' == 'c' then
-            'p' := 2.0 * 'm' * 's';
-            'q' := 1.0 - 's';
-          elseif true then
-            'q' := 'fa' / 'fc';
-            'r' := 'fb' / 'fc';
-            'p' := 's' * (2.0 * 'm' * 'q' * ('q' - 'r') - ('b' - 'a') * ('r' - 1.0));
-            'q' := ('q' - 1.0) * ('r' - 1.0) * ('s' - 1.0);
-          end if;
-
-          if 'p' > 0.0 then
-            'q' := -'q';
-          elseif true then
-            'p' := -'p';
-          end if;
-
-          's' := 'e';
-          'e' := 'd';
-
-          if 2.0 * 'p' < 3.0 * 'm' * 'q' - abs('tol' * 'q') and 'p' < abs(0.5 * 's' * 'q') then
-            'd' := 'p' / 'q';
-          elseif true then
-            'e' := 'm';
-            'd' := 'e';
-          end if;
-        end if;
-
-        'a' := 'b';
-        'fa' := 'fb';
-        'b' := 'b' + (if abs('d') > 'tol' then 'd' else if 'm' > 0.0 then 'tol' else -'tol');
-        'fb' := 'f'('b');
-
-        if 'fb' > 0.0 and 'fc' > 0.0 or 'fb' < 0.0 and 'fc' < 0.0 then
-          'c' := 'a';
-          'fc' := 'fa';
-          'e' := 'b' - 'a';
-          'd' := 'e';
-        end if;
-      end if;
-    end while;
-  end 'Modelica.Math.Nonlinear.solveOneNonlinearEquation';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.T_phX' "Return temperature as a function of pressure p, specific enthalpy h and composition X"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 647.0, min = 190.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'Modelica.Math.Nonlinear.solveOneNonlinearEquation'(function 'Modelica.Media.Examples.PsychrometricData.Medium.T_phX.f_nonlinear'(p = 'p', h = 'h', X = 'X'[1:1]), 190.0, 647.0, 2.220446049250313e-14);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.T_phX';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater' "Computes specific enthalpy of water (solid/liquid) near atmospheric pressure from temperature T"
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction'(4200.0 * ('T' - 273.15), 2050.0 * ('T' - 273.15) - 333000.0, 'T' - 273.16, 0.1);
-    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater_der');
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater_der' "Derivative function of enthalpyOfWater"
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'dT'(unit = "K/s");
-    output Real 'dh'(unit = "J/(kg.s)");
-  algorithm
-    'dh' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction_der'(4200.0 * ('T' - 273.15), 2050.0 * ('T' - 273.15) - 333000.0, 'T' - 273.16, 0.1, 4200.0 * 'dT', 2050.0 * 'dT', 'dT', 0.0);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater_der';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX' "Return specific enthalpy of moist air as a function of pressure p, temperature T and composition X"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'p_steam_sat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'X_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_liquid'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_steam'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_air'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-  algorithm
-    'p_steam_sat' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure'('T');
-    'X_sat' := min('p_steam_sat' * 0.6219647130774989 / max(2.220446049250313e-14, 'p' - 'p_steam_sat') * (1.0 - 'X'[1]), 1.0);
-    'X_liquid' := max('X'[1] - 'X_sat', 0.0);
-    'X_steam' := 'X'[1] - 'X_liquid';
-    'X_air' := 1.0 - 'X'[1];
-    'h' := 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 2.547494319e6) * 'X_steam' + 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 25104.684) * 'X_air' + 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater'('T') * 'X_liquid';
-    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der', Inline = false);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der' "Derivative function of h_pTX"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    input Real 'dp'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    input Real 'dT'(unit = "K/s", quantity = "TemperatureSlope");
-    input Real[:] 'dX'(each unit = "1/s");
-    output Real 'h_der'(unit = "J/(kg.s)");
-    Real 'p_steam_sat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'X_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_liquid'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_steam'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_air'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'x_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'dX_steam'(unit = "1/s");
-    Real 'dX_air'(unit = "1/s");
-    Real 'dX_liq'(unit = "1/s");
-    Real 'dps'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    Real 'dx_sat'(unit = "1/s");
-  algorithm
-    'p_steam_sat' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure'('T');
-    'x_sat' := 'p_steam_sat' * 0.6219647130774989 / max(2.220446049250313e-14, 'p' - 'p_steam_sat');
-    'X_sat' := min('x_sat' * (1.0 - 'X'[1]), 1.0);
-    'X_liquid' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax'('X'[1] - 'X_sat', 0.0, 1e-5);
-    'X_steam' := 'X'[1] - 'X_liquid';
-    'X_air' := 1.0 - 'X'[1];
-    'dX_air' := -'dX'[1];
-    'dps' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure_der'('T', 'dT');
-    'dx_sat' := 0.6219647130774989 * ('dps' * ('p' - 'p_steam_sat') - 'p_steam_sat' * ('dp' - 'dps')) / ('p' - 'p_steam_sat') / ('p' - 'p_steam_sat');
-    'dX_liq' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax_der'('X'[1] - 'X_sat', 0.0, 1e-5, (1.0 + 'x_sat') * 'dX'[1] - (1.0 - 'X'[1]) * 'dx_sat', 0.0, 0.0);
-    'dX_steam' := 'dX'[1] - 'dX_liq';
-    'h_der' := 'X_steam' * ('dT' * 'Modelica.Media.IdealGases.Common.Functions.cp_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'T')) + 'dX_steam' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 2.547494319e6) + 'X_air' * ('dT' * 'Modelica.Media.IdealGases.Common.Functions.cp_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'T')) + 'dX_air' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 25104.684) + 'X_liquid' * 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater_der'('T', 'dT') + 'dX_liq' * 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater'('T');
-    annotation(Inline = false, smoothOrder = 1);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure' "Return saturation pressure of water as a function of temperature T between 190 and 647.096 K"
-    input Real 'Tsat'(nominal = 300.0, start = 288.15, max = 647.0, min = 190.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'psat'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  algorithm
-    'psat' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction'('Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid'('Tsat'), 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce'('Tsat'), 'Tsat' - 273.16, 1.0);
-    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure_der', Inline = false, smoothOrder = 5);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid' "Return saturation pressure of water as a function of temperature T in the range of 273.16 to 647.096 K"
-    input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'psat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Tcritical'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.096;
-    Real 'pcritical'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 2.2064e7;
-    Real[:] 'a' = {-7.85951783, 1.84408259, -11.7866497, 22.6807411, -15.9618719, 1.80122502};
-    Real[:] 'n' = {1.0, 1.5, 3.0, 3.5, 4.0, 7.5};
-    Real 'r1' = 1.0 - 'Tsat' / 'Tcritical';
-  algorithm
-    'psat' := exp(('a'[1] * 'r1' ^ 'n'[1] + 'a'[2] * 'r1' ^ 'n'[2] + 'a'[3] * 'r1' ^ 'n'[3] + 'a'[4] * 'r1' ^ 'n'[4] + 'a'[5] * 'r1' ^ 'n'[5] + 'a'[6] * 'r1' ^ 'n'[6]) * 'Tcritical' / 'Tsat') * 'pcritical';
-    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid_der', Inline = false, smoothOrder = 5);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid_der' "Derivative function for 'saturationPressureLiquid'"
-    input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'dTsat'(unit = "K/s", quantity = "TemperatureSlope");
-    output Real 'psat_der'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    Real 'Tcritical'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.096;
-    Real 'pcritical'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 2.2064e7;
-    Real[:] 'a' = {-7.85951783, 1.84408259, -11.7866497, 22.6807411, -15.9618719, 1.80122502};
-    Real[:] 'n' = {1.0, 1.5, 3.0, 3.5, 4.0, 7.5};
-    Real 'r1' = 1.0 - 'Tsat' / 'Tcritical';
-    Real 'r1_der' = -1.0 / 'Tcritical' * 'dTsat';
-    Real 'r2' = 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] * 'r1' ^ 'n'[2] + 'a'[3] * 'r1' ^ 'n'[3] + 'a'[4] * 'r1' ^ 'n'[4] + 'a'[5] * 'r1' ^ 'n'[5] + 'a'[6] * 'r1' ^ 'n'[6];
-  algorithm
-    'psat_der' := exp('r2' * 'Tcritical' / 'Tsat') * 'pcritical' * (('a'[1] * ('r1' ^ ('n'[1] - 1.0) * 'n'[1] * 'r1_der') + 'a'[2] * ('r1' ^ ('n'[2] - 1.0) * 'n'[2] * 'r1_der') + 'a'[3] * ('r1' ^ ('n'[3] - 1.0) * 'n'[3] * 'r1_der') + 'a'[4] * ('r1' ^ ('n'[4] - 1.0) * 'n'[4] * 'r1_der') + 'a'[5] * ('r1' ^ ('n'[5] - 1.0) * 'n'[5] * 'r1_der') + 'a'[6] * ('r1' ^ ('n'[6] - 1.0) * 'n'[6] * 'r1_der')) * 'Tcritical' / 'Tsat' - 'r2' * 'Tcritical' * 'dTsat' / 'Tsat' ^ 2.0);
-    annotation(Inline = false, smoothOrder = 5);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid_der';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure_der' "Derivative function for 'saturationPressure'"
-    input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'dTsat'(unit = "K/s", quantity = "TemperatureSlope");
-    output Real 'psat_der'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-  algorithm
-    'psat_der' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction_der'('Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid'('Tsat'), 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce'('Tsat'), 'Tsat' - 273.16, 1.0, 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid_der'('Tsat', 'dTsat'), 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der'('Tsat', 'dTsat'), 'dTsat', 0.0);
-    annotation(Inline = false, smoothOrder = 5);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure_der';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationTemperature' "Return saturation temperature of water as a function of (partial) pressure p"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T_min'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 190.0;
-    input Real 'T_max'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.0;
-    output Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'Modelica.Math.Nonlinear.solveOneNonlinearEquation'(function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationTemperature.f_nonlinear'(p = 'p'), 'T_min', 'T_max', 2.220446049250313e-14);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.saturationTemperature';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.setState_pTX' "Return thermodynamic state as function of pressure p, temperature T and composition X"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 647.0, min = 190.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
-    output 'Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := if size('X', 1) == 2 then 'Medium.ThermodynamicState'('p', 'T', 'X') else 'Medium.ThermodynamicState'('p', 'T', cat(1, 'X', {1.0 - sum('X')}));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.setState_pTX';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.setState_phX' "Return thermodynamic state as function of pressure p, specific enthalpy h and composition X"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
-    output 'Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := if size('X', 1) == 2 then 'Medium.ThermodynamicState'('p', 'Modelica.Media.Examples.PsychrometricData.Medium.T_phX'('p', 'h', 'X'), 'X') else 'Medium.ThermodynamicState'('p', 'Modelica.Media.Examples.PsychrometricData.Medium.T_phX'('p', 'h', 'X'), cat(1, 'X', {1.0 - sum('X')}));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.setState_phX';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy' "Return specific enthalpy of moist air as a function of the thermodynamic state record"
-    input 'Medium.ThermodynamicState' 'state';
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'('state'.'p', 'state'.'T', 'state'.'X');
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 647.0, min = 190.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy'('Modelica.Media.Examples.PsychrometricData.Medium.setState_pTX'('p', 'T', 'X'));
-    annotation(inverse(T = Modelica.Media.Examples.PsychrometricData.Medium.temperature_phX('p', 'h', 'X')));
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce' "Return sublimation pressure of water as a function of temperature T between 190 and 273.16 K"
-    input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'psat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Ttriple'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.16;
-    Real 'ptriple'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 611.657;
-    Real[:] 'a' = {-13.928169, 34.7078238};
-    Real[:] 'n' = {-1.5, -1.25};
-    Real 'r1' = 'Tsat' / 'Ttriple';
-  algorithm
-    'psat' := exp('a'[1] - 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] - 'a'[2] * 'r1' ^ 'n'[2]) * 'ptriple';
-    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der', Inline = false, smoothOrder = 5);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der' "Derivative function for 'sublimationPressureIce'"
-    input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'dTsat'(unit = "K/s", quantity = "TemperatureSlope");
-    output Real 'psat_der'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    Real 'Ttriple'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.16;
-    Real 'ptriple'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 611.657;
-    Real[:] 'a' = {-13.928169, 34.7078238};
-    Real[:] 'n' = {-1.5, -1.25};
-    Real 'r1' = 'Tsat' / 'Ttriple';
-    Real 'r1_der' = 'dTsat' / 'Ttriple';
-  algorithm
-    'psat_der' := exp('a'[1] - 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] - 'a'[2] * 'r1' ^ 'n'[2]) * 'ptriple' * (-('a'[1] * ('r1' ^ ('n'[1] - 1.0) * 'n'[1] * 'r1_der') + 'a'[2] * ('r1' ^ ('n'[2] - 1.0) * 'n'[2] * 'r1_der')));
-    annotation(Inline = false, smoothOrder = 5);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.temperature' "Return temperature of ideal gas as a function of the thermodynamic state record"
-    input 'Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 647.0, min = 190.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.temperature';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.temperature_phX' "Return temperature from p, h, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 647.0, min = 190.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'Modelica.Media.Examples.PsychrometricData.Medium.temperature'('Modelica.Media.Examples.PsychrometricData.Medium.setState_phX'('p', 'h', 'X'));
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.temperature_phX';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.T_phX.f_nonlinear' "Solve h_pTX(p,T,X) for T with given h"
-    input Real 'u';
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'y';
-  algorithm
-    'y' := 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'('p', 'u', 'X') - 'h';
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.T_phX.f_nonlinear';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax'
-    input Real 'x1';
-    input Real 'x2';
-    input Real 'dx';
-    output Real 'y';
-  algorithm
-    'y' := max('x1', 'x2') + log(exp(4.0 / 'dx' * ('x1' - max('x1', 'x2'))) + exp(4.0 / 'dx' * ('x2' - max('x1', 'x2')))) / (4.0 / 'dx');
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax_der'
-    input Real 'x1';
-    input Real 'x2';
-    input Real 'dx';
-    input Real 'dx1';
-    input Real 'dx2';
-    input Real 'ddx';
-    output Real 'dy';
-  algorithm
-    'dy' := (if 'x1' > 'x2' then 'dx1' else 'dx2') + 0.25 * (((4.0 * ('dx1' - (if 'x1' > 'x2' then 'dx1' else 'dx2')) / 'dx' - 4.0 * ('x1' - max('x1', 'x2')) * 'ddx' / 'dx' ^ 2.0) * exp(4.0 * ('x1' - max('x1', 'x2')) / 'dx') + (4.0 * ('dx2' - (if 'x1' > 'x2' then 'dx1' else 'dx2')) / 'dx' - 4.0 * ('x2' - max('x1', 'x2')) * 'ddx' / 'dx' ^ 2.0) * exp(4.0 * ('x2' - max('x1', 'x2')) / 'dx')) * 'dx' / (exp(4.0 * ('x1' - max('x1', 'x2')) / 'dx') + exp(4.0 * ('x2' - max('x1', 'x2')) / 'dx')) + log(exp(4.0 * ('x1' - max('x1', 'x2')) / 'dx') + exp(4.0 * ('x2' - max('x1', 'x2')) / 'dx')) * 'ddx');
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax_der';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction' "Spline interpolation of two functions"
-    input Real 'pos';
-    input Real 'neg';
-    input Real 'x';
-    input Real 'deltax' = 1.0;
-    output Real 'out';
-    constant Real 'lim' = 0.9999999999;
-    Real 'scaledX1';
-    Real 'scaledXp';
-    Real 'scaledXt';
-    Real 'y';
-  algorithm
-    'scaledX1' := 'x' / 'deltax';
-
-    if 'scaledX1' <= (-'lim') then
-      'y' := 0.0;
-    elseif 'scaledX1' >= 'lim' then
-      'y' := 1.0;
-    elseif true then
-      'scaledXp' := 'scaledX1' * 0.5 * 3.141592653589793;
-      'scaledXt' := tan('scaledXp');
-      'y' := 0.5 * tanh('scaledXt') + 0.5;
-    end if;
-
-    'out' := 'pos' * 'y' + (1.0 - 'y') * 'neg';
-    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction_der');
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction_der' "Derivative of spliceFunction"
-    input Real 'pos';
-    input Real 'neg';
-    input Real 'x';
-    input Real 'deltax' = 1.0;
-    input Real 'dpos';
-    input Real 'dneg';
-    input Real 'dx';
-    input Real 'ddeltax' = 0.0;
-    output Real 'out';
-    constant Real 'lim' = 0.9999999999;
-    Real 'scaledX1';
-    Real 'scaledXp';
-    Real 'scaledXt';
-    Real 'dscaledX1';
-    Real 'y';
-  algorithm
-    'scaledX1' := 'x' / 'deltax';
-
-    if 'scaledX1' <= (-'lim') then
-      'y' := 0.0;
-    elseif 'scaledX1' >= 'lim' then
-      'y' := 1.0;
-    elseif true then
-      'scaledXp' := 'scaledX1' * 0.5 * 3.141592653589793;
-      'scaledXt' := tan('scaledXp');
-      'y' := 0.5 * tanh('scaledXt') + 0.5;
-    end if;
-
-    'out' := 'dpos' * 'y' + (1.0 - 'y') * 'dneg';
-
-    if abs('scaledX1') < 'lim' then
-      'dscaledX1' := ('dx' - 'scaledX1' * 'ddeltax') / 'deltax';
-      'out' := 'out' + ('pos' - 'neg') * 'dscaledX1' * 0.25 * 3.141592653589793 * (1.0 - tanh('scaledXt') ^ 2.0) * ('scaledXt' ^ 2.0 + 1.0);
-    end if;
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction_der';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationTemperature.f_nonlinear' "Solve p(T) for T with given p"
-    input Real 'u';
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output Real 'y';
-  algorithm
-    'y' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure'('u') - 'p';
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.saturationTemperature.f_nonlinear';
-
-  function 'Modelica.Media.IdealGases.Common.Functions.cp_Tlow' "Compute specific heat capacity at constant pressure, low T region"
-    input 'Modelica.Media.IdealGases.Common.DataRecord' 'data';
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
-  algorithm
-    'cp' := 'data'.'R_s' * (1.0 / ('T' * 'T') * ('data'.'alow'[1] + 'T' * ('data'.'alow'[2] + 'T' * ('data'.'alow'[3] + 'T' * ('data'.'alow'[4] + 'T' * ('data'.'alow'[5] + 'T' * ('data'.'alow'[6] + 'data'.'alow'[7] * 'T')))))));
-    annotation(derivative(order = 1, zeroDerivative = 'data') = 'Modelica.Media.IdealGases.Common.Functions.cp_Tlow_der', Inline = false);
-  end 'Modelica.Media.IdealGases.Common.Functions.cp_Tlow';
-
-  function 'Modelica.Media.IdealGases.Common.Functions.cp_Tlow_der' "Compute derivative of specific heat capacity at constant pressure, low T region"
-    input 'Modelica.Media.IdealGases.Common.DataRecord' 'data';
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'dT'(unit = "K/s");
-    output Real 'cp_der'(unit = "J/(kg.K.s)");
-  algorithm
-    'cp_der' := 'dT' * 'data'.'R_s' / ('T' * 'T' * 'T') * ('T' * ('T' * 'T' * ('data'.'alow'[4] + 'T' * (2.0 * 'data'.'alow'[5] + 'T' * (3.0 * 'data'.'alow'[6] + 4.0 * 'data'.'alow'[7] * 'T'))) - 'data'.'alow'[2]) - 2.0 * 'data'.'alow'[1]);
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.IdealGases.Common.Functions.cp_Tlow_der';
-
-  function 'Modelica.Media.IdealGases.Common.Functions.h_Tlow' "Compute specific enthalpy, low T region; reference is decided by the
-    refChoice input, or by the referenceChoice package constant by default"
-    input 'Modelica.Media.IdealGases.Common.DataRecord' 'data';
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Boolean 'exclEnthForm' = true;
-    input 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' 'refChoice' = 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K';
-    input Real 'h_off'(unit = "J/kg", quantity = "SpecificEnergy") = 0.0;
-    output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 'data'.'R_s' * (('T' * ('data'.'blow'[1] + 'data'.'alow'[2] * log('T') + 'T' * ('data'.'alow'[3] + 'T' * (0.5 * 'data'.'alow'[4] + 'T' * (0.3333333333333333 * 'data'.'alow'[5] + 'T' * (0.25 * 'data'.'alow'[6] + 0.2 * 'data'.'alow'[7] * 'T'))))) - 'data'.'alow'[1]) / 'T') + (if 'exclEnthForm' then -'data'.'Hf' else 0.0) + (if 'refChoice' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K' then 'data'.'H0' else 0.0) + (if 'refChoice' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined' then 'h_off' else 0.0);
-    annotation(Inline = false, smoothOrder = 2);
-  end 'Modelica.Media.IdealGases.Common.Functions.h_Tlow';
-
-  function 'Modelica.Utilities.Streams.error' "Print error message and cancel all actions - in case of an unrecoverable error"
-    input String 'string';
-  algorithm
-    assert(false, 'string', AssertionLevel.error);
-  end 'Modelica.Utilities.Streams.error';
-
-  partial function 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' "Interface for a function with one input and one output Real signal"
-    input Real 'u';
-    output Real 'y';
-  end 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction';
-
   record 'Medium.ThermodynamicState'
     Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, max = 647.0, min = 190.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     Real[2] 'X'(nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
   end 'Medium.ThermodynamicState';
-
-  record 'Modelica.Media.IdealGases.Common.DataRecord'
-    String 'name';
-    Real 'MM'(min = 0.0, unit = "kg/mol", quantity = "MolarMass");
-    Real 'Hf'(unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'H0'(unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'Tlimit'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[7] 'alow';
-    Real[2] 'blow';
-    Real[7] 'ahigh';
-    Real[2] 'bhigh';
-    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
-  end 'Modelica.Media.IdealGases.Common.DataRecord';
-
-  type 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' = enumeration('ZeroAt0K', 'ZeroAt25C', 'UserDefined');
 
   model 'PsychrometricData' "Produces plot data for psychrometric charts"
     parameter Real 'p_const'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1e5 "Pressure";
@@ -1256,7 +774,7 @@ package 'PsychrometricData'
     'medium_T[1].X_liquid' = max('medium_T[1].Xi[1]' - 'medium_T[1].X_sat', 0.0);
     'medium_T[1].X_steam' = 'medium_T[1].Xi[1]' - 'medium_T[1].X_liquid';
     'medium_T[1].X_air' = 1.0 - 'medium_T[1].Xi[1]';
-    'medium_T[1].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[1].p', 'medium_T[1].T', {'medium_T[1].Xi[1]'});
+    'medium_T[1].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[1].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[1].p', 'medium_T[1].T', 'medium_T[1].Xi') else 'Medium.ThermodynamicState'('medium_T[1].p', 'medium_T[1].T', cat(1, 'medium_T[1].Xi', {1.0 - sum('medium_T[1].Xi')}))).p, (if size('medium_T[1].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[1].p', 'medium_T[1].T', 'medium_T[1].Xi') else 'Medium.ThermodynamicState'('medium_T[1].p', 'medium_T[1].T', cat(1, 'medium_T[1].Xi', {1.0 - sum('medium_T[1].Xi')}))).T, {((if size('medium_T[1].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[1].p', 'medium_T[1].T', 'medium_T[1].Xi') else 'Medium.ThermodynamicState'('medium_T[1].p', 'medium_T[1].T', cat(1, 'medium_T[1].Xi', {1.0 - sum('medium_T[1].Xi')}))).X)[1], ((if size('medium_T[1].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[1].p', 'medium_T[1].T', 'medium_T[1].Xi') else 'Medium.ThermodynamicState'('medium_T[1].p', 'medium_T[1].T', cat(1, 'medium_T[1].Xi', {1.0 - sum('medium_T[1].Xi')}))).X)[2]});
     'medium_T[1].R_s' = 287.0525368759184 * ('medium_T[1].X_air' / (1.0 - 'medium_T[1].X_liquid')) + 461.5254384056201 * 'medium_T[1].X_steam' / (1.0 - 'medium_T[1].X_liquid');
     'medium_T[1].u' = 'medium_T[1].h' - 'medium_T[1].R_s' * 'medium_T[1].T';
     'medium_T[1].d' = 'medium_T[1].p' / ('medium_T[1].R_s' * 'medium_T[1].T');
@@ -1279,7 +797,7 @@ package 'PsychrometricData'
     'medium_T[2].X_liquid' = max('medium_T[2].Xi[1]' - 'medium_T[2].X_sat', 0.0);
     'medium_T[2].X_steam' = 'medium_T[2].Xi[1]' - 'medium_T[2].X_liquid';
     'medium_T[2].X_air' = 1.0 - 'medium_T[2].Xi[1]';
-    'medium_T[2].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[2].p', 'medium_T[2].T', {'medium_T[2].Xi[1]'});
+    'medium_T[2].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[2].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[2].p', 'medium_T[2].T', 'medium_T[2].Xi') else 'Medium.ThermodynamicState'('medium_T[2].p', 'medium_T[2].T', cat(1, 'medium_T[2].Xi', {1.0 - sum('medium_T[2].Xi')}))).p, (if size('medium_T[2].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[2].p', 'medium_T[2].T', 'medium_T[2].Xi') else 'Medium.ThermodynamicState'('medium_T[2].p', 'medium_T[2].T', cat(1, 'medium_T[2].Xi', {1.0 - sum('medium_T[2].Xi')}))).T, {((if size('medium_T[2].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[2].p', 'medium_T[2].T', 'medium_T[2].Xi') else 'Medium.ThermodynamicState'('medium_T[2].p', 'medium_T[2].T', cat(1, 'medium_T[2].Xi', {1.0 - sum('medium_T[2].Xi')}))).X)[1], ((if size('medium_T[2].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[2].p', 'medium_T[2].T', 'medium_T[2].Xi') else 'Medium.ThermodynamicState'('medium_T[2].p', 'medium_T[2].T', cat(1, 'medium_T[2].Xi', {1.0 - sum('medium_T[2].Xi')}))).X)[2]});
     'medium_T[2].R_s' = 287.0525368759184 * ('medium_T[2].X_air' / (1.0 - 'medium_T[2].X_liquid')) + 461.5254384056201 * 'medium_T[2].X_steam' / (1.0 - 'medium_T[2].X_liquid');
     'medium_T[2].u' = 'medium_T[2].h' - 'medium_T[2].R_s' * 'medium_T[2].T';
     'medium_T[2].d' = 'medium_T[2].p' / ('medium_T[2].R_s' * 'medium_T[2].T');
@@ -1302,7 +820,7 @@ package 'PsychrometricData'
     'medium_T[3].X_liquid' = max('medium_T[3].Xi[1]' - 'medium_T[3].X_sat', 0.0);
     'medium_T[3].X_steam' = 'medium_T[3].Xi[1]' - 'medium_T[3].X_liquid';
     'medium_T[3].X_air' = 1.0 - 'medium_T[3].Xi[1]';
-    'medium_T[3].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[3].p', 'medium_T[3].T', {'medium_T[3].Xi[1]'});
+    'medium_T[3].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[3].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[3].p', 'medium_T[3].T', 'medium_T[3].Xi') else 'Medium.ThermodynamicState'('medium_T[3].p', 'medium_T[3].T', cat(1, 'medium_T[3].Xi', {1.0 - sum('medium_T[3].Xi')}))).p, (if size('medium_T[3].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[3].p', 'medium_T[3].T', 'medium_T[3].Xi') else 'Medium.ThermodynamicState'('medium_T[3].p', 'medium_T[3].T', cat(1, 'medium_T[3].Xi', {1.0 - sum('medium_T[3].Xi')}))).T, {((if size('medium_T[3].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[3].p', 'medium_T[3].T', 'medium_T[3].Xi') else 'Medium.ThermodynamicState'('medium_T[3].p', 'medium_T[3].T', cat(1, 'medium_T[3].Xi', {1.0 - sum('medium_T[3].Xi')}))).X)[1], ((if size('medium_T[3].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[3].p', 'medium_T[3].T', 'medium_T[3].Xi') else 'Medium.ThermodynamicState'('medium_T[3].p', 'medium_T[3].T', cat(1, 'medium_T[3].Xi', {1.0 - sum('medium_T[3].Xi')}))).X)[2]});
     'medium_T[3].R_s' = 287.0525368759184 * ('medium_T[3].X_air' / (1.0 - 'medium_T[3].X_liquid')) + 461.5254384056201 * 'medium_T[3].X_steam' / (1.0 - 'medium_T[3].X_liquid');
     'medium_T[3].u' = 'medium_T[3].h' - 'medium_T[3].R_s' * 'medium_T[3].T';
     'medium_T[3].d' = 'medium_T[3].p' / ('medium_T[3].R_s' * 'medium_T[3].T');
@@ -1325,7 +843,7 @@ package 'PsychrometricData'
     'medium_T[4].X_liquid' = max('medium_T[4].Xi[1]' - 'medium_T[4].X_sat', 0.0);
     'medium_T[4].X_steam' = 'medium_T[4].Xi[1]' - 'medium_T[4].X_liquid';
     'medium_T[4].X_air' = 1.0 - 'medium_T[4].Xi[1]';
-    'medium_T[4].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[4].p', 'medium_T[4].T', {'medium_T[4].Xi[1]'});
+    'medium_T[4].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[4].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[4].p', 'medium_T[4].T', 'medium_T[4].Xi') else 'Medium.ThermodynamicState'('medium_T[4].p', 'medium_T[4].T', cat(1, 'medium_T[4].Xi', {1.0 - sum('medium_T[4].Xi')}))).p, (if size('medium_T[4].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[4].p', 'medium_T[4].T', 'medium_T[4].Xi') else 'Medium.ThermodynamicState'('medium_T[4].p', 'medium_T[4].T', cat(1, 'medium_T[4].Xi', {1.0 - sum('medium_T[4].Xi')}))).T, {((if size('medium_T[4].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[4].p', 'medium_T[4].T', 'medium_T[4].Xi') else 'Medium.ThermodynamicState'('medium_T[4].p', 'medium_T[4].T', cat(1, 'medium_T[4].Xi', {1.0 - sum('medium_T[4].Xi')}))).X)[1], ((if size('medium_T[4].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[4].p', 'medium_T[4].T', 'medium_T[4].Xi') else 'Medium.ThermodynamicState'('medium_T[4].p', 'medium_T[4].T', cat(1, 'medium_T[4].Xi', {1.0 - sum('medium_T[4].Xi')}))).X)[2]});
     'medium_T[4].R_s' = 287.0525368759184 * ('medium_T[4].X_air' / (1.0 - 'medium_T[4].X_liquid')) + 461.5254384056201 * 'medium_T[4].X_steam' / (1.0 - 'medium_T[4].X_liquid');
     'medium_T[4].u' = 'medium_T[4].h' - 'medium_T[4].R_s' * 'medium_T[4].T';
     'medium_T[4].d' = 'medium_T[4].p' / ('medium_T[4].R_s' * 'medium_T[4].T');
@@ -1348,7 +866,7 @@ package 'PsychrometricData'
     'medium_T[5].X_liquid' = max('medium_T[5].Xi[1]' - 'medium_T[5].X_sat', 0.0);
     'medium_T[5].X_steam' = 'medium_T[5].Xi[1]' - 'medium_T[5].X_liquid';
     'medium_T[5].X_air' = 1.0 - 'medium_T[5].Xi[1]';
-    'medium_T[5].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[5].p', 'medium_T[5].T', {'medium_T[5].Xi[1]'});
+    'medium_T[5].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[5].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[5].p', 'medium_T[5].T', 'medium_T[5].Xi') else 'Medium.ThermodynamicState'('medium_T[5].p', 'medium_T[5].T', cat(1, 'medium_T[5].Xi', {1.0 - sum('medium_T[5].Xi')}))).p, (if size('medium_T[5].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[5].p', 'medium_T[5].T', 'medium_T[5].Xi') else 'Medium.ThermodynamicState'('medium_T[5].p', 'medium_T[5].T', cat(1, 'medium_T[5].Xi', {1.0 - sum('medium_T[5].Xi')}))).T, {((if size('medium_T[5].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[5].p', 'medium_T[5].T', 'medium_T[5].Xi') else 'Medium.ThermodynamicState'('medium_T[5].p', 'medium_T[5].T', cat(1, 'medium_T[5].Xi', {1.0 - sum('medium_T[5].Xi')}))).X)[1], ((if size('medium_T[5].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[5].p', 'medium_T[5].T', 'medium_T[5].Xi') else 'Medium.ThermodynamicState'('medium_T[5].p', 'medium_T[5].T', cat(1, 'medium_T[5].Xi', {1.0 - sum('medium_T[5].Xi')}))).X)[2]});
     'medium_T[5].R_s' = 287.0525368759184 * ('medium_T[5].X_air' / (1.0 - 'medium_T[5].X_liquid')) + 461.5254384056201 * 'medium_T[5].X_steam' / (1.0 - 'medium_T[5].X_liquid');
     'medium_T[5].u' = 'medium_T[5].h' - 'medium_T[5].R_s' * 'medium_T[5].T';
     'medium_T[5].d' = 'medium_T[5].p' / ('medium_T[5].R_s' * 'medium_T[5].T');
@@ -1371,7 +889,7 @@ package 'PsychrometricData'
     'medium_T[6].X_liquid' = max('medium_T[6].Xi[1]' - 'medium_T[6].X_sat', 0.0);
     'medium_T[6].X_steam' = 'medium_T[6].Xi[1]' - 'medium_T[6].X_liquid';
     'medium_T[6].X_air' = 1.0 - 'medium_T[6].Xi[1]';
-    'medium_T[6].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[6].p', 'medium_T[6].T', {'medium_T[6].Xi[1]'});
+    'medium_T[6].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[6].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[6].p', 'medium_T[6].T', 'medium_T[6].Xi') else 'Medium.ThermodynamicState'('medium_T[6].p', 'medium_T[6].T', cat(1, 'medium_T[6].Xi', {1.0 - sum('medium_T[6].Xi')}))).p, (if size('medium_T[6].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[6].p', 'medium_T[6].T', 'medium_T[6].Xi') else 'Medium.ThermodynamicState'('medium_T[6].p', 'medium_T[6].T', cat(1, 'medium_T[6].Xi', {1.0 - sum('medium_T[6].Xi')}))).T, {((if size('medium_T[6].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[6].p', 'medium_T[6].T', 'medium_T[6].Xi') else 'Medium.ThermodynamicState'('medium_T[6].p', 'medium_T[6].T', cat(1, 'medium_T[6].Xi', {1.0 - sum('medium_T[6].Xi')}))).X)[1], ((if size('medium_T[6].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[6].p', 'medium_T[6].T', 'medium_T[6].Xi') else 'Medium.ThermodynamicState'('medium_T[6].p', 'medium_T[6].T', cat(1, 'medium_T[6].Xi', {1.0 - sum('medium_T[6].Xi')}))).X)[2]});
     'medium_T[6].R_s' = 287.0525368759184 * ('medium_T[6].X_air' / (1.0 - 'medium_T[6].X_liquid')) + 461.5254384056201 * 'medium_T[6].X_steam' / (1.0 - 'medium_T[6].X_liquid');
     'medium_T[6].u' = 'medium_T[6].h' - 'medium_T[6].R_s' * 'medium_T[6].T';
     'medium_T[6].d' = 'medium_T[6].p' / ('medium_T[6].R_s' * 'medium_T[6].T');
@@ -1394,7 +912,7 @@ package 'PsychrometricData'
     'medium_T[7].X_liquid' = max('medium_T[7].Xi[1]' - 'medium_T[7].X_sat', 0.0);
     'medium_T[7].X_steam' = 'medium_T[7].Xi[1]' - 'medium_T[7].X_liquid';
     'medium_T[7].X_air' = 1.0 - 'medium_T[7].Xi[1]';
-    'medium_T[7].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[7].p', 'medium_T[7].T', {'medium_T[7].Xi[1]'});
+    'medium_T[7].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[7].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[7].p', 'medium_T[7].T', 'medium_T[7].Xi') else 'Medium.ThermodynamicState'('medium_T[7].p', 'medium_T[7].T', cat(1, 'medium_T[7].Xi', {1.0 - sum('medium_T[7].Xi')}))).p, (if size('medium_T[7].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[7].p', 'medium_T[7].T', 'medium_T[7].Xi') else 'Medium.ThermodynamicState'('medium_T[7].p', 'medium_T[7].T', cat(1, 'medium_T[7].Xi', {1.0 - sum('medium_T[7].Xi')}))).T, {((if size('medium_T[7].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[7].p', 'medium_T[7].T', 'medium_T[7].Xi') else 'Medium.ThermodynamicState'('medium_T[7].p', 'medium_T[7].T', cat(1, 'medium_T[7].Xi', {1.0 - sum('medium_T[7].Xi')}))).X)[1], ((if size('medium_T[7].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[7].p', 'medium_T[7].T', 'medium_T[7].Xi') else 'Medium.ThermodynamicState'('medium_T[7].p', 'medium_T[7].T', cat(1, 'medium_T[7].Xi', {1.0 - sum('medium_T[7].Xi')}))).X)[2]});
     'medium_T[7].R_s' = 287.0525368759184 * ('medium_T[7].X_air' / (1.0 - 'medium_T[7].X_liquid')) + 461.5254384056201 * 'medium_T[7].X_steam' / (1.0 - 'medium_T[7].X_liquid');
     'medium_T[7].u' = 'medium_T[7].h' - 'medium_T[7].R_s' * 'medium_T[7].T';
     'medium_T[7].d' = 'medium_T[7].p' / ('medium_T[7].R_s' * 'medium_T[7].T');
@@ -1417,7 +935,7 @@ package 'PsychrometricData'
     'medium_T[8].X_liquid' = max('medium_T[8].Xi[1]' - 'medium_T[8].X_sat', 0.0);
     'medium_T[8].X_steam' = 'medium_T[8].Xi[1]' - 'medium_T[8].X_liquid';
     'medium_T[8].X_air' = 1.0 - 'medium_T[8].Xi[1]';
-    'medium_T[8].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[8].p', 'medium_T[8].T', {'medium_T[8].Xi[1]'});
+    'medium_T[8].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[8].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[8].p', 'medium_T[8].T', 'medium_T[8].Xi') else 'Medium.ThermodynamicState'('medium_T[8].p', 'medium_T[8].T', cat(1, 'medium_T[8].Xi', {1.0 - sum('medium_T[8].Xi')}))).p, (if size('medium_T[8].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[8].p', 'medium_T[8].T', 'medium_T[8].Xi') else 'Medium.ThermodynamicState'('medium_T[8].p', 'medium_T[8].T', cat(1, 'medium_T[8].Xi', {1.0 - sum('medium_T[8].Xi')}))).T, {((if size('medium_T[8].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[8].p', 'medium_T[8].T', 'medium_T[8].Xi') else 'Medium.ThermodynamicState'('medium_T[8].p', 'medium_T[8].T', cat(1, 'medium_T[8].Xi', {1.0 - sum('medium_T[8].Xi')}))).X)[1], ((if size('medium_T[8].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[8].p', 'medium_T[8].T', 'medium_T[8].Xi') else 'Medium.ThermodynamicState'('medium_T[8].p', 'medium_T[8].T', cat(1, 'medium_T[8].Xi', {1.0 - sum('medium_T[8].Xi')}))).X)[2]});
     'medium_T[8].R_s' = 287.0525368759184 * ('medium_T[8].X_air' / (1.0 - 'medium_T[8].X_liquid')) + 461.5254384056201 * 'medium_T[8].X_steam' / (1.0 - 'medium_T[8].X_liquid');
     'medium_T[8].u' = 'medium_T[8].h' - 'medium_T[8].R_s' * 'medium_T[8].T';
     'medium_T[8].d' = 'medium_T[8].p' / ('medium_T[8].R_s' * 'medium_T[8].T');
@@ -1440,7 +958,7 @@ package 'PsychrometricData'
     'medium_T[9].X_liquid' = max('medium_T[9].Xi[1]' - 'medium_T[9].X_sat', 0.0);
     'medium_T[9].X_steam' = 'medium_T[9].Xi[1]' - 'medium_T[9].X_liquid';
     'medium_T[9].X_air' = 1.0 - 'medium_T[9].Xi[1]';
-    'medium_T[9].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[9].p', 'medium_T[9].T', {'medium_T[9].Xi[1]'});
+    'medium_T[9].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[9].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[9].p', 'medium_T[9].T', 'medium_T[9].Xi') else 'Medium.ThermodynamicState'('medium_T[9].p', 'medium_T[9].T', cat(1, 'medium_T[9].Xi', {1.0 - sum('medium_T[9].Xi')}))).p, (if size('medium_T[9].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[9].p', 'medium_T[9].T', 'medium_T[9].Xi') else 'Medium.ThermodynamicState'('medium_T[9].p', 'medium_T[9].T', cat(1, 'medium_T[9].Xi', {1.0 - sum('medium_T[9].Xi')}))).T, {((if size('medium_T[9].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[9].p', 'medium_T[9].T', 'medium_T[9].Xi') else 'Medium.ThermodynamicState'('medium_T[9].p', 'medium_T[9].T', cat(1, 'medium_T[9].Xi', {1.0 - sum('medium_T[9].Xi')}))).X)[1], ((if size('medium_T[9].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[9].p', 'medium_T[9].T', 'medium_T[9].Xi') else 'Medium.ThermodynamicState'('medium_T[9].p', 'medium_T[9].T', cat(1, 'medium_T[9].Xi', {1.0 - sum('medium_T[9].Xi')}))).X)[2]});
     'medium_T[9].R_s' = 287.0525368759184 * ('medium_T[9].X_air' / (1.0 - 'medium_T[9].X_liquid')) + 461.5254384056201 * 'medium_T[9].X_steam' / (1.0 - 'medium_T[9].X_liquid');
     'medium_T[9].u' = 'medium_T[9].h' - 'medium_T[9].R_s' * 'medium_T[9].T';
     'medium_T[9].d' = 'medium_T[9].p' / ('medium_T[9].R_s' * 'medium_T[9].T');
@@ -1463,7 +981,7 @@ package 'PsychrometricData'
     'medium_T[10].X_liquid' = max('medium_T[10].Xi[1]' - 'medium_T[10].X_sat', 0.0);
     'medium_T[10].X_steam' = 'medium_T[10].Xi[1]' - 'medium_T[10].X_liquid';
     'medium_T[10].X_air' = 1.0 - 'medium_T[10].Xi[1]';
-    'medium_T[10].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[10].p', 'medium_T[10].T', {'medium_T[10].Xi[1]'});
+    'medium_T[10].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[10].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[10].p', 'medium_T[10].T', 'medium_T[10].Xi') else 'Medium.ThermodynamicState'('medium_T[10].p', 'medium_T[10].T', cat(1, 'medium_T[10].Xi', {1.0 - sum('medium_T[10].Xi')}))).p, (if size('medium_T[10].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[10].p', 'medium_T[10].T', 'medium_T[10].Xi') else 'Medium.ThermodynamicState'('medium_T[10].p', 'medium_T[10].T', cat(1, 'medium_T[10].Xi', {1.0 - sum('medium_T[10].Xi')}))).T, {((if size('medium_T[10].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[10].p', 'medium_T[10].T', 'medium_T[10].Xi') else 'Medium.ThermodynamicState'('medium_T[10].p', 'medium_T[10].T', cat(1, 'medium_T[10].Xi', {1.0 - sum('medium_T[10].Xi')}))).X)[1], ((if size('medium_T[10].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[10].p', 'medium_T[10].T', 'medium_T[10].Xi') else 'Medium.ThermodynamicState'('medium_T[10].p', 'medium_T[10].T', cat(1, 'medium_T[10].Xi', {1.0 - sum('medium_T[10].Xi')}))).X)[2]});
     'medium_T[10].R_s' = 287.0525368759184 * ('medium_T[10].X_air' / (1.0 - 'medium_T[10].X_liquid')) + 461.5254384056201 * 'medium_T[10].X_steam' / (1.0 - 'medium_T[10].X_liquid');
     'medium_T[10].u' = 'medium_T[10].h' - 'medium_T[10].R_s' * 'medium_T[10].T';
     'medium_T[10].d' = 'medium_T[10].p' / ('medium_T[10].R_s' * 'medium_T[10].T');
@@ -1486,7 +1004,7 @@ package 'PsychrometricData'
     'medium_T[11].X_liquid' = max('medium_T[11].Xi[1]' - 'medium_T[11].X_sat', 0.0);
     'medium_T[11].X_steam' = 'medium_T[11].Xi[1]' - 'medium_T[11].X_liquid';
     'medium_T[11].X_air' = 1.0 - 'medium_T[11].Xi[1]';
-    'medium_T[11].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_T[11].p', 'medium_T[11].T', {'medium_T[11].Xi[1]'});
+    'medium_T[11].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_T[11].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[11].p', 'medium_T[11].T', 'medium_T[11].Xi') else 'Medium.ThermodynamicState'('medium_T[11].p', 'medium_T[11].T', cat(1, 'medium_T[11].Xi', {1.0 - sum('medium_T[11].Xi')}))).p, (if size('medium_T[11].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[11].p', 'medium_T[11].T', 'medium_T[11].Xi') else 'Medium.ThermodynamicState'('medium_T[11].p', 'medium_T[11].T', cat(1, 'medium_T[11].Xi', {1.0 - sum('medium_T[11].Xi')}))).T, {((if size('medium_T[11].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[11].p', 'medium_T[11].T', 'medium_T[11].Xi') else 'Medium.ThermodynamicState'('medium_T[11].p', 'medium_T[11].T', cat(1, 'medium_T[11].Xi', {1.0 - sum('medium_T[11].Xi')}))).X)[1], ((if size('medium_T[11].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_T[11].p', 'medium_T[11].T', 'medium_T[11].Xi') else 'Medium.ThermodynamicState'('medium_T[11].p', 'medium_T[11].T', cat(1, 'medium_T[11].Xi', {1.0 - sum('medium_T[11].Xi')}))).X)[2]});
     'medium_T[11].R_s' = 287.0525368759184 * ('medium_T[11].X_air' / (1.0 - 'medium_T[11].X_liquid')) + 461.5254384056201 * 'medium_T[11].X_steam' / (1.0 - 'medium_T[11].X_liquid');
     'medium_T[11].u' = 'medium_T[11].h' - 'medium_T[11].R_s' * 'medium_T[11].T';
     'medium_T[11].d' = 'medium_T[11].p' / ('medium_T[11].R_s' * 'medium_T[11].T');
@@ -1509,7 +1027,7 @@ package 'PsychrometricData'
     'medium_phi[1].X_liquid' = max('medium_phi[1].Xi[1]' - 'medium_phi[1].X_sat', 0.0);
     'medium_phi[1].X_steam' = 'medium_phi[1].Xi[1]' - 'medium_phi[1].X_liquid';
     'medium_phi[1].X_air' = 1.0 - 'medium_phi[1].Xi[1]';
-    'medium_phi[1].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[1].p', 'medium_phi[1].T', {'medium_phi[1].Xi[1]'});
+    'medium_phi[1].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[1].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[1].p', 'medium_phi[1].T', 'medium_phi[1].Xi') else 'Medium.ThermodynamicState'('medium_phi[1].p', 'medium_phi[1].T', cat(1, 'medium_phi[1].Xi', {1.0 - sum('medium_phi[1].Xi')}))).p, (if size('medium_phi[1].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[1].p', 'medium_phi[1].T', 'medium_phi[1].Xi') else 'Medium.ThermodynamicState'('medium_phi[1].p', 'medium_phi[1].T', cat(1, 'medium_phi[1].Xi', {1.0 - sum('medium_phi[1].Xi')}))).T, {((if size('medium_phi[1].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[1].p', 'medium_phi[1].T', 'medium_phi[1].Xi') else 'Medium.ThermodynamicState'('medium_phi[1].p', 'medium_phi[1].T', cat(1, 'medium_phi[1].Xi', {1.0 - sum('medium_phi[1].Xi')}))).X)[1], ((if size('medium_phi[1].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[1].p', 'medium_phi[1].T', 'medium_phi[1].Xi') else 'Medium.ThermodynamicState'('medium_phi[1].p', 'medium_phi[1].T', cat(1, 'medium_phi[1].Xi', {1.0 - sum('medium_phi[1].Xi')}))).X)[2]});
     'medium_phi[1].R_s' = 287.0525368759184 * ('medium_phi[1].X_air' / (1.0 - 'medium_phi[1].X_liquid')) + 461.5254384056201 * 'medium_phi[1].X_steam' / (1.0 - 'medium_phi[1].X_liquid');
     'medium_phi[1].u' = 'medium_phi[1].h' - 'medium_phi[1].R_s' * 'medium_phi[1].T';
     'medium_phi[1].d' = 'medium_phi[1].p' / ('medium_phi[1].R_s' * 'medium_phi[1].T');
@@ -1532,7 +1050,7 @@ package 'PsychrometricData'
     'medium_phi[2].X_liquid' = max('medium_phi[2].Xi[1]' - 'medium_phi[2].X_sat', 0.0);
     'medium_phi[2].X_steam' = 'medium_phi[2].Xi[1]' - 'medium_phi[2].X_liquid';
     'medium_phi[2].X_air' = 1.0 - 'medium_phi[2].Xi[1]';
-    'medium_phi[2].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[2].p', 'medium_phi[2].T', {'medium_phi[2].Xi[1]'});
+    'medium_phi[2].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[2].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[2].p', 'medium_phi[2].T', 'medium_phi[2].Xi') else 'Medium.ThermodynamicState'('medium_phi[2].p', 'medium_phi[2].T', cat(1, 'medium_phi[2].Xi', {1.0 - sum('medium_phi[2].Xi')}))).p, (if size('medium_phi[2].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[2].p', 'medium_phi[2].T', 'medium_phi[2].Xi') else 'Medium.ThermodynamicState'('medium_phi[2].p', 'medium_phi[2].T', cat(1, 'medium_phi[2].Xi', {1.0 - sum('medium_phi[2].Xi')}))).T, {((if size('medium_phi[2].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[2].p', 'medium_phi[2].T', 'medium_phi[2].Xi') else 'Medium.ThermodynamicState'('medium_phi[2].p', 'medium_phi[2].T', cat(1, 'medium_phi[2].Xi', {1.0 - sum('medium_phi[2].Xi')}))).X)[1], ((if size('medium_phi[2].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[2].p', 'medium_phi[2].T', 'medium_phi[2].Xi') else 'Medium.ThermodynamicState'('medium_phi[2].p', 'medium_phi[2].T', cat(1, 'medium_phi[2].Xi', {1.0 - sum('medium_phi[2].Xi')}))).X)[2]});
     'medium_phi[2].R_s' = 287.0525368759184 * ('medium_phi[2].X_air' / (1.0 - 'medium_phi[2].X_liquid')) + 461.5254384056201 * 'medium_phi[2].X_steam' / (1.0 - 'medium_phi[2].X_liquid');
     'medium_phi[2].u' = 'medium_phi[2].h' - 'medium_phi[2].R_s' * 'medium_phi[2].T';
     'medium_phi[2].d' = 'medium_phi[2].p' / ('medium_phi[2].R_s' * 'medium_phi[2].T');
@@ -1555,7 +1073,7 @@ package 'PsychrometricData'
     'medium_phi[3].X_liquid' = max('medium_phi[3].Xi[1]' - 'medium_phi[3].X_sat', 0.0);
     'medium_phi[3].X_steam' = 'medium_phi[3].Xi[1]' - 'medium_phi[3].X_liquid';
     'medium_phi[3].X_air' = 1.0 - 'medium_phi[3].Xi[1]';
-    'medium_phi[3].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[3].p', 'medium_phi[3].T', {'medium_phi[3].Xi[1]'});
+    'medium_phi[3].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[3].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[3].p', 'medium_phi[3].T', 'medium_phi[3].Xi') else 'Medium.ThermodynamicState'('medium_phi[3].p', 'medium_phi[3].T', cat(1, 'medium_phi[3].Xi', {1.0 - sum('medium_phi[3].Xi')}))).p, (if size('medium_phi[3].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[3].p', 'medium_phi[3].T', 'medium_phi[3].Xi') else 'Medium.ThermodynamicState'('medium_phi[3].p', 'medium_phi[3].T', cat(1, 'medium_phi[3].Xi', {1.0 - sum('medium_phi[3].Xi')}))).T, {((if size('medium_phi[3].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[3].p', 'medium_phi[3].T', 'medium_phi[3].Xi') else 'Medium.ThermodynamicState'('medium_phi[3].p', 'medium_phi[3].T', cat(1, 'medium_phi[3].Xi', {1.0 - sum('medium_phi[3].Xi')}))).X)[1], ((if size('medium_phi[3].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[3].p', 'medium_phi[3].T', 'medium_phi[3].Xi') else 'Medium.ThermodynamicState'('medium_phi[3].p', 'medium_phi[3].T', cat(1, 'medium_phi[3].Xi', {1.0 - sum('medium_phi[3].Xi')}))).X)[2]});
     'medium_phi[3].R_s' = 287.0525368759184 * ('medium_phi[3].X_air' / (1.0 - 'medium_phi[3].X_liquid')) + 461.5254384056201 * 'medium_phi[3].X_steam' / (1.0 - 'medium_phi[3].X_liquid');
     'medium_phi[3].u' = 'medium_phi[3].h' - 'medium_phi[3].R_s' * 'medium_phi[3].T';
     'medium_phi[3].d' = 'medium_phi[3].p' / ('medium_phi[3].R_s' * 'medium_phi[3].T');
@@ -1578,7 +1096,7 @@ package 'PsychrometricData'
     'medium_phi[4].X_liquid' = max('medium_phi[4].Xi[1]' - 'medium_phi[4].X_sat', 0.0);
     'medium_phi[4].X_steam' = 'medium_phi[4].Xi[1]' - 'medium_phi[4].X_liquid';
     'medium_phi[4].X_air' = 1.0 - 'medium_phi[4].Xi[1]';
-    'medium_phi[4].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[4].p', 'medium_phi[4].T', {'medium_phi[4].Xi[1]'});
+    'medium_phi[4].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[4].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[4].p', 'medium_phi[4].T', 'medium_phi[4].Xi') else 'Medium.ThermodynamicState'('medium_phi[4].p', 'medium_phi[4].T', cat(1, 'medium_phi[4].Xi', {1.0 - sum('medium_phi[4].Xi')}))).p, (if size('medium_phi[4].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[4].p', 'medium_phi[4].T', 'medium_phi[4].Xi') else 'Medium.ThermodynamicState'('medium_phi[4].p', 'medium_phi[4].T', cat(1, 'medium_phi[4].Xi', {1.0 - sum('medium_phi[4].Xi')}))).T, {((if size('medium_phi[4].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[4].p', 'medium_phi[4].T', 'medium_phi[4].Xi') else 'Medium.ThermodynamicState'('medium_phi[4].p', 'medium_phi[4].T', cat(1, 'medium_phi[4].Xi', {1.0 - sum('medium_phi[4].Xi')}))).X)[1], ((if size('medium_phi[4].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[4].p', 'medium_phi[4].T', 'medium_phi[4].Xi') else 'Medium.ThermodynamicState'('medium_phi[4].p', 'medium_phi[4].T', cat(1, 'medium_phi[4].Xi', {1.0 - sum('medium_phi[4].Xi')}))).X)[2]});
     'medium_phi[4].R_s' = 287.0525368759184 * ('medium_phi[4].X_air' / (1.0 - 'medium_phi[4].X_liquid')) + 461.5254384056201 * 'medium_phi[4].X_steam' / (1.0 - 'medium_phi[4].X_liquid');
     'medium_phi[4].u' = 'medium_phi[4].h' - 'medium_phi[4].R_s' * 'medium_phi[4].T';
     'medium_phi[4].d' = 'medium_phi[4].p' / ('medium_phi[4].R_s' * 'medium_phi[4].T');
@@ -1601,7 +1119,7 @@ package 'PsychrometricData'
     'medium_phi[5].X_liquid' = max('medium_phi[5].Xi[1]' - 'medium_phi[5].X_sat', 0.0);
     'medium_phi[5].X_steam' = 'medium_phi[5].Xi[1]' - 'medium_phi[5].X_liquid';
     'medium_phi[5].X_air' = 1.0 - 'medium_phi[5].Xi[1]';
-    'medium_phi[5].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[5].p', 'medium_phi[5].T', {'medium_phi[5].Xi[1]'});
+    'medium_phi[5].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[5].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[5].p', 'medium_phi[5].T', 'medium_phi[5].Xi') else 'Medium.ThermodynamicState'('medium_phi[5].p', 'medium_phi[5].T', cat(1, 'medium_phi[5].Xi', {1.0 - sum('medium_phi[5].Xi')}))).p, (if size('medium_phi[5].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[5].p', 'medium_phi[5].T', 'medium_phi[5].Xi') else 'Medium.ThermodynamicState'('medium_phi[5].p', 'medium_phi[5].T', cat(1, 'medium_phi[5].Xi', {1.0 - sum('medium_phi[5].Xi')}))).T, {((if size('medium_phi[5].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[5].p', 'medium_phi[5].T', 'medium_phi[5].Xi') else 'Medium.ThermodynamicState'('medium_phi[5].p', 'medium_phi[5].T', cat(1, 'medium_phi[5].Xi', {1.0 - sum('medium_phi[5].Xi')}))).X)[1], ((if size('medium_phi[5].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[5].p', 'medium_phi[5].T', 'medium_phi[5].Xi') else 'Medium.ThermodynamicState'('medium_phi[5].p', 'medium_phi[5].T', cat(1, 'medium_phi[5].Xi', {1.0 - sum('medium_phi[5].Xi')}))).X)[2]});
     'medium_phi[5].R_s' = 287.0525368759184 * ('medium_phi[5].X_air' / (1.0 - 'medium_phi[5].X_liquid')) + 461.5254384056201 * 'medium_phi[5].X_steam' / (1.0 - 'medium_phi[5].X_liquid');
     'medium_phi[5].u' = 'medium_phi[5].h' - 'medium_phi[5].R_s' * 'medium_phi[5].T';
     'medium_phi[5].d' = 'medium_phi[5].p' / ('medium_phi[5].R_s' * 'medium_phi[5].T');
@@ -1624,7 +1142,7 @@ package 'PsychrometricData'
     'medium_phi[6].X_liquid' = max('medium_phi[6].Xi[1]' - 'medium_phi[6].X_sat', 0.0);
     'medium_phi[6].X_steam' = 'medium_phi[6].Xi[1]' - 'medium_phi[6].X_liquid';
     'medium_phi[6].X_air' = 1.0 - 'medium_phi[6].Xi[1]';
-    'medium_phi[6].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[6].p', 'medium_phi[6].T', {'medium_phi[6].Xi[1]'});
+    'medium_phi[6].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[6].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[6].p', 'medium_phi[6].T', 'medium_phi[6].Xi') else 'Medium.ThermodynamicState'('medium_phi[6].p', 'medium_phi[6].T', cat(1, 'medium_phi[6].Xi', {1.0 - sum('medium_phi[6].Xi')}))).p, (if size('medium_phi[6].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[6].p', 'medium_phi[6].T', 'medium_phi[6].Xi') else 'Medium.ThermodynamicState'('medium_phi[6].p', 'medium_phi[6].T', cat(1, 'medium_phi[6].Xi', {1.0 - sum('medium_phi[6].Xi')}))).T, {((if size('medium_phi[6].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[6].p', 'medium_phi[6].T', 'medium_phi[6].Xi') else 'Medium.ThermodynamicState'('medium_phi[6].p', 'medium_phi[6].T', cat(1, 'medium_phi[6].Xi', {1.0 - sum('medium_phi[6].Xi')}))).X)[1], ((if size('medium_phi[6].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[6].p', 'medium_phi[6].T', 'medium_phi[6].Xi') else 'Medium.ThermodynamicState'('medium_phi[6].p', 'medium_phi[6].T', cat(1, 'medium_phi[6].Xi', {1.0 - sum('medium_phi[6].Xi')}))).X)[2]});
     'medium_phi[6].R_s' = 287.0525368759184 * ('medium_phi[6].X_air' / (1.0 - 'medium_phi[6].X_liquid')) + 461.5254384056201 * 'medium_phi[6].X_steam' / (1.0 - 'medium_phi[6].X_liquid');
     'medium_phi[6].u' = 'medium_phi[6].h' - 'medium_phi[6].R_s' * 'medium_phi[6].T';
     'medium_phi[6].d' = 'medium_phi[6].p' / ('medium_phi[6].R_s' * 'medium_phi[6].T');
@@ -1647,7 +1165,7 @@ package 'PsychrometricData'
     'medium_phi[7].X_liquid' = max('medium_phi[7].Xi[1]' - 'medium_phi[7].X_sat', 0.0);
     'medium_phi[7].X_steam' = 'medium_phi[7].Xi[1]' - 'medium_phi[7].X_liquid';
     'medium_phi[7].X_air' = 1.0 - 'medium_phi[7].Xi[1]';
-    'medium_phi[7].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[7].p', 'medium_phi[7].T', {'medium_phi[7].Xi[1]'});
+    'medium_phi[7].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[7].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[7].p', 'medium_phi[7].T', 'medium_phi[7].Xi') else 'Medium.ThermodynamicState'('medium_phi[7].p', 'medium_phi[7].T', cat(1, 'medium_phi[7].Xi', {1.0 - sum('medium_phi[7].Xi')}))).p, (if size('medium_phi[7].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[7].p', 'medium_phi[7].T', 'medium_phi[7].Xi') else 'Medium.ThermodynamicState'('medium_phi[7].p', 'medium_phi[7].T', cat(1, 'medium_phi[7].Xi', {1.0 - sum('medium_phi[7].Xi')}))).T, {((if size('medium_phi[7].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[7].p', 'medium_phi[7].T', 'medium_phi[7].Xi') else 'Medium.ThermodynamicState'('medium_phi[7].p', 'medium_phi[7].T', cat(1, 'medium_phi[7].Xi', {1.0 - sum('medium_phi[7].Xi')}))).X)[1], ((if size('medium_phi[7].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[7].p', 'medium_phi[7].T', 'medium_phi[7].Xi') else 'Medium.ThermodynamicState'('medium_phi[7].p', 'medium_phi[7].T', cat(1, 'medium_phi[7].Xi', {1.0 - sum('medium_phi[7].Xi')}))).X)[2]});
     'medium_phi[7].R_s' = 287.0525368759184 * ('medium_phi[7].X_air' / (1.0 - 'medium_phi[7].X_liquid')) + 461.5254384056201 * 'medium_phi[7].X_steam' / (1.0 - 'medium_phi[7].X_liquid');
     'medium_phi[7].u' = 'medium_phi[7].h' - 'medium_phi[7].R_s' * 'medium_phi[7].T';
     'medium_phi[7].d' = 'medium_phi[7].p' / ('medium_phi[7].R_s' * 'medium_phi[7].T');
@@ -1670,7 +1188,7 @@ package 'PsychrometricData'
     'medium_phi[8].X_liquid' = max('medium_phi[8].Xi[1]' - 'medium_phi[8].X_sat', 0.0);
     'medium_phi[8].X_steam' = 'medium_phi[8].Xi[1]' - 'medium_phi[8].X_liquid';
     'medium_phi[8].X_air' = 1.0 - 'medium_phi[8].Xi[1]';
-    'medium_phi[8].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[8].p', 'medium_phi[8].T', {'medium_phi[8].Xi[1]'});
+    'medium_phi[8].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[8].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[8].p', 'medium_phi[8].T', 'medium_phi[8].Xi') else 'Medium.ThermodynamicState'('medium_phi[8].p', 'medium_phi[8].T', cat(1, 'medium_phi[8].Xi', {1.0 - sum('medium_phi[8].Xi')}))).p, (if size('medium_phi[8].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[8].p', 'medium_phi[8].T', 'medium_phi[8].Xi') else 'Medium.ThermodynamicState'('medium_phi[8].p', 'medium_phi[8].T', cat(1, 'medium_phi[8].Xi', {1.0 - sum('medium_phi[8].Xi')}))).T, {((if size('medium_phi[8].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[8].p', 'medium_phi[8].T', 'medium_phi[8].Xi') else 'Medium.ThermodynamicState'('medium_phi[8].p', 'medium_phi[8].T', cat(1, 'medium_phi[8].Xi', {1.0 - sum('medium_phi[8].Xi')}))).X)[1], ((if size('medium_phi[8].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[8].p', 'medium_phi[8].T', 'medium_phi[8].Xi') else 'Medium.ThermodynamicState'('medium_phi[8].p', 'medium_phi[8].T', cat(1, 'medium_phi[8].Xi', {1.0 - sum('medium_phi[8].Xi')}))).X)[2]});
     'medium_phi[8].R_s' = 287.0525368759184 * ('medium_phi[8].X_air' / (1.0 - 'medium_phi[8].X_liquid')) + 461.5254384056201 * 'medium_phi[8].X_steam' / (1.0 - 'medium_phi[8].X_liquid');
     'medium_phi[8].u' = 'medium_phi[8].h' - 'medium_phi[8].R_s' * 'medium_phi[8].T';
     'medium_phi[8].d' = 'medium_phi[8].p' / ('medium_phi[8].R_s' * 'medium_phi[8].T');
@@ -1693,7 +1211,7 @@ package 'PsychrometricData'
     'medium_phi[9].X_liquid' = max('medium_phi[9].Xi[1]' - 'medium_phi[9].X_sat', 0.0);
     'medium_phi[9].X_steam' = 'medium_phi[9].Xi[1]' - 'medium_phi[9].X_liquid';
     'medium_phi[9].X_air' = 1.0 - 'medium_phi[9].Xi[1]';
-    'medium_phi[9].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[9].p', 'medium_phi[9].T', {'medium_phi[9].Xi[1]'});
+    'medium_phi[9].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[9].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[9].p', 'medium_phi[9].T', 'medium_phi[9].Xi') else 'Medium.ThermodynamicState'('medium_phi[9].p', 'medium_phi[9].T', cat(1, 'medium_phi[9].Xi', {1.0 - sum('medium_phi[9].Xi')}))).p, (if size('medium_phi[9].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[9].p', 'medium_phi[9].T', 'medium_phi[9].Xi') else 'Medium.ThermodynamicState'('medium_phi[9].p', 'medium_phi[9].T', cat(1, 'medium_phi[9].Xi', {1.0 - sum('medium_phi[9].Xi')}))).T, {((if size('medium_phi[9].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[9].p', 'medium_phi[9].T', 'medium_phi[9].Xi') else 'Medium.ThermodynamicState'('medium_phi[9].p', 'medium_phi[9].T', cat(1, 'medium_phi[9].Xi', {1.0 - sum('medium_phi[9].Xi')}))).X)[1], ((if size('medium_phi[9].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[9].p', 'medium_phi[9].T', 'medium_phi[9].Xi') else 'Medium.ThermodynamicState'('medium_phi[9].p', 'medium_phi[9].T', cat(1, 'medium_phi[9].Xi', {1.0 - sum('medium_phi[9].Xi')}))).X)[2]});
     'medium_phi[9].R_s' = 287.0525368759184 * ('medium_phi[9].X_air' / (1.0 - 'medium_phi[9].X_liquid')) + 461.5254384056201 * 'medium_phi[9].X_steam' / (1.0 - 'medium_phi[9].X_liquid');
     'medium_phi[9].u' = 'medium_phi[9].h' - 'medium_phi[9].R_s' * 'medium_phi[9].T';
     'medium_phi[9].d' = 'medium_phi[9].p' / ('medium_phi[9].R_s' * 'medium_phi[9].T');
@@ -1716,7 +1234,7 @@ package 'PsychrometricData'
     'medium_phi[10].X_liquid' = max('medium_phi[10].Xi[1]' - 'medium_phi[10].X_sat', 0.0);
     'medium_phi[10].X_steam' = 'medium_phi[10].Xi[1]' - 'medium_phi[10].X_liquid';
     'medium_phi[10].X_air' = 1.0 - 'medium_phi[10].Xi[1]';
-    'medium_phi[10].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.specificEnthalpy_pTX'('medium_phi[10].p', 'medium_phi[10].T', {'medium_phi[10].Xi[1]'});
+    'medium_phi[10].h' = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX'((if size('medium_phi[10].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[10].p', 'medium_phi[10].T', 'medium_phi[10].Xi') else 'Medium.ThermodynamicState'('medium_phi[10].p', 'medium_phi[10].T', cat(1, 'medium_phi[10].Xi', {1.0 - sum('medium_phi[10].Xi')}))).p, (if size('medium_phi[10].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[10].p', 'medium_phi[10].T', 'medium_phi[10].Xi') else 'Medium.ThermodynamicState'('medium_phi[10].p', 'medium_phi[10].T', cat(1, 'medium_phi[10].Xi', {1.0 - sum('medium_phi[10].Xi')}))).T, {((if size('medium_phi[10].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[10].p', 'medium_phi[10].T', 'medium_phi[10].Xi') else 'Medium.ThermodynamicState'('medium_phi[10].p', 'medium_phi[10].T', cat(1, 'medium_phi[10].Xi', {1.0 - sum('medium_phi[10].Xi')}))).X)[1], ((if size('medium_phi[10].Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium_phi[10].p', 'medium_phi[10].T', 'medium_phi[10].Xi') else 'Medium.ThermodynamicState'('medium_phi[10].p', 'medium_phi[10].T', cat(1, 'medium_phi[10].Xi', {1.0 - sum('medium_phi[10].Xi')}))).X)[2]});
     'medium_phi[10].R_s' = 287.0525368759184 * ('medium_phi[10].X_air' / (1.0 - 'medium_phi[10].X_liquid')) + 461.5254384056201 * 'medium_phi[10].X_steam' / (1.0 - 'medium_phi[10].X_liquid');
     'medium_phi[10].u' = 'medium_phi[10].h' - 'medium_phi[10].R_s' * 'medium_phi[10].T';
     'medium_phi[10].d' = 'medium_phi[10].p' / ('medium_phi[10].R_s' * 'medium_phi[10].T');

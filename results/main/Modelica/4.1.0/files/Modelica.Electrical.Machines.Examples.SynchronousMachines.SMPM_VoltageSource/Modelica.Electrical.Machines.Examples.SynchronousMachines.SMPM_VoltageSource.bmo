@@ -1,37 +1,5 @@
 //! base 0.1.0
 package 'SMPM_VoltageSource'
-  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
-    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
-    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
-    output Real 'p'(unit = "W", quantity = "Power");
-    constant Integer 'm' = 3;
-    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
-    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
-  algorithm
-    'v_' := {0.0, 0.0};
-    'i_' := {0.0, 0.0};
-
-    for 'k' in 1:'m' loop
-      'v_' := {'v_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k'], 'v_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k']};
-      'i_' := {'i_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k'], 'i_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k']};
-    end for;
-
-    'p' := 'm' / 2.0 * ('v_'[1] * 'i_'[1] + 'v_'[2] * 'i_'[2]);
-    annotation(Inline = true);
-  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
-
-  function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
-    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Boolean 'positiveRange' = false;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'y' := mod('u', 6.283185307179586);
-
-    if 'y' > 3.141592653589793 and not 'positiveRange' then
-      'y' := 'y' - 6.283185307179586;
-    end if;
-  end 'Modelica.Math.wrapAngle';
-
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 
   model 'SMPM_VoltageSource' "Test example: PermanentMagnetSynchronousMachine fed by FOC"
@@ -1280,7 +1248,7 @@ package 'SMPM_VoltageSource'
     'smpm.statorCore.w' = 'smpm.statorCoreParameters.wRef';
     'smpm.statorCore.wLimit' = noEvent(max(noEvent(abs('smpm.statorCore.w')), 'smpm.statorCore.coreParameters.wMin'));
     'smpm.strayLoad.heatPort.Q_flow' = -'smpm.strayLoad.lossPower';
-    'smpm.strayLoad.iRMS' = sqrt('smpm.strayLoad.i[1]' ^ 2.0 / 3.0 + 'smpm.strayLoad.i[2]' ^ 2.0 / 3.0 + 'smpm.strayLoad.i[3]' ^ 2.0 / 3.0);
+    'smpm.strayLoad.iRMS' = sqrt(sum('smpm.strayLoad.i' .^ 2.0 / size('smpm.strayLoad.i', 1)));
     'smpm.thermalAmbient.Q_flowStatorWinding' = 'smpm.thermalAmbient.temperatureStatorWinding.port.Q_flow';
     'smpm.thermalAmbient.Q_flowStatorCore' = 'smpm.thermalAmbient.temperatureStatorCore.port.Q_flow';
     'smpm.thermalAmbient.Q_flowRotorCore' = 'smpm.thermalAmbient.temperatureRotorCore.port.Q_flow';
@@ -1290,7 +1258,7 @@ package 'SMPM_VoltageSource'
     'smpm.thermalAmbient.Q_flowPermanentMagnet' = 'smpm.thermalAmbient.temperaturePermanentMagnet.port.Q_flow';
     'smpm.thermalAmbient.Q_flowTotal' = 'smpm.thermalAmbient.Q_flowStatorWinding' + 'smpm.thermalAmbient.Q_flowRotorWinding' + 'smpm.thermalAmbient.Q_flowPermanentMagnet' + 'smpm.thermalAmbient.Q_flowStatorCore' + 'smpm.thermalAmbient.Q_flowRotorCore' + 'smpm.thermalAmbient.Q_flowStrayLoad' + 'smpm.thermalAmbient.Q_flowFriction';
     'smpm.permanentMagnet.heatPort.Q_flow' = -'smpm.permanentMagnet.lossPower';
-    'smpm.permanentMagnet.iRMS' = sqrt('smpm.permanentMagnet.is[1]' ^ 2.0 / 3.0 + 'smpm.permanentMagnet.is[2]' ^ 2.0 / 3.0 + 'smpm.permanentMagnet.is[3]' ^ 2.0 / 3.0);
+    'smpm.permanentMagnet.iRMS' = sqrt(sum('smpm.permanentMagnet.is' .^ 2.0 / size('smpm.permanentMagnet.is', 1)));
     'dqCurrentController.omega' = 2.0 * der('dqCurrentController.phi');
     'dqCurrentController.Vd' = 1.4142135623730951 * (0.03 * 'dqCurrentController.id' - 'dqCurrentController.omega' * 0.0012732395447351626 * 'dqCurrentController.iq');
     'dqCurrentController.Vq' = 1.4142135623730951 * (0.03 * 'dqCurrentController.iq' + 'dqCurrentController.omega' * 0.0012732395447351626 * 'dqCurrentController.id') + 'dqCurrentController.omega' * 0.5055276115222151;
@@ -1974,7 +1942,7 @@ package 'SMPM_VoltageSource'
     'rotorDisplacementAngle.rotatorVS2R.y[1]' = 'rotorDisplacementAngle.rotatorVS2R.RotationMatrix[1,1]' * 'rotorDisplacementAngle.rotatorVS2R.u[1]' + 'rotorDisplacementAngle.rotatorVS2R.RotationMatrix[1,2]' * 'rotorDisplacementAngle.rotatorVS2R.u[2]';
     'rotorDisplacementAngle.rotatorVS2R.y[2]' = 'rotorDisplacementAngle.rotatorVS2R.RotationMatrix[2,1]' * 'rotorDisplacementAngle.rotatorVS2R.u[1]' + 'rotorDisplacementAngle.rotatorVS2R.RotationMatrix[2,2]' * 'rotorDisplacementAngle.rotatorVS2R.u[2]';
     'rotorDisplacementAngle.ToPolarVSR.y[1]' = sqrt('rotorDisplacementAngle.ToPolarVSR.u[1]' ^ 2.0 + 'rotorDisplacementAngle.ToPolarVSR.u[2]' ^ 2.0);
-    'rotorDisplacementAngle.ToPolarVSR.y[2]' = if noEvent('rotorDisplacementAngle.ToPolarVSR.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('rotorDisplacementAngle.ToPolarVSR.u[2]', 'rotorDisplacementAngle.ToPolarVSR.u[1]');
+    'rotorDisplacementAngle.ToPolarVSR.y[2]' = if noEvent('rotorDisplacementAngle.ToPolarVSR.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('rotorDisplacementAngle.ToPolarVSR.u[2]', 'rotorDisplacementAngle.ToPolarVSR.u[1]');
     'rotorDisplacementAngle.fixed.flange.phi' = 0.0;
     'rotorDisplacementAngle.wrapAngle.y' = 'Modelica.Math.wrapAngle'('rotorDisplacementAngle.wrapAngle.u', false);
     'rotorDisplacementAngle.lessThreshold.y' = if noEvent('rotorDisplacementAngle.lessThreshold.u[1]' < 0.0) then 0.0 else 'rotorDisplacementAngle.lessThreshold.u[2]';
@@ -1993,7 +1961,7 @@ package 'SMPM_VoltageSource'
     'voltageQuasiRMSSensor.ToSpacePhasor1.y[1]' = 0.6666666666666666 * 'voltageQuasiRMSSensor.ToSpacePhasor1.u[1]' + (-0.33333333333333315) * 'voltageQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.3333333333333336) * 'voltageQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'voltageQuasiRMSSensor.ToSpacePhasor1.y[2]' = 0.5773502691896257 * 'voltageQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.5773502691896255) * 'voltageQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'voltageQuasiRMSSensor.ToPolar1.y[1]' = sqrt('voltageQuasiRMSSensor.ToPolar1.u[1]' ^ 2.0 + 'voltageQuasiRMSSensor.ToPolar1.u[2]' ^ 2.0);
-    'voltageQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('voltageQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('voltageQuasiRMSSensor.ToPolar1.u[2]', 'voltageQuasiRMSSensor.ToPolar1.u[1]');
+    'voltageQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('voltageQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('voltageQuasiRMSSensor.ToPolar1.u[2]', 'voltageQuasiRMSSensor.ToPolar1.u[1]');
     'currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].p.v' = 'currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].n.v';
     'currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].p.i' = 'currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].i';
     'currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].n.i' = -'currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].i';
@@ -2008,7 +1976,7 @@ package 'SMPM_VoltageSource'
     'currentQuasiRMSSensor.ToSpacePhasor1.y[1]' = 0.6666666666666666 * 'currentQuasiRMSSensor.ToSpacePhasor1.u[1]' + (-0.33333333333333315) * 'currentQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.3333333333333336) * 'currentQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'currentQuasiRMSSensor.ToSpacePhasor1.y[2]' = 0.5773502691896257 * 'currentQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.5773502691896255) * 'currentQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'currentQuasiRMSSensor.ToPolar1.y[1]' = sqrt('currentQuasiRMSSensor.ToPolar1.u[1]' ^ 2.0 + 'currentQuasiRMSSensor.ToPolar1.u[2]' ^ 2.0);
-    'currentQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('currentQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('currentQuasiRMSSensor.ToPolar1.u[2]', 'currentQuasiRMSSensor.ToPolar1.u[1]');
+    'currentQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('currentQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('currentQuasiRMSSensor.ToPolar1.u[2]', 'currentQuasiRMSSensor.ToPolar1.u[1]');
     'sinCosResolver.flange.tau' = 0.0;
     'sinCosResolver.y[1]' = 1.5 + cos('sinCosResolver.flange.phi' - 'sinCosResolver.phi_support' + 3.141592653589793);
     'sinCosResolver.y[2]' = 1.5 - cos('sinCosResolver.flange.phi' - 'sinCosResolver.phi_support' + 3.141592653589793);

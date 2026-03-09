@@ -1,88 +1,9 @@
 //! base 0.1.0
 package 'UnsymmetricalLoad'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.ComplexMath.abs' "Absolute value of complex number"
-    input 'Complex' 'c';
-    output Real 'result';
-  algorithm
-    'result' := sqrt('c'.'re' ^ 2.0 + 'c'.'im' ^ 2.0);
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.abs';
-
-  function 'Modelica.ComplexMath.arg' "Phase angle of complex number"
-    input 'Complex' 'c';
-    input Real 'phi0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'phi' := 'Modelica.Math.atan3'('c'.'im', 'c'.'re', 'phi0');
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.arg';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'+\'' "Add two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexCurrent.\'+\'';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract' "Subtract two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
 
   record 'Modelica.Units.SI.ComplexVoltage'
     Real 're';
@@ -93,16 +14,6 @@ package 'UnsymmetricalLoad'
     Real 're';
     Real 'im';
   end 'Modelica.Units.SI.ComplexCurrent';
-
-  record 'Modelica.Units.SI.ComplexElectricPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexElectricPotential';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
 
   record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
     Real 're';
@@ -2141,7 +2052,7 @@ package 'UnsymmetricalLoad'
     'resistor1_1.P' = 'resistor1_1.v.re' * 'resistor1_1.i.re' - 'resistor1_1.v.im' * (-'resistor1_1.i.im');
     'resistor1_1.Q' = 'resistor1_1.v.re' * (-'resistor1_1.i.im') + 'resistor1_1.v.im' * 'resistor1_1.i.re';
     'resistor1_1.S' = sqrt(('resistor1_1.v.re' * 'resistor1_1.i.re' - 'resistor1_1.v.im' * (-'resistor1_1.i.im')) ^ 2.0 + ('resistor1_1.v.re' * (-'resistor1_1.i.im') + 'resistor1_1.v.im' * 'resistor1_1.i.re') ^ 2.0);
-    'resistor1_1.pf' = cos('Modelica.Math.atan3'('resistor1_1.Q', 'resistor1_1.P', 0.0));
+    'resistor1_1.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor1_1.P', 'resistor1_1.Q'), 0.0));
     'resistor1_2.abs_v' = sqrt('resistor1_2.v.re' ^ 2.0 + 'resistor1_2.v.im' ^ 2.0);
     'resistor1_2.arg_v' = 'Modelica.Math.atan3'('resistor1_2.v.im', 'resistor1_2.v.re', 0.0);
     'resistor1_2.abs_i' = sqrt('resistor1_2.i.re' ^ 2.0 + 'resistor1_2.i.im' ^ 2.0);
@@ -2149,7 +2060,7 @@ package 'UnsymmetricalLoad'
     'resistor1_2.P' = 'resistor1_2.v.re' * 'resistor1_2.i.re' - 'resistor1_2.v.im' * (-'resistor1_2.i.im');
     'resistor1_2.Q' = 'resistor1_2.v.re' * (-'resistor1_2.i.im') + 'resistor1_2.v.im' * 'resistor1_2.i.re';
     'resistor1_2.S' = sqrt(('resistor1_2.v.re' * 'resistor1_2.i.re' - 'resistor1_2.v.im' * (-'resistor1_2.i.im')) ^ 2.0 + ('resistor1_2.v.re' * (-'resistor1_2.i.im') + 'resistor1_2.v.im' * 'resistor1_2.i.re') ^ 2.0);
-    'resistor1_2.pf' = cos('Modelica.Math.atan3'('resistor1_2.Q', 'resistor1_2.P', 0.0));
+    'resistor1_2.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor1_2.P', 'resistor1_2.Q'), 0.0));
     'resistor1_3.abs_v' = sqrt('resistor1_3.v.re' ^ 2.0 + 'resistor1_3.v.im' ^ 2.0);
     'resistor1_3.arg_v' = 'Modelica.Math.atan3'('resistor1_3.v.im', 'resistor1_3.v.re', 0.0);
     'resistor1_3.abs_i' = sqrt('resistor1_3.i.re' ^ 2.0 + 'resistor1_3.i.im' ^ 2.0);
@@ -2157,7 +2068,7 @@ package 'UnsymmetricalLoad'
     'resistor1_3.P' = 'resistor1_3.v.re' * 'resistor1_3.i.re' - 'resistor1_3.v.im' * (-'resistor1_3.i.im');
     'resistor1_3.Q' = 'resistor1_3.v.re' * (-'resistor1_3.i.im') + 'resistor1_3.v.im' * 'resistor1_3.i.re';
     'resistor1_3.S' = sqrt(('resistor1_3.v.re' * 'resistor1_3.i.re' - 'resistor1_3.v.im' * (-'resistor1_3.i.im')) ^ 2.0 + ('resistor1_3.v.re' * (-'resistor1_3.i.im') + 'resistor1_3.v.im' * 'resistor1_3.i.re') ^ 2.0);
-    'resistor1_3.pf' = cos('Modelica.Math.atan3'('resistor1_3.Q', 'resistor1_3.P', 0.0));
+    'resistor1_3.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor1_3.P', 'resistor1_3.Q'), 0.0));
     'inductor1_2.abs_v' = sqrt('inductor1_2.v.re' ^ 2.0 + 'inductor1_2.v.im' ^ 2.0);
     'inductor1_2.arg_v' = 'Modelica.Math.atan3'('inductor1_2.v.im', 'inductor1_2.v.re', 0.0);
     'inductor1_2.abs_i' = sqrt('inductor1_2.i.re' ^ 2.0 + 'inductor1_2.i.im' ^ 2.0);
@@ -2165,7 +2076,7 @@ package 'UnsymmetricalLoad'
     'inductor1_2.P' = 'inductor1_2.v.re' * 'inductor1_2.i.re' - 'inductor1_2.v.im' * (-'inductor1_2.i.im');
     'inductor1_2.Q' = 'inductor1_2.v.re' * (-'inductor1_2.i.im') + 'inductor1_2.v.im' * 'inductor1_2.i.re';
     'inductor1_2.S' = sqrt(('inductor1_2.v.re' * 'inductor1_2.i.re' - 'inductor1_2.v.im' * (-'inductor1_2.i.im')) ^ 2.0 + ('inductor1_2.v.re' * (-'inductor1_2.i.im') + 'inductor1_2.v.im' * 'inductor1_2.i.re') ^ 2.0);
-    'inductor1_2.pf' = cos('Modelica.Math.atan3'('inductor1_2.Q', 'inductor1_2.P', 0.0));
+    'inductor1_2.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor1_2.P', 'inductor1_2.Q'), 0.0));
     'capacitor1_3.abs_v' = sqrt('capacitor1_3.v.re' ^ 2.0 + 'capacitor1_3.v.im' ^ 2.0);
     'capacitor1_3.arg_v' = 'Modelica.Math.atan3'('capacitor1_3.v.im', 'capacitor1_3.v.re', 0.0);
     'capacitor1_3.abs_i' = sqrt('capacitor1_3.i.re' ^ 2.0 + 'capacitor1_3.i.im' ^ 2.0);
@@ -2173,7 +2084,7 @@ package 'UnsymmetricalLoad'
     'capacitor1_3.P' = 'capacitor1_3.v.re' * 'capacitor1_3.i.re' - 'capacitor1_3.v.im' * (-'capacitor1_3.i.im');
     'capacitor1_3.Q' = 'capacitor1_3.v.re' * (-'capacitor1_3.i.im') + 'capacitor1_3.v.im' * 'capacitor1_3.i.re';
     'capacitor1_3.S' = sqrt(('capacitor1_3.v.re' * 'capacitor1_3.i.re' - 'capacitor1_3.v.im' * (-'capacitor1_3.i.im')) ^ 2.0 + ('capacitor1_3.v.re' * (-'capacitor1_3.i.im') + 'capacitor1_3.v.im' * 'capacitor1_3.i.re') ^ 2.0);
-    'capacitor1_3.pf' = cos('Modelica.Math.atan3'('capacitor1_3.Q', 'capacitor1_3.P', 0.0));
+    'capacitor1_3.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('capacitor1_3.P', 'capacitor1_3.Q'), 0.0));
     'resistor2_1.abs_v' = sqrt('resistor2_1.v.re' ^ 2.0 + 'resistor2_1.v.im' ^ 2.0);
     'resistor2_1.arg_v' = 'Modelica.Math.atan3'('resistor2_1.v.im', 'resistor2_1.v.re', 0.0);
     'resistor2_1.abs_i' = sqrt('resistor2_1.i.re' ^ 2.0 + 'resistor2_1.i.im' ^ 2.0);
@@ -2181,7 +2092,7 @@ package 'UnsymmetricalLoad'
     'resistor2_1.P' = 'resistor2_1.v.re' * 'resistor2_1.i.re' - 'resistor2_1.v.im' * (-'resistor2_1.i.im');
     'resistor2_1.Q' = 'resistor2_1.v.re' * (-'resistor2_1.i.im') + 'resistor2_1.v.im' * 'resistor2_1.i.re';
     'resistor2_1.S' = sqrt(('resistor2_1.v.re' * 'resistor2_1.i.re' - 'resistor2_1.v.im' * (-'resistor2_1.i.im')) ^ 2.0 + ('resistor2_1.v.re' * (-'resistor2_1.i.im') + 'resistor2_1.v.im' * 'resistor2_1.i.re') ^ 2.0);
-    'resistor2_1.pf' = cos('Modelica.Math.atan3'('resistor2_1.Q', 'resistor2_1.P', 0.0));
+    'resistor2_1.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor2_1.P', 'resistor2_1.Q'), 0.0));
     'resistor2_2.abs_v' = sqrt('resistor2_2.v.re' ^ 2.0 + 'resistor2_2.v.im' ^ 2.0);
     'resistor2_2.arg_v' = 'Modelica.Math.atan3'('resistor2_2.v.im', 'resistor2_2.v.re', 0.0);
     'resistor2_2.abs_i' = sqrt('resistor2_2.i.re' ^ 2.0 + 'resistor2_2.i.im' ^ 2.0);
@@ -2189,7 +2100,7 @@ package 'UnsymmetricalLoad'
     'resistor2_2.P' = 'resistor2_2.v.re' * 'resistor2_2.i.re' - 'resistor2_2.v.im' * (-'resistor2_2.i.im');
     'resistor2_2.Q' = 'resistor2_2.v.re' * (-'resistor2_2.i.im') + 'resistor2_2.v.im' * 'resistor2_2.i.re';
     'resistor2_2.S' = sqrt(('resistor2_2.v.re' * 'resistor2_2.i.re' - 'resistor2_2.v.im' * (-'resistor2_2.i.im')) ^ 2.0 + ('resistor2_2.v.re' * (-'resistor2_2.i.im') + 'resistor2_2.v.im' * 'resistor2_2.i.re') ^ 2.0);
-    'resistor2_2.pf' = cos('Modelica.Math.atan3'('resistor2_2.Q', 'resistor2_2.P', 0.0));
+    'resistor2_2.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor2_2.P', 'resistor2_2.Q'), 0.0));
     'resistor2_3.abs_v' = sqrt('resistor2_3.v.re' ^ 2.0 + 'resistor2_3.v.im' ^ 2.0);
     'resistor2_3.arg_v' = 'Modelica.Math.atan3'('resistor2_3.v.im', 'resistor2_3.v.re', 0.0);
     'resistor2_3.abs_i' = sqrt('resistor2_3.i.re' ^ 2.0 + 'resistor2_3.i.im' ^ 2.0);
@@ -2197,7 +2108,7 @@ package 'UnsymmetricalLoad'
     'resistor2_3.P' = 'resistor2_3.v.re' * 'resistor2_3.i.re' - 'resistor2_3.v.im' * (-'resistor2_3.i.im');
     'resistor2_3.Q' = 'resistor2_3.v.re' * (-'resistor2_3.i.im') + 'resistor2_3.v.im' * 'resistor2_3.i.re';
     'resistor2_3.S' = sqrt(('resistor2_3.v.re' * 'resistor2_3.i.re' - 'resistor2_3.v.im' * (-'resistor2_3.i.im')) ^ 2.0 + ('resistor2_3.v.re' * (-'resistor2_3.i.im') + 'resistor2_3.v.im' * 'resistor2_3.i.re') ^ 2.0);
-    'resistor2_3.pf' = cos('Modelica.Math.atan3'('resistor2_3.Q', 'resistor2_3.P', 0.0));
+    'resistor2_3.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor2_3.P', 'resistor2_3.Q'), 0.0));
     'inductor2_2.abs_v' = sqrt('inductor2_2.v.re' ^ 2.0 + 'inductor2_2.v.im' ^ 2.0);
     'inductor2_2.arg_v' = 'Modelica.Math.atan3'('inductor2_2.v.im', 'inductor2_2.v.re', 0.0);
     'inductor2_2.abs_i' = sqrt('inductor2_2.i.re' ^ 2.0 + 'inductor2_2.i.im' ^ 2.0);
@@ -2205,7 +2116,7 @@ package 'UnsymmetricalLoad'
     'inductor2_2.P' = 'inductor2_2.v.re' * 'inductor2_2.i.re' - 'inductor2_2.v.im' * (-'inductor2_2.i.im');
     'inductor2_2.Q' = 'inductor2_2.v.re' * (-'inductor2_2.i.im') + 'inductor2_2.v.im' * 'inductor2_2.i.re';
     'inductor2_2.S' = sqrt(('inductor2_2.v.re' * 'inductor2_2.i.re' - 'inductor2_2.v.im' * (-'inductor2_2.i.im')) ^ 2.0 + ('inductor2_2.v.re' * (-'inductor2_2.i.im') + 'inductor2_2.v.im' * 'inductor2_2.i.re') ^ 2.0);
-    'inductor2_2.pf' = cos('Modelica.Math.atan3'('inductor2_2.Q', 'inductor2_2.P', 0.0));
+    'inductor2_2.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor2_2.P', 'inductor2_2.Q'), 0.0));
     'capacitor2_3.abs_v' = sqrt('capacitor2_3.v.re' ^ 2.0 + 'capacitor2_3.v.im' ^ 2.0);
     'capacitor2_3.arg_v' = 'Modelica.Math.atan3'('capacitor2_3.v.im', 'capacitor2_3.v.re', 0.0);
     'capacitor2_3.abs_i' = sqrt('capacitor2_3.i.re' ^ 2.0 + 'capacitor2_3.i.im' ^ 2.0);
@@ -2213,7 +2124,7 @@ package 'UnsymmetricalLoad'
     'capacitor2_3.P' = 'capacitor2_3.v.re' * 'capacitor2_3.i.re' - 'capacitor2_3.v.im' * (-'capacitor2_3.i.im');
     'capacitor2_3.Q' = 'capacitor2_3.v.re' * (-'capacitor2_3.i.im') + 'capacitor2_3.v.im' * 'capacitor2_3.i.re';
     'capacitor2_3.S' = sqrt(('capacitor2_3.v.re' * 'capacitor2_3.i.re' - 'capacitor2_3.v.im' * (-'capacitor2_3.i.im')) ^ 2.0 + ('capacitor2_3.v.re' * (-'capacitor2_3.i.im') + 'capacitor2_3.v.im' * 'capacitor2_3.i.re') ^ 2.0);
-    'capacitor2_3.pf' = cos('Modelica.Math.atan3'('capacitor2_3.Q', 'capacitor2_3.P', 0.0));
+    'capacitor2_3.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('capacitor2_3.P', 'capacitor2_3.Q'), 0.0));
     'currentSensorN.abs_i' = sqrt('currentSensorN.i.re' ^ 2.0 + 'currentSensorN.i.im' ^ 2.0);
     'currentSensorN.arg_i' = 'Modelica.Math.atan3'('currentSensorN.i.im', 'currentSensorN.i.re', 0.0);
     'voltageSensorN.abs_v' = sqrt('voltageSensorN.v.re' ^ 2.0 + 'voltageSensorN.v.im' ^ 2.0);
@@ -3158,45 +3069,45 @@ package 'UnsymmetricalLoad'
     'voltageSource1.arg_i[1]' = 'Modelica.ComplexMath.arg'('voltageSource1.i[1]', 0.0);
     'voltageSource1.arg_i[2]' = 'Modelica.ComplexMath.arg'('voltageSource1.i[2]', 0.0);
     'voltageSource1.arg_i[3]' = 'Modelica.ComplexMath.arg'('voltageSource1.i[3]', 0.0);
-    'voltageSource1.P[1]' = 'voltageSource1.v[1].re' * 'voltageSource1.i[1].re' - 'voltageSource1.v[1].im' * (-'voltageSource1.i[1].im');
-    'voltageSource1.P[2]' = 'voltageSource1.v[2].re' * 'voltageSource1.i[2].re' - 'voltageSource1.v[2].im' * (-'voltageSource1.i[2].im');
-    'voltageSource1.P[3]' = 'voltageSource1.v[3].re' * 'voltageSource1.i[3].re' - 'voltageSource1.v[3].im' * (-'voltageSource1.i[3].im');
-    'voltageSource1.Q[1]' = 'voltageSource1.v[1].re' * (-'voltageSource1.i[1].im') + 'voltageSource1.v[1].im' * 'voltageSource1.i[1].re';
-    'voltageSource1.Q[2]' = 'voltageSource1.v[2].re' * (-'voltageSource1.i[2].im') + 'voltageSource1.v[2].im' * 'voltageSource1.i[2].re';
-    'voltageSource1.Q[3]' = 'voltageSource1.v[3].re' * (-'voltageSource1.i[3].im') + 'voltageSource1.v[3].im' * 'voltageSource1.i[3].re';
-    'voltageSource1.S[1]' = sqrt(('voltageSource1.v[1].re' * 'voltageSource1.i[1].re' - 'voltageSource1.v[1].im' * (-'voltageSource1.i[1].im')) ^ 2.0 + ('voltageSource1.v[1].re' * (-'voltageSource1.i[1].im') + 'voltageSource1.v[1].im' * 'voltageSource1.i[1].re') ^ 2.0);
-    'voltageSource1.S[2]' = sqrt(('voltageSource1.v[2].re' * 'voltageSource1.i[2].re' - 'voltageSource1.v[2].im' * (-'voltageSource1.i[2].im')) ^ 2.0 + ('voltageSource1.v[2].re' * (-'voltageSource1.i[2].im') + 'voltageSource1.v[2].im' * 'voltageSource1.i[2].re') ^ 2.0);
-    'voltageSource1.S[3]' = sqrt(('voltageSource1.v[3].re' * 'voltageSource1.i[3].re' - 'voltageSource1.v[3].im' * (-'voltageSource1.i[3].im')) ^ 2.0 + ('voltageSource1.v[3].re' * (-'voltageSource1.i[3].im') + 'voltageSource1.v[3].im' * 'voltageSource1.i[3].re') ^ 2.0);
-    'voltageSource1.pf[1]' = cos('Modelica.Math.atan3'('voltageSource1.Q[1]', 'voltageSource1.P[1]', 0.0));
-    'voltageSource1.pf[2]' = cos('Modelica.Math.atan3'('voltageSource1.Q[2]', 'voltageSource1.P[2]', 0.0));
-    'voltageSource1.pf[3]' = cos('Modelica.Math.atan3'('voltageSource1.Q[3]', 'voltageSource1.P[3]', 0.0));
+    'voltageSource1.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource1.v[1]', 'Modelica.ComplexMath.conj'('voltageSource1.i[1]')));
+    'voltageSource1.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource1.v[2]', 'Modelica.ComplexMath.conj'('voltageSource1.i[2]')));
+    'voltageSource1.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource1.v[3]', 'Modelica.ComplexMath.conj'('voltageSource1.i[3]')));
+    'voltageSource1.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource1.v[1]', 'Modelica.ComplexMath.conj'('voltageSource1.i[1]')));
+    'voltageSource1.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource1.v[2]', 'Modelica.ComplexMath.conj'('voltageSource1.i[2]')));
+    'voltageSource1.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource1.v[3]', 'Modelica.ComplexMath.conj'('voltageSource1.i[3]')));
+    'voltageSource1.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource1.v[1]', 'Modelica.ComplexMath.conj'('voltageSource1.i[1]')));
+    'voltageSource1.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource1.v[2]', 'Modelica.ComplexMath.conj'('voltageSource1.i[2]')));
+    'voltageSource1.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource1.v[3]', 'Modelica.ComplexMath.conj'('voltageSource1.i[3]')));
+    'voltageSource1.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource1.P[1]', 'voltageSource1.Q[1]'), 0.0));
+    'voltageSource1.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource1.P[2]', 'voltageSource1.Q[2]'), 0.0));
+    'voltageSource1.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource1.P[3]', 'voltageSource1.Q[3]'), 0.0));
     'voltageSource1.omega' = 314.1592653589793;
     'voltageSource1.v[1].re' = 230.94010767585033;
     'voltageSource1.v[2].re' = -115.47005383792511;
     'voltageSource1.v[3].re' = -115.47005383792526;
-    'voltageSource1.v[1].im' = -0.0;
+    'voltageSource1.v[1].im' = 0.0;
     'voltageSource1.v[2].im' = -200.00000000000003;
     'voltageSource1.v[3].im' = 199.99999999999994;
     'voltageSource1.plug_p.reference.gamma' = 'voltageSource1.plug_n.reference.gamma';
     'voltageSource1.omega' = der('voltageSource1.plug_p.reference.gamma');
-    'voltageSource1.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource1.plug_p.pin[1].v', 'voltageSource1.plug_n.pin[1].v')).re;
-    'voltageSource1.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource1.plug_p.pin[1].v', 'voltageSource1.plug_n.pin[1].v')).im;
-    'voltageSource1.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource1.plug_p.pin[2].v', 'voltageSource1.plug_n.pin[2].v')).re;
-    'voltageSource1.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource1.plug_p.pin[2].v', 'voltageSource1.plug_n.pin[2].v')).im;
-    'voltageSource1.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource1.plug_p.pin[3].v', 'voltageSource1.plug_n.pin[3].v')).re;
-    'voltageSource1.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource1.plug_p.pin[3].v', 'voltageSource1.plug_n.pin[3].v')).im;
+    'voltageSource1.v[1].re' = 'voltageSource1.plug_p.pin[1].v.re' - 'voltageSource1.plug_n.pin[1].v.re';
+    'voltageSource1.v[1].im' = 'voltageSource1.plug_p.pin[1].v.im' - 'voltageSource1.plug_n.pin[1].v.im';
+    'voltageSource1.v[2].re' = 'voltageSource1.plug_p.pin[2].v.re' - 'voltageSource1.plug_n.pin[2].v.re';
+    'voltageSource1.v[2].im' = 'voltageSource1.plug_p.pin[2].v.im' - 'voltageSource1.plug_n.pin[2].v.im';
+    'voltageSource1.v[3].re' = 'voltageSource1.plug_p.pin[3].v.re' - 'voltageSource1.plug_n.pin[3].v.re';
+    'voltageSource1.v[3].im' = 'voltageSource1.plug_p.pin[3].v.im' - 'voltageSource1.plug_n.pin[3].v.im';
     'voltageSource1.i[1].re' = 'voltageSource1.plug_p.pin[1].i.re';
     'voltageSource1.i[1].im' = 'voltageSource1.plug_p.pin[1].i.im';
     'voltageSource1.i[2].re' = 'voltageSource1.plug_p.pin[2].i.re';
     'voltageSource1.i[2].im' = 'voltageSource1.plug_p.pin[2].i.im';
     'voltageSource1.i[3].re' = 'voltageSource1.plug_p.pin[3].i.re';
     'voltageSource1.i[3].im' = 'voltageSource1.plug_p.pin[3].i.im';
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource1.plug_p.pin[1].i', 'voltageSource1.plug_n.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource1.plug_p.pin[1].i', 'voltageSource1.plug_n.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource1.plug_p.pin[2].i', 'voltageSource1.plug_n.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource1.plug_p.pin[2].i', 'voltageSource1.plug_n.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource1.plug_p.pin[3].i', 'voltageSource1.plug_n.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource1.plug_p.pin[3].i', 'voltageSource1.plug_n.pin[3].i')).im = 0.0;
+    'voltageSource1.plug_p.pin[1].i.re' + 'voltageSource1.plug_n.pin[1].i.re' = 0.0;
+    'voltageSource1.plug_p.pin[1].i.im' + 'voltageSource1.plug_n.pin[1].i.im' = 0.0;
+    'voltageSource1.plug_p.pin[2].i.re' + 'voltageSource1.plug_n.pin[2].i.re' = 0.0;
+    'voltageSource1.plug_p.pin[2].i.im' + 'voltageSource1.plug_n.pin[2].i.im' = 0.0;
+    'voltageSource1.plug_p.pin[3].i.re' + 'voltageSource1.plug_n.pin[3].i.re' = 0.0;
+    'voltageSource1.plug_p.pin[3].i.im' + 'voltageSource1.plug_n.pin[3].i.im' = 0.0;
     'star1_1.plugToPins_p.plugToPin_p[1].plug_p.reference.gamma' = 'star1_1.plugToPins_p.plugToPin_p[1].pin_p.reference.gamma';
     'star1_1.plugToPins_p.plugToPin_p[1].pin_p.v.re' = 'star1_1.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.re';
     'star1_1.plugToPins_p.plugToPin_p[1].pin_p.v.im' = 'star1_1.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.im';
@@ -3238,45 +3149,45 @@ package 'UnsymmetricalLoad'
     'voltageSource2.arg_i[1]' = 'Modelica.ComplexMath.arg'('voltageSource2.i[1]', 0.0);
     'voltageSource2.arg_i[2]' = 'Modelica.ComplexMath.arg'('voltageSource2.i[2]', 0.0);
     'voltageSource2.arg_i[3]' = 'Modelica.ComplexMath.arg'('voltageSource2.i[3]', 0.0);
-    'voltageSource2.P[1]' = 'voltageSource2.v[1].re' * 'voltageSource2.i[1].re' - 'voltageSource2.v[1].im' * (-'voltageSource2.i[1].im');
-    'voltageSource2.P[2]' = 'voltageSource2.v[2].re' * 'voltageSource2.i[2].re' - 'voltageSource2.v[2].im' * (-'voltageSource2.i[2].im');
-    'voltageSource2.P[3]' = 'voltageSource2.v[3].re' * 'voltageSource2.i[3].re' - 'voltageSource2.v[3].im' * (-'voltageSource2.i[3].im');
-    'voltageSource2.Q[1]' = 'voltageSource2.v[1].re' * (-'voltageSource2.i[1].im') + 'voltageSource2.v[1].im' * 'voltageSource2.i[1].re';
-    'voltageSource2.Q[2]' = 'voltageSource2.v[2].re' * (-'voltageSource2.i[2].im') + 'voltageSource2.v[2].im' * 'voltageSource2.i[2].re';
-    'voltageSource2.Q[3]' = 'voltageSource2.v[3].re' * (-'voltageSource2.i[3].im') + 'voltageSource2.v[3].im' * 'voltageSource2.i[3].re';
-    'voltageSource2.S[1]' = sqrt(('voltageSource2.v[1].re' * 'voltageSource2.i[1].re' - 'voltageSource2.v[1].im' * (-'voltageSource2.i[1].im')) ^ 2.0 + ('voltageSource2.v[1].re' * (-'voltageSource2.i[1].im') + 'voltageSource2.v[1].im' * 'voltageSource2.i[1].re') ^ 2.0);
-    'voltageSource2.S[2]' = sqrt(('voltageSource2.v[2].re' * 'voltageSource2.i[2].re' - 'voltageSource2.v[2].im' * (-'voltageSource2.i[2].im')) ^ 2.0 + ('voltageSource2.v[2].re' * (-'voltageSource2.i[2].im') + 'voltageSource2.v[2].im' * 'voltageSource2.i[2].re') ^ 2.0);
-    'voltageSource2.S[3]' = sqrt(('voltageSource2.v[3].re' * 'voltageSource2.i[3].re' - 'voltageSource2.v[3].im' * (-'voltageSource2.i[3].im')) ^ 2.0 + ('voltageSource2.v[3].re' * (-'voltageSource2.i[3].im') + 'voltageSource2.v[3].im' * 'voltageSource2.i[3].re') ^ 2.0);
-    'voltageSource2.pf[1]' = cos('Modelica.Math.atan3'('voltageSource2.Q[1]', 'voltageSource2.P[1]', 0.0));
-    'voltageSource2.pf[2]' = cos('Modelica.Math.atan3'('voltageSource2.Q[2]', 'voltageSource2.P[2]', 0.0));
-    'voltageSource2.pf[3]' = cos('Modelica.Math.atan3'('voltageSource2.Q[3]', 'voltageSource2.P[3]', 0.0));
+    'voltageSource2.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource2.v[1]', 'Modelica.ComplexMath.conj'('voltageSource2.i[1]')));
+    'voltageSource2.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource2.v[2]', 'Modelica.ComplexMath.conj'('voltageSource2.i[2]')));
+    'voltageSource2.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource2.v[3]', 'Modelica.ComplexMath.conj'('voltageSource2.i[3]')));
+    'voltageSource2.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource2.v[1]', 'Modelica.ComplexMath.conj'('voltageSource2.i[1]')));
+    'voltageSource2.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource2.v[2]', 'Modelica.ComplexMath.conj'('voltageSource2.i[2]')));
+    'voltageSource2.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource2.v[3]', 'Modelica.ComplexMath.conj'('voltageSource2.i[3]')));
+    'voltageSource2.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource2.v[1]', 'Modelica.ComplexMath.conj'('voltageSource2.i[1]')));
+    'voltageSource2.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource2.v[2]', 'Modelica.ComplexMath.conj'('voltageSource2.i[2]')));
+    'voltageSource2.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource2.v[3]', 'Modelica.ComplexMath.conj'('voltageSource2.i[3]')));
+    'voltageSource2.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource2.P[1]', 'voltageSource2.Q[1]'), 0.0));
+    'voltageSource2.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource2.P[2]', 'voltageSource2.Q[2]'), 0.0));
+    'voltageSource2.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource2.P[3]', 'voltageSource2.Q[3]'), 0.0));
     'voltageSource2.omega' = 314.1592653589793;
     'voltageSource2.v[1].re' = 230.94010767585033;
     'voltageSource2.v[2].re' = -115.47005383792511;
     'voltageSource2.v[3].re' = -115.47005383792526;
-    'voltageSource2.v[1].im' = -0.0;
+    'voltageSource2.v[1].im' = 0.0;
     'voltageSource2.v[2].im' = -200.00000000000003;
     'voltageSource2.v[3].im' = 199.99999999999994;
     'voltageSource2.plug_p.reference.gamma' = 'voltageSource2.plug_n.reference.gamma';
     'voltageSource2.omega' = der('voltageSource2.plug_p.reference.gamma');
-    'voltageSource2.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource2.plug_p.pin[1].v', 'voltageSource2.plug_n.pin[1].v')).re;
-    'voltageSource2.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource2.plug_p.pin[1].v', 'voltageSource2.plug_n.pin[1].v')).im;
-    'voltageSource2.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource2.plug_p.pin[2].v', 'voltageSource2.plug_n.pin[2].v')).re;
-    'voltageSource2.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource2.plug_p.pin[2].v', 'voltageSource2.plug_n.pin[2].v')).im;
-    'voltageSource2.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource2.plug_p.pin[3].v', 'voltageSource2.plug_n.pin[3].v')).re;
-    'voltageSource2.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource2.plug_p.pin[3].v', 'voltageSource2.plug_n.pin[3].v')).im;
+    'voltageSource2.v[1].re' = 'voltageSource2.plug_p.pin[1].v.re' - 'voltageSource2.plug_n.pin[1].v.re';
+    'voltageSource2.v[1].im' = 'voltageSource2.plug_p.pin[1].v.im' - 'voltageSource2.plug_n.pin[1].v.im';
+    'voltageSource2.v[2].re' = 'voltageSource2.plug_p.pin[2].v.re' - 'voltageSource2.plug_n.pin[2].v.re';
+    'voltageSource2.v[2].im' = 'voltageSource2.plug_p.pin[2].v.im' - 'voltageSource2.plug_n.pin[2].v.im';
+    'voltageSource2.v[3].re' = 'voltageSource2.plug_p.pin[3].v.re' - 'voltageSource2.plug_n.pin[3].v.re';
+    'voltageSource2.v[3].im' = 'voltageSource2.plug_p.pin[3].v.im' - 'voltageSource2.plug_n.pin[3].v.im';
     'voltageSource2.i[1].re' = 'voltageSource2.plug_p.pin[1].i.re';
     'voltageSource2.i[1].im' = 'voltageSource2.plug_p.pin[1].i.im';
     'voltageSource2.i[2].re' = 'voltageSource2.plug_p.pin[2].i.re';
     'voltageSource2.i[2].im' = 'voltageSource2.plug_p.pin[2].i.im';
     'voltageSource2.i[3].re' = 'voltageSource2.plug_p.pin[3].i.re';
     'voltageSource2.i[3].im' = 'voltageSource2.plug_p.pin[3].i.im';
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource2.plug_p.pin[1].i', 'voltageSource2.plug_n.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource2.plug_p.pin[1].i', 'voltageSource2.plug_n.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource2.plug_p.pin[2].i', 'voltageSource2.plug_n.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource2.plug_p.pin[2].i', 'voltageSource2.plug_n.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource2.plug_p.pin[3].i', 'voltageSource2.plug_n.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource2.plug_p.pin[3].i', 'voltageSource2.plug_n.pin[3].i')).im = 0.0;
+    'voltageSource2.plug_p.pin[1].i.re' + 'voltageSource2.plug_n.pin[1].i.re' = 0.0;
+    'voltageSource2.plug_p.pin[1].i.im' + 'voltageSource2.plug_n.pin[1].i.im' = 0.0;
+    'voltageSource2.plug_p.pin[2].i.re' + 'voltageSource2.plug_n.pin[2].i.re' = 0.0;
+    'voltageSource2.plug_p.pin[2].i.im' + 'voltageSource2.plug_n.pin[2].i.im' = 0.0;
+    'voltageSource2.plug_p.pin[3].i.re' + 'voltageSource2.plug_n.pin[3].i.re' = 0.0;
+    'voltageSource2.plug_p.pin[3].i.im' + 'voltageSource2.plug_n.pin[3].i.im' = 0.0;
     'star2_1.plugToPins_p.plugToPin_p[1].plug_p.reference.gamma' = 'star2_1.plugToPins_p.plugToPin_p[1].pin_p.reference.gamma';
     'star2_1.plugToPins_p.plugToPin_p[1].pin_p.v.re' = 'star2_1.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.re';
     'star2_1.plugToPins_p.plugToPin_p[1].pin_p.v.im' = 'star2_1.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.im';
@@ -3525,8 +3436,8 @@ package 'UnsymmetricalLoad'
     'symmetricalComponents_2.y[3].re' = 'symmetricalComponents_2.sTM[3,1].re' * 'symmetricalComponents_2.u[1].re' - 'symmetricalComponents_2.sTM[3,1].im' * 'symmetricalComponents_2.u[1].im' + 'symmetricalComponents_2.sTM[3,2].re' * 'symmetricalComponents_2.u[2].re' - 'symmetricalComponents_2.sTM[3,2].im' * 'symmetricalComponents_2.u[2].im' + 'symmetricalComponents_2.sTM[3,3].re' * 'symmetricalComponents_2.u[3].re' - 'symmetricalComponents_2.sTM[3,3].im' * 'symmetricalComponents_2.u[3].im';
     'symmetricalComponents_2.y[3].im' = 'symmetricalComponents_2.sTM[3,1].re' * 'symmetricalComponents_2.u[1].im' + 'symmetricalComponents_2.sTM[3,1].im' * 'symmetricalComponents_2.u[1].re' + 'symmetricalComponents_2.sTM[3,2].re' * 'symmetricalComponents_2.u[2].im' + 'symmetricalComponents_2.sTM[3,2].im' * 'symmetricalComponents_2.u[2].re' + 'symmetricalComponents_2.sTM[3,3].re' * 'symmetricalComponents_2.u[3].im' + 'symmetricalComponents_2.sTM[3,3].im' * 'symmetricalComponents_2.u[3].re';
     'resistor1_1.R_actual' = 110.0;
-    'resistor1_1.v.re' = 'resistor1_1.R_actual' * 'resistor1_1.i.re';
-    'resistor1_1.v.im' = 'resistor1_1.R_actual' * 'resistor1_1.i.im';
+    'resistor1_1.v.re' = 'resistor1_1.R_actual' * 'resistor1_1.i.re' - 0.0 * 'resistor1_1.i.im';
+    'resistor1_1.v.im' = 'resistor1_1.R_actual' * 'resistor1_1.i.im' + 0.0 * 'resistor1_1.i.re';
     'resistor1_1.LossPower' = 'resistor1_1.v.re' * 'resistor1_1.i.re' - 'resistor1_1.v.im' * (-'resistor1_1.i.im');
     'resistor1_1.T_heatPort' = 293.15;
     'resistor1_1.pin_p.i.re' + 'resistor1_1.pin_n.i.re' = 0.0;
@@ -3538,8 +3449,8 @@ package 'UnsymmetricalLoad'
     'resistor1_1.pin_p.reference.gamma' = 'resistor1_1.pin_n.reference.gamma';
     'resistor1_1.omega' = der('resistor1_1.pin_p.reference.gamma');
     'resistor1_2.R_actual' = 100.0;
-    'resistor1_2.v.re' = 'resistor1_2.R_actual' * 'resistor1_2.i.re';
-    'resistor1_2.v.im' = 'resistor1_2.R_actual' * 'resistor1_2.i.im';
+    'resistor1_2.v.re' = 'resistor1_2.R_actual' * 'resistor1_2.i.re' - 0.0 * 'resistor1_2.i.im';
+    'resistor1_2.v.im' = 'resistor1_2.R_actual' * 'resistor1_2.i.im' + 0.0 * 'resistor1_2.i.re';
     'resistor1_2.LossPower' = 'resistor1_2.v.re' * 'resistor1_2.i.re' - 'resistor1_2.v.im' * (-'resistor1_2.i.im');
     'resistor1_2.T_heatPort' = 293.15;
     'resistor1_2.pin_p.i.re' + 'resistor1_2.pin_n.i.re' = 0.0;
@@ -3551,8 +3462,8 @@ package 'UnsymmetricalLoad'
     'resistor1_2.pin_p.reference.gamma' = 'resistor1_2.pin_n.reference.gamma';
     'resistor1_2.omega' = der('resistor1_2.pin_p.reference.gamma');
     'resistor1_3.R_actual' = 60.0;
-    'resistor1_3.v.re' = 'resistor1_3.R_actual' * 'resistor1_3.i.re';
-    'resistor1_3.v.im' = 'resistor1_3.R_actual' * 'resistor1_3.i.im';
+    'resistor1_3.v.re' = 'resistor1_3.R_actual' * 'resistor1_3.i.re' - 0.0 * 'resistor1_3.i.im';
+    'resistor1_3.v.im' = 'resistor1_3.R_actual' * 'resistor1_3.i.im' + 0.0 * 'resistor1_3.i.re';
     'resistor1_3.LossPower' = 'resistor1_3.v.re' * 'resistor1_3.i.re' - 'resistor1_3.v.im' * (-'resistor1_3.i.im');
     'resistor1_3.T_heatPort' = 293.15;
     'resistor1_3.pin_p.i.re' + 'resistor1_3.pin_n.i.re' = 0.0;
@@ -3563,8 +3474,8 @@ package 'UnsymmetricalLoad'
     'resistor1_3.i.im' = 'resistor1_3.pin_p.i.im';
     'resistor1_3.pin_p.reference.gamma' = 'resistor1_3.pin_n.reference.gamma';
     'resistor1_3.omega' = der('resistor1_3.pin_p.reference.gamma');
-    'inductor1_2.v.re' = -'inductor1_2.omega' * 0.25 * 'inductor1_2.i.im';
-    'inductor1_2.v.im' = 'inductor1_2.omega' * 0.25 * 'inductor1_2.i.re';
+    'inductor1_2.v.re' = ((0.0 * 'inductor1_2.omega' - 1.0 * 0.0) * 0.25 - (0.0 * 0.0 + 1.0 * 'inductor1_2.omega') * 0.0) * 'inductor1_2.i.re' - ((0.0 * 'inductor1_2.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor1_2.omega') * 0.25) * 'inductor1_2.i.im';
+    'inductor1_2.v.im' = ((0.0 * 'inductor1_2.omega' - 1.0 * 0.0) * 0.25 - (0.0 * 0.0 + 1.0 * 'inductor1_2.omega') * 0.0) * 'inductor1_2.i.im' + ((0.0 * 'inductor1_2.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor1_2.omega') * 0.25) * 'inductor1_2.i.re';
     'inductor1_2.pin_p.i.re' + 'inductor1_2.pin_n.i.re' = 0.0;
     'inductor1_2.pin_p.i.im' + 'inductor1_2.pin_n.i.im' = 0.0;
     'inductor1_2.v.re' = 'inductor1_2.pin_p.v.re' - 'inductor1_2.pin_n.v.re';
@@ -3573,8 +3484,8 @@ package 'UnsymmetricalLoad'
     'inductor1_2.i.im' = 'inductor1_2.pin_p.i.im';
     'inductor1_2.pin_p.reference.gamma' = 'inductor1_2.pin_n.reference.gamma';
     'inductor1_2.omega' = der('inductor1_2.pin_p.reference.gamma');
-    'capacitor1_3.i.re' = -'capacitor1_3.omega' * 3.5e-5 * 'capacitor1_3.v.im';
-    'capacitor1_3.i.im' = 'capacitor1_3.omega' * 3.5e-5 * 'capacitor1_3.v.re';
+    'capacitor1_3.i.re' = ((0.0 * 'capacitor1_3.omega' - 1.0 * 0.0) * 3.5e-5 - (0.0 * 0.0 + 1.0 * 'capacitor1_3.omega') * 0.0) * 'capacitor1_3.v.re' - ((0.0 * 'capacitor1_3.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'capacitor1_3.omega') * 3.5e-5) * 'capacitor1_3.v.im';
+    'capacitor1_3.i.im' = ((0.0 * 'capacitor1_3.omega' - 1.0 * 0.0) * 3.5e-5 - (0.0 * 0.0 + 1.0 * 'capacitor1_3.omega') * 0.0) * 'capacitor1_3.v.im' + ((0.0 * 'capacitor1_3.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'capacitor1_3.omega') * 3.5e-5) * 'capacitor1_3.v.re';
     'capacitor1_3.pin_p.i.re' + 'capacitor1_3.pin_n.i.re' = 0.0;
     'capacitor1_3.pin_p.i.im' + 'capacitor1_3.pin_n.i.im' = 0.0;
     'capacitor1_3.v.re' = 'capacitor1_3.pin_p.v.re' - 'capacitor1_3.pin_n.v.re';
@@ -3584,8 +3495,8 @@ package 'UnsymmetricalLoad'
     'capacitor1_3.pin_p.reference.gamma' = 'capacitor1_3.pin_n.reference.gamma';
     'capacitor1_3.omega' = der('capacitor1_3.pin_p.reference.gamma');
     'resistor2_1.R_actual' = 110.0;
-    'resistor2_1.v.re' = 'resistor2_1.R_actual' * 'resistor2_1.i.re';
-    'resistor2_1.v.im' = 'resistor2_1.R_actual' * 'resistor2_1.i.im';
+    'resistor2_1.v.re' = 'resistor2_1.R_actual' * 'resistor2_1.i.re' - 0.0 * 'resistor2_1.i.im';
+    'resistor2_1.v.im' = 'resistor2_1.R_actual' * 'resistor2_1.i.im' + 0.0 * 'resistor2_1.i.re';
     'resistor2_1.LossPower' = 'resistor2_1.v.re' * 'resistor2_1.i.re' - 'resistor2_1.v.im' * (-'resistor2_1.i.im');
     'resistor2_1.T_heatPort' = 293.15;
     'resistor2_1.pin_p.i.re' + 'resistor2_1.pin_n.i.re' = 0.0;
@@ -3597,8 +3508,8 @@ package 'UnsymmetricalLoad'
     'resistor2_1.pin_p.reference.gamma' = 'resistor2_1.pin_n.reference.gamma';
     'resistor2_1.omega' = der('resistor2_1.pin_p.reference.gamma');
     'resistor2_2.R_actual' = 100.0;
-    'resistor2_2.v.re' = 'resistor2_2.R_actual' * 'resistor2_2.i.re';
-    'resistor2_2.v.im' = 'resistor2_2.R_actual' * 'resistor2_2.i.im';
+    'resistor2_2.v.re' = 'resistor2_2.R_actual' * 'resistor2_2.i.re' - 0.0 * 'resistor2_2.i.im';
+    'resistor2_2.v.im' = 'resistor2_2.R_actual' * 'resistor2_2.i.im' + 0.0 * 'resistor2_2.i.re';
     'resistor2_2.LossPower' = 'resistor2_2.v.re' * 'resistor2_2.i.re' - 'resistor2_2.v.im' * (-'resistor2_2.i.im');
     'resistor2_2.T_heatPort' = 293.15;
     'resistor2_2.pin_p.i.re' + 'resistor2_2.pin_n.i.re' = 0.0;
@@ -3610,8 +3521,8 @@ package 'UnsymmetricalLoad'
     'resistor2_2.pin_p.reference.gamma' = 'resistor2_2.pin_n.reference.gamma';
     'resistor2_2.omega' = der('resistor2_2.pin_p.reference.gamma');
     'resistor2_3.R_actual' = 60.0;
-    'resistor2_3.v.re' = 'resistor2_3.R_actual' * 'resistor2_3.i.re';
-    'resistor2_3.v.im' = 'resistor2_3.R_actual' * 'resistor2_3.i.im';
+    'resistor2_3.v.re' = 'resistor2_3.R_actual' * 'resistor2_3.i.re' - 0.0 * 'resistor2_3.i.im';
+    'resistor2_3.v.im' = 'resistor2_3.R_actual' * 'resistor2_3.i.im' + 0.0 * 'resistor2_3.i.re';
     'resistor2_3.LossPower' = 'resistor2_3.v.re' * 'resistor2_3.i.re' - 'resistor2_3.v.im' * (-'resistor2_3.i.im');
     'resistor2_3.T_heatPort' = 293.15;
     'resistor2_3.pin_p.i.re' + 'resistor2_3.pin_n.i.re' = 0.0;
@@ -3622,8 +3533,8 @@ package 'UnsymmetricalLoad'
     'resistor2_3.i.im' = 'resistor2_3.pin_p.i.im';
     'resistor2_3.pin_p.reference.gamma' = 'resistor2_3.pin_n.reference.gamma';
     'resistor2_3.omega' = der('resistor2_3.pin_p.reference.gamma');
-    'inductor2_2.v.re' = -'inductor2_2.omega' * 0.25 * 'inductor2_2.i.im';
-    'inductor2_2.v.im' = 'inductor2_2.omega' * 0.25 * 'inductor2_2.i.re';
+    'inductor2_2.v.re' = ((0.0 * 'inductor2_2.omega' - 1.0 * 0.0) * 0.25 - (0.0 * 0.0 + 1.0 * 'inductor2_2.omega') * 0.0) * 'inductor2_2.i.re' - ((0.0 * 'inductor2_2.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor2_2.omega') * 0.25) * 'inductor2_2.i.im';
+    'inductor2_2.v.im' = ((0.0 * 'inductor2_2.omega' - 1.0 * 0.0) * 0.25 - (0.0 * 0.0 + 1.0 * 'inductor2_2.omega') * 0.0) * 'inductor2_2.i.im' + ((0.0 * 'inductor2_2.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor2_2.omega') * 0.25) * 'inductor2_2.i.re';
     'inductor2_2.pin_p.i.re' + 'inductor2_2.pin_n.i.re' = 0.0;
     'inductor2_2.pin_p.i.im' + 'inductor2_2.pin_n.i.im' = 0.0;
     'inductor2_2.v.re' = 'inductor2_2.pin_p.v.re' - 'inductor2_2.pin_n.v.re';
@@ -3632,8 +3543,8 @@ package 'UnsymmetricalLoad'
     'inductor2_2.i.im' = 'inductor2_2.pin_p.i.im';
     'inductor2_2.pin_p.reference.gamma' = 'inductor2_2.pin_n.reference.gamma';
     'inductor2_2.omega' = der('inductor2_2.pin_p.reference.gamma');
-    'capacitor2_3.i.re' = -'capacitor2_3.omega' * 3.5e-5 * 'capacitor2_3.v.im';
-    'capacitor2_3.i.im' = 'capacitor2_3.omega' * 3.5e-5 * 'capacitor2_3.v.re';
+    'capacitor2_3.i.re' = ((0.0 * 'capacitor2_3.omega' - 1.0 * 0.0) * 3.5e-5 - (0.0 * 0.0 + 1.0 * 'capacitor2_3.omega') * 0.0) * 'capacitor2_3.v.re' - ((0.0 * 'capacitor2_3.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'capacitor2_3.omega') * 3.5e-5) * 'capacitor2_3.v.im';
+    'capacitor2_3.i.im' = ((0.0 * 'capacitor2_3.omega' - 1.0 * 0.0) * 3.5e-5 - (0.0 * 0.0 + 1.0 * 'capacitor2_3.omega') * 0.0) * 'capacitor2_3.v.im' + ((0.0 * 'capacitor2_3.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'capacitor2_3.omega') * 3.5e-5) * 'capacitor2_3.v.re';
     'capacitor2_3.pin_p.i.re' + 'capacitor2_3.pin_n.i.re' = 0.0;
     'capacitor2_3.pin_p.i.im' + 'capacitor2_3.pin_n.i.im' = 0.0;
     'capacitor2_3.v.re' = 'capacitor2_3.pin_p.v.re' - 'capacitor2_3.pin_n.v.re';

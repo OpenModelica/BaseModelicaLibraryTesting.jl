@@ -1,55 +1,5 @@
 //! base 0.1.0
 package 'BooleanNetwork1'
-  function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    input Real 'timeIn';
-    output Real 'nextTimeEvent';
-  external "C" 'nextTimeEvent' = ModelicaStandardTables_CombiTimeTable_nextTimeEvent('tableID', 'timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getNextTimeEvent';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    output Real 'timeMax';
-  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    output Real 'timeMin';
-  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer' "Interpolate 1-dim. table where first column is time (but do not provide a derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    input Integer 'icol';
-    input Real 'timeIn';
-    input Real 'nextTimeEvent';
-    input Real 'pre_nextTimeEvent';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTimeTable_getValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer';
-
-  function 'Modelica.Math.BooleanVectors.firstTrueIndex' "Returns the index of the first true element of a Boolean vector"
-    input Boolean[:] 'b';
-    output Integer 'index';
-  algorithm
-    'index' := 0;
-
-    for 'i' in 1:size('b', 1) loop
-      if 'b'['i'] then
-        'index' := 'i';
-        return;
-      end if;
-    end for;
-  end 'Modelica.Math.BooleanVectors.firstTrueIndex';
-
-  function 'Modelica.Math.BooleanVectors.oneTrue' "Returns true, if exactly one element of the Boolean input vector is true (\"xor\")"
-    input Boolean[:] 'b';
-    output Boolean 'result';
-  algorithm
-    'result' := sum(if 'b'['i'] then 1 else 0 for 'i' in 1:size('b', 1)) == 1;
-  end 'Modelica.Math.BooleanVectors.oneTrue';
-
   type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
 
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
@@ -328,7 +278,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'onDelay.y' = 'showValue6.activePort';
     'sampleTriggerSet.y' = 'rSFlipFlop.S';
     'sampleTriggerReset.y' = 'rSFlipFlop.R';
-    'and1.y' = min({'and1.u[1]', 'and1.u[2]', 'and1.u[3]'});
+    'and1.y' = size('and1.u', 1) == 0 or min('and1.u');
 
     when sample(0.0, 1.0) then
       'booleanPulse1.pulseStart' = time;
@@ -342,10 +292,10 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
 
     'booleanPulse2.y' = time >= 'booleanPulse2.pulseStart' and time < 'booleanPulse2.pulseStart' + 0.8;
     'booleanStep.y' = time >= 1.5;
-    'or1.y' = max({'or1.u[1]', 'or1.u[2]'});
-    'xor1.y' = 'Modelica.Math.BooleanVectors.oneTrue'({'xor1.u[1]', 'xor1.u[2]'});
-    'nand1.y' = not min('nand1.u');
-    'or2.y' = not max('or2.u');
+    'or1.y' = size('or1.u', 1) > 0 and max('or1.u');
+    'xor1.y' = 'Modelica.Math.BooleanVectors.countTrue'('xor1.u') == 1;
+    'nand1.y' = not 'Modelica.Math.BooleanVectors.andTrue'('nand1.u');
+    'or2.y' = not 'Modelica.Math.BooleanVectors.anyTrue'('or2.u');
     'nor1.y' = not 'nor1.u';
 
     if 'onDelay.delaySignal' then

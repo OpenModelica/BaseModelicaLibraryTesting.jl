@@ -1,269 +1,5 @@
 //! base 0.1.0
 package 'PlanarLoops_analytic'
-  function 'Modelica.Math.Vectors.normalizeWithAssert' "Return normalized vector such that length = 1 (trigger an assert for zero vector)"
-    input Real[:] 'v';
-    output Real[size('v', 1)] 'result';
-  algorithm
-    assert(sqrt('v' * 'v') > 0.0, "Vector v={0,0,0} shall be normalized (= v/sqrt(v*v)), but this results in a division by zero.\nProvide a non-zero vector!", AssertionLevel.error);
-    'result' := 'v' / sqrt('v' * 'v');
-    annotation(Inline = true);
-  end 'Modelica.Math.Vectors.normalizeWithAssert';
-
-  function 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR1.jointUSR.revolute.selectBranch' "Determine branch which is closest to initial angle=0"
-    input Real 'L'(unit = "m", quantity = "Length");
-    input Real[3] 'e'(each unit = "1");
-    input Real 'angle_guess'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real[3] 'r_a'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    input Real[3] 'r_b'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    output Boolean 'positiveBranch';
-    Real 'e_r_a';
-    Real 'e_r_b';
-    Real 'A';
-    Real 'B';
-    Real 'C';
-    Real 'k1';
-    Real 'k2';
-    Real 'k1a';
-    Real 'k1b';
-    Real 'kcos1';
-    Real 'ksin1';
-    Real 'kcos2';
-    Real 'ksin2';
-    Real 'angle1'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    Real 'angle2'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'e_r_a' := 'e'[1] * 'r_a'[1] + 'e'[2] * 'r_a'[2] + 'e'[3] * 'r_a'[3];
-    'e_r_b' := 'e'[1] * 'r_b'[1] + 'e'[2] * 'r_b'[2] + 'e'[3] * 'r_b'[3];
-    'A' := -2.0 * ('r_b'[1] * 'r_a'[1] + 'r_b'[2] * 'r_a'[2] + 'r_b'[3] * 'r_a'[3] - 'e_r_b' * 'e_r_a');
-    'B' := 2.0 * 'r_b'[1] * ('e'[2] * 'r_a'[3] - 'e'[3] * 'r_a'[2]) + 2.0 * 'r_b'[2] * ('e'[3] * 'r_a'[1] - 'e'[1] * 'r_a'[3]) + 2.0 * 'r_b'[3] * ('e'[1] * 'r_a'[2] - 'e'[2] * 'r_a'[1]);
-    'C' := 'r_a'[1] * 'r_a'[1] + 'r_a'[2] * 'r_a'[2] + 'r_a'[3] * 'r_a'[3] + 'r_b'[1] * 'r_b'[1] + 'r_b'[2] * 'r_b'[2] + 'r_b'[3] * 'r_b'[3] - 'L' * 'L' - 2.0 * 'e_r_b' * 'e_r_a';
-    'k1' := 'A' * 'A' + 'B' * 'B';
-    'k1a' := 'k1' - 'C' * 'C';
-    assert('k1a' > 1e-10, "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIn most cases it is best that the joints outside of the JointXXX\ncomponent are revolute and NOT prismatic joints. If this also\nlead to singular positions, it could be that this kinematic loop\ncannot be solved analytically. In this case you have to build\nup the loop with basic joints (NO aggregation JointXXX components)\nand rely on dynamic state selection, i.e., during simulation\nthe states will be dynamically selected in such a way that in no\nposition a degree of freedom is lost.\n", AssertionLevel.error);
-    'k1b' := max('k1a', 1e-12);
-    'k2' := sqrt('k1b');
-    'kcos1' := 'B' * 'k2' - 'A' * 'C';
-    'ksin1' := -('B' * 'C' + 'A' * 'k2');
-    'angle1' := atan2('ksin1', 'kcos1');
-    'kcos2' := -('A' * 'C' + 'B' * 'k2');
-    'ksin2' := 'A' * 'k2' - 'B' * 'C';
-    'angle2' := atan2('ksin2', 'kcos2');
-
-    if abs('angle1' - 'angle_guess') <= abs('angle2' - 'angle_guess') then
-      'positiveBranch' := true;
-    elseif true then
-      'positiveBranch' := false;
-    end if;
-  end 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR1.jointUSR.revolute.selectBranch';
-
-  function 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR2.jointUSR.revolute.selectBranch' "Determine branch which is closest to initial angle=0"
-    input Real 'L'(unit = "m", quantity = "Length");
-    input Real[3] 'e'(each unit = "1");
-    input Real 'angle_guess'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real[3] 'r_a'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    input Real[3] 'r_b'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    output Boolean 'positiveBranch';
-    Real 'e_r_a';
-    Real 'e_r_b';
-    Real 'A';
-    Real 'B';
-    Real 'C';
-    Real 'k1';
-    Real 'k2';
-    Real 'k1a';
-    Real 'k1b';
-    Real 'kcos1';
-    Real 'ksin1';
-    Real 'kcos2';
-    Real 'ksin2';
-    Real 'angle1'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    Real 'angle2'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'e_r_a' := 'e'[1] * 'r_a'[1] + 'e'[2] * 'r_a'[2] + 'e'[3] * 'r_a'[3];
-    'e_r_b' := 'e'[1] * 'r_b'[1] + 'e'[2] * 'r_b'[2] + 'e'[3] * 'r_b'[3];
-    'A' := -2.0 * ('r_b'[1] * 'r_a'[1] + 'r_b'[2] * 'r_a'[2] + 'r_b'[3] * 'r_a'[3] - 'e_r_b' * 'e_r_a');
-    'B' := 2.0 * 'r_b'[1] * ('e'[2] * 'r_a'[3] - 'e'[3] * 'r_a'[2]) + 2.0 * 'r_b'[2] * ('e'[3] * 'r_a'[1] - 'e'[1] * 'r_a'[3]) + 2.0 * 'r_b'[3] * ('e'[1] * 'r_a'[2] - 'e'[2] * 'r_a'[1]);
-    'C' := 'r_a'[1] * 'r_a'[1] + 'r_a'[2] * 'r_a'[2] + 'r_a'[3] * 'r_a'[3] + 'r_b'[1] * 'r_b'[1] + 'r_b'[2] * 'r_b'[2] + 'r_b'[3] * 'r_b'[3] - 'L' * 'L' - 2.0 * 'e_r_b' * 'e_r_a';
-    'k1' := 'A' * 'A' + 'B' * 'B';
-    'k1a' := 'k1' - 'C' * 'C';
-    assert('k1a' > 1e-10, "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIn most cases it is best that the joints outside of the JointXXX\ncomponent are revolute and NOT prismatic joints. If this also\nlead to singular positions, it could be that this kinematic loop\ncannot be solved analytically. In this case you have to build\nup the loop with basic joints (NO aggregation JointXXX components)\nand rely on dynamic state selection, i.e., during simulation\nthe states will be dynamically selected in such a way that in no\nposition a degree of freedom is lost.\n", AssertionLevel.error);
-    'k1b' := max('k1a', 1e-12);
-    'k2' := sqrt('k1b');
-    'kcos1' := 'B' * 'k2' - 'A' * 'C';
-    'ksin1' := -('B' * 'C' + 'A' * 'k2');
-    'angle1' := atan2('ksin1', 'kcos1');
-    'kcos2' := -('A' * 'C' + 'B' * 'k2');
-    'ksin2' := 'A' * 'k2' - 'B' * 'C';
-    'angle2' := atan2('ksin2', 'kcos2');
-
-    if abs('angle1' - 'angle_guess') <= abs('angle2' - 'angle_guess') then
-      'positiveBranch' := true;
-    elseif true then
-      'positiveBranch' := false;
-    end if;
-  end 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR2.jointUSR.revolute.selectBranch';
-
-  function 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR3.jointUSR.revolute.selectBranch' "Determine branch which is closest to initial angle=0"
-    input Real 'L'(unit = "m", quantity = "Length");
-    input Real[3] 'e'(each unit = "1");
-    input Real 'angle_guess'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real[3] 'r_a'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    input Real[3] 'r_b'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    output Boolean 'positiveBranch';
-    Real 'e_r_a';
-    Real 'e_r_b';
-    Real 'A';
-    Real 'B';
-    Real 'C';
-    Real 'k1';
-    Real 'k2';
-    Real 'k1a';
-    Real 'k1b';
-    Real 'kcos1';
-    Real 'ksin1';
-    Real 'kcos2';
-    Real 'ksin2';
-    Real 'angle1'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    Real 'angle2'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'e_r_a' := 'e'[1] * 'r_a'[1] + 'e'[2] * 'r_a'[2] + 'e'[3] * 'r_a'[3];
-    'e_r_b' := 'e'[1] * 'r_b'[1] + 'e'[2] * 'r_b'[2] + 'e'[3] * 'r_b'[3];
-    'A' := -2.0 * ('r_b'[1] * 'r_a'[1] + 'r_b'[2] * 'r_a'[2] + 'r_b'[3] * 'r_a'[3] - 'e_r_b' * 'e_r_a');
-    'B' := 2.0 * 'r_b'[1] * ('e'[2] * 'r_a'[3] - 'e'[3] * 'r_a'[2]) + 2.0 * 'r_b'[2] * ('e'[3] * 'r_a'[1] - 'e'[1] * 'r_a'[3]) + 2.0 * 'r_b'[3] * ('e'[1] * 'r_a'[2] - 'e'[2] * 'r_a'[1]);
-    'C' := 'r_a'[1] * 'r_a'[1] + 'r_a'[2] * 'r_a'[2] + 'r_a'[3] * 'r_a'[3] + 'r_b'[1] * 'r_b'[1] + 'r_b'[2] * 'r_b'[2] + 'r_b'[3] * 'r_b'[3] - 'L' * 'L' - 2.0 * 'e_r_b' * 'e_r_a';
-    'k1' := 'A' * 'A' + 'B' * 'B';
-    'k1a' := 'k1' - 'C' * 'C';
-    assert('k1a' > 1e-10, "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIn most cases it is best that the joints outside of the JointXXX\ncomponent are revolute and NOT prismatic joints. If this also\nlead to singular positions, it could be that this kinematic loop\ncannot be solved analytically. In this case you have to build\nup the loop with basic joints (NO aggregation JointXXX components)\nand rely on dynamic state selection, i.e., during simulation\nthe states will be dynamically selected in such a way that in no\nposition a degree of freedom is lost.\n", AssertionLevel.error);
-    'k1b' := max('k1a', 1e-12);
-    'k2' := sqrt('k1b');
-    'kcos1' := 'B' * 'k2' - 'A' * 'C';
-    'ksin1' := -('B' * 'C' + 'A' * 'k2');
-    'angle1' := atan2('ksin1', 'kcos1');
-    'kcos2' := -('A' * 'C' + 'B' * 'k2');
-    'ksin2' := 'A' * 'k2' - 'B' * 'C';
-    'angle2' := atan2('ksin2', 'kcos2');
-
-    if abs('angle1' - 'angle_guess') <= abs('angle2' - 'angle_guess') then
-      'positiveBranch' := true;
-    elseif true then
-      'positiveBranch' := false;
-    end if;
-  end 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR3.jointUSR.revolute.selectBranch';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.resolve1' "Transform vector from frame 2 to frame 1"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v2';
-    output Real[3] 'v1';
-  algorithm
-    'v1' := {'R'.'T'[1,1] * 'v2'[1] + 'R'.'T'[2,1] * 'v2'[2] + 'R'.'T'[3,1] * 'v2'[3], 'R'.'T'[1,2] * 'v2'[1] + 'R'.'T'[2,2] * 'v2'[2] + 'R'.'T'[3,2] * 'v2'[3], 'R'.'T'[1,3] * 'v2'[1] + 'R'.'T'[2,3] * 'v2'[2] + 'R'.'T'[3,3] * 'v2'[3]};
-    annotation(derivative(order = 1, noDerivative = 'R') = 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.resolve1';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.resolve2' "Transform vector from frame 1 to frame 2"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v1';
-    output Real[3] 'v2';
-  algorithm
-    'v2' := {'R'.'T'[1,1] * 'v1'[1] + 'R'.'T'[1,2] * 'v1'[2] + 'R'.'T'[1,3] * 'v1'[3], 'R'.'T'[2,1] * 'v1'[1] + 'R'.'T'[2,2] * 'v1'[2] + 'R'.'T'[2,3] * 'v1'[3], 'R'.'T'[3,1] * 'v1'[1] + 'R'.'T'[3,2] * 'v1'[2] + 'R'.'T'[3,3] * 'v1'[3]};
-    annotation(derivative(order = 1, noDerivative = 'R') = 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve2_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.resolve2';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.resolveRelative' "Transform vector from frame 1 to frame 2 using absolute orientation objects of frame 1 and of frame 2"
-    input Real[3] 'v1';
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R1';
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R2';
-    output Real[3] 'v2';
-  algorithm
-    'v2' := 'Modelica.Mechanics.MultiBody.Frames.resolve2'('R2', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('R1', 'v1'));
-    annotation(derivative(order = 1, noDerivative = 'R1', noDerivative = 'R2') = 'Modelica.Mechanics.MultiBody.Frames.Internal.resolveRelative_der', InlineAfterIndexReduction = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.resolveRelative';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent' "Maximum of the input arguments, without event and function can be differentiated"
-    input Real 'u1';
-    input Real 'u2';
-    output Real 'y';
-  algorithm
-    'y' := if 'u1' > 'u2' then 'u1' else 'u2';
-    annotation(derivative(order = 1) = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_d', LateInline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_d' "First derivative of function maxWithoutEvent(..)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'u1_d';
-    input Real 'u2_d';
-    output Real 'y_d';
-  algorithm
-    'y_d' := if 'u1' > 'u2' then 'u1_d' else 'u2_d';
-    annotation(derivative(order = 2) = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_dd', LateInline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_d';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_dd' "First derivative of function maxWithoutEvent_d(..)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'u1_d';
-    input Real 'u2_d';
-    input Real 'u1_dd';
-    input Real 'u2_dd';
-    output Real 'y_dd';
-  algorithm
-    'y_dd' := if 'u1' > 'u2' then 'u1_dd' else 'u2_dd';
-    annotation(LateInline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent_dd';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der' "Derivative of function Frames.resolve1(..)"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v2';
-    input Real[3] 'v2_der';
-    output Real[3] 'v1_der';
-  algorithm
-    'v1_der' := 'Modelica.Mechanics.MultiBody.Frames.resolve1'('R', {'v2_der'[1] + 'R'.'w'[2] * 'v2'[3] - 'R'.'w'[3] * 'v2'[2], 'v2_der'[2] + 'R'.'w'[3] * 'v2'[1] - 'R'.'w'[1] * 'v2'[3], 'v2_der'[3] + 'R'.'w'[1] * 'v2'[2] - 'R'.'w'[2] * 'v2'[1]});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve1_der';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve2_der' "Derivative of function Frames.resolve2(..)"
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-    input Real[3] 'v1';
-    input Real[3] 'v1_der';
-    output Real[3] 'v2_der';
-  algorithm
-    'v2_der' := 'Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1_der') - {'R'.'w'[2] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[3] - 'R'.'w'[3] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[2], 'R'.'w'[3] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[1] - 'R'.'w'[1] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[3], 'R'.'w'[1] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[2] - 'R'.'w'[2] * ('Modelica.Mechanics.MultiBody.Frames.resolve2'('R', 'v1'))[1]};
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.resolve2_der';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.Internal.resolveRelative_der' "Derivative of function Frames.resolveRelative(..)"
-    input Real[3] 'v1';
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R1';
-    input 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R2';
-    input Real[3] 'v1_der';
-    output Real[3] 'v2_der';
-  algorithm
-    'v2_der' := 'Modelica.Mechanics.MultiBody.Frames.resolveRelative'({'v1_der'[1] + 'R1'.'w'[2] * 'v1'[3] - 'R1'.'w'[3] * 'v1'[2], 'v1_der'[2] + 'R1'.'w'[3] * 'v1'[1] - 'R1'.'w'[1] * 'v1'[3], 'v1_der'[3] + 'R1'.'w'[1] * 'v1'[2] - 'R1'.'w'[2] * 'v1'[1]}, 'R1', 'R2') - {'R2'.'w'[2] * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('v1', 'R1', 'R2'))[3] - 'R2'.'w'[3] * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('v1', 'R1', 'R2'))[2], 'R2'.'w'[3] * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('v1', 'R1', 'R2'))[1] - 'R2'.'w'[1] * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('v1', 'R1', 'R2'))[3], 'R2'.'w'[1] * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('v1', 'R1', 'R2'))[2] - 'R2'.'w'[2] * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('v1', 'R1', 'R2'))[1]};
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.Internal.resolveRelative_der';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
-    input Real[3] 'n_x';
-    input Real[3] 'n_y';
-    output Real[3, 3] 'T';
-    Real[3] 'e_x'(each unit = "1") = if sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]) < 1e-10 then {1.0, 0.0, 0.0} else smooth(0, if sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]) >= 2.220446049250313e-14 then {'n_x'[1] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]), 'n_x'[2] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3]), 'n_x'[3] / sqrt('n_x'[1] * 'n_x'[1] + 'n_x'[2] * 'n_x'[2] + 'n_x'[3] * 'n_x'[3])} else {'n_x'[1] / 2.220446049250313e-14, 'n_x'[2] / 2.220446049250313e-14, 'n_x'[3] / 2.220446049250313e-14});
-    Real[3] 'e_y'(each unit = "1") = if sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]) < 1e-10 then {0.0, 1.0, 0.0} else smooth(0, if sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]) >= 2.220446049250313e-14 then {'n_y'[1] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]), 'n_y'[2] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3]), 'n_y'[3] / sqrt('n_y'[1] * 'n_y'[1] + 'n_y'[2] * 'n_y'[2] + 'n_y'[3] * 'n_y'[3])} else {'n_y'[1] / 2.220446049250313e-14, 'n_y'[2] / 2.220446049250313e-14, 'n_y'[3] / 2.220446049250313e-14});
-    Real[3] 'n_z_aux'(each unit = "1") = {'e_x'[2] * 'e_y'[3] - 'e_x'[3] * 'e_y'[2], 'e_x'[3] * 'e_y'[1] - 'e_x'[1] * 'e_y'[3], 'e_x'[1] * 'e_y'[2] - 'e_x'[2] * 'e_y'[1]};
-    Real[3] 'n_y_aux'(each unit = "1") = if 'n_z_aux'[1] * 'n_z_aux'[1] + 'n_z_aux'[2] * 'n_z_aux'[2] + 'n_z_aux'[3] * 'n_z_aux'[3] > 1e-6 then 'e_y' else if abs('e_x'[1]) > 1e-6 then {0.0, 1.0, 0.0} else {1.0, 0.0, 0.0};
-    Real[3] 'e_z_aux'(each unit = "1") = {'e_x'[2] * 'n_y_aux'[3] - 'e_x'[3] * 'n_y_aux'[2], 'e_x'[3] * 'n_y_aux'[1] - 'e_x'[1] * 'n_y_aux'[3], 'e_x'[1] * 'n_y_aux'[2] - 'e_x'[2] * 'n_y_aux'[1]};
-    Real[3] 'e_z'(each unit = "1") = smooth(0, if sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]) >= 2.220446049250313e-14 then {'e_z_aux'[1] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]), 'e_z_aux'[2] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3]), 'e_z_aux'[3] / sqrt('e_z_aux'[1] * 'e_z_aux'[1] + 'e_z_aux'[2] * 'e_z_aux'[2] + 'e_z_aux'[3] * 'e_z_aux'[3])} else {'e_z_aux'[1] / 2.220446049250313e-14, 'e_z_aux'[2] / 2.220446049250313e-14, 'e_z_aux'[3] / 2.220446049250313e-14});
-  algorithm
-    'T' := {'e_x', {'e_z'[2] * 'e_x'[3] - 'e_z'[3] * 'e_x'[2], 'e_z'[3] * 'e_x'[1] - 'e_z'[1] * 'e_x'[3], 'e_z'[1] * 'e_x'[2] - 'e_z'[2] * 'e_x'[1]}, 'e_z'};
-  end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
-
-  function 'Modelica.Units.Conversions.to_unit1' "Change the unit of a Real number to unit=\"1\""
-    input Real 'r';
-    output Real 'result'(unit = "1");
-  algorithm
-    'result' := 'r';
-    annotation(Inline = true);
-  end 'Modelica.Units.Conversions.to_unit1';
-
   type 'Modelica.Mechanics.MultiBody.Types.GravityTypes' = enumeration('NoGravity', 'UniformGravity', 'PointGravity');
 
   type 'Modelica.Mechanics.MultiBody.Types.ResolveInFrameAB' = enumeration('world', 'frame_a', 'frame_b', 'frame_resolve');
@@ -5058,20 +4794,20 @@ package 'PlanarLoops_analytic'
   initial equation
     'jointRRR1.jointUSR.revolute.positiveBranch' = 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR1.jointUSR.revolute.selectBranch'('jointRRR1.jointUSR.revolute.lengthConstraint', {'jointRRR1.jointUSR.revolute.e[1]', 'jointRRR1.jointUSR.revolute.e[2]', 'jointRRR1.jointUSR.revolute.e[3]'}, 0.0, {'jointRRR1.jointUSR.revolute.r_a[1]', 'jointRRR1.jointUSR.revolute.r_a[2]', 'jointRRR1.jointUSR.revolute.r_a[3]'}, {'jointRRR1.jointUSR.revolute.r_b[1]', 'jointRRR1.jointUSR.revolute.r_b[2]', 'jointRRR1.jointUSR.revolute.r_b[3]'});
     'jointRRR1.jointUSR.rod1.rodLength' = 0.6;
-    'jointRRR1.n_b[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR1.frame_a.R', {0.0, 0.0, 1.0})))[1];
-    'jointRRR1.n_b[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR1.frame_a.R', {0.0, 0.0, 1.0})))[2];
-    'jointRRR1.n_b[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR1.frame_a.R', {0.0, 0.0, 1.0})))[3];
+    'jointRRR1.n_b[1]' = 'jointRRR1.frame_b.R.T[1,1]' * ('jointRRR1.frame_a.R.T[1,1]' * 0.0 + 'jointRRR1.frame_a.R.T[2,1]' * 0.0 + 'jointRRR1.frame_a.R.T[3,1]' * 1.0) + 'jointRRR1.frame_b.R.T[1,2]' * ('jointRRR1.frame_a.R.T[1,2]' * 0.0 + 'jointRRR1.frame_a.R.T[2,2]' * 0.0 + 'jointRRR1.frame_a.R.T[3,2]' * 1.0) + 'jointRRR1.frame_b.R.T[1,3]' * ('jointRRR1.frame_a.R.T[1,3]' * 0.0 + 'jointRRR1.frame_a.R.T[2,3]' * 0.0 + 'jointRRR1.frame_a.R.T[3,3]' * 1.0);
+    'jointRRR1.n_b[2]' = 'jointRRR1.frame_b.R.T[2,1]' * ('jointRRR1.frame_a.R.T[1,1]' * 0.0 + 'jointRRR1.frame_a.R.T[2,1]' * 0.0 + 'jointRRR1.frame_a.R.T[3,1]' * 1.0) + 'jointRRR1.frame_b.R.T[2,2]' * ('jointRRR1.frame_a.R.T[1,2]' * 0.0 + 'jointRRR1.frame_a.R.T[2,2]' * 0.0 + 'jointRRR1.frame_a.R.T[3,2]' * 1.0) + 'jointRRR1.frame_b.R.T[2,3]' * ('jointRRR1.frame_a.R.T[1,3]' * 0.0 + 'jointRRR1.frame_a.R.T[2,3]' * 0.0 + 'jointRRR1.frame_a.R.T[3,3]' * 1.0);
+    'jointRRR1.n_b[3]' = 'jointRRR1.frame_b.R.T[3,1]' * ('jointRRR1.frame_a.R.T[1,1]' * 0.0 + 'jointRRR1.frame_a.R.T[2,1]' * 0.0 + 'jointRRR1.frame_a.R.T[3,1]' * 1.0) + 'jointRRR1.frame_b.R.T[3,2]' * ('jointRRR1.frame_a.R.T[1,2]' * 0.0 + 'jointRRR1.frame_a.R.T[2,2]' * 0.0 + 'jointRRR1.frame_a.R.T[3,2]' * 1.0) + 'jointRRR1.frame_b.R.T[3,3]' * ('jointRRR1.frame_a.R.T[1,3]' * 0.0 + 'jointRRR1.frame_a.R.T[2,3]' * 0.0 + 'jointRRR1.frame_a.R.T[3,3]' * 1.0);
     'position.phi' = 'position.phi_ref';
     'jointRRR2.jointUSR.revolute.positiveBranch' = 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR2.jointUSR.revolute.selectBranch'('jointRRR2.jointUSR.revolute.lengthConstraint', {'jointRRR2.jointUSR.revolute.e[1]', 'jointRRR2.jointUSR.revolute.e[2]', 'jointRRR2.jointUSR.revolute.e[3]'}, 0.0, {'jointRRR2.jointUSR.revolute.r_a[1]', 'jointRRR2.jointUSR.revolute.r_a[2]', 'jointRRR2.jointUSR.revolute.r_a[3]'}, {'jointRRR2.jointUSR.revolute.r_b[1]', 'jointRRR2.jointUSR.revolute.r_b[2]', 'jointRRR2.jointUSR.revolute.r_b[3]'});
     'jointRRR2.jointUSR.rod1.rodLength' = 0.5099019513592785;
-    'jointRRR2.n_b[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR2.frame_a.R', {0.0, 0.0, 1.0})))[1];
-    'jointRRR2.n_b[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR2.frame_a.R', {0.0, 0.0, 1.0})))[2];
-    'jointRRR2.n_b[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR2.frame_a.R', {0.0, 0.0, 1.0})))[3];
+    'jointRRR2.n_b[1]' = 'jointRRR2.frame_b.R.T[1,1]' * ('jointRRR2.frame_a.R.T[1,1]' * 0.0 + 'jointRRR2.frame_a.R.T[2,1]' * 0.0 + 'jointRRR2.frame_a.R.T[3,1]' * 1.0) + 'jointRRR2.frame_b.R.T[1,2]' * ('jointRRR2.frame_a.R.T[1,2]' * 0.0 + 'jointRRR2.frame_a.R.T[2,2]' * 0.0 + 'jointRRR2.frame_a.R.T[3,2]' * 1.0) + 'jointRRR2.frame_b.R.T[1,3]' * ('jointRRR2.frame_a.R.T[1,3]' * 0.0 + 'jointRRR2.frame_a.R.T[2,3]' * 0.0 + 'jointRRR2.frame_a.R.T[3,3]' * 1.0);
+    'jointRRR2.n_b[2]' = 'jointRRR2.frame_b.R.T[2,1]' * ('jointRRR2.frame_a.R.T[1,1]' * 0.0 + 'jointRRR2.frame_a.R.T[2,1]' * 0.0 + 'jointRRR2.frame_a.R.T[3,1]' * 1.0) + 'jointRRR2.frame_b.R.T[2,2]' * ('jointRRR2.frame_a.R.T[1,2]' * 0.0 + 'jointRRR2.frame_a.R.T[2,2]' * 0.0 + 'jointRRR2.frame_a.R.T[3,2]' * 1.0) + 'jointRRR2.frame_b.R.T[2,3]' * ('jointRRR2.frame_a.R.T[1,3]' * 0.0 + 'jointRRR2.frame_a.R.T[2,3]' * 0.0 + 'jointRRR2.frame_a.R.T[3,3]' * 1.0);
+    'jointRRR2.n_b[3]' = 'jointRRR2.frame_b.R.T[3,1]' * ('jointRRR2.frame_a.R.T[1,1]' * 0.0 + 'jointRRR2.frame_a.R.T[2,1]' * 0.0 + 'jointRRR2.frame_a.R.T[3,1]' * 1.0) + 'jointRRR2.frame_b.R.T[3,2]' * ('jointRRR2.frame_a.R.T[1,2]' * 0.0 + 'jointRRR2.frame_a.R.T[2,2]' * 0.0 + 'jointRRR2.frame_a.R.T[3,2]' * 1.0) + 'jointRRR2.frame_b.R.T[3,3]' * ('jointRRR2.frame_a.R.T[1,3]' * 0.0 + 'jointRRR2.frame_a.R.T[2,3]' * 0.0 + 'jointRRR2.frame_a.R.T[3,3]' * 1.0);
     'jointRRR3.jointUSR.revolute.positiveBranch' = 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR3.jointUSR.revolute.selectBranch'('jointRRR3.jointUSR.revolute.lengthConstraint', {'jointRRR3.jointUSR.revolute.e[1]', 'jointRRR3.jointUSR.revolute.e[2]', 'jointRRR3.jointUSR.revolute.e[3]'}, 0.0, {'jointRRR3.jointUSR.revolute.r_a[1]', 'jointRRR3.jointUSR.revolute.r_a[2]', 'jointRRR3.jointUSR.revolute.r_a[3]'}, {'jointRRR3.jointUSR.revolute.r_b[1]', 'jointRRR3.jointUSR.revolute.r_b[2]', 'jointRRR3.jointUSR.revolute.r_b[3]'});
     'jointRRR3.jointUSR.rod1.rodLength' = 0.4031128874149275;
-    'jointRRR3.n_b[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR3.frame_a.R', {0.0, 0.0, 1.0})))[1];
-    'jointRRR3.n_b[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR3.frame_a.R', {0.0, 0.0, 1.0})))[2];
-    'jointRRR3.n_b[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.frame_b.R', 'Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR3.frame_a.R', {0.0, 0.0, 1.0})))[3];
+    'jointRRR3.n_b[1]' = 'jointRRR3.frame_b.R.T[1,1]' * ('jointRRR3.frame_a.R.T[1,1]' * 0.0 + 'jointRRR3.frame_a.R.T[2,1]' * 0.0 + 'jointRRR3.frame_a.R.T[3,1]' * 1.0) + 'jointRRR3.frame_b.R.T[1,2]' * ('jointRRR3.frame_a.R.T[1,2]' * 0.0 + 'jointRRR3.frame_a.R.T[2,2]' * 0.0 + 'jointRRR3.frame_a.R.T[3,2]' * 1.0) + 'jointRRR3.frame_b.R.T[1,3]' * ('jointRRR3.frame_a.R.T[1,3]' * 0.0 + 'jointRRR3.frame_a.R.T[2,3]' * 0.0 + 'jointRRR3.frame_a.R.T[3,3]' * 1.0);
+    'jointRRR3.n_b[2]' = 'jointRRR3.frame_b.R.T[2,1]' * ('jointRRR3.frame_a.R.T[1,1]' * 0.0 + 'jointRRR3.frame_a.R.T[2,1]' * 0.0 + 'jointRRR3.frame_a.R.T[3,1]' * 1.0) + 'jointRRR3.frame_b.R.T[2,2]' * ('jointRRR3.frame_a.R.T[1,2]' * 0.0 + 'jointRRR3.frame_a.R.T[2,2]' * 0.0 + 'jointRRR3.frame_a.R.T[3,2]' * 1.0) + 'jointRRR3.frame_b.R.T[2,3]' * ('jointRRR3.frame_a.R.T[1,3]' * 0.0 + 'jointRRR3.frame_a.R.T[2,3]' * 0.0 + 'jointRRR3.frame_a.R.T[3,3]' * 1.0);
+    'jointRRR3.n_b[3]' = 'jointRRR3.frame_b.R.T[3,1]' * ('jointRRR3.frame_a.R.T[1,1]' * 0.0 + 'jointRRR3.frame_a.R.T[2,1]' * 0.0 + 'jointRRR3.frame_a.R.T[3,1]' * 1.0) + 'jointRRR3.frame_b.R.T[3,2]' * ('jointRRR3.frame_a.R.T[1,2]' * 0.0 + 'jointRRR3.frame_a.R.T[2,2]' * 0.0 + 'jointRRR3.frame_a.R.T[3,2]' * 1.0) + 'jointRRR3.frame_b.R.T[3,3]' * ('jointRRR3.frame_a.R.T[1,3]' * 0.0 + 'jointRRR3.frame_a.R.T[2,3]' * 0.0 + 'jointRRR3.frame_a.R.T[3,3]' * 1.0);
   equation
     'world.x_arrowLine.length' = 0.4375;
     'world.x_arrowLine.width' = 0.0125;
@@ -5085,12 +4821,12 @@ package 'PlanarLoops_analytic'
     'world.x_arrowHead.specularCoefficient' = 0.0;
     'world.x_label.diameter' = 0.0125;
     'world.x_label.specularCoefficient' = 0.0;
-    'world.x_label.cylinders[1].length' = sqrt(('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'));
+    'world.x_label.cylinders[1].length' = sqrt({'world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'} * {'world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]'});
     'world.x_label.cylinders[1].width' = 'world.x_label.diameter';
     'world.x_label.cylinders[1].height' = 'world.x_label.diameter';
     'world.x_label.cylinders[1].extra' = 0.0;
     'world.x_label.cylinders[1].specularCoefficient' = 'world.x_label.specularCoefficient';
-    'world.x_label.cylinders[2].length' = sqrt(('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'));
+    'world.x_label.cylinders[2].length' = sqrt({'world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'} * {'world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]'});
     'world.x_label.cylinders[2].width' = 'world.x_label.diameter';
     'world.x_label.cylinders[2].height' = 'world.x_label.diameter';
     'world.x_label.cylinders[2].extra' = 0.0;
@@ -5107,12 +4843,12 @@ package 'PlanarLoops_analytic'
     'world.y_arrowHead.specularCoefficient' = 0.0;
     'world.y_label.diameter' = 0.0125;
     'world.y_label.specularCoefficient' = 0.0;
-    'world.y_label.cylinders[1].length' = sqrt(('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'));
+    'world.y_label.cylinders[1].length' = sqrt({'world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'} * {'world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]'});
     'world.y_label.cylinders[1].width' = 'world.y_label.diameter';
     'world.y_label.cylinders[1].height' = 'world.y_label.diameter';
     'world.y_label.cylinders[1].extra' = 0.0;
     'world.y_label.cylinders[1].specularCoefficient' = 'world.y_label.specularCoefficient';
-    'world.y_label.cylinders[2].length' = sqrt(('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'));
+    'world.y_label.cylinders[2].length' = sqrt({'world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'} * {'world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]'});
     'world.y_label.cylinders[2].width' = 'world.y_label.diameter';
     'world.y_label.cylinders[2].height' = 'world.y_label.diameter';
     'world.y_label.cylinders[2].extra' = 0.0;
@@ -5129,17 +4865,17 @@ package 'PlanarLoops_analytic'
     'world.z_arrowHead.specularCoefficient' = 0.0;
     'world.z_label.diameter' = 0.0125;
     'world.z_label.specularCoefficient' = 0.0;
-    'world.z_label.cylinders[1].length' = sqrt(('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'));
+    'world.z_label.cylinders[1].length' = sqrt({'world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'} * {'world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]'});
     'world.z_label.cylinders[1].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[1].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[1].extra' = 0.0;
     'world.z_label.cylinders[1].specularCoefficient' = 'world.z_label.specularCoefficient';
-    'world.z_label.cylinders[2].length' = sqrt(('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'));
+    'world.z_label.cylinders[2].length' = sqrt({'world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'} * {'world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]'});
     'world.z_label.cylinders[2].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[2].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[2].extra' = 0.0;
     'world.z_label.cylinders[2].specularCoefficient' = 'world.z_label.specularCoefficient';
-    'world.z_label.cylinders[3].length' = sqrt(('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'));
+    'world.z_label.cylinders[3].length' = sqrt({'world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'} * {'world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]'});
     'world.z_label.cylinders[3].width' = 'world.z_label.diameter';
     'world.z_label.cylinders[3].height' = 'world.z_label.diameter';
     'world.z_label.cylinders[3].extra' = 0.0;
@@ -6843,9 +6579,9 @@ package 'PlanarLoops_analytic'
     'world.x_label.R_lines[3,1]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,1]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,1]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,1]';
     'world.x_label.R_lines[3,2]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,2]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,2]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,2]';
     'world.x_label.R_lines[3,3]' = 'world.x_label.R_rel[3,1]' * 'world.x_label.R.T[1,3]' + 'world.x_label.R_rel[3,2]' * 'world.x_label.R.T[2,3]' + 'world.x_label.R_rel[3,3]' * 'world.x_label.R.T[3,3]';
-    'world.x_label.r_abs[1]' = 'world.x_label.r[1]' + 'world.x_label.R.T[1,1]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,1]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,1]' * 'world.x_label.r_lines[3]';
-    'world.x_label.r_abs[2]' = 'world.x_label.r[2]' + 'world.x_label.R.T[1,2]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,2]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,2]' * 'world.x_label.r_lines[3]';
-    'world.x_label.r_abs[3]' = 'world.x_label.r[3]' + 'world.x_label.R.T[1,3]' * 'world.x_label.r_lines[1]' + 'world.x_label.R.T[2,3]' * 'world.x_label.r_lines[2]' + 'world.x_label.R.T[3,3]' * 'world.x_label.r_lines[3]';
+    'world.x_label.r_abs[1]' = 'world.x_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[1];
+    'world.x_label.r_abs[2]' = 'world.x_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[2];
+    'world.x_label.r_abs[3]' = 'world.x_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R.T', 'world.x_label.r_lines'))[3];
     'world.x_label.cylinders[1].R.T[1,1]' = 'world.x_label.R.T[1,1]';
     'world.x_label.cylinders[1].R.T[1,2]' = 'world.x_label.R.T[1,2]';
     'world.x_label.cylinders[1].R.T[1,3]' = 'world.x_label.R.T[1,3]';
@@ -6858,15 +6594,15 @@ package 'PlanarLoops_analytic'
     'world.x_label.cylinders[1].R.w[1]' = 'world.x_label.R.w[1]';
     'world.x_label.cylinders[1].R.w[2]' = 'world.x_label.R.w[2]';
     'world.x_label.cylinders[1].R.w[3]' = 'world.x_label.R.w[3]';
-    'world.x_label.cylinders[1].r[1]' = 'world.x_label.r_abs[1]' + 'world.x_label.R_lines[1,1]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,1]' * 'world.x_label.lines[1,1,2]';
-    'world.x_label.cylinders[1].r[2]' = 'world.x_label.r_abs[2]' + 'world.x_label.R_lines[1,2]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,2]' * 'world.x_label.lines[1,1,2]';
-    'world.x_label.cylinders[1].r[3]' = 'world.x_label.r_abs[3]' + 'world.x_label.R_lines[1,3]' * 'world.x_label.lines[1,1,1]' + 'world.x_label.R_lines[2,3]' * 'world.x_label.lines[1,1,2]';
+    'world.x_label.cylinders[1].r[1]' = 'world.x_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[1];
+    'world.x_label.cylinders[1].r[2]' = 'world.x_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[2];
+    'world.x_label.cylinders[1].r[3]' = 'world.x_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[1,1,1]', 'world.x_label.lines[1,1,2]', 0.0}))[3];
     'world.x_label.cylinders[1].r_shape[1]' = 0.0;
     'world.x_label.cylinders[1].r_shape[2]' = 0.0;
     'world.x_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.x_label.cylinders[1].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
-    'world.x_label.cylinders[1].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
-    'world.x_label.cylinders[1].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]');
+    'world.x_label.cylinders[1].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,1]' * 0.0;
+    'world.x_label.cylinders[1].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,2]' * 0.0;
+    'world.x_label.cylinders[1].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[1,2,1]' - 'world.x_label.lines[1,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[1,2,2]' - 'world.x_label.lines[1,1,2]') + 'world.x_label.R_rel[3,3]' * 0.0;
     'world.x_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.x_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.x_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -6885,15 +6621,15 @@ package 'PlanarLoops_analytic'
     'world.x_label.cylinders[2].R.w[1]' = 'world.x_label.R.w[1]';
     'world.x_label.cylinders[2].R.w[2]' = 'world.x_label.R.w[2]';
     'world.x_label.cylinders[2].R.w[3]' = 'world.x_label.R.w[3]';
-    'world.x_label.cylinders[2].r[1]' = 'world.x_label.r_abs[1]' + 'world.x_label.R_lines[1,1]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,1]' * 'world.x_label.lines[2,1,2]';
-    'world.x_label.cylinders[2].r[2]' = 'world.x_label.r_abs[2]' + 'world.x_label.R_lines[1,2]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,2]' * 'world.x_label.lines[2,1,2]';
-    'world.x_label.cylinders[2].r[3]' = 'world.x_label.r_abs[3]' + 'world.x_label.R_lines[1,3]' * 'world.x_label.lines[2,1,1]' + 'world.x_label.R_lines[2,3]' * 'world.x_label.lines[2,1,2]';
+    'world.x_label.cylinders[2].r[1]' = 'world.x_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[1];
+    'world.x_label.cylinders[2].r[2]' = 'world.x_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[2];
+    'world.x_label.cylinders[2].r[3]' = 'world.x_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.x_label.R_lines', {'world.x_label.lines[2,1,1]', 'world.x_label.lines[2,1,2]', 0.0}))[3];
     'world.x_label.cylinders[2].r_shape[1]' = 0.0;
     'world.x_label.cylinders[2].r_shape[2]' = 0.0;
     'world.x_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.x_label.cylinders[2].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
-    'world.x_label.cylinders[2].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
-    'world.x_label.cylinders[2].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]');
+    'world.x_label.cylinders[2].lengthDirection[1]' = 'world.x_label.R_rel[1,1]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,1]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,1]' * 0.0;
+    'world.x_label.cylinders[2].lengthDirection[2]' = 'world.x_label.R_rel[1,2]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,2]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,2]' * 0.0;
+    'world.x_label.cylinders[2].lengthDirection[3]' = 'world.x_label.R_rel[1,3]' * ('world.x_label.lines[2,2,1]' - 'world.x_label.lines[2,1,1]') + 'world.x_label.R_rel[2,3]' * ('world.x_label.lines[2,2,2]' - 'world.x_label.lines[2,1,2]') + 'world.x_label.R_rel[3,3]' * 0.0;
     'world.x_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.x_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.x_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -7007,9 +6743,9 @@ package 'PlanarLoops_analytic'
     'world.y_label.R_lines[3,1]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,1]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,1]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,1]';
     'world.y_label.R_lines[3,2]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,2]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,2]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,2]';
     'world.y_label.R_lines[3,3]' = 'world.y_label.R_rel[3,1]' * 'world.y_label.R.T[1,3]' + 'world.y_label.R_rel[3,2]' * 'world.y_label.R.T[2,3]' + 'world.y_label.R_rel[3,3]' * 'world.y_label.R.T[3,3]';
-    'world.y_label.r_abs[1]' = 'world.y_label.r[1]' + 'world.y_label.R.T[1,1]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,1]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,1]' * 'world.y_label.r_lines[3]';
-    'world.y_label.r_abs[2]' = 'world.y_label.r[2]' + 'world.y_label.R.T[1,2]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,2]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,2]' * 'world.y_label.r_lines[3]';
-    'world.y_label.r_abs[3]' = 'world.y_label.r[3]' + 'world.y_label.R.T[1,3]' * 'world.y_label.r_lines[1]' + 'world.y_label.R.T[2,3]' * 'world.y_label.r_lines[2]' + 'world.y_label.R.T[3,3]' * 'world.y_label.r_lines[3]';
+    'world.y_label.r_abs[1]' = 'world.y_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[1];
+    'world.y_label.r_abs[2]' = 'world.y_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[2];
+    'world.y_label.r_abs[3]' = 'world.y_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R.T', 'world.y_label.r_lines'))[3];
     'world.y_label.cylinders[1].R.T[1,1]' = 'world.y_label.R.T[1,1]';
     'world.y_label.cylinders[1].R.T[1,2]' = 'world.y_label.R.T[1,2]';
     'world.y_label.cylinders[1].R.T[1,3]' = 'world.y_label.R.T[1,3]';
@@ -7022,15 +6758,15 @@ package 'PlanarLoops_analytic'
     'world.y_label.cylinders[1].R.w[1]' = 'world.y_label.R.w[1]';
     'world.y_label.cylinders[1].R.w[2]' = 'world.y_label.R.w[2]';
     'world.y_label.cylinders[1].R.w[3]' = 'world.y_label.R.w[3]';
-    'world.y_label.cylinders[1].r[1]' = 'world.y_label.r_abs[1]' + 'world.y_label.R_lines[1,1]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,1]' * 'world.y_label.lines[1,1,2]';
-    'world.y_label.cylinders[1].r[2]' = 'world.y_label.r_abs[2]' + 'world.y_label.R_lines[1,2]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,2]' * 'world.y_label.lines[1,1,2]';
-    'world.y_label.cylinders[1].r[3]' = 'world.y_label.r_abs[3]' + 'world.y_label.R_lines[1,3]' * 'world.y_label.lines[1,1,1]' + 'world.y_label.R_lines[2,3]' * 'world.y_label.lines[1,1,2]';
+    'world.y_label.cylinders[1].r[1]' = 'world.y_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[1];
+    'world.y_label.cylinders[1].r[2]' = 'world.y_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[2];
+    'world.y_label.cylinders[1].r[3]' = 'world.y_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[1,1,1]', 'world.y_label.lines[1,1,2]', 0.0}))[3];
     'world.y_label.cylinders[1].r_shape[1]' = 0.0;
     'world.y_label.cylinders[1].r_shape[2]' = 0.0;
     'world.y_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.y_label.cylinders[1].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
-    'world.y_label.cylinders[1].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
-    'world.y_label.cylinders[1].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]');
+    'world.y_label.cylinders[1].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,1]' * 0.0;
+    'world.y_label.cylinders[1].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,2]' * 0.0;
+    'world.y_label.cylinders[1].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[1,2,1]' - 'world.y_label.lines[1,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[1,2,2]' - 'world.y_label.lines[1,1,2]') + 'world.y_label.R_rel[3,3]' * 0.0;
     'world.y_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.y_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.y_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -7049,15 +6785,15 @@ package 'PlanarLoops_analytic'
     'world.y_label.cylinders[2].R.w[1]' = 'world.y_label.R.w[1]';
     'world.y_label.cylinders[2].R.w[2]' = 'world.y_label.R.w[2]';
     'world.y_label.cylinders[2].R.w[3]' = 'world.y_label.R.w[3]';
-    'world.y_label.cylinders[2].r[1]' = 'world.y_label.r_abs[1]' + 'world.y_label.R_lines[1,1]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,1]' * 'world.y_label.lines[2,1,2]';
-    'world.y_label.cylinders[2].r[2]' = 'world.y_label.r_abs[2]' + 'world.y_label.R_lines[1,2]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,2]' * 'world.y_label.lines[2,1,2]';
-    'world.y_label.cylinders[2].r[3]' = 'world.y_label.r_abs[3]' + 'world.y_label.R_lines[1,3]' * 'world.y_label.lines[2,1,1]' + 'world.y_label.R_lines[2,3]' * 'world.y_label.lines[2,1,2]';
+    'world.y_label.cylinders[2].r[1]' = 'world.y_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[1];
+    'world.y_label.cylinders[2].r[2]' = 'world.y_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[2];
+    'world.y_label.cylinders[2].r[3]' = 'world.y_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.y_label.R_lines', {'world.y_label.lines[2,1,1]', 'world.y_label.lines[2,1,2]', 0.0}))[3];
     'world.y_label.cylinders[2].r_shape[1]' = 0.0;
     'world.y_label.cylinders[2].r_shape[2]' = 0.0;
     'world.y_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.y_label.cylinders[2].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
-    'world.y_label.cylinders[2].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
-    'world.y_label.cylinders[2].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]');
+    'world.y_label.cylinders[2].lengthDirection[1]' = 'world.y_label.R_rel[1,1]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,1]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,1]' * 0.0;
+    'world.y_label.cylinders[2].lengthDirection[2]' = 'world.y_label.R_rel[1,2]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,2]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,2]' * 0.0;
+    'world.y_label.cylinders[2].lengthDirection[3]' = 'world.y_label.R_rel[1,3]' * ('world.y_label.lines[2,2,1]' - 'world.y_label.lines[2,1,1]') + 'world.y_label.R_rel[2,3]' * ('world.y_label.lines[2,2,2]' - 'world.y_label.lines[2,1,2]') + 'world.y_label.R_rel[3,3]' * 0.0;
     'world.y_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.y_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.y_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -7175,9 +6911,9 @@ package 'PlanarLoops_analytic'
     'world.z_label.R_lines[3,1]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,1]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,1]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,1]';
     'world.z_label.R_lines[3,2]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,2]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,2]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,2]';
     'world.z_label.R_lines[3,3]' = 'world.z_label.R_rel[3,1]' * 'world.z_label.R.T[1,3]' + 'world.z_label.R_rel[3,2]' * 'world.z_label.R.T[2,3]' + 'world.z_label.R_rel[3,3]' * 'world.z_label.R.T[3,3]';
-    'world.z_label.r_abs[1]' = 'world.z_label.r[1]' + 'world.z_label.R.T[1,1]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,1]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,1]' * 'world.z_label.r_lines[3]';
-    'world.z_label.r_abs[2]' = 'world.z_label.r[2]' + 'world.z_label.R.T[1,2]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,2]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,2]' * 'world.z_label.r_lines[3]';
-    'world.z_label.r_abs[3]' = 'world.z_label.r[3]' + 'world.z_label.R.T[1,3]' * 'world.z_label.r_lines[1]' + 'world.z_label.R.T[2,3]' * 'world.z_label.r_lines[2]' + 'world.z_label.R.T[3,3]' * 'world.z_label.r_lines[3]';
+    'world.z_label.r_abs[1]' = 'world.z_label.r[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[1];
+    'world.z_label.r_abs[2]' = 'world.z_label.r[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[2];
+    'world.z_label.r_abs[3]' = 'world.z_label.r[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R.T', 'world.z_label.r_lines'))[3];
     'world.z_label.cylinders[1].R.T[1,1]' = 'world.z_label.R.T[1,1]';
     'world.z_label.cylinders[1].R.T[1,2]' = 'world.z_label.R.T[1,2]';
     'world.z_label.cylinders[1].R.T[1,3]' = 'world.z_label.R.T[1,3]';
@@ -7190,15 +6926,15 @@ package 'PlanarLoops_analytic'
     'world.z_label.cylinders[1].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[1].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[1].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[1].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[1,1,2]';
-    'world.z_label.cylinders[1].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[1,1,2]';
-    'world.z_label.cylinders[1].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[1,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[1,1,2]';
+    'world.z_label.cylinders[1].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[1].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[1].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[1,1,1]', 'world.z_label.lines[1,1,2]', 0.0}))[3];
     'world.z_label.cylinders[1].r_shape[1]' = 0.0;
     'world.z_label.cylinders[1].r_shape[2]' = 0.0;
     'world.z_label.cylinders[1].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[1].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
-    'world.z_label.cylinders[1].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
-    'world.z_label.cylinders[1].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]');
+    'world.z_label.cylinders[1].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[1].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[1].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[1,2,1]' - 'world.z_label.lines[1,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[1,2,2]' - 'world.z_label.lines[1,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[1].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[1].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[1].widthDirection[3]' = 0.0;
@@ -7217,15 +6953,15 @@ package 'PlanarLoops_analytic'
     'world.z_label.cylinders[2].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[2].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[2].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[2].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[2,1,2]';
-    'world.z_label.cylinders[2].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[2,1,2]';
-    'world.z_label.cylinders[2].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[2,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[2,1,2]';
+    'world.z_label.cylinders[2].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[2].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[2].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[2,1,1]', 'world.z_label.lines[2,1,2]', 0.0}))[3];
     'world.z_label.cylinders[2].r_shape[1]' = 0.0;
     'world.z_label.cylinders[2].r_shape[2]' = 0.0;
     'world.z_label.cylinders[2].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[2].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
-    'world.z_label.cylinders[2].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
-    'world.z_label.cylinders[2].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]');
+    'world.z_label.cylinders[2].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[2].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[2].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[2,2,1]' - 'world.z_label.lines[2,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[2,2,2]' - 'world.z_label.lines[2,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[2].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[2].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[2].widthDirection[3]' = 0.0;
@@ -7244,15 +6980,15 @@ package 'PlanarLoops_analytic'
     'world.z_label.cylinders[3].R.w[1]' = 'world.z_label.R.w[1]';
     'world.z_label.cylinders[3].R.w[2]' = 'world.z_label.R.w[2]';
     'world.z_label.cylinders[3].R.w[3]' = 'world.z_label.R.w[3]';
-    'world.z_label.cylinders[3].r[1]' = 'world.z_label.r_abs[1]' + 'world.z_label.R_lines[1,1]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,1]' * 'world.z_label.lines[3,1,2]';
-    'world.z_label.cylinders[3].r[2]' = 'world.z_label.r_abs[2]' + 'world.z_label.R_lines[1,2]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,2]' * 'world.z_label.lines[3,1,2]';
-    'world.z_label.cylinders[3].r[3]' = 'world.z_label.r_abs[3]' + 'world.z_label.R_lines[1,3]' * 'world.z_label.lines[3,1,1]' + 'world.z_label.R_lines[2,3]' * 'world.z_label.lines[3,1,2]';
+    'world.z_label.cylinders[3].r[1]' = 'world.z_label.r_abs[1]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[1];
+    'world.z_label.cylinders[3].r[2]' = 'world.z_label.r_abs[2]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[2];
+    'world.z_label.cylinders[3].r[3]' = 'world.z_label.r_abs[3]' + ('Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('world.z_label.R_lines', {'world.z_label.lines[3,1,1]', 'world.z_label.lines[3,1,2]', 0.0}))[3];
     'world.z_label.cylinders[3].r_shape[1]' = 0.0;
     'world.z_label.cylinders[3].r_shape[2]' = 0.0;
     'world.z_label.cylinders[3].r_shape[3]' = 0.0;
-    'world.z_label.cylinders[3].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
-    'world.z_label.cylinders[3].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
-    'world.z_label.cylinders[3].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]');
+    'world.z_label.cylinders[3].lengthDirection[1]' = 'world.z_label.R_rel[1,1]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,1]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,1]' * 0.0;
+    'world.z_label.cylinders[3].lengthDirection[2]' = 'world.z_label.R_rel[1,2]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,2]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,2]' * 0.0;
+    'world.z_label.cylinders[3].lengthDirection[3]' = 'world.z_label.R_rel[1,3]' * ('world.z_label.lines[3,2,1]' - 'world.z_label.lines[3,1,1]') + 'world.z_label.R_rel[2,3]' * ('world.z_label.lines[3,2,2]' - 'world.z_label.lines[3,1,2]') + 'world.z_label.R_rel[3,3]' * 0.0;
     'world.z_label.cylinders[3].widthDirection[1]' = 0.0;
     'world.z_label.cylinders[3].widthDirection[2]' = 1.0;
     'world.z_label.cylinders[3].widthDirection[3]' = 0.0;
@@ -7365,15 +7101,15 @@ package 'PlanarLoops_analytic'
     'jointRRR1.jointUSR.revolute.frame_b.r_0[1]' = 'jointRRR1.jointUSR.revolute.frame_a.r_0[1]';
     'jointRRR1.jointUSR.revolute.frame_b.r_0[2]' = 'jointRRR1.jointUSR.revolute.frame_a.r_0[2]';
     'jointRRR1.jointUSR.revolute.frame_b.r_0[3]' = 'jointRRR1.jointUSR.revolute.frame_a.r_0[3]';
-    'jointRRR1.jointUSR.revolute.R_rel.T[1,1]' = 'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[1]' + (1.0 - 'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[1]') * cos('jointRRR1.jointUSR.revolute.angle');
-    'jointRRR1.jointUSR.revolute.R_rel.T[1,2]' = 'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[2]' + (-'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[2]') * cos('jointRRR1.jointUSR.revolute.angle') - (-'jointRRR1.jointUSR.revolute.e[3]') * sin('jointRRR1.jointUSR.revolute.angle');
-    'jointRRR1.jointUSR.revolute.R_rel.T[1,3]' = 'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[3]' + (-'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[3]') * cos('jointRRR1.jointUSR.revolute.angle') - 'jointRRR1.jointUSR.revolute.e[2]' * sin('jointRRR1.jointUSR.revolute.angle');
-    'jointRRR1.jointUSR.revolute.R_rel.T[2,1]' = 'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[1]' + (-'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[1]') * cos('jointRRR1.jointUSR.revolute.angle') - 'jointRRR1.jointUSR.revolute.e[3]' * sin('jointRRR1.jointUSR.revolute.angle');
-    'jointRRR1.jointUSR.revolute.R_rel.T[2,2]' = 'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[2]' + (1.0 - 'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[2]') * cos('jointRRR1.jointUSR.revolute.angle');
-    'jointRRR1.jointUSR.revolute.R_rel.T[2,3]' = 'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[3]' + (-'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[3]') * cos('jointRRR1.jointUSR.revolute.angle') - (-'jointRRR1.jointUSR.revolute.e[1]') * sin('jointRRR1.jointUSR.revolute.angle');
-    'jointRRR1.jointUSR.revolute.R_rel.T[3,1]' = 'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[1]' + (-'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[1]') * cos('jointRRR1.jointUSR.revolute.angle') - (-'jointRRR1.jointUSR.revolute.e[2]') * sin('jointRRR1.jointUSR.revolute.angle');
-    'jointRRR1.jointUSR.revolute.R_rel.T[3,2]' = 'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[2]' + (-'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[2]') * cos('jointRRR1.jointUSR.revolute.angle') - 'jointRRR1.jointUSR.revolute.e[1]' * sin('jointRRR1.jointUSR.revolute.angle');
-    'jointRRR1.jointUSR.revolute.R_rel.T[3,3]' = 'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[3]' + (1.0 - 'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[3]') * cos('jointRRR1.jointUSR.revolute.angle');
+    'jointRRR1.jointUSR.revolute.R_rel.T[1,1]' = 'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[1]' + (1.0 - 'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[1]') * 'Modelica.Math.cos'('jointRRR1.jointUSR.revolute.angle');
+    'jointRRR1.jointUSR.revolute.R_rel.T[1,2]' = 'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[2]' + (-'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[2]') * 'Modelica.Math.cos'('jointRRR1.jointUSR.revolute.angle') - (-'jointRRR1.jointUSR.revolute.e[3]') * 'Modelica.Math.sin'('jointRRR1.jointUSR.revolute.angle');
+    'jointRRR1.jointUSR.revolute.R_rel.T[1,3]' = 'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[3]' + (-'jointRRR1.jointUSR.revolute.e[1]' * 'jointRRR1.jointUSR.revolute.e[3]') * 'Modelica.Math.cos'('jointRRR1.jointUSR.revolute.angle') - 'jointRRR1.jointUSR.revolute.e[2]' * 'Modelica.Math.sin'('jointRRR1.jointUSR.revolute.angle');
+    'jointRRR1.jointUSR.revolute.R_rel.T[2,1]' = 'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[1]' + (-'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[1]') * 'Modelica.Math.cos'('jointRRR1.jointUSR.revolute.angle') - 'jointRRR1.jointUSR.revolute.e[3]' * 'Modelica.Math.sin'('jointRRR1.jointUSR.revolute.angle');
+    'jointRRR1.jointUSR.revolute.R_rel.T[2,2]' = 'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[2]' + (1.0 - 'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[2]') * 'Modelica.Math.cos'('jointRRR1.jointUSR.revolute.angle');
+    'jointRRR1.jointUSR.revolute.R_rel.T[2,3]' = 'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[3]' + (-'jointRRR1.jointUSR.revolute.e[2]' * 'jointRRR1.jointUSR.revolute.e[3]') * 'Modelica.Math.cos'('jointRRR1.jointUSR.revolute.angle') - (-'jointRRR1.jointUSR.revolute.e[1]') * 'Modelica.Math.sin'('jointRRR1.jointUSR.revolute.angle');
+    'jointRRR1.jointUSR.revolute.R_rel.T[3,1]' = 'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[1]' + (-'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[1]') * 'Modelica.Math.cos'('jointRRR1.jointUSR.revolute.angle') - (-'jointRRR1.jointUSR.revolute.e[2]') * 'Modelica.Math.sin'('jointRRR1.jointUSR.revolute.angle');
+    'jointRRR1.jointUSR.revolute.R_rel.T[3,2]' = 'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[2]' + (-'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[2]') * 'Modelica.Math.cos'('jointRRR1.jointUSR.revolute.angle') - 'jointRRR1.jointUSR.revolute.e[1]' * 'Modelica.Math.sin'('jointRRR1.jointUSR.revolute.angle');
+    'jointRRR1.jointUSR.revolute.R_rel.T[3,3]' = 'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[3]' + (1.0 - 'jointRRR1.jointUSR.revolute.e[3]' * 'jointRRR1.jointUSR.revolute.e[3]') * 'Modelica.Math.cos'('jointRRR1.jointUSR.revolute.angle');
     'jointRRR1.jointUSR.revolute.R_rel.w[1]' = 'jointRRR1.jointUSR.revolute.e[1]' * der('jointRRR1.jointUSR.revolute.angle');
     'jointRRR1.jointUSR.revolute.R_rel.w[2]' = 'jointRRR1.jointUSR.revolute.e[2]' * der('jointRRR1.jointUSR.revolute.angle');
     'jointRRR1.jointUSR.revolute.R_rel.w[3]' = 'jointRRR1.jointUSR.revolute.e[3]' * der('jointRRR1.jointUSR.revolute.angle');
@@ -7403,7 +7139,7 @@ package 'PlanarLoops_analytic'
     'jointRRR1.jointUSR.revolute.k1' = 'jointRRR1.jointUSR.revolute.A' * 'jointRRR1.jointUSR.revolute.A' + 'jointRRR1.jointUSR.revolute.B' * 'jointRRR1.jointUSR.revolute.B';
     'jointRRR1.jointUSR.revolute.k1a' = 'jointRRR1.jointUSR.revolute.k1' - 'jointRRR1.jointUSR.revolute.C' * 'jointRRR1.jointUSR.revolute.C';
     assert('jointRRR1.jointUSR.revolute.k1a' > 1e-10, "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIn most cases it is best that the joints outside of the JointXXX\ncomponent are revolute and NOT prismatic joints. If this also\nlead to singular positions, it could be that this kinematic loop\ncannot be solved analytically. In this case you have to build\nup the loop with basic joints (NO aggregation JointXXX components)\nand rely on dynamic state selection, i.e., during simulation\nthe states will be dynamically selected in such a way that in no\nposition a degree of freedom is lost.\n", AssertionLevel.error);
-    'jointRRR1.jointUSR.revolute.k1b' = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent'('jointRRR1.jointUSR.revolute.k1a', 1e-12);
+    'jointRRR1.jointUSR.revolute.k1b' = if 'jointRRR1.jointUSR.revolute.k1a' > 1e-12 then 'jointRRR1.jointUSR.revolute.k1a' else 1e-12;
     'jointRRR1.jointUSR.revolute.k2' = sqrt('jointRRR1.jointUSR.revolute.k1b');
     'jointRRR1.jointUSR.revolute.kcos_angle' = (if 'jointRRR1.jointUSR.revolute.positiveBranch' then 'jointRRR1.jointUSR.revolute.B' else -'jointRRR1.jointUSR.revolute.B') * 'jointRRR1.jointUSR.revolute.k2' - 'jointRRR1.jointUSR.revolute.A' * 'jointRRR1.jointUSR.revolute.C';
     'jointRRR1.jointUSR.revolute.ksin_angle' = (if 'jointRRR1.jointUSR.revolute.positiveBranch' then -'jointRRR1.jointUSR.revolute.A' else 'jointRRR1.jointUSR.revolute.A') * 'jointRRR1.jointUSR.revolute.k2' - 'jointRRR1.jointUSR.revolute.B' * 'jointRRR1.jointUSR.revolute.C';
@@ -7420,9 +7156,9 @@ package 'PlanarLoops_analytic'
     'jointRRR1.jointUSR.rod1.rRod_0[1]' = 'jointRRR1.jointUSR.rod1.frame_b.r_0[1]' - 'jointRRR1.jointUSR.rod1.frame_a.r_0[1]';
     'jointRRR1.jointUSR.rod1.rRod_0[2]' = 'jointRRR1.jointUSR.rod1.frame_b.r_0[2]' - 'jointRRR1.jointUSR.rod1.frame_a.r_0[2]';
     'jointRRR1.jointUSR.rod1.rRod_0[3]' = 'jointRRR1.jointUSR.rod1.frame_b.r_0[3]' - 'jointRRR1.jointUSR.rod1.frame_a.r_0[3]';
-    'jointRRR1.jointUSR.rod1.rRod_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.rRod_0'))[1];
-    'jointRRR1.jointUSR.rod1.rRod_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.rRod_0'))[2];
-    'jointRRR1.jointUSR.rod1.rRod_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.rRod_0'))[3];
+    'jointRRR1.jointUSR.rod1.rRod_a[1]' = 'jointRRR1.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR1.jointUSR.rod1.rRod_0[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR1.jointUSR.rod1.rRod_0[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR1.jointUSR.rod1.rRod_0[3]';
+    'jointRRR1.jointUSR.rod1.rRod_a[2]' = 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR1.jointUSR.rod1.rRod_0[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR1.jointUSR.rod1.rRod_0[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR1.jointUSR.rod1.rRod_0[3]';
+    'jointRRR1.jointUSR.rod1.rRod_a[3]' = 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR1.jointUSR.rod1.rRod_0[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR1.jointUSR.rod1.rRod_0[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR1.jointUSR.rod1.rRod_0[3]';
     'jointRRR1.jointUSR.rod1.constraintResidue' = 0.0;
     'jointRRR1.jointUSR.rod1.eRod_a[1]' = 'jointRRR1.jointUSR.rod1.rRod_a[1]' / 'jointRRR1.jointUSR.rod1.rodLength';
     'jointRRR1.jointUSR.rod1.eRod_a[2]' = 'jointRRR1.jointUSR.rod1.rRod_a[2]' / 'jointRRR1.jointUSR.rod1.rodLength';
@@ -7496,21 +7232,21 @@ package 'PlanarLoops_analytic'
     'jointRRR1.jointUSR.rod1.frame_ia.R.w[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.rod1.R_rel_ia', 'jointRRR1.jointUSR.rod1.frame_a.R.w'))[1] + 'jointRRR1.jointUSR.rod1.R_rel_ia.w[1]';
     'jointRRR1.jointUSR.rod1.frame_ia.R.w[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.rod1.R_rel_ia', 'jointRRR1.jointUSR.rod1.frame_a.R.w'))[2] + 'jointRRR1.jointUSR.rod1.R_rel_ia.w[2]';
     'jointRRR1.jointUSR.rod1.frame_ia.R.w[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.rod1.R_rel_ia', 'jointRRR1.jointUSR.rod1.frame_a.R.w'))[3] + 'jointRRR1.jointUSR.rod1.R_rel_ia.w[3]';
-    'jointRRR1.jointUSR.rod1.f_ia_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR1.jointUSR.rod1.R_rel_ia', 'jointRRR1.jointUSR.rod1.frame_ia.f'))[1];
-    'jointRRR1.jointUSR.rod1.f_ia_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR1.jointUSR.rod1.R_rel_ia', 'jointRRR1.jointUSR.rod1.frame_ia.f'))[2];
-    'jointRRR1.jointUSR.rod1.f_ia_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR1.jointUSR.rod1.R_rel_ia', 'jointRRR1.jointUSR.rod1.frame_ia.f'))[3];
-    'jointRRR1.jointUSR.rod1.t_ia_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR1.jointUSR.rod1.R_rel_ia', 'jointRRR1.jointUSR.rod1.frame_ia.t'))[1];
-    'jointRRR1.jointUSR.rod1.t_ia_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR1.jointUSR.rod1.R_rel_ia', 'jointRRR1.jointUSR.rod1.frame_ia.t'))[2];
-    'jointRRR1.jointUSR.rod1.t_ia_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR1.jointUSR.rod1.R_rel_ia', 'jointRRR1.jointUSR.rod1.frame_ia.t'))[3];
+    'jointRRR1.jointUSR.rod1.f_ia_a[1]' = 'jointRRR1.jointUSR.rod1.R_rel_ia.T[1,1]' * 'jointRRR1.jointUSR.rod1.frame_ia.f[1]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[2,1]' * 'jointRRR1.jointUSR.rod1.frame_ia.f[2]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[3,1]' * 'jointRRR1.jointUSR.rod1.frame_ia.f[3]';
+    'jointRRR1.jointUSR.rod1.f_ia_a[2]' = 'jointRRR1.jointUSR.rod1.R_rel_ia.T[1,2]' * 'jointRRR1.jointUSR.rod1.frame_ia.f[1]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[2,2]' * 'jointRRR1.jointUSR.rod1.frame_ia.f[2]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[3,2]' * 'jointRRR1.jointUSR.rod1.frame_ia.f[3]';
+    'jointRRR1.jointUSR.rod1.f_ia_a[3]' = 'jointRRR1.jointUSR.rod1.R_rel_ia.T[1,3]' * 'jointRRR1.jointUSR.rod1.frame_ia.f[1]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[2,3]' * 'jointRRR1.jointUSR.rod1.frame_ia.f[2]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[3,3]' * 'jointRRR1.jointUSR.rod1.frame_ia.f[3]';
+    'jointRRR1.jointUSR.rod1.t_ia_a[1]' = 'jointRRR1.jointUSR.rod1.R_rel_ia.T[1,1]' * 'jointRRR1.jointUSR.rod1.frame_ia.t[1]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[2,1]' * 'jointRRR1.jointUSR.rod1.frame_ia.t[2]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[3,1]' * 'jointRRR1.jointUSR.rod1.frame_ia.t[3]';
+    'jointRRR1.jointUSR.rod1.t_ia_a[2]' = 'jointRRR1.jointUSR.rod1.R_rel_ia.T[1,2]' * 'jointRRR1.jointUSR.rod1.frame_ia.t[1]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[2,2]' * 'jointRRR1.jointUSR.rod1.frame_ia.t[2]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[3,2]' * 'jointRRR1.jointUSR.rod1.frame_ia.t[3]';
+    'jointRRR1.jointUSR.rod1.t_ia_a[3]' = 'jointRRR1.jointUSR.rod1.R_rel_ia.T[1,3]' * 'jointRRR1.jointUSR.rod1.frame_ia.t[1]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[2,3]' * 'jointRRR1.jointUSR.rod1.frame_ia.t[2]' + 'jointRRR1.jointUSR.rod1.R_rel_ia.T[3,3]' * 'jointRRR1.jointUSR.rod1.frame_ia.t[3]';
     'jointRRR1.jointUSR.rod1.f_b_a1[1]' = 'jointRRR1.jointUSR.rod1.e3_a[1]' * (('jointRRR1.jointUSR.rod1.e2_a[1]' * 'jointRRR1.jointUSR.rod1.t_ia_a[1]' + 'jointRRR1.jointUSR.rod1.e2_a[2]' * 'jointRRR1.jointUSR.rod1.t_ia_a[2]' + 'jointRRR1.jointUSR.rod1.e2_a[3]' * 'jointRRR1.jointUSR.rod1.t_ia_a[3]') / 'jointRRR1.jointUSR.rod1.rodLength') - 'jointRRR1.jointUSR.rod1.e2_a[1]' * ('jointRRR1.jointUSR.rod1.t_ia_a[3]' / ('jointRRR1.jointUSR.rod1.rodLength' * 'jointRRR1.jointUSR.rod1.e3_a[3]'));
     'jointRRR1.jointUSR.rod1.f_b_a1[2]' = 'jointRRR1.jointUSR.rod1.e3_a[2]' * (('jointRRR1.jointUSR.rod1.e2_a[1]' * 'jointRRR1.jointUSR.rod1.t_ia_a[1]' + 'jointRRR1.jointUSR.rod1.e2_a[2]' * 'jointRRR1.jointUSR.rod1.t_ia_a[2]' + 'jointRRR1.jointUSR.rod1.e2_a[3]' * 'jointRRR1.jointUSR.rod1.t_ia_a[3]') / 'jointRRR1.jointUSR.rod1.rodLength') - 'jointRRR1.jointUSR.rod1.e2_a[2]' * ('jointRRR1.jointUSR.rod1.t_ia_a[3]' / ('jointRRR1.jointUSR.rod1.rodLength' * 'jointRRR1.jointUSR.rod1.e3_a[3]'));
     'jointRRR1.jointUSR.rod1.f_b_a1[3]' = 'jointRRR1.jointUSR.rod1.e3_a[3]' * (('jointRRR1.jointUSR.rod1.e2_a[1]' * 'jointRRR1.jointUSR.rod1.t_ia_a[1]' + 'jointRRR1.jointUSR.rod1.e2_a[2]' * 'jointRRR1.jointUSR.rod1.t_ia_a[2]' + 'jointRRR1.jointUSR.rod1.e2_a[3]' * 'jointRRR1.jointUSR.rod1.t_ia_a[3]') / 'jointRRR1.jointUSR.rod1.rodLength') - 'jointRRR1.jointUSR.rod1.e2_a[3]' * ('jointRRR1.jointUSR.rod1.t_ia_a[3]' / ('jointRRR1.jointUSR.rod1.rodLength' * 'jointRRR1.jointUSR.rod1.e3_a[3]'));
     'jointRRR1.jointUSR.rod1.f_b_a[1]' = 'jointRRR1.jointUSR.rod1.f_b_a1[1]' - 'jointRRR1.jointUSR.rod1.f_rod' * 'jointRRR1.jointUSR.rod1.eRod_a[1]';
     'jointRRR1.jointUSR.rod1.f_b_a[2]' = 'jointRRR1.jointUSR.rod1.f_b_a1[2]' - 'jointRRR1.jointUSR.rod1.f_rod' * 'jointRRR1.jointUSR.rod1.eRod_a[2]';
     'jointRRR1.jointUSR.rod1.f_b_a[3]' = 'jointRRR1.jointUSR.rod1.f_b_a1[3]' - 'jointRRR1.jointUSR.rod1.f_rod' * 'jointRRR1.jointUSR.rod1.eRod_a[3]';
-    'jointRRR1.jointUSR.rod1.frame_b.f[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR1.jointUSR.rod1.f_b_a', 'jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.frame_b.R'))[1];
-    'jointRRR1.jointUSR.rod1.frame_b.f[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR1.jointUSR.rod1.f_b_a', 'jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.frame_b.R'))[2];
-    'jointRRR1.jointUSR.rod1.frame_b.f[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR1.jointUSR.rod1.f_b_a', 'jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.frame_b.R'))[3];
+    'jointRRR1.jointUSR.rod1.frame_b.f[1]' = 'jointRRR1.jointUSR.rod1.frame_b.R.T[1,1]' * ('jointRRR1.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR1.jointUSR.rod1.f_b_a[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR1.jointUSR.rod1.f_b_a[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR1.jointUSR.rod1.f_b_a[3]') + 'jointRRR1.jointUSR.rod1.frame_b.R.T[1,2]' * ('jointRRR1.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR1.jointUSR.rod1.f_b_a[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR1.jointUSR.rod1.f_b_a[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR1.jointUSR.rod1.f_b_a[3]') + 'jointRRR1.jointUSR.rod1.frame_b.R.T[1,3]' * ('jointRRR1.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR1.jointUSR.rod1.f_b_a[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR1.jointUSR.rod1.f_b_a[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR1.jointUSR.rod1.f_b_a[3]');
+    'jointRRR1.jointUSR.rod1.frame_b.f[2]' = 'jointRRR1.jointUSR.rod1.frame_b.R.T[2,1]' * ('jointRRR1.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR1.jointUSR.rod1.f_b_a[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR1.jointUSR.rod1.f_b_a[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR1.jointUSR.rod1.f_b_a[3]') + 'jointRRR1.jointUSR.rod1.frame_b.R.T[2,2]' * ('jointRRR1.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR1.jointUSR.rod1.f_b_a[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR1.jointUSR.rod1.f_b_a[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR1.jointUSR.rod1.f_b_a[3]') + 'jointRRR1.jointUSR.rod1.frame_b.R.T[2,3]' * ('jointRRR1.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR1.jointUSR.rod1.f_b_a[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR1.jointUSR.rod1.f_b_a[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR1.jointUSR.rod1.f_b_a[3]');
+    'jointRRR1.jointUSR.rod1.frame_b.f[3]' = 'jointRRR1.jointUSR.rod1.frame_b.R.T[3,1]' * ('jointRRR1.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR1.jointUSR.rod1.f_b_a[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR1.jointUSR.rod1.f_b_a[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR1.jointUSR.rod1.f_b_a[3]') + 'jointRRR1.jointUSR.rod1.frame_b.R.T[3,2]' * ('jointRRR1.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR1.jointUSR.rod1.f_b_a[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR1.jointUSR.rod1.f_b_a[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR1.jointUSR.rod1.f_b_a[3]') + 'jointRRR1.jointUSR.rod1.frame_b.R.T[3,3]' * ('jointRRR1.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR1.jointUSR.rod1.f_b_a[1]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR1.jointUSR.rod1.f_b_a[2]' + 'jointRRR1.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR1.jointUSR.rod1.f_b_a[3]');
     'jointRRR1.jointUSR.rod1.frame_b.t[1]' = 0.0;
     'jointRRR1.jointUSR.rod1.frame_b.t[2]' = 0.0;
     'jointRRR1.jointUSR.rod1.frame_b.t[3]' = 0.0;
@@ -7545,9 +7281,9 @@ package 'PlanarLoops_analytic'
     0.0 = 'jointRRR1.jointUSR.rod2.frame_a.t[1]' + 'jointRRR1.jointUSR.rod2.frame_b.t[1]' + 0.5 * 'jointRRR1.jointUSR.rod2.frame_b.f[3]';
     0.0 = 'jointRRR1.jointUSR.rod2.frame_a.t[2]' + 'jointRRR1.jointUSR.rod2.frame_b.t[2]' - 0.1 * 'jointRRR1.jointUSR.rod2.frame_b.f[3]';
     0.0 = 'jointRRR1.jointUSR.rod2.frame_a.t[3]' + 'jointRRR1.jointUSR.rod2.frame_b.t[3]' + 0.1 * 'jointRRR1.jointUSR.rod2.frame_b.f[2]' - 0.5 * 'jointRRR1.jointUSR.rod2.frame_b.f[1]';
-    'jointRRR1.jointUSR.relativePosition.relativePosition.r_rel[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R', {'jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]', 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]', 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]'}))[1];
-    'jointRRR1.jointUSR.relativePosition.relativePosition.r_rel[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R', {'jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]', 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]', 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]'}))[2];
-    'jointRRR1.jointUSR.relativePosition.relativePosition.r_rel[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R', {'jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]', 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]', 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]'}))[3];
+    'jointRRR1.jointUSR.relativePosition.relativePosition.r_rel[1]' = 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R.T[1,1]' * ('jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]') + 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R.T[1,2]' * ('jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]') + 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R.T[1,3]' * ('jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]');
+    'jointRRR1.jointUSR.relativePosition.relativePosition.r_rel[2]' = 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R.T[2,1]' * ('jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]') + 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R.T[2,2]' * ('jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]') + 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R.T[2,3]' * ('jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]');
+    'jointRRR1.jointUSR.relativePosition.relativePosition.r_rel[3]' = 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R.T[3,1]' * ('jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]') + 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R.T[3,2]' * ('jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]') + 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.R.T[3,3]' * ('jointRRR1.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]');
     'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.f[1]' = 0.0;
     'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.f[2]' = 0.0;
     'jointRRR1.jointUSR.relativePosition.relativePosition.frame_a.f[3]' = 0.0;
@@ -7586,7 +7322,7 @@ package 'PlanarLoops_analytic'
     'jointRRR1.jointUSR.position_b[3].y' = 0.0;
     'jointRRR1.jointUSR.aux' = {-'jointRRR1.jointUSR.revolute.e[3]' * 0.5, 'jointRRR1.jointUSR.revolute.e[3]' * 0.1, 'jointRRR1.jointUSR.revolute.e[1]' * 0.5 - 'jointRRR1.jointUSR.revolute.e[2]' * 0.1} * 'Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR1.jointUSR.rod1.eRod_a', 'jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.frame_b.R');
     'jointRRR1.jointUSR.f_rod' = ('jointRRR1.jointUSR.revolute.tau' + 'jointRRR1.jointUSR.revolute.e' * {'jointRRR1.jointUSR.frame_ib.t[1]' + 'jointRRR1.jointUSR.frame_im.t[1]' + 0.5 * 'jointRRR1.jointUSR.frame_im.f[3]' - 0.5 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR1.jointUSR.rod1.f_b_a1', 'jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.frame_b.R'))[3], 'jointRRR1.jointUSR.frame_ib.t[2]' + 'jointRRR1.jointUSR.frame_im.t[2]' - 0.1 * 'jointRRR1.jointUSR.frame_im.f[3]' + 0.1 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR1.jointUSR.rod1.f_b_a1', 'jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.frame_b.R'))[3], 'jointRRR1.jointUSR.frame_ib.t[3]' + 'jointRRR1.jointUSR.frame_im.t[3]' + 0.1 * 'jointRRR1.jointUSR.frame_im.f[2]' - 0.5 * 'jointRRR1.jointUSR.frame_im.f[1]' - (0.1 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR1.jointUSR.rod1.f_b_a1', 'jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.frame_b.R'))[2] - 0.5 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR1.jointUSR.rod1.f_b_a1', 'jointRRR1.jointUSR.rod1.frame_a.R', 'jointRRR1.jointUSR.rod1.frame_b.R'))[1])}) / (-noEvent(if abs('jointRRR1.jointUSR.aux') < 1e-10 then 1e-10 else 'jointRRR1.jointUSR.aux'));
-    'jointRRR1.jointUSR.totalPower' = 'jointRRR1.jointUSR.frame_a.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_a.R', der('jointRRR1.jointUSR.frame_a.r_0')) + 'jointRRR1.jointUSR.frame_b.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_b.R', der('jointRRR1.jointUSR.frame_b.r_0')) + 'jointRRR1.jointUSR.frame_ia.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_ia.R', der('jointRRR1.jointUSR.frame_ia.r_0')) + 'jointRRR1.jointUSR.frame_ib.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_ib.R', der('jointRRR1.jointUSR.frame_ib.r_0')) + 'jointRRR1.jointUSR.frame_im.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_im.R', der('jointRRR1.jointUSR.frame_im.r_0')) + 'jointRRR1.jointUSR.frame_a.t[1]' * 'jointRRR1.jointUSR.frame_a.R.w[1]' + 'jointRRR1.jointUSR.frame_a.t[2]' * 'jointRRR1.jointUSR.frame_a.R.w[2]' + 'jointRRR1.jointUSR.frame_a.t[3]' * 'jointRRR1.jointUSR.frame_a.R.w[3]' + 'jointRRR1.jointUSR.frame_b.t[1]' * 'jointRRR1.jointUSR.frame_b.R.w[1]' + 'jointRRR1.jointUSR.frame_b.t[2]' * 'jointRRR1.jointUSR.frame_b.R.w[2]' + 'jointRRR1.jointUSR.frame_b.t[3]' * 'jointRRR1.jointUSR.frame_b.R.w[3]' + 'jointRRR1.jointUSR.frame_ia.t[1]' * 'jointRRR1.jointUSR.frame_ia.R.w[1]' + 'jointRRR1.jointUSR.frame_ia.t[2]' * 'jointRRR1.jointUSR.frame_ia.R.w[2]' + 'jointRRR1.jointUSR.frame_ia.t[3]' * 'jointRRR1.jointUSR.frame_ia.R.w[3]' + 'jointRRR1.jointUSR.frame_ib.t[1]' * 'jointRRR1.jointUSR.frame_ib.R.w[1]' + 'jointRRR1.jointUSR.frame_ib.t[2]' * 'jointRRR1.jointUSR.frame_ib.R.w[2]' + 'jointRRR1.jointUSR.frame_ib.t[3]' * 'jointRRR1.jointUSR.frame_ib.R.w[3]' + 'jointRRR1.jointUSR.frame_im.t[1]' * 'jointRRR1.jointUSR.frame_im.R.w[1]' + 'jointRRR1.jointUSR.frame_im.t[2]' * 'jointRRR1.jointUSR.frame_im.R.w[2]' + 'jointRRR1.jointUSR.frame_im.t[3]' * 'jointRRR1.jointUSR.frame_im.R.w[3]' + 'jointRRR1.jointUSR.axis.tau' * der('jointRRR1.jointUSR.axis.phi') + 'jointRRR1.jointUSR.bearing.tau' * der('jointRRR1.jointUSR.bearing.phi');
+    'jointRRR1.jointUSR.totalPower' = 'jointRRR1.jointUSR.frame_a.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_a.R', der('jointRRR1.jointUSR.frame_a.r_0')) + 'jointRRR1.jointUSR.frame_b.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_b.R', der('jointRRR1.jointUSR.frame_b.r_0')) + 'jointRRR1.jointUSR.frame_ia.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_ia.R', der('jointRRR1.jointUSR.frame_ia.r_0')) + 'jointRRR1.jointUSR.frame_ib.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_ib.R', der('jointRRR1.jointUSR.frame_ib.r_0')) + 'jointRRR1.jointUSR.frame_im.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR1.jointUSR.frame_im.R', der('jointRRR1.jointUSR.frame_im.r_0')) + 'jointRRR1.jointUSR.frame_a.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR1.jointUSR.frame_a.R') + 'jointRRR1.jointUSR.frame_b.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR1.jointUSR.frame_b.R') + 'jointRRR1.jointUSR.frame_ia.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR1.jointUSR.frame_ia.R') + 'jointRRR1.jointUSR.frame_ib.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR1.jointUSR.frame_ib.R') + 'jointRRR1.jointUSR.frame_im.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR1.jointUSR.frame_im.R') + 'jointRRR1.jointUSR.axis.tau' * der('jointRRR1.jointUSR.axis.phi') + 'jointRRR1.jointUSR.bearing.tau' * der('jointRRR1.jointUSR.bearing.phi');
     'jointRRR1.shape_rev1.R.T[1,1]' = 'jointRRR1.frame_a.R.T[1,1]';
     'jointRRR1.shape_rev1.R.T[1,2]' = 'jointRRR1.frame_a.R.T[1,2]';
     'jointRRR1.shape_rev1.R.T[1,3]' = 'jointRRR1.frame_a.R.T[1,3]';
@@ -7761,18 +7497,18 @@ package 'PlanarLoops_analytic'
     'rev.frame_b.r_0[1]' = 'rev.frame_a.r_0[1]';
     'rev.frame_b.r_0[2]' = 'rev.frame_a.r_0[2]';
     'rev.frame_b.r_0[3]' = 'rev.frame_a.r_0[3]';
-    'rev.R_rel.T[1,1]' = cos('rev.phi');
-    'rev.R_rel.T[1,2]' = -(-1.0) * sin('rev.phi');
-    'rev.R_rel.T[1,3]' = 0.0;
-    'rev.R_rel.T[2,1]' = -sin('rev.phi');
-    'rev.R_rel.T[2,2]' = cos('rev.phi');
-    'rev.R_rel.T[2,3]' = 0.0;
-    'rev.R_rel.T[3,1]' = 0.0;
-    'rev.R_rel.T[3,2]' = 0.0;
+    'rev.R_rel.T[1,1]' = 'Modelica.Math.cos'('rev.phi');
+    'rev.R_rel.T[1,2]' = -(-1.0) * 'Modelica.Math.sin'('rev.phi');
+    'rev.R_rel.T[1,3]' = -0.0 * 'Modelica.Math.sin'('rev.phi');
+    'rev.R_rel.T[2,1]' = -1.0 * 'Modelica.Math.sin'('rev.phi');
+    'rev.R_rel.T[2,2]' = 'Modelica.Math.cos'('rev.phi');
+    'rev.R_rel.T[2,3]' = -(-0.0) * 'Modelica.Math.sin'('rev.phi');
+    'rev.R_rel.T[3,1]' = -(-0.0) * 'Modelica.Math.sin'('rev.phi');
+    'rev.R_rel.T[3,2]' = -0.0 * 'Modelica.Math.sin'('rev.phi');
     'rev.R_rel.T[3,3]' = 1.0;
-    'rev.R_rel.w[1]' = 0.0;
-    'rev.R_rel.w[2]' = 0.0;
-    'rev.R_rel.w[3]' = 'rev.w';
+    'rev.R_rel.w[1]' = 0.0 * 'rev.w';
+    'rev.R_rel.w[2]' = 0.0 * 'rev.w';
+    'rev.R_rel.w[3]' = 1.0 * 'rev.w';
     'rev.frame_b.R.T[1,1]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.T[1,1]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.T[2,1]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.T[3,1]';
     'rev.frame_b.R.T[1,2]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.T[1,2]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.T[2,2]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.T[3,2]';
     'rev.frame_b.R.T[1,3]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.T[1,3]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.T[2,3]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.T[3,3]';
@@ -7971,9 +7707,9 @@ package 'PlanarLoops_analytic'
     'body1.phi_dd[1]' = 0.0;
     'body1.phi_dd[2]' = 0.0;
     'body1.phi_dd[3]' = 0.0;
-    'body1.g_0[1]' = 0.0;
-    'body1.g_0[2]' = -9.80665;
-    'body1.g_0[3]' = 0.0;
+    'body1.g_0[1]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[1] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[1] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[2] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[2] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[3] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[3]) * (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[1] / 'Modelica.Math.Vectors.length'('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))) else 0.0;
+    'body1.g_0[2]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then -9.80665 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[1] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[1] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[2] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[2] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[3] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[3]) * (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[2] / 'Modelica.Math.Vectors.length'('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))) else 0.0;
+    'body1.g_0[3]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[1] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[1] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[2] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[2] + ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[3] * ('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[3]) * (('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))[3] / 'Modelica.Math.Vectors.length'('body1.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body1.frame_a.R', {0.3, 0.0, 0.0}))) else 0.0;
     'body1.v_0[1]' = der('body1.frame_a.r_0[1]');
     'body1.v_0[2]' = der('body1.frame_a.r_0[2]');
     'body1.v_0[3]' = der('body1.frame_a.r_0[3]');
@@ -7996,7 +7732,7 @@ package 'PlanarLoops_analytic'
     'position.w' = der('position.phi');
     'position.a' = der('position.w');
     'position.a' = (('position.phi_ref' - 'position.phi') * 314.1592653589793 - 1.3617 * 'position.w') * 508.34832582359115;
-    'sine.y' = if time < 0.0 then 0.0 else 0.7 * sin(6.283185307179586 * time);
+    'sine.y' = if time < 0.0 then 0.0 else 0.7 * 'Modelica.Math.sin'(6.283185307179586 * time);
     'jointRRR2.cylinderColor[1]' = 255;
     'jointRRR2.cylinderColor[2]' = 0;
     'jointRRR2.cylinderColor[3]' = 0;
@@ -8034,15 +7770,15 @@ package 'PlanarLoops_analytic'
     'jointRRR2.jointUSR.revolute.frame_b.r_0[1]' = 'jointRRR2.jointUSR.revolute.frame_a.r_0[1]';
     'jointRRR2.jointUSR.revolute.frame_b.r_0[2]' = 'jointRRR2.jointUSR.revolute.frame_a.r_0[2]';
     'jointRRR2.jointUSR.revolute.frame_b.r_0[3]' = 'jointRRR2.jointUSR.revolute.frame_a.r_0[3]';
-    'jointRRR2.jointUSR.revolute.R_rel.T[1,1]' = 'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[1]' + (1.0 - 'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[1]') * cos('jointRRR2.jointUSR.revolute.angle');
-    'jointRRR2.jointUSR.revolute.R_rel.T[1,2]' = 'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[2]' + (-'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[2]') * cos('jointRRR2.jointUSR.revolute.angle') - (-'jointRRR2.jointUSR.revolute.e[3]') * sin('jointRRR2.jointUSR.revolute.angle');
-    'jointRRR2.jointUSR.revolute.R_rel.T[1,3]' = 'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[3]' + (-'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[3]') * cos('jointRRR2.jointUSR.revolute.angle') - 'jointRRR2.jointUSR.revolute.e[2]' * sin('jointRRR2.jointUSR.revolute.angle');
-    'jointRRR2.jointUSR.revolute.R_rel.T[2,1]' = 'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[1]' + (-'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[1]') * cos('jointRRR2.jointUSR.revolute.angle') - 'jointRRR2.jointUSR.revolute.e[3]' * sin('jointRRR2.jointUSR.revolute.angle');
-    'jointRRR2.jointUSR.revolute.R_rel.T[2,2]' = 'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[2]' + (1.0 - 'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[2]') * cos('jointRRR2.jointUSR.revolute.angle');
-    'jointRRR2.jointUSR.revolute.R_rel.T[2,3]' = 'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[3]' + (-'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[3]') * cos('jointRRR2.jointUSR.revolute.angle') - (-'jointRRR2.jointUSR.revolute.e[1]') * sin('jointRRR2.jointUSR.revolute.angle');
-    'jointRRR2.jointUSR.revolute.R_rel.T[3,1]' = 'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[1]' + (-'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[1]') * cos('jointRRR2.jointUSR.revolute.angle') - (-'jointRRR2.jointUSR.revolute.e[2]') * sin('jointRRR2.jointUSR.revolute.angle');
-    'jointRRR2.jointUSR.revolute.R_rel.T[3,2]' = 'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[2]' + (-'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[2]') * cos('jointRRR2.jointUSR.revolute.angle') - 'jointRRR2.jointUSR.revolute.e[1]' * sin('jointRRR2.jointUSR.revolute.angle');
-    'jointRRR2.jointUSR.revolute.R_rel.T[3,3]' = 'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[3]' + (1.0 - 'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[3]') * cos('jointRRR2.jointUSR.revolute.angle');
+    'jointRRR2.jointUSR.revolute.R_rel.T[1,1]' = 'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[1]' + (1.0 - 'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[1]') * 'Modelica.Math.cos'('jointRRR2.jointUSR.revolute.angle');
+    'jointRRR2.jointUSR.revolute.R_rel.T[1,2]' = 'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[2]' + (-'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[2]') * 'Modelica.Math.cos'('jointRRR2.jointUSR.revolute.angle') - (-'jointRRR2.jointUSR.revolute.e[3]') * 'Modelica.Math.sin'('jointRRR2.jointUSR.revolute.angle');
+    'jointRRR2.jointUSR.revolute.R_rel.T[1,3]' = 'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[3]' + (-'jointRRR2.jointUSR.revolute.e[1]' * 'jointRRR2.jointUSR.revolute.e[3]') * 'Modelica.Math.cos'('jointRRR2.jointUSR.revolute.angle') - 'jointRRR2.jointUSR.revolute.e[2]' * 'Modelica.Math.sin'('jointRRR2.jointUSR.revolute.angle');
+    'jointRRR2.jointUSR.revolute.R_rel.T[2,1]' = 'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[1]' + (-'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[1]') * 'Modelica.Math.cos'('jointRRR2.jointUSR.revolute.angle') - 'jointRRR2.jointUSR.revolute.e[3]' * 'Modelica.Math.sin'('jointRRR2.jointUSR.revolute.angle');
+    'jointRRR2.jointUSR.revolute.R_rel.T[2,2]' = 'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[2]' + (1.0 - 'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[2]') * 'Modelica.Math.cos'('jointRRR2.jointUSR.revolute.angle');
+    'jointRRR2.jointUSR.revolute.R_rel.T[2,3]' = 'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[3]' + (-'jointRRR2.jointUSR.revolute.e[2]' * 'jointRRR2.jointUSR.revolute.e[3]') * 'Modelica.Math.cos'('jointRRR2.jointUSR.revolute.angle') - (-'jointRRR2.jointUSR.revolute.e[1]') * 'Modelica.Math.sin'('jointRRR2.jointUSR.revolute.angle');
+    'jointRRR2.jointUSR.revolute.R_rel.T[3,1]' = 'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[1]' + (-'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[1]') * 'Modelica.Math.cos'('jointRRR2.jointUSR.revolute.angle') - (-'jointRRR2.jointUSR.revolute.e[2]') * 'Modelica.Math.sin'('jointRRR2.jointUSR.revolute.angle');
+    'jointRRR2.jointUSR.revolute.R_rel.T[3,2]' = 'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[2]' + (-'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[2]') * 'Modelica.Math.cos'('jointRRR2.jointUSR.revolute.angle') - 'jointRRR2.jointUSR.revolute.e[1]' * 'Modelica.Math.sin'('jointRRR2.jointUSR.revolute.angle');
+    'jointRRR2.jointUSR.revolute.R_rel.T[3,3]' = 'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[3]' + (1.0 - 'jointRRR2.jointUSR.revolute.e[3]' * 'jointRRR2.jointUSR.revolute.e[3]') * 'Modelica.Math.cos'('jointRRR2.jointUSR.revolute.angle');
     'jointRRR2.jointUSR.revolute.R_rel.w[1]' = 'jointRRR2.jointUSR.revolute.e[1]' * der('jointRRR2.jointUSR.revolute.angle');
     'jointRRR2.jointUSR.revolute.R_rel.w[2]' = 'jointRRR2.jointUSR.revolute.e[2]' * der('jointRRR2.jointUSR.revolute.angle');
     'jointRRR2.jointUSR.revolute.R_rel.w[3]' = 'jointRRR2.jointUSR.revolute.e[3]' * der('jointRRR2.jointUSR.revolute.angle');
@@ -8072,7 +7808,7 @@ package 'PlanarLoops_analytic'
     'jointRRR2.jointUSR.revolute.k1' = 'jointRRR2.jointUSR.revolute.A' * 'jointRRR2.jointUSR.revolute.A' + 'jointRRR2.jointUSR.revolute.B' * 'jointRRR2.jointUSR.revolute.B';
     'jointRRR2.jointUSR.revolute.k1a' = 'jointRRR2.jointUSR.revolute.k1' - 'jointRRR2.jointUSR.revolute.C' * 'jointRRR2.jointUSR.revolute.C';
     assert('jointRRR2.jointUSR.revolute.k1a' > 1e-10, "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIn most cases it is best that the joints outside of the JointXXX\ncomponent are revolute and NOT prismatic joints. If this also\nlead to singular positions, it could be that this kinematic loop\ncannot be solved analytically. In this case you have to build\nup the loop with basic joints (NO aggregation JointXXX components)\nand rely on dynamic state selection, i.e., during simulation\nthe states will be dynamically selected in such a way that in no\nposition a degree of freedom is lost.\n", AssertionLevel.error);
-    'jointRRR2.jointUSR.revolute.k1b' = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent'('jointRRR2.jointUSR.revolute.k1a', 1e-12);
+    'jointRRR2.jointUSR.revolute.k1b' = if 'jointRRR2.jointUSR.revolute.k1a' > 1e-12 then 'jointRRR2.jointUSR.revolute.k1a' else 1e-12;
     'jointRRR2.jointUSR.revolute.k2' = sqrt('jointRRR2.jointUSR.revolute.k1b');
     'jointRRR2.jointUSR.revolute.kcos_angle' = (if 'jointRRR2.jointUSR.revolute.positiveBranch' then 'jointRRR2.jointUSR.revolute.B' else -'jointRRR2.jointUSR.revolute.B') * 'jointRRR2.jointUSR.revolute.k2' - 'jointRRR2.jointUSR.revolute.A' * 'jointRRR2.jointUSR.revolute.C';
     'jointRRR2.jointUSR.revolute.ksin_angle' = (if 'jointRRR2.jointUSR.revolute.positiveBranch' then -'jointRRR2.jointUSR.revolute.A' else 'jointRRR2.jointUSR.revolute.A') * 'jointRRR2.jointUSR.revolute.k2' - 'jointRRR2.jointUSR.revolute.B' * 'jointRRR2.jointUSR.revolute.C';
@@ -8089,9 +7825,9 @@ package 'PlanarLoops_analytic'
     'jointRRR2.jointUSR.rod1.rRod_0[1]' = 'jointRRR2.jointUSR.rod1.frame_b.r_0[1]' - 'jointRRR2.jointUSR.rod1.frame_a.r_0[1]';
     'jointRRR2.jointUSR.rod1.rRod_0[2]' = 'jointRRR2.jointUSR.rod1.frame_b.r_0[2]' - 'jointRRR2.jointUSR.rod1.frame_a.r_0[2]';
     'jointRRR2.jointUSR.rod1.rRod_0[3]' = 'jointRRR2.jointUSR.rod1.frame_b.r_0[3]' - 'jointRRR2.jointUSR.rod1.frame_a.r_0[3]';
-    'jointRRR2.jointUSR.rod1.rRod_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.rRod_0'))[1];
-    'jointRRR2.jointUSR.rod1.rRod_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.rRod_0'))[2];
-    'jointRRR2.jointUSR.rod1.rRod_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.rRod_0'))[3];
+    'jointRRR2.jointUSR.rod1.rRod_a[1]' = 'jointRRR2.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR2.jointUSR.rod1.rRod_0[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR2.jointUSR.rod1.rRod_0[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR2.jointUSR.rod1.rRod_0[3]';
+    'jointRRR2.jointUSR.rod1.rRod_a[2]' = 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR2.jointUSR.rod1.rRod_0[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR2.jointUSR.rod1.rRod_0[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR2.jointUSR.rod1.rRod_0[3]';
+    'jointRRR2.jointUSR.rod1.rRod_a[3]' = 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR2.jointUSR.rod1.rRod_0[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR2.jointUSR.rod1.rRod_0[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR2.jointUSR.rod1.rRod_0[3]';
     'jointRRR2.jointUSR.rod1.constraintResidue' = 0.0;
     'jointRRR2.jointUSR.rod1.eRod_a[1]' = 'jointRRR2.jointUSR.rod1.rRod_a[1]' / 'jointRRR2.jointUSR.rod1.rodLength';
     'jointRRR2.jointUSR.rod1.eRod_a[2]' = 'jointRRR2.jointUSR.rod1.rRod_a[2]' / 'jointRRR2.jointUSR.rod1.rodLength';
@@ -8165,21 +7901,21 @@ package 'PlanarLoops_analytic'
     'jointRRR2.jointUSR.rod1.frame_ia.R.w[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.rod1.R_rel_ia', 'jointRRR2.jointUSR.rod1.frame_a.R.w'))[1] + 'jointRRR2.jointUSR.rod1.R_rel_ia.w[1]';
     'jointRRR2.jointUSR.rod1.frame_ia.R.w[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.rod1.R_rel_ia', 'jointRRR2.jointUSR.rod1.frame_a.R.w'))[2] + 'jointRRR2.jointUSR.rod1.R_rel_ia.w[2]';
     'jointRRR2.jointUSR.rod1.frame_ia.R.w[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.rod1.R_rel_ia', 'jointRRR2.jointUSR.rod1.frame_a.R.w'))[3] + 'jointRRR2.jointUSR.rod1.R_rel_ia.w[3]';
-    'jointRRR2.jointUSR.rod1.f_ia_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR2.jointUSR.rod1.R_rel_ia', 'jointRRR2.jointUSR.rod1.frame_ia.f'))[1];
-    'jointRRR2.jointUSR.rod1.f_ia_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR2.jointUSR.rod1.R_rel_ia', 'jointRRR2.jointUSR.rod1.frame_ia.f'))[2];
-    'jointRRR2.jointUSR.rod1.f_ia_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR2.jointUSR.rod1.R_rel_ia', 'jointRRR2.jointUSR.rod1.frame_ia.f'))[3];
-    'jointRRR2.jointUSR.rod1.t_ia_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR2.jointUSR.rod1.R_rel_ia', 'jointRRR2.jointUSR.rod1.frame_ia.t'))[1];
-    'jointRRR2.jointUSR.rod1.t_ia_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR2.jointUSR.rod1.R_rel_ia', 'jointRRR2.jointUSR.rod1.frame_ia.t'))[2];
-    'jointRRR2.jointUSR.rod1.t_ia_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR2.jointUSR.rod1.R_rel_ia', 'jointRRR2.jointUSR.rod1.frame_ia.t'))[3];
+    'jointRRR2.jointUSR.rod1.f_ia_a[1]' = 'jointRRR2.jointUSR.rod1.R_rel_ia.T[1,1]' * 'jointRRR2.jointUSR.rod1.frame_ia.f[1]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[2,1]' * 'jointRRR2.jointUSR.rod1.frame_ia.f[2]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[3,1]' * 'jointRRR2.jointUSR.rod1.frame_ia.f[3]';
+    'jointRRR2.jointUSR.rod1.f_ia_a[2]' = 'jointRRR2.jointUSR.rod1.R_rel_ia.T[1,2]' * 'jointRRR2.jointUSR.rod1.frame_ia.f[1]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[2,2]' * 'jointRRR2.jointUSR.rod1.frame_ia.f[2]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[3,2]' * 'jointRRR2.jointUSR.rod1.frame_ia.f[3]';
+    'jointRRR2.jointUSR.rod1.f_ia_a[3]' = 'jointRRR2.jointUSR.rod1.R_rel_ia.T[1,3]' * 'jointRRR2.jointUSR.rod1.frame_ia.f[1]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[2,3]' * 'jointRRR2.jointUSR.rod1.frame_ia.f[2]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[3,3]' * 'jointRRR2.jointUSR.rod1.frame_ia.f[3]';
+    'jointRRR2.jointUSR.rod1.t_ia_a[1]' = 'jointRRR2.jointUSR.rod1.R_rel_ia.T[1,1]' * 'jointRRR2.jointUSR.rod1.frame_ia.t[1]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[2,1]' * 'jointRRR2.jointUSR.rod1.frame_ia.t[2]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[3,1]' * 'jointRRR2.jointUSR.rod1.frame_ia.t[3]';
+    'jointRRR2.jointUSR.rod1.t_ia_a[2]' = 'jointRRR2.jointUSR.rod1.R_rel_ia.T[1,2]' * 'jointRRR2.jointUSR.rod1.frame_ia.t[1]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[2,2]' * 'jointRRR2.jointUSR.rod1.frame_ia.t[2]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[3,2]' * 'jointRRR2.jointUSR.rod1.frame_ia.t[3]';
+    'jointRRR2.jointUSR.rod1.t_ia_a[3]' = 'jointRRR2.jointUSR.rod1.R_rel_ia.T[1,3]' * 'jointRRR2.jointUSR.rod1.frame_ia.t[1]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[2,3]' * 'jointRRR2.jointUSR.rod1.frame_ia.t[2]' + 'jointRRR2.jointUSR.rod1.R_rel_ia.T[3,3]' * 'jointRRR2.jointUSR.rod1.frame_ia.t[3]';
     'jointRRR2.jointUSR.rod1.f_b_a1[1]' = 'jointRRR2.jointUSR.rod1.e3_a[1]' * (('jointRRR2.jointUSR.rod1.e2_a[1]' * 'jointRRR2.jointUSR.rod1.t_ia_a[1]' + 'jointRRR2.jointUSR.rod1.e2_a[2]' * 'jointRRR2.jointUSR.rod1.t_ia_a[2]' + 'jointRRR2.jointUSR.rod1.e2_a[3]' * 'jointRRR2.jointUSR.rod1.t_ia_a[3]') / 'jointRRR2.jointUSR.rod1.rodLength') - 'jointRRR2.jointUSR.rod1.e2_a[1]' * ('jointRRR2.jointUSR.rod1.t_ia_a[3]' / ('jointRRR2.jointUSR.rod1.rodLength' * 'jointRRR2.jointUSR.rod1.e3_a[3]'));
     'jointRRR2.jointUSR.rod1.f_b_a1[2]' = 'jointRRR2.jointUSR.rod1.e3_a[2]' * (('jointRRR2.jointUSR.rod1.e2_a[1]' * 'jointRRR2.jointUSR.rod1.t_ia_a[1]' + 'jointRRR2.jointUSR.rod1.e2_a[2]' * 'jointRRR2.jointUSR.rod1.t_ia_a[2]' + 'jointRRR2.jointUSR.rod1.e2_a[3]' * 'jointRRR2.jointUSR.rod1.t_ia_a[3]') / 'jointRRR2.jointUSR.rod1.rodLength') - 'jointRRR2.jointUSR.rod1.e2_a[2]' * ('jointRRR2.jointUSR.rod1.t_ia_a[3]' / ('jointRRR2.jointUSR.rod1.rodLength' * 'jointRRR2.jointUSR.rod1.e3_a[3]'));
     'jointRRR2.jointUSR.rod1.f_b_a1[3]' = 'jointRRR2.jointUSR.rod1.e3_a[3]' * (('jointRRR2.jointUSR.rod1.e2_a[1]' * 'jointRRR2.jointUSR.rod1.t_ia_a[1]' + 'jointRRR2.jointUSR.rod1.e2_a[2]' * 'jointRRR2.jointUSR.rod1.t_ia_a[2]' + 'jointRRR2.jointUSR.rod1.e2_a[3]' * 'jointRRR2.jointUSR.rod1.t_ia_a[3]') / 'jointRRR2.jointUSR.rod1.rodLength') - 'jointRRR2.jointUSR.rod1.e2_a[3]' * ('jointRRR2.jointUSR.rod1.t_ia_a[3]' / ('jointRRR2.jointUSR.rod1.rodLength' * 'jointRRR2.jointUSR.rod1.e3_a[3]'));
     'jointRRR2.jointUSR.rod1.f_b_a[1]' = 'jointRRR2.jointUSR.rod1.f_b_a1[1]' - 'jointRRR2.jointUSR.rod1.f_rod' * 'jointRRR2.jointUSR.rod1.eRod_a[1]';
     'jointRRR2.jointUSR.rod1.f_b_a[2]' = 'jointRRR2.jointUSR.rod1.f_b_a1[2]' - 'jointRRR2.jointUSR.rod1.f_rod' * 'jointRRR2.jointUSR.rod1.eRod_a[2]';
     'jointRRR2.jointUSR.rod1.f_b_a[3]' = 'jointRRR2.jointUSR.rod1.f_b_a1[3]' - 'jointRRR2.jointUSR.rod1.f_rod' * 'jointRRR2.jointUSR.rod1.eRod_a[3]';
-    'jointRRR2.jointUSR.rod1.frame_b.f[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR2.jointUSR.rod1.f_b_a', 'jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.frame_b.R'))[1];
-    'jointRRR2.jointUSR.rod1.frame_b.f[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR2.jointUSR.rod1.f_b_a', 'jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.frame_b.R'))[2];
-    'jointRRR2.jointUSR.rod1.frame_b.f[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR2.jointUSR.rod1.f_b_a', 'jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.frame_b.R'))[3];
+    'jointRRR2.jointUSR.rod1.frame_b.f[1]' = 'jointRRR2.jointUSR.rod1.frame_b.R.T[1,1]' * ('jointRRR2.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR2.jointUSR.rod1.f_b_a[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR2.jointUSR.rod1.f_b_a[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR2.jointUSR.rod1.f_b_a[3]') + 'jointRRR2.jointUSR.rod1.frame_b.R.T[1,2]' * ('jointRRR2.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR2.jointUSR.rod1.f_b_a[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR2.jointUSR.rod1.f_b_a[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR2.jointUSR.rod1.f_b_a[3]') + 'jointRRR2.jointUSR.rod1.frame_b.R.T[1,3]' * ('jointRRR2.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR2.jointUSR.rod1.f_b_a[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR2.jointUSR.rod1.f_b_a[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR2.jointUSR.rod1.f_b_a[3]');
+    'jointRRR2.jointUSR.rod1.frame_b.f[2]' = 'jointRRR2.jointUSR.rod1.frame_b.R.T[2,1]' * ('jointRRR2.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR2.jointUSR.rod1.f_b_a[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR2.jointUSR.rod1.f_b_a[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR2.jointUSR.rod1.f_b_a[3]') + 'jointRRR2.jointUSR.rod1.frame_b.R.T[2,2]' * ('jointRRR2.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR2.jointUSR.rod1.f_b_a[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR2.jointUSR.rod1.f_b_a[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR2.jointUSR.rod1.f_b_a[3]') + 'jointRRR2.jointUSR.rod1.frame_b.R.T[2,3]' * ('jointRRR2.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR2.jointUSR.rod1.f_b_a[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR2.jointUSR.rod1.f_b_a[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR2.jointUSR.rod1.f_b_a[3]');
+    'jointRRR2.jointUSR.rod1.frame_b.f[3]' = 'jointRRR2.jointUSR.rod1.frame_b.R.T[3,1]' * ('jointRRR2.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR2.jointUSR.rod1.f_b_a[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR2.jointUSR.rod1.f_b_a[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR2.jointUSR.rod1.f_b_a[3]') + 'jointRRR2.jointUSR.rod1.frame_b.R.T[3,2]' * ('jointRRR2.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR2.jointUSR.rod1.f_b_a[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR2.jointUSR.rod1.f_b_a[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR2.jointUSR.rod1.f_b_a[3]') + 'jointRRR2.jointUSR.rod1.frame_b.R.T[3,3]' * ('jointRRR2.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR2.jointUSR.rod1.f_b_a[1]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR2.jointUSR.rod1.f_b_a[2]' + 'jointRRR2.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR2.jointUSR.rod1.f_b_a[3]');
     'jointRRR2.jointUSR.rod1.frame_b.t[1]' = 0.0;
     'jointRRR2.jointUSR.rod1.frame_b.t[2]' = 0.0;
     'jointRRR2.jointUSR.rod1.frame_b.t[3]' = 0.0;
@@ -8214,9 +7950,9 @@ package 'PlanarLoops_analytic'
     0.0 = 'jointRRR2.jointUSR.rod2.frame_a.t[1]' + 'jointRRR2.jointUSR.rod2.frame_b.t[1]' + 0.6 * 'jointRRR2.jointUSR.rod2.frame_b.f[3]';
     0.0 = 'jointRRR2.jointUSR.rod2.frame_a.t[2]' + 'jointRRR2.jointUSR.rod2.frame_b.t[2]' - 0.1 * 'jointRRR2.jointUSR.rod2.frame_b.f[3]';
     0.0 = 'jointRRR2.jointUSR.rod2.frame_a.t[3]' + 'jointRRR2.jointUSR.rod2.frame_b.t[3]' + 0.1 * 'jointRRR2.jointUSR.rod2.frame_b.f[2]' - 0.6 * 'jointRRR2.jointUSR.rod2.frame_b.f[1]';
-    'jointRRR2.jointUSR.relativePosition.relativePosition.r_rel[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R', {'jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]', 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]', 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]'}))[1];
-    'jointRRR2.jointUSR.relativePosition.relativePosition.r_rel[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R', {'jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]', 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]', 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]'}))[2];
-    'jointRRR2.jointUSR.relativePosition.relativePosition.r_rel[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R', {'jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]', 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]', 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]'}))[3];
+    'jointRRR2.jointUSR.relativePosition.relativePosition.r_rel[1]' = 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R.T[1,1]' * ('jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]') + 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R.T[1,2]' * ('jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]') + 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R.T[1,3]' * ('jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]');
+    'jointRRR2.jointUSR.relativePosition.relativePosition.r_rel[2]' = 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R.T[2,1]' * ('jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]') + 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R.T[2,2]' * ('jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]') + 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R.T[2,3]' * ('jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]');
+    'jointRRR2.jointUSR.relativePosition.relativePosition.r_rel[3]' = 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R.T[3,1]' * ('jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]') + 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R.T[3,2]' * ('jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]') + 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.R.T[3,3]' * ('jointRRR2.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]');
     'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.f[1]' = 0.0;
     'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.f[2]' = 0.0;
     'jointRRR2.jointUSR.relativePosition.relativePosition.frame_a.f[3]' = 0.0;
@@ -8255,7 +7991,7 @@ package 'PlanarLoops_analytic'
     'jointRRR2.jointUSR.position_b[3].y' = 0.0;
     'jointRRR2.jointUSR.aux' = {-'jointRRR2.jointUSR.revolute.e[3]' * 0.6, 'jointRRR2.jointUSR.revolute.e[3]' * 0.1, 'jointRRR2.jointUSR.revolute.e[1]' * 0.6 - 'jointRRR2.jointUSR.revolute.e[2]' * 0.1} * 'Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR2.jointUSR.rod1.eRod_a', 'jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.frame_b.R');
     'jointRRR2.jointUSR.f_rod' = ('jointRRR2.jointUSR.revolute.tau' + 'jointRRR2.jointUSR.revolute.e' * {'jointRRR2.jointUSR.frame_ib.t[1]' + 'jointRRR2.jointUSR.frame_im.t[1]' + 0.6 * 'jointRRR2.jointUSR.frame_im.f[3]' - 0.6 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR2.jointUSR.rod1.f_b_a1', 'jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.frame_b.R'))[3], 'jointRRR2.jointUSR.frame_ib.t[2]' + 'jointRRR2.jointUSR.frame_im.t[2]' - 0.1 * 'jointRRR2.jointUSR.frame_im.f[3]' + 0.1 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR2.jointUSR.rod1.f_b_a1', 'jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.frame_b.R'))[3], 'jointRRR2.jointUSR.frame_ib.t[3]' + 'jointRRR2.jointUSR.frame_im.t[3]' + 0.1 * 'jointRRR2.jointUSR.frame_im.f[2]' - 0.6 * 'jointRRR2.jointUSR.frame_im.f[1]' - (0.1 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR2.jointUSR.rod1.f_b_a1', 'jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.frame_b.R'))[2] - 0.6 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR2.jointUSR.rod1.f_b_a1', 'jointRRR2.jointUSR.rod1.frame_a.R', 'jointRRR2.jointUSR.rod1.frame_b.R'))[1])}) / (-noEvent(if abs('jointRRR2.jointUSR.aux') < 1e-10 then 1e-10 else 'jointRRR2.jointUSR.aux'));
-    'jointRRR2.jointUSR.totalPower' = 'jointRRR2.jointUSR.frame_a.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_a.R', der('jointRRR2.jointUSR.frame_a.r_0')) + 'jointRRR2.jointUSR.frame_b.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_b.R', der('jointRRR2.jointUSR.frame_b.r_0')) + 'jointRRR2.jointUSR.frame_ia.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_ia.R', der('jointRRR2.jointUSR.frame_ia.r_0')) + 'jointRRR2.jointUSR.frame_ib.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_ib.R', der('jointRRR2.jointUSR.frame_ib.r_0')) + 'jointRRR2.jointUSR.frame_im.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_im.R', der('jointRRR2.jointUSR.frame_im.r_0')) + 'jointRRR2.jointUSR.frame_a.t[1]' * 'jointRRR2.jointUSR.frame_a.R.w[1]' + 'jointRRR2.jointUSR.frame_a.t[2]' * 'jointRRR2.jointUSR.frame_a.R.w[2]' + 'jointRRR2.jointUSR.frame_a.t[3]' * 'jointRRR2.jointUSR.frame_a.R.w[3]' + 'jointRRR2.jointUSR.frame_b.t[1]' * 'jointRRR2.jointUSR.frame_b.R.w[1]' + 'jointRRR2.jointUSR.frame_b.t[2]' * 'jointRRR2.jointUSR.frame_b.R.w[2]' + 'jointRRR2.jointUSR.frame_b.t[3]' * 'jointRRR2.jointUSR.frame_b.R.w[3]' + 'jointRRR2.jointUSR.frame_ia.t[1]' * 'jointRRR2.jointUSR.frame_ia.R.w[1]' + 'jointRRR2.jointUSR.frame_ia.t[2]' * 'jointRRR2.jointUSR.frame_ia.R.w[2]' + 'jointRRR2.jointUSR.frame_ia.t[3]' * 'jointRRR2.jointUSR.frame_ia.R.w[3]' + 'jointRRR2.jointUSR.frame_ib.t[1]' * 'jointRRR2.jointUSR.frame_ib.R.w[1]' + 'jointRRR2.jointUSR.frame_ib.t[2]' * 'jointRRR2.jointUSR.frame_ib.R.w[2]' + 'jointRRR2.jointUSR.frame_ib.t[3]' * 'jointRRR2.jointUSR.frame_ib.R.w[3]' + 'jointRRR2.jointUSR.frame_im.t[1]' * 'jointRRR2.jointUSR.frame_im.R.w[1]' + 'jointRRR2.jointUSR.frame_im.t[2]' * 'jointRRR2.jointUSR.frame_im.R.w[2]' + 'jointRRR2.jointUSR.frame_im.t[3]' * 'jointRRR2.jointUSR.frame_im.R.w[3]' + 'jointRRR2.jointUSR.axis.tau' * der('jointRRR2.jointUSR.axis.phi') + 'jointRRR2.jointUSR.bearing.tau' * der('jointRRR2.jointUSR.bearing.phi');
+    'jointRRR2.jointUSR.totalPower' = 'jointRRR2.jointUSR.frame_a.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_a.R', der('jointRRR2.jointUSR.frame_a.r_0')) + 'jointRRR2.jointUSR.frame_b.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_b.R', der('jointRRR2.jointUSR.frame_b.r_0')) + 'jointRRR2.jointUSR.frame_ia.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_ia.R', der('jointRRR2.jointUSR.frame_ia.r_0')) + 'jointRRR2.jointUSR.frame_ib.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_ib.R', der('jointRRR2.jointUSR.frame_ib.r_0')) + 'jointRRR2.jointUSR.frame_im.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR2.jointUSR.frame_im.R', der('jointRRR2.jointUSR.frame_im.r_0')) + 'jointRRR2.jointUSR.frame_a.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR2.jointUSR.frame_a.R') + 'jointRRR2.jointUSR.frame_b.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR2.jointUSR.frame_b.R') + 'jointRRR2.jointUSR.frame_ia.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR2.jointUSR.frame_ia.R') + 'jointRRR2.jointUSR.frame_ib.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR2.jointUSR.frame_ib.R') + 'jointRRR2.jointUSR.frame_im.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR2.jointUSR.frame_im.R') + 'jointRRR2.jointUSR.axis.tau' * der('jointRRR2.jointUSR.axis.phi') + 'jointRRR2.jointUSR.bearing.tau' * der('jointRRR2.jointUSR.bearing.phi');
     'jointRRR2.shape_rev1.R.T[1,1]' = 'jointRRR2.frame_a.R.T[1,1]';
     'jointRRR2.shape_rev1.R.T[1,2]' = 'jointRRR2.frame_a.R.T[1,2]';
     'jointRRR2.shape_rev1.R.T[1,3]' = 'jointRRR2.frame_a.R.T[1,3]';
@@ -8518,9 +8254,9 @@ package 'PlanarLoops_analytic'
     'body2.phi_dd[1]' = 0.0;
     'body2.phi_dd[2]' = 0.0;
     'body2.phi_dd[3]' = 0.0;
-    'body2.g_0[1]' = 0.0;
-    'body2.g_0[2]' = -9.80665;
-    'body2.g_0[3]' = 0.0;
+    'body2.g_0[1]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[1] * ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[1] + ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[2] * ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[2] + ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[3] * ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[3]) * (('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[1] / 'Modelica.Math.Vectors.length'('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))) else 0.0;
+    'body2.g_0[2]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then -9.80665 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[1] * ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[1] + ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[2] * ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[2] + ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[3] * ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[3]) * (('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[2] / 'Modelica.Math.Vectors.length'('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))) else 0.0;
+    'body2.g_0[3]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[1] * ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[1] + ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[2] * ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[2] + ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[3] * ('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[3]) * (('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))[3] / 'Modelica.Math.Vectors.length'('body2.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body2.frame_a.R', {0.25, 0.04999999999999999, 0.0}))) else 0.0;
     'body2.v_0[1]' = der('body2.frame_a.r_0[1]');
     'body2.v_0[2]' = der('body2.frame_a.r_0[2]');
     'body2.v_0[3]' = der('body2.frame_a.r_0[3]');
@@ -8576,15 +8312,15 @@ package 'PlanarLoops_analytic'
     'jointRRR3.jointUSR.revolute.frame_b.r_0[1]' = 'jointRRR3.jointUSR.revolute.frame_a.r_0[1]';
     'jointRRR3.jointUSR.revolute.frame_b.r_0[2]' = 'jointRRR3.jointUSR.revolute.frame_a.r_0[2]';
     'jointRRR3.jointUSR.revolute.frame_b.r_0[3]' = 'jointRRR3.jointUSR.revolute.frame_a.r_0[3]';
-    'jointRRR3.jointUSR.revolute.R_rel.T[1,1]' = 'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[1]' + (1.0 - 'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[1]') * cos('jointRRR3.jointUSR.revolute.angle');
-    'jointRRR3.jointUSR.revolute.R_rel.T[1,2]' = 'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[2]' + (-'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[2]') * cos('jointRRR3.jointUSR.revolute.angle') - (-'jointRRR3.jointUSR.revolute.e[3]') * sin('jointRRR3.jointUSR.revolute.angle');
-    'jointRRR3.jointUSR.revolute.R_rel.T[1,3]' = 'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[3]' + (-'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[3]') * cos('jointRRR3.jointUSR.revolute.angle') - 'jointRRR3.jointUSR.revolute.e[2]' * sin('jointRRR3.jointUSR.revolute.angle');
-    'jointRRR3.jointUSR.revolute.R_rel.T[2,1]' = 'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[1]' + (-'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[1]') * cos('jointRRR3.jointUSR.revolute.angle') - 'jointRRR3.jointUSR.revolute.e[3]' * sin('jointRRR3.jointUSR.revolute.angle');
-    'jointRRR3.jointUSR.revolute.R_rel.T[2,2]' = 'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[2]' + (1.0 - 'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[2]') * cos('jointRRR3.jointUSR.revolute.angle');
-    'jointRRR3.jointUSR.revolute.R_rel.T[2,3]' = 'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[3]' + (-'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[3]') * cos('jointRRR3.jointUSR.revolute.angle') - (-'jointRRR3.jointUSR.revolute.e[1]') * sin('jointRRR3.jointUSR.revolute.angle');
-    'jointRRR3.jointUSR.revolute.R_rel.T[3,1]' = 'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[1]' + (-'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[1]') * cos('jointRRR3.jointUSR.revolute.angle') - (-'jointRRR3.jointUSR.revolute.e[2]') * sin('jointRRR3.jointUSR.revolute.angle');
-    'jointRRR3.jointUSR.revolute.R_rel.T[3,2]' = 'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[2]' + (-'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[2]') * cos('jointRRR3.jointUSR.revolute.angle') - 'jointRRR3.jointUSR.revolute.e[1]' * sin('jointRRR3.jointUSR.revolute.angle');
-    'jointRRR3.jointUSR.revolute.R_rel.T[3,3]' = 'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[3]' + (1.0 - 'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[3]') * cos('jointRRR3.jointUSR.revolute.angle');
+    'jointRRR3.jointUSR.revolute.R_rel.T[1,1]' = 'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[1]' + (1.0 - 'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[1]') * 'Modelica.Math.cos'('jointRRR3.jointUSR.revolute.angle');
+    'jointRRR3.jointUSR.revolute.R_rel.T[1,2]' = 'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[2]' + (-'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[2]') * 'Modelica.Math.cos'('jointRRR3.jointUSR.revolute.angle') - (-'jointRRR3.jointUSR.revolute.e[3]') * 'Modelica.Math.sin'('jointRRR3.jointUSR.revolute.angle');
+    'jointRRR3.jointUSR.revolute.R_rel.T[1,3]' = 'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[3]' + (-'jointRRR3.jointUSR.revolute.e[1]' * 'jointRRR3.jointUSR.revolute.e[3]') * 'Modelica.Math.cos'('jointRRR3.jointUSR.revolute.angle') - 'jointRRR3.jointUSR.revolute.e[2]' * 'Modelica.Math.sin'('jointRRR3.jointUSR.revolute.angle');
+    'jointRRR3.jointUSR.revolute.R_rel.T[2,1]' = 'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[1]' + (-'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[1]') * 'Modelica.Math.cos'('jointRRR3.jointUSR.revolute.angle') - 'jointRRR3.jointUSR.revolute.e[3]' * 'Modelica.Math.sin'('jointRRR3.jointUSR.revolute.angle');
+    'jointRRR3.jointUSR.revolute.R_rel.T[2,2]' = 'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[2]' + (1.0 - 'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[2]') * 'Modelica.Math.cos'('jointRRR3.jointUSR.revolute.angle');
+    'jointRRR3.jointUSR.revolute.R_rel.T[2,3]' = 'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[3]' + (-'jointRRR3.jointUSR.revolute.e[2]' * 'jointRRR3.jointUSR.revolute.e[3]') * 'Modelica.Math.cos'('jointRRR3.jointUSR.revolute.angle') - (-'jointRRR3.jointUSR.revolute.e[1]') * 'Modelica.Math.sin'('jointRRR3.jointUSR.revolute.angle');
+    'jointRRR3.jointUSR.revolute.R_rel.T[3,1]' = 'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[1]' + (-'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[1]') * 'Modelica.Math.cos'('jointRRR3.jointUSR.revolute.angle') - (-'jointRRR3.jointUSR.revolute.e[2]') * 'Modelica.Math.sin'('jointRRR3.jointUSR.revolute.angle');
+    'jointRRR3.jointUSR.revolute.R_rel.T[3,2]' = 'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[2]' + (-'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[2]') * 'Modelica.Math.cos'('jointRRR3.jointUSR.revolute.angle') - 'jointRRR3.jointUSR.revolute.e[1]' * 'Modelica.Math.sin'('jointRRR3.jointUSR.revolute.angle');
+    'jointRRR3.jointUSR.revolute.R_rel.T[3,3]' = 'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[3]' + (1.0 - 'jointRRR3.jointUSR.revolute.e[3]' * 'jointRRR3.jointUSR.revolute.e[3]') * 'Modelica.Math.cos'('jointRRR3.jointUSR.revolute.angle');
     'jointRRR3.jointUSR.revolute.R_rel.w[1]' = 'jointRRR3.jointUSR.revolute.e[1]' * der('jointRRR3.jointUSR.revolute.angle');
     'jointRRR3.jointUSR.revolute.R_rel.w[2]' = 'jointRRR3.jointUSR.revolute.e[2]' * der('jointRRR3.jointUSR.revolute.angle');
     'jointRRR3.jointUSR.revolute.R_rel.w[3]' = 'jointRRR3.jointUSR.revolute.e[3]' * der('jointRRR3.jointUSR.revolute.angle');
@@ -8614,7 +8350,7 @@ package 'PlanarLoops_analytic'
     'jointRRR3.jointUSR.revolute.k1' = 'jointRRR3.jointUSR.revolute.A' * 'jointRRR3.jointUSR.revolute.A' + 'jointRRR3.jointUSR.revolute.B' * 'jointRRR3.jointUSR.revolute.B';
     'jointRRR3.jointUSR.revolute.k1a' = 'jointRRR3.jointUSR.revolute.k1' - 'jointRRR3.jointUSR.revolute.C' * 'jointRRR3.jointUSR.revolute.C';
     assert('jointRRR3.jointUSR.revolute.k1a' > 1e-10, "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIn most cases it is best that the joints outside of the JointXXX\ncomponent are revolute and NOT prismatic joints. If this also\nlead to singular positions, it could be that this kinematic loop\ncannot be solved analytically. In this case you have to build\nup the loop with basic joints (NO aggregation JointXXX components)\nand rely on dynamic state selection, i.e., during simulation\nthe states will be dynamically selected in such a way that in no\nposition a degree of freedom is lost.\n", AssertionLevel.error);
-    'jointRRR3.jointUSR.revolute.k1b' = 'Modelica.Mechanics.MultiBody.Frames.Internal.maxWithoutEvent'('jointRRR3.jointUSR.revolute.k1a', 1e-12);
+    'jointRRR3.jointUSR.revolute.k1b' = if 'jointRRR3.jointUSR.revolute.k1a' > 1e-12 then 'jointRRR3.jointUSR.revolute.k1a' else 1e-12;
     'jointRRR3.jointUSR.revolute.k2' = sqrt('jointRRR3.jointUSR.revolute.k1b');
     'jointRRR3.jointUSR.revolute.kcos_angle' = (if 'jointRRR3.jointUSR.revolute.positiveBranch' then 'jointRRR3.jointUSR.revolute.B' else -'jointRRR3.jointUSR.revolute.B') * 'jointRRR3.jointUSR.revolute.k2' - 'jointRRR3.jointUSR.revolute.A' * 'jointRRR3.jointUSR.revolute.C';
     'jointRRR3.jointUSR.revolute.ksin_angle' = (if 'jointRRR3.jointUSR.revolute.positiveBranch' then -'jointRRR3.jointUSR.revolute.A' else 'jointRRR3.jointUSR.revolute.A') * 'jointRRR3.jointUSR.revolute.k2' - 'jointRRR3.jointUSR.revolute.B' * 'jointRRR3.jointUSR.revolute.C';
@@ -8631,9 +8367,9 @@ package 'PlanarLoops_analytic'
     'jointRRR3.jointUSR.rod1.rRod_0[1]' = 'jointRRR3.jointUSR.rod1.frame_b.r_0[1]' - 'jointRRR3.jointUSR.rod1.frame_a.r_0[1]';
     'jointRRR3.jointUSR.rod1.rRod_0[2]' = 'jointRRR3.jointUSR.rod1.frame_b.r_0[2]' - 'jointRRR3.jointUSR.rod1.frame_a.r_0[2]';
     'jointRRR3.jointUSR.rod1.rRod_0[3]' = 'jointRRR3.jointUSR.rod1.frame_b.r_0[3]' - 'jointRRR3.jointUSR.rod1.frame_a.r_0[3]';
-    'jointRRR3.jointUSR.rod1.rRod_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.rod1.frame_a.R', 'jointRRR3.jointUSR.rod1.rRod_0'))[1];
-    'jointRRR3.jointUSR.rod1.rRod_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.rod1.frame_a.R', 'jointRRR3.jointUSR.rod1.rRod_0'))[2];
-    'jointRRR3.jointUSR.rod1.rRod_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.rod1.frame_a.R', 'jointRRR3.jointUSR.rod1.rRod_0'))[3];
+    'jointRRR3.jointUSR.rod1.rRod_a[1]' = 'jointRRR3.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR3.jointUSR.rod1.rRod_0[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR3.jointUSR.rod1.rRod_0[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR3.jointUSR.rod1.rRod_0[3]';
+    'jointRRR3.jointUSR.rod1.rRod_a[2]' = 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR3.jointUSR.rod1.rRod_0[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR3.jointUSR.rod1.rRod_0[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR3.jointUSR.rod1.rRod_0[3]';
+    'jointRRR3.jointUSR.rod1.rRod_a[3]' = 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR3.jointUSR.rod1.rRod_0[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR3.jointUSR.rod1.rRod_0[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR3.jointUSR.rod1.rRod_0[3]';
     'jointRRR3.jointUSR.rod1.constraintResidue' = 0.0;
     'jointRRR3.jointUSR.rod1.eRod_a[1]' = 'jointRRR3.jointUSR.rod1.rRod_a[1]' / 'jointRRR3.jointUSR.rod1.rodLength';
     'jointRRR3.jointUSR.rod1.eRod_a[2]' = 'jointRRR3.jointUSR.rod1.rRod_a[2]' / 'jointRRR3.jointUSR.rod1.rodLength';
@@ -8707,21 +8443,21 @@ package 'PlanarLoops_analytic'
     'jointRRR3.jointUSR.rod1.frame_ia.R.w[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.rod1.R_rel_ia', 'jointRRR3.jointUSR.rod1.frame_a.R.w'))[1] + 'jointRRR3.jointUSR.rod1.R_rel_ia.w[1]';
     'jointRRR3.jointUSR.rod1.frame_ia.R.w[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.rod1.R_rel_ia', 'jointRRR3.jointUSR.rod1.frame_a.R.w'))[2] + 'jointRRR3.jointUSR.rod1.R_rel_ia.w[2]';
     'jointRRR3.jointUSR.rod1.frame_ia.R.w[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.rod1.R_rel_ia', 'jointRRR3.jointUSR.rod1.frame_a.R.w'))[3] + 'jointRRR3.jointUSR.rod1.R_rel_ia.w[3]';
-    'jointRRR3.jointUSR.rod1.f_ia_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR3.jointUSR.rod1.R_rel_ia', 'jointRRR3.jointUSR.rod1.frame_ia.f'))[1];
-    'jointRRR3.jointUSR.rod1.f_ia_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR3.jointUSR.rod1.R_rel_ia', 'jointRRR3.jointUSR.rod1.frame_ia.f'))[2];
-    'jointRRR3.jointUSR.rod1.f_ia_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR3.jointUSR.rod1.R_rel_ia', 'jointRRR3.jointUSR.rod1.frame_ia.f'))[3];
-    'jointRRR3.jointUSR.rod1.t_ia_a[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR3.jointUSR.rod1.R_rel_ia', 'jointRRR3.jointUSR.rod1.frame_ia.t'))[1];
-    'jointRRR3.jointUSR.rod1.t_ia_a[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR3.jointUSR.rod1.R_rel_ia', 'jointRRR3.jointUSR.rod1.frame_ia.t'))[2];
-    'jointRRR3.jointUSR.rod1.t_ia_a[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve1'('jointRRR3.jointUSR.rod1.R_rel_ia', 'jointRRR3.jointUSR.rod1.frame_ia.t'))[3];
+    'jointRRR3.jointUSR.rod1.f_ia_a[1]' = 'jointRRR3.jointUSR.rod1.R_rel_ia.T[1,1]' * 'jointRRR3.jointUSR.rod1.frame_ia.f[1]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[2,1]' * 'jointRRR3.jointUSR.rod1.frame_ia.f[2]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[3,1]' * 'jointRRR3.jointUSR.rod1.frame_ia.f[3]';
+    'jointRRR3.jointUSR.rod1.f_ia_a[2]' = 'jointRRR3.jointUSR.rod1.R_rel_ia.T[1,2]' * 'jointRRR3.jointUSR.rod1.frame_ia.f[1]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[2,2]' * 'jointRRR3.jointUSR.rod1.frame_ia.f[2]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[3,2]' * 'jointRRR3.jointUSR.rod1.frame_ia.f[3]';
+    'jointRRR3.jointUSR.rod1.f_ia_a[3]' = 'jointRRR3.jointUSR.rod1.R_rel_ia.T[1,3]' * 'jointRRR3.jointUSR.rod1.frame_ia.f[1]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[2,3]' * 'jointRRR3.jointUSR.rod1.frame_ia.f[2]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[3,3]' * 'jointRRR3.jointUSR.rod1.frame_ia.f[3]';
+    'jointRRR3.jointUSR.rod1.t_ia_a[1]' = 'jointRRR3.jointUSR.rod1.R_rel_ia.T[1,1]' * 'jointRRR3.jointUSR.rod1.frame_ia.t[1]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[2,1]' * 'jointRRR3.jointUSR.rod1.frame_ia.t[2]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[3,1]' * 'jointRRR3.jointUSR.rod1.frame_ia.t[3]';
+    'jointRRR3.jointUSR.rod1.t_ia_a[2]' = 'jointRRR3.jointUSR.rod1.R_rel_ia.T[1,2]' * 'jointRRR3.jointUSR.rod1.frame_ia.t[1]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[2,2]' * 'jointRRR3.jointUSR.rod1.frame_ia.t[2]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[3,2]' * 'jointRRR3.jointUSR.rod1.frame_ia.t[3]';
+    'jointRRR3.jointUSR.rod1.t_ia_a[3]' = 'jointRRR3.jointUSR.rod1.R_rel_ia.T[1,3]' * 'jointRRR3.jointUSR.rod1.frame_ia.t[1]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[2,3]' * 'jointRRR3.jointUSR.rod1.frame_ia.t[2]' + 'jointRRR3.jointUSR.rod1.R_rel_ia.T[3,3]' * 'jointRRR3.jointUSR.rod1.frame_ia.t[3]';
     'jointRRR3.jointUSR.rod1.f_b_a1[1]' = 'jointRRR3.jointUSR.rod1.e3_a[1]' * (('jointRRR3.jointUSR.rod1.e2_a[1]' * 'jointRRR3.jointUSR.rod1.t_ia_a[1]' + 'jointRRR3.jointUSR.rod1.e2_a[2]' * 'jointRRR3.jointUSR.rod1.t_ia_a[2]' + 'jointRRR3.jointUSR.rod1.e2_a[3]' * 'jointRRR3.jointUSR.rod1.t_ia_a[3]') / 'jointRRR3.jointUSR.rod1.rodLength') - 'jointRRR3.jointUSR.rod1.e2_a[1]' * ('jointRRR3.jointUSR.rod1.t_ia_a[3]' / ('jointRRR3.jointUSR.rod1.rodLength' * 'jointRRR3.jointUSR.rod1.e3_a[3]'));
     'jointRRR3.jointUSR.rod1.f_b_a1[2]' = 'jointRRR3.jointUSR.rod1.e3_a[2]' * (('jointRRR3.jointUSR.rod1.e2_a[1]' * 'jointRRR3.jointUSR.rod1.t_ia_a[1]' + 'jointRRR3.jointUSR.rod1.e2_a[2]' * 'jointRRR3.jointUSR.rod1.t_ia_a[2]' + 'jointRRR3.jointUSR.rod1.e2_a[3]' * 'jointRRR3.jointUSR.rod1.t_ia_a[3]') / 'jointRRR3.jointUSR.rod1.rodLength') - 'jointRRR3.jointUSR.rod1.e2_a[2]' * ('jointRRR3.jointUSR.rod1.t_ia_a[3]' / ('jointRRR3.jointUSR.rod1.rodLength' * 'jointRRR3.jointUSR.rod1.e3_a[3]'));
     'jointRRR3.jointUSR.rod1.f_b_a1[3]' = 'jointRRR3.jointUSR.rod1.e3_a[3]' * (('jointRRR3.jointUSR.rod1.e2_a[1]' * 'jointRRR3.jointUSR.rod1.t_ia_a[1]' + 'jointRRR3.jointUSR.rod1.e2_a[2]' * 'jointRRR3.jointUSR.rod1.t_ia_a[2]' + 'jointRRR3.jointUSR.rod1.e2_a[3]' * 'jointRRR3.jointUSR.rod1.t_ia_a[3]') / 'jointRRR3.jointUSR.rod1.rodLength') - 'jointRRR3.jointUSR.rod1.e2_a[3]' * ('jointRRR3.jointUSR.rod1.t_ia_a[3]' / ('jointRRR3.jointUSR.rod1.rodLength' * 'jointRRR3.jointUSR.rod1.e3_a[3]'));
     'jointRRR3.jointUSR.rod1.f_b_a[1]' = 'jointRRR3.jointUSR.rod1.f_b_a1[1]' - 'jointRRR3.jointUSR.rod1.f_rod' * 'jointRRR3.jointUSR.rod1.eRod_a[1]';
     'jointRRR3.jointUSR.rod1.f_b_a[2]' = 'jointRRR3.jointUSR.rod1.f_b_a1[2]' - 'jointRRR3.jointUSR.rod1.f_rod' * 'jointRRR3.jointUSR.rod1.eRod_a[2]';
     'jointRRR3.jointUSR.rod1.f_b_a[3]' = 'jointRRR3.jointUSR.rod1.f_b_a1[3]' - 'jointRRR3.jointUSR.rod1.f_rod' * 'jointRRR3.jointUSR.rod1.eRod_a[3]';
-    'jointRRR3.jointUSR.rod1.frame_b.f[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR3.jointUSR.rod1.f_b_a', 'jointRRR3.jointUSR.rod1.frame_a.R', 'jointRRR3.jointUSR.rod1.frame_b.R'))[1];
-    'jointRRR3.jointUSR.rod1.frame_b.f[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR3.jointUSR.rod1.f_b_a', 'jointRRR3.jointUSR.rod1.frame_a.R', 'jointRRR3.jointUSR.rod1.frame_b.R'))[2];
-    'jointRRR3.jointUSR.rod1.frame_b.f[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR3.jointUSR.rod1.f_b_a', 'jointRRR3.jointUSR.rod1.frame_a.R', 'jointRRR3.jointUSR.rod1.frame_b.R'))[3];
+    'jointRRR3.jointUSR.rod1.frame_b.f[1]' = 'jointRRR3.jointUSR.rod1.frame_b.R.T[1,1]' * ('jointRRR3.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR3.jointUSR.rod1.f_b_a[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR3.jointUSR.rod1.f_b_a[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR3.jointUSR.rod1.f_b_a[3]') + 'jointRRR3.jointUSR.rod1.frame_b.R.T[1,2]' * ('jointRRR3.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR3.jointUSR.rod1.f_b_a[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR3.jointUSR.rod1.f_b_a[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR3.jointUSR.rod1.f_b_a[3]') + 'jointRRR3.jointUSR.rod1.frame_b.R.T[1,3]' * ('jointRRR3.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR3.jointUSR.rod1.f_b_a[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR3.jointUSR.rod1.f_b_a[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR3.jointUSR.rod1.f_b_a[3]');
+    'jointRRR3.jointUSR.rod1.frame_b.f[2]' = 'jointRRR3.jointUSR.rod1.frame_b.R.T[2,1]' * ('jointRRR3.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR3.jointUSR.rod1.f_b_a[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR3.jointUSR.rod1.f_b_a[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR3.jointUSR.rod1.f_b_a[3]') + 'jointRRR3.jointUSR.rod1.frame_b.R.T[2,2]' * ('jointRRR3.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR3.jointUSR.rod1.f_b_a[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR3.jointUSR.rod1.f_b_a[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR3.jointUSR.rod1.f_b_a[3]') + 'jointRRR3.jointUSR.rod1.frame_b.R.T[2,3]' * ('jointRRR3.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR3.jointUSR.rod1.f_b_a[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR3.jointUSR.rod1.f_b_a[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR3.jointUSR.rod1.f_b_a[3]');
+    'jointRRR3.jointUSR.rod1.frame_b.f[3]' = 'jointRRR3.jointUSR.rod1.frame_b.R.T[3,1]' * ('jointRRR3.jointUSR.rod1.frame_a.R.T[1,1]' * 'jointRRR3.jointUSR.rod1.f_b_a[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,1]' * 'jointRRR3.jointUSR.rod1.f_b_a[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,1]' * 'jointRRR3.jointUSR.rod1.f_b_a[3]') + 'jointRRR3.jointUSR.rod1.frame_b.R.T[3,2]' * ('jointRRR3.jointUSR.rod1.frame_a.R.T[1,2]' * 'jointRRR3.jointUSR.rod1.f_b_a[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,2]' * 'jointRRR3.jointUSR.rod1.f_b_a[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,2]' * 'jointRRR3.jointUSR.rod1.f_b_a[3]') + 'jointRRR3.jointUSR.rod1.frame_b.R.T[3,3]' * ('jointRRR3.jointUSR.rod1.frame_a.R.T[1,3]' * 'jointRRR3.jointUSR.rod1.f_b_a[1]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[2,3]' * 'jointRRR3.jointUSR.rod1.f_b_a[2]' + 'jointRRR3.jointUSR.rod1.frame_a.R.T[3,3]' * 'jointRRR3.jointUSR.rod1.f_b_a[3]');
     'jointRRR3.jointUSR.rod1.frame_b.t[1]' = 0.0;
     'jointRRR3.jointUSR.rod1.frame_b.t[2]' = 0.0;
     'jointRRR3.jointUSR.rod1.frame_b.t[3]' = 0.0;
@@ -8756,9 +8492,9 @@ package 'PlanarLoops_analytic'
     0.0 = 'jointRRR3.jointUSR.rod2.frame_a.t[1]' + 'jointRRR3.jointUSR.rod2.frame_b.t[1]' + 0.55 * 'jointRRR3.jointUSR.rod2.frame_b.f[3]';
     0.0 = 'jointRRR3.jointUSR.rod2.frame_a.t[2]' + 'jointRRR3.jointUSR.rod2.frame_b.t[2]';
     0.0 = 'jointRRR3.jointUSR.rod2.frame_a.t[3]' + 'jointRRR3.jointUSR.rod2.frame_b.t[3]' - 0.55 * 'jointRRR3.jointUSR.rod2.frame_b.f[1]';
-    'jointRRR3.jointUSR.relativePosition.relativePosition.r_rel[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R', {'jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]', 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]', 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]'}))[1];
-    'jointRRR3.jointUSR.relativePosition.relativePosition.r_rel[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R', {'jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]', 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]', 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]'}))[2];
-    'jointRRR3.jointUSR.relativePosition.relativePosition.r_rel[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R', {'jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]', 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]', 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]'}))[3];
+    'jointRRR3.jointUSR.relativePosition.relativePosition.r_rel[1]' = 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R.T[1,1]' * ('jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]') + 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R.T[1,2]' * ('jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]') + 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R.T[1,3]' * ('jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]');
+    'jointRRR3.jointUSR.relativePosition.relativePosition.r_rel[2]' = 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R.T[2,1]' * ('jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]') + 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R.T[2,2]' * ('jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]') + 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R.T[2,3]' * ('jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]');
+    'jointRRR3.jointUSR.relativePosition.relativePosition.r_rel[3]' = 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R.T[3,1]' * ('jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[1]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[1]') + 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R.T[3,2]' * ('jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[2]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[2]') + 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.R.T[3,3]' * ('jointRRR3.jointUSR.relativePosition.relativePosition.frame_b.r_0[3]' - 'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.r_0[3]');
     'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.f[1]' = 0.0;
     'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.f[2]' = 0.0;
     'jointRRR3.jointUSR.relativePosition.relativePosition.frame_a.f[3]' = 0.0;
@@ -8797,7 +8533,7 @@ package 'PlanarLoops_analytic'
     'jointRRR3.jointUSR.position_b[3].y' = 0.0;
     'jointRRR3.jointUSR.aux' = {-'jointRRR3.jointUSR.revolute.e[3]' * 0.55, 0.0, 'jointRRR3.jointUSR.revolute.e[1]' * 0.55} * 'Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR3.jointUSR.rod1.eRod_a', 'jointRRR3.jointUSR.rod1.frame_a.R', 'jointRRR3.jointUSR.rod1.frame_b.R');
     'jointRRR3.jointUSR.f_rod' = ('jointRRR3.jointUSR.revolute.tau' + 'jointRRR3.jointUSR.revolute.e' * {'jointRRR3.jointUSR.frame_ib.t[1]' + 'jointRRR3.jointUSR.frame_im.t[1]' + 0.55 * 'jointRRR3.jointUSR.frame_im.f[3]' - 0.55 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR3.jointUSR.rod1.f_b_a1', 'jointRRR3.jointUSR.rod1.frame_a.R', 'jointRRR3.jointUSR.rod1.frame_b.R'))[3], 'jointRRR3.jointUSR.frame_ib.t[2]' + 'jointRRR3.jointUSR.frame_im.t[2]', 'jointRRR3.jointUSR.frame_ib.t[3]' + 'jointRRR3.jointUSR.frame_im.t[3]' - 0.55 * 'jointRRR3.jointUSR.frame_im.f[1]' + 0.55 * ('Modelica.Mechanics.MultiBody.Frames.resolveRelative'('jointRRR3.jointUSR.rod1.f_b_a1', 'jointRRR3.jointUSR.rod1.frame_a.R', 'jointRRR3.jointUSR.rod1.frame_b.R'))[1]}) / (-noEvent(if abs('jointRRR3.jointUSR.aux') < 1e-10 then 1e-10 else 'jointRRR3.jointUSR.aux'));
-    'jointRRR3.jointUSR.totalPower' = 'jointRRR3.jointUSR.frame_a.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_a.R', der('jointRRR3.jointUSR.frame_a.r_0')) + 'jointRRR3.jointUSR.frame_b.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_b.R', der('jointRRR3.jointUSR.frame_b.r_0')) + 'jointRRR3.jointUSR.frame_ia.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_ia.R', der('jointRRR3.jointUSR.frame_ia.r_0')) + 'jointRRR3.jointUSR.frame_ib.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_ib.R', der('jointRRR3.jointUSR.frame_ib.r_0')) + 'jointRRR3.jointUSR.frame_im.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_im.R', der('jointRRR3.jointUSR.frame_im.r_0')) + 'jointRRR3.jointUSR.frame_a.t[1]' * 'jointRRR3.jointUSR.frame_a.R.w[1]' + 'jointRRR3.jointUSR.frame_a.t[2]' * 'jointRRR3.jointUSR.frame_a.R.w[2]' + 'jointRRR3.jointUSR.frame_a.t[3]' * 'jointRRR3.jointUSR.frame_a.R.w[3]' + 'jointRRR3.jointUSR.frame_b.t[1]' * 'jointRRR3.jointUSR.frame_b.R.w[1]' + 'jointRRR3.jointUSR.frame_b.t[2]' * 'jointRRR3.jointUSR.frame_b.R.w[2]' + 'jointRRR3.jointUSR.frame_b.t[3]' * 'jointRRR3.jointUSR.frame_b.R.w[3]' + 'jointRRR3.jointUSR.frame_ia.t[1]' * 'jointRRR3.jointUSR.frame_ia.R.w[1]' + 'jointRRR3.jointUSR.frame_ia.t[2]' * 'jointRRR3.jointUSR.frame_ia.R.w[2]' + 'jointRRR3.jointUSR.frame_ia.t[3]' * 'jointRRR3.jointUSR.frame_ia.R.w[3]' + 'jointRRR3.jointUSR.frame_ib.t[1]' * 'jointRRR3.jointUSR.frame_ib.R.w[1]' + 'jointRRR3.jointUSR.frame_ib.t[2]' * 'jointRRR3.jointUSR.frame_ib.R.w[2]' + 'jointRRR3.jointUSR.frame_ib.t[3]' * 'jointRRR3.jointUSR.frame_ib.R.w[3]' + 'jointRRR3.jointUSR.frame_im.t[1]' * 'jointRRR3.jointUSR.frame_im.R.w[1]' + 'jointRRR3.jointUSR.frame_im.t[2]' * 'jointRRR3.jointUSR.frame_im.R.w[2]' + 'jointRRR3.jointUSR.frame_im.t[3]' * 'jointRRR3.jointUSR.frame_im.R.w[3]' + 'jointRRR3.jointUSR.axis.tau' * der('jointRRR3.jointUSR.axis.phi') + 'jointRRR3.jointUSR.bearing.tau' * der('jointRRR3.jointUSR.bearing.phi');
+    'jointRRR3.jointUSR.totalPower' = 'jointRRR3.jointUSR.frame_a.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_a.R', der('jointRRR3.jointUSR.frame_a.r_0')) + 'jointRRR3.jointUSR.frame_b.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_b.R', der('jointRRR3.jointUSR.frame_b.r_0')) + 'jointRRR3.jointUSR.frame_ia.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_ia.R', der('jointRRR3.jointUSR.frame_ia.r_0')) + 'jointRRR3.jointUSR.frame_ib.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_ib.R', der('jointRRR3.jointUSR.frame_ib.r_0')) + 'jointRRR3.jointUSR.frame_im.f' * 'Modelica.Mechanics.MultiBody.Frames.resolve2'('jointRRR3.jointUSR.frame_im.R', der('jointRRR3.jointUSR.frame_im.r_0')) + 'jointRRR3.jointUSR.frame_a.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR3.jointUSR.frame_a.R') + 'jointRRR3.jointUSR.frame_b.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR3.jointUSR.frame_b.R') + 'jointRRR3.jointUSR.frame_ia.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR3.jointUSR.frame_ia.R') + 'jointRRR3.jointUSR.frame_ib.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR3.jointUSR.frame_ib.R') + 'jointRRR3.jointUSR.frame_im.t' * 'Modelica.Mechanics.MultiBody.Frames.angularVelocity2'('jointRRR3.jointUSR.frame_im.R') + 'jointRRR3.jointUSR.axis.tau' * der('jointRRR3.jointUSR.axis.phi') + 'jointRRR3.jointUSR.bearing.tau' * der('jointRRR3.jointUSR.bearing.phi');
     'jointRRR3.shape_rev1.R.T[1,1]' = 'jointRRR3.frame_a.R.T[1,1]';
     'jointRRR3.shape_rev1.R.T[1,2]' = 'jointRRR3.frame_a.R.T[1,2]';
     'jointRRR3.shape_rev1.R.T[1,3]' = 'jointRRR3.frame_a.R.T[1,3]';
@@ -9060,9 +8796,9 @@ package 'PlanarLoops_analytic'
     'body3.phi_dd[1]' = 0.0;
     'body3.phi_dd[2]' = 0.0;
     'body3.phi_dd[3]' = 0.0;
-    'body3.g_0[1]' = 0.0;
-    'body3.g_0[2]' = -9.80665;
-    'body3.g_0[3]' = 0.0;
+    'body3.g_0[1]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[1] * ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[1] + ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[2] * ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[2] + ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[3] * ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[3]) * (('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[1] / 'Modelica.Math.Vectors.length'('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))) else 0.0;
+    'body3.g_0[2]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then -9.80665 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[1] * ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[1] + ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[2] * ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[2] + ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[3] * ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[3]) * (('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[2] / 'Modelica.Math.Vectors.length'('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))) else 0.0;
+    'body3.g_0[3]' = if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' then 0.0 else if 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'UniformGravity' == 'Modelica.Mechanics.MultiBody.Types.GravityTypes'.'PointGravity' then -3.986004418e14 / (('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[1] * ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[1] + ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[2] * ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[2] + ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[3] * ('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[3]) * (('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))[3] / 'Modelica.Math.Vectors.length'('body3.frame_a.r_0' + 'Modelica.Mechanics.MultiBody.Frames.resolve1'('body3.frame_a.R', {0.2, -0.024999999999999967, 0.0}))) else 0.0;
     'body3.v_0[1]' = der('body3.frame_a.r_0[1]');
     'body3.v_0[2]' = der('body3.frame_a.r_0[2]');
     'body3.v_0[3]' = der('body3.frame_a.r_0[3]');

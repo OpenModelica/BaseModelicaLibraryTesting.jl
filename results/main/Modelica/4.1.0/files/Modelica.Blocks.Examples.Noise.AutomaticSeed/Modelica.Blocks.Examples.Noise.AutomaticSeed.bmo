@@ -1,84 +1,5 @@
 //! base 0.1.0
 package 'AutomaticSeed'
-  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
-    input Integer[4] 'stateIn';
-    output Real 'result';
-    output Integer[4] 'stateOut';
-  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
-
-  function 'Modelica.Math.Random.Generators.Xorshift64star.initialState' "Returns an initial state for the xorshift64* algorithm"
-    input Integer 'localSeed';
-    input Integer 'globalSeed';
-    output Integer[2] 'state';
-    Real 'r';
-    constant Integer 'p' = 10;
-  algorithm
-    if 'localSeed' == 0 and 'globalSeed' == 0 then
-      'state' := {126247697, 'globalSeed'};
-    elseif true then
-      'state' := {'localSeed', 'globalSeed'};
-    end if;
-
-    for 'i' in 1:'p' loop
-      ('r', 'state') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state');
-    end for;
-  end 'Modelica.Math.Random.Generators.Xorshift64star.initialState';
-
-  function 'Modelica.Math.Random.Generators.Xorshift64star.random' "Returns a uniform random number with the xorshift64* algorithm"
-    input Integer[2] 'stateIn';
-    output Real 'result';
-    output Integer[2] 'stateOut';
-  external "C" ModelicaRandom_xorshift64star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Generators.Xorshift64star.random';
-
-  function 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star' "Return an initial state vector for a random number generator (based on xorshift64star algorithm)"
-    input Integer 'localSeed';
-    input Integer 'globalSeed';
-    input Integer 'nState'(min = 1);
-    output Integer['nState'] 'state';
-    Real 'r';
-    Integer[2] 'aux';
-    Integer 'nStateEven';
-  algorithm
-    'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
-
-    if 'nState' >= 2 then
-      'state'[1:2] := 'aux';
-    elseif true then
-      'state'[1] := 'aux'[1];
-    end if;
-
-    'nStateEven' := 2 * div('nState', 2);
-
-    for 'i' in 3:2:'nStateEven' loop
-      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['i' - 2:'i' - 1]);
-      'state'['i':'i' + 1] := 'aux';
-    end for;
-
-    if 'nState' >= 3 and 'nState' <> 'nStateEven' then
-      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['nState' - 2:'nState' - 1]);
-      'state'['nState'] := 'aux'[1];
-    end if;
-  end 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star';
-
-  function 'Modelica.Math.Random.Utilities.initializeImpureRandom' "Initializes the internal state of the impure random number generator"
-    input Integer 'seed';
-    output Integer 'id';
-    constant Integer 'localSeed' = 715827883;
-    Integer[33] 'rngState';
-  algorithm
-    'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
-    'id' := 'localSeed';
-    'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
-  end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
-
-  function 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState' "Stores the given state vector in an external static variable"
-    input Integer[33] 'rngState';
-    input Integer 'id';
-  external "C" ModelicaRandom_setInternalState_xorshift1024star('rngState', size('rngState', 1), 'id') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState';
-
   model 'AutomaticSeed' "Demonstrates noise with startTime and automatic local seed for UniformNoise"
     parameter Real 'startTime'(unit = "s", quantity = "Time") = 0.5 "Start time of noise";
     parameter Real 'y_off' = -1.0 "Output of block before startTime";
@@ -207,42 +128,42 @@ package 'AutomaticSeed'
   initial equation
     'globalSeed.seed' = 67867967;
     'globalSeed.id_impure' = 'Modelica.Math.Random.Utilities.initializeImpureRandom'('globalSeed.seed');
-    'automaticSeed1.r' = 'automaticSeed1.r_raw' * 4.0 - 1.0;
+    'automaticSeed1.r' = 'automaticSeed1.r_raw' * (3.0 - (-1.0)) + (-1.0);
     'automaticSeed1.localSeed' = 163662653;
     pre('automaticSeed1.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed1.localSeed', 'automaticSeed1.actualGlobalSeed', 4))[1];
     pre('automaticSeed1.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed1.localSeed', 'automaticSeed1.actualGlobalSeed', 4))[2];
     pre('automaticSeed1.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed1.localSeed', 'automaticSeed1.actualGlobalSeed', 4))[3];
     pre('automaticSeed1.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed1.localSeed', 'automaticSeed1.actualGlobalSeed', 4))[4];
     'automaticSeed1.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('automaticSeed1.state'));
-    'automaticSeed2.r' = 'automaticSeed2.r_raw' * 4.0 - 1.0;
+    'automaticSeed2.r' = 'automaticSeed2.r_raw' * (3.0 - (-1.0)) + (-1.0);
     'automaticSeed2.localSeed' = 163662654;
     pre('automaticSeed2.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed2.localSeed', 'automaticSeed2.actualGlobalSeed', 4))[1];
     pre('automaticSeed2.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed2.localSeed', 'automaticSeed2.actualGlobalSeed', 4))[2];
     pre('automaticSeed2.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed2.localSeed', 'automaticSeed2.actualGlobalSeed', 4))[3];
     pre('automaticSeed2.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed2.localSeed', 'automaticSeed2.actualGlobalSeed', 4))[4];
     'automaticSeed2.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('automaticSeed2.state'));
-    'automaticSeed3.r' = 'automaticSeed3.r_raw' * 4.0 - 1.0;
+    'automaticSeed3.r' = 'automaticSeed3.r_raw' * (3.0 - (-1.0)) + (-1.0);
     'automaticSeed3.localSeed' = 163662655;
     pre('automaticSeed3.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed3.localSeed', 'automaticSeed3.actualGlobalSeed', 4))[1];
     pre('automaticSeed3.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed3.localSeed', 'automaticSeed3.actualGlobalSeed', 4))[2];
     pre('automaticSeed3.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed3.localSeed', 'automaticSeed3.actualGlobalSeed', 4))[3];
     pre('automaticSeed3.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('automaticSeed3.localSeed', 'automaticSeed3.actualGlobalSeed', 4))[4];
     'automaticSeed3.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('automaticSeed3.state'));
-    'manualSeed1.r' = 'manualSeed1.r_raw' * 4.0 - 1.0;
+    'manualSeed1.r' = 'manualSeed1.r_raw' * (3.0 - (-1.0)) + (-1.0);
     'manualSeed1.localSeed' = 1;
     pre('manualSeed1.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed1.localSeed', 'manualSeed1.actualGlobalSeed', 4))[1];
     pre('manualSeed1.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed1.localSeed', 'manualSeed1.actualGlobalSeed', 4))[2];
     pre('manualSeed1.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed1.localSeed', 'manualSeed1.actualGlobalSeed', 4))[3];
     pre('manualSeed1.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed1.localSeed', 'manualSeed1.actualGlobalSeed', 4))[4];
     'manualSeed1.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('manualSeed1.state'));
-    'manualSeed2.r' = 'manualSeed2.r_raw' * 4.0 - 1.0;
+    'manualSeed2.r' = 'manualSeed2.r_raw' * (3.0 - (-1.0)) + (-1.0);
     'manualSeed2.localSeed' = 2;
     pre('manualSeed2.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed2.localSeed', 'manualSeed2.actualGlobalSeed', 4))[1];
     pre('manualSeed2.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed2.localSeed', 'manualSeed2.actualGlobalSeed', 4))[2];
     pre('manualSeed2.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed2.localSeed', 'manualSeed2.actualGlobalSeed', 4))[3];
     pre('manualSeed2.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed2.localSeed', 'manualSeed2.actualGlobalSeed', 4))[4];
     'manualSeed2.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('manualSeed2.state'));
-    'manualSeed3.r' = 'manualSeed3.r_raw' * 4.0 - 1.0;
+    'manualSeed3.r' = 'manualSeed3.r_raw' * (3.0 - (-1.0)) + (-1.0);
     'manualSeed3.localSeed' = 3;
     pre('manualSeed3.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed3.localSeed', 'manualSeed3.actualGlobalSeed', 4))[1];
     pre('manualSeed3.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('manualSeed3.localSeed', 'manualSeed3.actualGlobalSeed', 4))[2];
@@ -255,7 +176,7 @@ package 'AutomaticSeed'
     'manualSeed3_y' = 'manualSeed3.y';
 
     when sample(0.5, 0.01) then
-      'automaticSeed1.r' = 'automaticSeed1.r_raw' * 4.0 - 1.0;
+      'automaticSeed1.r' = 'automaticSeed1.r_raw' * (3.0 - (-1.0)) + (-1.0);
     end when;
 
     when sample(0.5, 0.01) then
@@ -265,7 +186,7 @@ package 'AutomaticSeed'
     'automaticSeed1.y' = if time < 0.5 then -1.0 else 'automaticSeed1.r';
 
     when sample(0.5, 0.01) then
-      'automaticSeed2.r' = 'automaticSeed2.r_raw' * 4.0 - 1.0;
+      'automaticSeed2.r' = 'automaticSeed2.r_raw' * (3.0 - (-1.0)) + (-1.0);
     end when;
 
     when sample(0.5, 0.01) then
@@ -275,7 +196,7 @@ package 'AutomaticSeed'
     'automaticSeed2.y' = if time < 0.5 then -1.0 else 'automaticSeed2.r';
 
     when sample(0.5, 0.01) then
-      'automaticSeed3.r' = 'automaticSeed3.r_raw' * 4.0 - 1.0;
+      'automaticSeed3.r' = 'automaticSeed3.r_raw' * (3.0 - (-1.0)) + (-1.0);
     end when;
 
     when sample(0.5, 0.01) then
@@ -285,7 +206,7 @@ package 'AutomaticSeed'
     'automaticSeed3.y' = if time < 0.5 then -1.0 else 'automaticSeed3.r';
 
     when sample(0.5, 0.01) then
-      'manualSeed1.r' = 'manualSeed1.r_raw' * 4.0 - 1.0;
+      'manualSeed1.r' = 'manualSeed1.r_raw' * (3.0 - (-1.0)) + (-1.0);
     end when;
 
     when sample(0.5, 0.01) then
@@ -295,7 +216,7 @@ package 'AutomaticSeed'
     'manualSeed1.y' = if time < 0.5 then -1.0 else 'manualSeed1.r';
 
     when sample(0.5, 0.01) then
-      'manualSeed2.r' = 'manualSeed2.r_raw' * 4.0 - 1.0;
+      'manualSeed2.r' = 'manualSeed2.r_raw' * (3.0 - (-1.0)) + (-1.0);
     end when;
 
     when sample(0.5, 0.01) then
@@ -305,7 +226,7 @@ package 'AutomaticSeed'
     'manualSeed2.y' = if time < 0.5 then -1.0 else 'manualSeed2.r';
 
     when sample(0.5, 0.01) then
-      'manualSeed3.r' = 'manualSeed3.r_raw' * 4.0 - 1.0;
+      'manualSeed3.r' = 'manualSeed3.r_raw' * (3.0 - (-1.0)) + (-1.0);
     end when;
 
     when sample(0.5, 0.01) then

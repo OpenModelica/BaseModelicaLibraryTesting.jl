@@ -1,25 +1,5 @@
 //! base 0.1.0
 package 'SMPM_NoLoad'
-  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
-    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
-    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
-    output Real 'p'(unit = "W", quantity = "Power");
-    constant Integer 'm' = 3;
-    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
-    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
-  algorithm
-    'v_' := {0.0, 0.0};
-    'i_' := {0.0, 0.0};
-
-    for 'k' in 1:'m' loop
-      'v_' := {'v_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k'], 'v_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k']};
-      'i_' := {'i_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k'], 'i_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k']};
-    end for;
-
-    'p' := 'm' / 2.0 * ('v_'[1] * 'i_'[1] + 'v_'[2] * 'i_'[2]);
-    annotation(Inline = true);
-  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
-
   model 'SMPM_NoLoad' "SMPM at no-load"
     constant Integer 'm' = 3 "Number of phases";
     parameter Integer 'smpmData.m' = 3 "Number of phases" annotation(Evaluate = true);
@@ -720,7 +700,7 @@ package 'SMPM_NoLoad'
     'smpm.statorCore.w' = 'smpm.statorCoreParameters.wRef';
     'smpm.statorCore.wLimit' = noEvent(max(noEvent(abs('smpm.statorCore.w')), 'smpm.statorCore.coreParameters.wMin'));
     'smpm.strayLoad.heatPort.Q_flow' = -'smpm.strayLoad.lossPower';
-    'smpm.strayLoad.iRMS' = sqrt('smpm.strayLoad.i[1]' ^ 2.0 / 3.0 + 'smpm.strayLoad.i[2]' ^ 2.0 / 3.0 + 'smpm.strayLoad.i[3]' ^ 2.0 / 3.0);
+    'smpm.strayLoad.iRMS' = sqrt(sum('smpm.strayLoad.i' .^ 2.0 / size('smpm.strayLoad.i', 1)));
     'smpm.thermalAmbient.Q_flowStatorWinding' = 'smpm.thermalAmbient.temperatureStatorWinding.port.Q_flow';
     'smpm.thermalAmbient.Q_flowStatorCore' = 'smpm.thermalAmbient.temperatureStatorCore.port.Q_flow';
     'smpm.thermalAmbient.Q_flowRotorCore' = 'smpm.thermalAmbient.temperatureRotorCore.port.Q_flow';
@@ -730,7 +710,7 @@ package 'SMPM_NoLoad'
     'smpm.thermalAmbient.Q_flowPermanentMagnet' = 'smpm.thermalAmbient.temperaturePermanentMagnet.port.Q_flow';
     'smpm.thermalAmbient.Q_flowTotal' = 'smpm.thermalAmbient.Q_flowStatorWinding' + 'smpm.thermalAmbient.Q_flowRotorWinding' + 'smpm.thermalAmbient.Q_flowPermanentMagnet' + 'smpm.thermalAmbient.Q_flowStatorCore' + 'smpm.thermalAmbient.Q_flowRotorCore' + 'smpm.thermalAmbient.Q_flowStrayLoad' + 'smpm.thermalAmbient.Q_flowFriction';
     'smpm.permanentMagnet.heatPort.Q_flow' = -'smpm.permanentMagnet.lossPower';
-    'smpm.permanentMagnet.iRMS' = sqrt('smpm.permanentMagnet.is[1]' ^ 2.0 / 3.0 + 'smpm.permanentMagnet.is[2]' ^ 2.0 / 3.0 + 'smpm.permanentMagnet.is[3]' ^ 2.0 / 3.0);
+    'smpm.permanentMagnet.iRMS' = sqrt(sum('smpm.permanentMagnet.is' .^ 2.0 / size('smpm.permanentMagnet.is', 1)));
     'smpm.rs.resistor[1].p.v' = 'smpm.rs.plug_p.pin[1].v';
     'smpm.rs.resistor[2].p.v' = 'smpm.rs.plug_p.pin[2].v';
     'smpm.rs.resistor[3].p.v' = 'smpm.rs.plug_p.pin[3].v';
@@ -1085,7 +1065,7 @@ package 'SMPM_NoLoad'
     'toSpacePhasor.y[1]' = 0.6666666666666666 * 'toSpacePhasor.u[1]' + (-0.33333333333333315) * 'toSpacePhasor.u[2]' + (-0.3333333333333336) * 'toSpacePhasor.u[3]';
     'toSpacePhasor.y[2]' = 0.5773502691896257 * 'toSpacePhasor.u[2]' + (-0.5773502691896255) * 'toSpacePhasor.u[3]';
     'toPolar.y[1]' = sqrt('toPolar.u[1]' ^ 2.0 + 'toPolar.u[2]' ^ 2.0);
-    'toPolar.y[2]' = if noEvent('toPolar.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('toPolar.u[2]', 'toPolar.u[1]');
+    'toPolar.y[2]' = if noEvent('toPolar.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('toPolar.u[2]', 'toPolar.u[1]');
     'toDeg.y' = 57.29577951308232 * 'toDeg.u';
     'hallSensor.flange.tau' = 0.0;
     'hallSensor.y' = mod(('hallSensor.flange.phi' - 'hallSensor.phi_support' + 1.5707963267948966) * 2.0, 6.283185307179586);

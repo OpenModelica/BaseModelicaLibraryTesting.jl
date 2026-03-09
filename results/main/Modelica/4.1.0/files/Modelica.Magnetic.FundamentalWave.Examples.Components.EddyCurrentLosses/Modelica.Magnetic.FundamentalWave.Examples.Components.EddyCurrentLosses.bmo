@@ -1,74 +1,5 @@
 //! base 0.1.0
 package 'EddyCurrentLosses'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotential';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
-
   model 'EddyCurrentLosses' "Comparison of equivalent circuits of eddy current loss models"
     parameter Integer 'm' = 3 "Number of phases" annotation(Evaluate = true);
     parameter Real 'R'(unit = "Ohm", quantity = "Resistance") = 0.1 "Resistance of leader cables";
@@ -1057,8 +988,6 @@ package 'EddyCurrentLosses'
   equation
     'lossPower_e' = 'loss_e.conductor[1].LossPower' + 'loss_e.conductor[2].LossPower' + 'loss_e.conductor[3].LossPower';
     'lossPower_m' = 'loss_m.lossPower';
-    'converter_e.V_m.re' = 'converter_e.port_p.V_m.re' - 'converter_e.port_n.V_m.re';
-    'converter_e.V_m.im' = 'converter_e.port_p.V_m.im' - 'converter_e.port_n.V_m.im';
     'converter_e.abs_V_m' = sqrt('converter_e.V_m.re' ^ 2.0 + 'converter_e.V_m.im' ^ 2.0);
     'converter_e.arg_V_m' = 'Modelica.Math.atan3'('converter_e.V_m.im', 'converter_e.V_m.re', 0.0);
     'converter_e.Phi.re' = 'converter_e.port_p.Phi.re';
@@ -1077,8 +1006,6 @@ package 'EddyCurrentLosses'
     'converter_e.singlePhaseElectroMagneticConverter[3].arg_V_m' = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[3].V_m.im', 'converter_e.singlePhaseElectroMagneticConverter[3].V_m.re', 0.0);
     'converter_e.singlePhaseElectroMagneticConverter[3].abs_Phi' = sqrt('converter_e.singlePhaseElectroMagneticConverter[3].Phi.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.im' ^ 2.0);
     'converter_e.singlePhaseElectroMagneticConverter[3].arg_Phi' = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[3].Phi.im', 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.re', 0.0);
-    'converter_m.V_m.re' = 'converter_m.port_p.V_m.re' - 'converter_m.port_n.V_m.re';
-    'converter_m.V_m.im' = 'converter_m.port_p.V_m.im' - 'converter_m.port_n.V_m.im';
     'converter_m.abs_V_m' = sqrt('converter_m.V_m.re' ^ 2.0 + 'converter_m.V_m.im' ^ 2.0);
     'converter_m.arg_V_m' = 'Modelica.Math.atan3'('converter_m.V_m.im', 'converter_m.V_m.re', 0.0);
     'converter_m.Phi.re' = 'converter_m.port_p.Phi.re';
@@ -1097,24 +1024,18 @@ package 'EddyCurrentLosses'
     'converter_m.singlePhaseElectroMagneticConverter[3].arg_V_m' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[3].V_m.im', 'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re', 0.0);
     'converter_m.singlePhaseElectroMagneticConverter[3].abs_Phi' = sqrt('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.im' ^ 2.0);
     'converter_m.singlePhaseElectroMagneticConverter[3].arg_Phi' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im', 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.re', 0.0);
-    'reluctance_e.V_m.re' = 'reluctance_e.port_p.V_m.re' - 'reluctance_e.port_n.V_m.re';
-    'reluctance_e.V_m.im' = 'reluctance_e.port_p.V_m.im' - 'reluctance_e.port_n.V_m.im';
     'reluctance_e.abs_V_m' = sqrt('reluctance_e.V_m.re' ^ 2.0 + 'reluctance_e.V_m.im' ^ 2.0);
     'reluctance_e.arg_V_m' = 'Modelica.Math.atan3'('reluctance_e.V_m.im', 'reluctance_e.V_m.re', 0.0);
     'reluctance_e.Phi.re' = 'reluctance_e.port_p.Phi.re';
     'reluctance_e.Phi.im' = 'reluctance_e.port_p.Phi.im';
     'reluctance_e.abs_Phi' = sqrt('reluctance_e.Phi.re' ^ 2.0 + 'reluctance_e.Phi.im' ^ 2.0);
     'reluctance_e.arg_Phi' = 'Modelica.Math.atan3'('reluctance_e.Phi.im', 'reluctance_e.Phi.re', 0.0);
-    'reluctance_m.V_m.re' = 'reluctance_m.port_p.V_m.re' - 'reluctance_m.port_n.V_m.re';
-    'reluctance_m.V_m.im' = 'reluctance_m.port_p.V_m.im' - 'reluctance_m.port_n.V_m.im';
     'reluctance_m.abs_V_m' = sqrt('reluctance_m.V_m.re' ^ 2.0 + 'reluctance_m.V_m.im' ^ 2.0);
     'reluctance_m.arg_V_m' = 'Modelica.Math.atan3'('reluctance_m.V_m.im', 'reluctance_m.V_m.re', 0.0);
     'reluctance_m.Phi.re' = 'reluctance_m.port_p.Phi.re';
     'reluctance_m.Phi.im' = 'reluctance_m.port_p.Phi.im';
     'reluctance_m.abs_Phi' = sqrt('reluctance_m.Phi.re' ^ 2.0 + 'reluctance_m.Phi.im' ^ 2.0);
     'reluctance_m.arg_Phi' = 'Modelica.Math.atan3'('reluctance_m.Phi.im', 'reluctance_m.Phi.re', 0.0);
-    'loss_m.V_m.re' = 'loss_m.port_p.V_m.re' - 'loss_m.port_n.V_m.re';
-    'loss_m.V_m.im' = 'loss_m.port_p.V_m.im' - 'loss_m.port_n.V_m.im';
     'loss_m.abs_V_m' = sqrt('loss_m.V_m.re' ^ 2.0 + 'loss_m.V_m.im' ^ 2.0);
     'loss_m.arg_V_m' = 'Modelica.Math.atan3'('loss_m.V_m.im', 'loss_m.V_m.re', 0.0);
     'loss_m.Phi.re' = 'loss_m.port_p.Phi.re';
@@ -1475,17 +1396,17 @@ package 'EddyCurrentLosses'
     'powerb_m.currentSensor.currentSensor[3].n.i' - 'powerb_m.currentSensor.plug_n.pin[3].i' = 0.0;
     'ground_e.p.v' = 0.0;
     'ground_m.p.v' = 0.0;
-    'sineVoltage_e.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else sin(6.283185307179586 * time);
+    'sineVoltage_e.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(6.283185307179586 * time);
     'sineVoltage_e.sineVoltage[1].v' = 'sineVoltage_e.sineVoltage[1].signalSource.y';
     0.0 = 'sineVoltage_e.sineVoltage[1].p.i' + 'sineVoltage_e.sineVoltage[1].n.i';
     'sineVoltage_e.sineVoltage[1].i' = 'sineVoltage_e.sineVoltage[1].p.i';
     'sineVoltage_e.sineVoltage[1].v' = 'sineVoltage_e.sineVoltage[1].p.v' - 'sineVoltage_e.sineVoltage[1].n.v';
-    'sineVoltage_e.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else sin(6.283185307179586 * time - 2.0943951023931953);
+    'sineVoltage_e.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(6.283185307179586 * time - 2.0943951023931953);
     'sineVoltage_e.sineVoltage[2].v' = 'sineVoltage_e.sineVoltage[2].signalSource.y';
     0.0 = 'sineVoltage_e.sineVoltage[2].p.i' + 'sineVoltage_e.sineVoltage[2].n.i';
     'sineVoltage_e.sineVoltage[2].i' = 'sineVoltage_e.sineVoltage[2].p.i';
     'sineVoltage_e.sineVoltage[2].v' = 'sineVoltage_e.sineVoltage[2].p.v' - 'sineVoltage_e.sineVoltage[2].n.v';
-    'sineVoltage_e.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else sin(6.283185307179586 * time - 4.1887902047863905);
+    'sineVoltage_e.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(6.283185307179586 * time - 4.1887902047863905);
     'sineVoltage_e.sineVoltage[3].v' = 'sineVoltage_e.sineVoltage[3].signalSource.y';
     0.0 = 'sineVoltage_e.sineVoltage[3].p.i' + 'sineVoltage_e.sineVoltage[3].n.i';
     'sineVoltage_e.sineVoltage[3].i' = 'sineVoltage_e.sineVoltage[3].p.i';
@@ -1496,17 +1417,17 @@ package 'EddyCurrentLosses'
     'sineVoltage_e.i[1]' = 'sineVoltage_e.plug_p.pin[1].i';
     'sineVoltage_e.i[2]' = 'sineVoltage_e.plug_p.pin[2].i';
     'sineVoltage_e.i[3]' = 'sineVoltage_e.plug_p.pin[3].i';
-    'sineVoltage_m.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else sin(6.283185307179586 * time);
+    'sineVoltage_m.sineVoltage[1].signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(6.283185307179586 * time);
     'sineVoltage_m.sineVoltage[1].v' = 'sineVoltage_m.sineVoltage[1].signalSource.y';
     0.0 = 'sineVoltage_m.sineVoltage[1].p.i' + 'sineVoltage_m.sineVoltage[1].n.i';
     'sineVoltage_m.sineVoltage[1].i' = 'sineVoltage_m.sineVoltage[1].p.i';
     'sineVoltage_m.sineVoltage[1].v' = 'sineVoltage_m.sineVoltage[1].p.v' - 'sineVoltage_m.sineVoltage[1].n.v';
-    'sineVoltage_m.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else sin(6.283185307179586 * time - 2.0943951023931953);
+    'sineVoltage_m.sineVoltage[2].signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(6.283185307179586 * time - 2.0943951023931953);
     'sineVoltage_m.sineVoltage[2].v' = 'sineVoltage_m.sineVoltage[2].signalSource.y';
     0.0 = 'sineVoltage_m.sineVoltage[2].p.i' + 'sineVoltage_m.sineVoltage[2].n.i';
     'sineVoltage_m.sineVoltage[2].i' = 'sineVoltage_m.sineVoltage[2].p.i';
     'sineVoltage_m.sineVoltage[2].v' = 'sineVoltage_m.sineVoltage[2].p.v' - 'sineVoltage_m.sineVoltage[2].n.v';
-    'sineVoltage_m.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else sin(6.283185307179586 * time - 4.1887902047863905);
+    'sineVoltage_m.sineVoltage[3].signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(6.283185307179586 * time - 4.1887902047863905);
     'sineVoltage_m.sineVoltage[3].v' = 'sineVoltage_m.sineVoltage[3].signalSource.y';
     0.0 = 'sineVoltage_m.sineVoltage[3].p.i' + 'sineVoltage_m.sineVoltage[3].n.i';
     'sineVoltage_m.sineVoltage[3].i' = 'sineVoltage_m.sineVoltage[3].p.i';
@@ -1577,6 +1498,8 @@ package 'EddyCurrentLosses'
     'converter_e.i[1]' = 'converter_e.plug_p.pin[1].i';
     'converter_e.i[2]' = 'converter_e.plug_p.pin[2].i';
     'converter_e.i[3]' = 'converter_e.plug_p.pin[3].i';
+    'converter_e.V_m.re' = 'converter_e.port_p.V_m.re' - 'converter_e.port_n.V_m.re';
+    'converter_e.V_m.im' = 'converter_e.port_p.V_m.im' - 'converter_e.port_n.V_m.im';
     'converter_e.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' = 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.re';
     'converter_e.singlePhaseElectroMagneticConverter[1].port_p.Phi.im' = 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.im';
     'converter_e.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' + 'converter_e.singlePhaseElectroMagneticConverter[1].port_n.Phi.re' = 0.0;
@@ -1586,9 +1509,9 @@ package 'EddyCurrentLosses'
     'converter_e.singlePhaseElectroMagneticConverter[1].v' = 'converter_e.singlePhaseElectroMagneticConverter[1].pin_p.v' - 'converter_e.singlePhaseElectroMagneticConverter[1].pin_n.v';
     'converter_e.singlePhaseElectroMagneticConverter[1].i' = 'converter_e.singlePhaseElectroMagneticConverter[1].pin_p.i';
     'converter_e.singlePhaseElectroMagneticConverter[1].pin_p.i' + 'converter_e.singlePhaseElectroMagneticConverter[1].pin_n.i' = 0.0;
-    'converter_e.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[1].N.re' * 'converter_e.singlePhaseElectroMagneticConverter[1].i';
-    'converter_e.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[1].N.im' * 'converter_e.singlePhaseElectroMagneticConverter[1].i';
-    -'converter_e.singlePhaseElectroMagneticConverter[1].v' = 'converter_e.singlePhaseElectroMagneticConverter[1].N.re' * der('converter_e.singlePhaseElectroMagneticConverter[1].Phi.re') - (-'converter_e.singlePhaseElectroMagneticConverter[1].N.im') * der('converter_e.singlePhaseElectroMagneticConverter[1].Phi.im');
+    'converter_e.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[1].i' - 0.0 * 0.0;
+    'converter_e.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 0.0 + 0.0 * 'converter_e.singlePhaseElectroMagneticConverter[1].i';
+    -'converter_e.singlePhaseElectroMagneticConverter[1].v' = 1.0 * der('converter_e.singlePhaseElectroMagneticConverter[1].Phi.re') - 0.0 * der('converter_e.singlePhaseElectroMagneticConverter[1].Phi.im');
     'converter_e.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' = 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.re';
     'converter_e.singlePhaseElectroMagneticConverter[2].port_p.Phi.im' = 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.im';
     'converter_e.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' + 'converter_e.singlePhaseElectroMagneticConverter[2].port_n.Phi.re' = 0.0;
@@ -1598,9 +1521,9 @@ package 'EddyCurrentLosses'
     'converter_e.singlePhaseElectroMagneticConverter[2].v' = 'converter_e.singlePhaseElectroMagneticConverter[2].pin_p.v' - 'converter_e.singlePhaseElectroMagneticConverter[2].pin_n.v';
     'converter_e.singlePhaseElectroMagneticConverter[2].i' = 'converter_e.singlePhaseElectroMagneticConverter[2].pin_p.i';
     'converter_e.singlePhaseElectroMagneticConverter[2].pin_p.i' + 'converter_e.singlePhaseElectroMagneticConverter[2].pin_n.i' = 0.0;
-    'converter_e.singlePhaseElectroMagneticConverter[2].V_m.re' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[2].N.re' * 'converter_e.singlePhaseElectroMagneticConverter[2].i';
-    'converter_e.singlePhaseElectroMagneticConverter[2].V_m.im' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[2].N.im' * 'converter_e.singlePhaseElectroMagneticConverter[2].i';
-    -'converter_e.singlePhaseElectroMagneticConverter[2].v' = 'converter_e.singlePhaseElectroMagneticConverter[2].N.re' * der('converter_e.singlePhaseElectroMagneticConverter[2].Phi.re') - (-'converter_e.singlePhaseElectroMagneticConverter[2].N.im') * der('converter_e.singlePhaseElectroMagneticConverter[2].Phi.im');
+    'converter_e.singlePhaseElectroMagneticConverter[2].V_m.re' = (-0.3183098861837905) * 'converter_e.singlePhaseElectroMagneticConverter[2].i' - 0.5513288954217921 * 0.0;
+    'converter_e.singlePhaseElectroMagneticConverter[2].V_m.im' = (-0.3183098861837905) * 0.0 + 0.5513288954217921 * 'converter_e.singlePhaseElectroMagneticConverter[2].i';
+    -'converter_e.singlePhaseElectroMagneticConverter[2].v' = (-0.4999999999999998) * der('converter_e.singlePhaseElectroMagneticConverter[2].Phi.re') - (-0.8660254037844387) * der('converter_e.singlePhaseElectroMagneticConverter[2].Phi.im');
     'converter_e.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' = 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.re';
     'converter_e.singlePhaseElectroMagneticConverter[3].port_p.Phi.im' = 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.im';
     'converter_e.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' + 'converter_e.singlePhaseElectroMagneticConverter[3].port_n.Phi.re' = 0.0;
@@ -1610,15 +1533,17 @@ package 'EddyCurrentLosses'
     'converter_e.singlePhaseElectroMagneticConverter[3].v' = 'converter_e.singlePhaseElectroMagneticConverter[3].pin_p.v' - 'converter_e.singlePhaseElectroMagneticConverter[3].pin_n.v';
     'converter_e.singlePhaseElectroMagneticConverter[3].i' = 'converter_e.singlePhaseElectroMagneticConverter[3].pin_p.i';
     'converter_e.singlePhaseElectroMagneticConverter[3].pin_p.i' + 'converter_e.singlePhaseElectroMagneticConverter[3].pin_n.i' = 0.0;
-    'converter_e.singlePhaseElectroMagneticConverter[3].V_m.re' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[3].N.re' * 'converter_e.singlePhaseElectroMagneticConverter[3].i';
-    'converter_e.singlePhaseElectroMagneticConverter[3].V_m.im' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[3].N.im' * 'converter_e.singlePhaseElectroMagneticConverter[3].i';
-    -'converter_e.singlePhaseElectroMagneticConverter[3].v' = 'converter_e.singlePhaseElectroMagneticConverter[3].N.re' * der('converter_e.singlePhaseElectroMagneticConverter[3].Phi.re') - (-'converter_e.singlePhaseElectroMagneticConverter[3].N.im') * der('converter_e.singlePhaseElectroMagneticConverter[3].Phi.im');
+    'converter_e.singlePhaseElectroMagneticConverter[3].V_m.re' = (-0.31830988618379097) * 'converter_e.singlePhaseElectroMagneticConverter[3].i' - (-0.5513288954217919) * 0.0;
+    'converter_e.singlePhaseElectroMagneticConverter[3].V_m.im' = (-0.31830988618379097) * 0.0 + (-0.5513288954217919) * 'converter_e.singlePhaseElectroMagneticConverter[3].i';
+    -'converter_e.singlePhaseElectroMagneticConverter[3].v' = (-0.5000000000000004) * der('converter_e.singlePhaseElectroMagneticConverter[3].Phi.re') - 0.8660254037844384 * der('converter_e.singlePhaseElectroMagneticConverter[3].Phi.im');
     'converter_m.v[1]' = 'converter_m.plug_p.pin[1].v' - 'converter_m.plug_n.pin[1].v';
     'converter_m.v[2]' = 'converter_m.plug_p.pin[2].v' - 'converter_m.plug_n.pin[2].v';
     'converter_m.v[3]' = 'converter_m.plug_p.pin[3].v' - 'converter_m.plug_n.pin[3].v';
     'converter_m.i[1]' = 'converter_m.plug_p.pin[1].i';
     'converter_m.i[2]' = 'converter_m.plug_p.pin[2].i';
     'converter_m.i[3]' = 'converter_m.plug_p.pin[3].i';
+    'converter_m.V_m.re' = 'converter_m.port_p.V_m.re' - 'converter_m.port_n.V_m.re';
+    'converter_m.V_m.im' = 'converter_m.port_p.V_m.im' - 'converter_m.port_n.V_m.im';
     'converter_m.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' = 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.re';
     'converter_m.singlePhaseElectroMagneticConverter[1].port_p.Phi.im' = 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.im';
     'converter_m.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' + 'converter_m.singlePhaseElectroMagneticConverter[1].port_n.Phi.re' = 0.0;
@@ -1628,9 +1553,9 @@ package 'EddyCurrentLosses'
     'converter_m.singlePhaseElectroMagneticConverter[1].v' = 'converter_m.singlePhaseElectroMagneticConverter[1].pin_p.v' - 'converter_m.singlePhaseElectroMagneticConverter[1].pin_n.v';
     'converter_m.singlePhaseElectroMagneticConverter[1].i' = 'converter_m.singlePhaseElectroMagneticConverter[1].pin_p.i';
     'converter_m.singlePhaseElectroMagneticConverter[1].pin_p.i' + 'converter_m.singlePhaseElectroMagneticConverter[1].pin_n.i' = 0.0;
-    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[1].N.re' * 'converter_m.singlePhaseElectroMagneticConverter[1].i';
-    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[1].N.im' * 'converter_m.singlePhaseElectroMagneticConverter[1].i';
-    -'converter_m.singlePhaseElectroMagneticConverter[1].v' = 'converter_m.singlePhaseElectroMagneticConverter[1].N.re' * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.re') - (-'converter_m.singlePhaseElectroMagneticConverter[1].N.im') * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.im');
+    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[1].i' - 0.0 * 0.0;
+    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 0.0 + 0.0 * 'converter_m.singlePhaseElectroMagneticConverter[1].i';
+    -'converter_m.singlePhaseElectroMagneticConverter[1].v' = 1.0 * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.re') - 0.0 * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.im');
     'converter_m.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' = 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.re';
     'converter_m.singlePhaseElectroMagneticConverter[2].port_p.Phi.im' = 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.im';
     'converter_m.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' + 'converter_m.singlePhaseElectroMagneticConverter[2].port_n.Phi.re' = 0.0;
@@ -1640,9 +1565,9 @@ package 'EddyCurrentLosses'
     'converter_m.singlePhaseElectroMagneticConverter[2].v' = 'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.v' - 'converter_m.singlePhaseElectroMagneticConverter[2].pin_n.v';
     'converter_m.singlePhaseElectroMagneticConverter[2].i' = 'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.i';
     'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.i' + 'converter_m.singlePhaseElectroMagneticConverter[2].pin_n.i' = 0.0;
-    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[2].N.re' * 'converter_m.singlePhaseElectroMagneticConverter[2].i';
-    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.im' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[2].N.im' * 'converter_m.singlePhaseElectroMagneticConverter[2].i';
-    -'converter_m.singlePhaseElectroMagneticConverter[2].v' = 'converter_m.singlePhaseElectroMagneticConverter[2].N.re' * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.re') - (-'converter_m.singlePhaseElectroMagneticConverter[2].N.im') * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.im');
+    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.re' = (-0.3183098861837905) * 'converter_m.singlePhaseElectroMagneticConverter[2].i' - 0.5513288954217921 * 0.0;
+    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.im' = (-0.3183098861837905) * 0.0 + 0.5513288954217921 * 'converter_m.singlePhaseElectroMagneticConverter[2].i';
+    -'converter_m.singlePhaseElectroMagneticConverter[2].v' = (-0.4999999999999998) * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.re') - (-0.8660254037844387) * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.im');
     'converter_m.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' = 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.re';
     'converter_m.singlePhaseElectroMagneticConverter[3].port_p.Phi.im' = 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.im';
     'converter_m.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' + 'converter_m.singlePhaseElectroMagneticConverter[3].port_n.Phi.re' = 0.0;
@@ -1652,13 +1577,17 @@ package 'EddyCurrentLosses'
     'converter_m.singlePhaseElectroMagneticConverter[3].v' = 'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.v' - 'converter_m.singlePhaseElectroMagneticConverter[3].pin_n.v';
     'converter_m.singlePhaseElectroMagneticConverter[3].i' = 'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.i';
     'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.i' + 'converter_m.singlePhaseElectroMagneticConverter[3].pin_n.i' = 0.0;
-    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[3].N.re' * 'converter_m.singlePhaseElectroMagneticConverter[3].i';
-    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.im' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[3].N.im' * 'converter_m.singlePhaseElectroMagneticConverter[3].i';
-    -'converter_m.singlePhaseElectroMagneticConverter[3].v' = 'converter_m.singlePhaseElectroMagneticConverter[3].N.re' * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re') - (-'converter_m.singlePhaseElectroMagneticConverter[3].N.im') * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im');
+    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re' = (-0.31830988618379097) * 'converter_m.singlePhaseElectroMagneticConverter[3].i' - (-0.5513288954217919) * 0.0;
+    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.im' = (-0.31830988618379097) * 0.0 + (-0.5513288954217919) * 'converter_m.singlePhaseElectroMagneticConverter[3].i';
+    -'converter_m.singlePhaseElectroMagneticConverter[3].v' = (-0.5000000000000004) * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re') - 0.8660254037844384 * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im');
+    'reluctance_e.V_m.re' = 'reluctance_e.port_p.V_m.re' - 'reluctance_e.port_n.V_m.re';
+    'reluctance_e.V_m.im' = 'reluctance_e.port_p.V_m.im' - 'reluctance_e.port_n.V_m.im';
     1.5707963267948966 * 'reluctance_e.V_m.re' = 'reluctance_e.Phi.re';
     1.5707963267948966 * 'reluctance_e.V_m.im' = 'reluctance_e.Phi.im';
     'reluctance_e.port_p.Phi.re' + 'reluctance_e.port_n.Phi.re' = 0.0;
     'reluctance_e.port_p.Phi.im' + 'reluctance_e.port_n.Phi.im' = 0.0;
+    'reluctance_m.V_m.re' = 'reluctance_m.port_p.V_m.re' - 'reluctance_m.port_n.V_m.re';
+    'reluctance_m.V_m.im' = 'reluctance_m.port_p.V_m.im' - 'reluctance_m.port_n.V_m.im';
     1.5707963267948966 * 'reluctance_m.V_m.re' = 'reluctance_m.Phi.re';
     1.5707963267948966 * 'reluctance_m.V_m.im' = 'reluctance_m.Phi.im';
     'reluctance_m.port_p.Phi.re' + 'reluctance_m.port_n.Phi.re' = 0.0;
@@ -1694,6 +1623,8 @@ package 'EddyCurrentLosses'
     'loss_e.i[1]' = 'loss_e.plug_p.pin[1].i';
     'loss_e.i[2]' = 'loss_e.plug_p.pin[2].i';
     'loss_e.i[3]' = 'loss_e.plug_p.pin[3].i';
+    'loss_m.V_m.re' = 'loss_m.port_p.V_m.re' - 'loss_m.port_n.V_m.re';
+    'loss_m.V_m.im' = 'loss_m.port_p.V_m.im' - 'loss_m.port_n.V_m.im';
     'loss_m.lossPower' = 1.5707963267948966 * ('loss_m.V_m.re' * der('loss_m.Phi.re') + 'loss_m.V_m.im' * der('loss_m.Phi.im'));
     1.5707963267948966 * 'loss_m.V_m.re' = 1.5 * der('loss_m.Phi.re');
     1.5707963267948966 * 'loss_m.V_m.im' = 1.5 * der('loss_m.Phi.im');

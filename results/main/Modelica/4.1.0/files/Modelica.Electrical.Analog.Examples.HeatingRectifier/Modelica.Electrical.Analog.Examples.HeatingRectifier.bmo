@@ -1,21 +1,5 @@
 //! base 0.1.0
 package 'HeatingRectifier'
-  function 'Modelica.Electrical.Analog.Semiconductors.exlin' "Exponential function linearly continued for x > Maxexp"
-    input Real 'x';
-    input Real 'Maxexp';
-    output Real 'z';
-  algorithm
-    'z' := if 'x' > 'Maxexp' then exp('Maxexp') * (1.0 + 'x' - 'Maxexp') else exp('x');
-  end 'Modelica.Electrical.Analog.Semiconductors.exlin';
-
-  function 'Modelica.Electrical.Analog.Semiconductors.pow' "Just a helper function for x^y in order that a symbolic engine can apply some transformations more easily"
-    input Real 'x';
-    input Real 'y';
-    output Real 'z';
-  algorithm
-    'z' := 'x' ^ 'y';
-  end 'Modelica.Electrical.Analog.Semiconductors.pow';
-
   model 'HeatingRectifier' "Heating rectifier"
     Real 'HeatingDiode1.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
     Real 'HeatingDiode1.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -126,7 +110,7 @@ package 'HeatingRectifier'
     'HeatingDiode1.i' = 'HeatingDiode1.p.i';
     'HeatingDiode1.v' = 'HeatingDiode1.p.v' - 'HeatingDiode1.n.v';
     'G.p.v' = 0.0;
-    'SineVoltage1.signalSource.y' = if time < 0.0 then 0.0 else sin(6.283185307179586 * time);
+    'SineVoltage1.signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(6.283185307179586 * time);
     'SineVoltage1.v' = 'SineVoltage1.signalSource.y';
     0.0 = 'SineVoltage1.p.i' + 'SineVoltage1.n.i';
     'SineVoltage1.i' = 'SineVoltage1.p.i';

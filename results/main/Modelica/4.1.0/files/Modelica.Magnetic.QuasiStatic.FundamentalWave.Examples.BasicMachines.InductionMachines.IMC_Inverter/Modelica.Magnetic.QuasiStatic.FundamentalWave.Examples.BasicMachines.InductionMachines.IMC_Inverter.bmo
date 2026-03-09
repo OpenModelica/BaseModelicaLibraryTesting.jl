@@ -1,183 +1,34 @@
 //! base 0.1.0
 package 'IMC_Inverter'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
-  function 'Modelica.ComplexMath.abs' "Absolute value of complex number"
-    input 'Complex' 'c';
-    output Real 'result';
-  algorithm
-    'result' := sqrt('c'.'re' ^ 2.0 + 'c'.'im' ^ 2.0);
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.abs';
-
-  function 'Modelica.ComplexMath.arg' "Phase angle of complex number"
-    input 'Complex' 'c';
-    input Real 'phi0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'phi' := 'Modelica.Math.atan3'('c'.'im', 'c'.'re', 'phi0');
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.arg';
-
-  function 'Modelica.ComplexMath.fromPolar' "Complex from polar representation"
-    input Real 'len';
-    input Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    output 'Complex' 'c';
-  algorithm
-    'c' := 'Complex'('len' * cos('phi'), 'len' * sin('phi'));
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.fromPolar';
-
-  function 'Modelica.ComplexMath.real' "Real part of complex number"
-    input 'Complex' 'c';
-    output Real 'r';
-  algorithm
-    'r' := 'c'.'re';
-    annotation(Inline = true);
-  end 'Modelica.ComplexMath.real';
-
-  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
-    input 'Complex'[:] 'u';
-    output Real 'y';
-    Integer 'm' = size('u', 1);
-  algorithm
-    'y' := sum(sqrt('u['k']'.'re' ^ 2.0 + 'u['k']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
-    annotation(Inline = true);
-  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := atan2('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    elseif true then
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'+\'' "Add two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' + 'c2'.'re', 'c1'.'im' + 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexCurrent.\'+\'';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract' "Subtract two complex numbers"
-    input 'Complex' 'c1';
-    input 'Complex' 'c2';
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'('c1'.'re' - 'c2'.'re', 'c1'.'im' - 'c2'.'im');
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
-
-  record 'Complex'
+  record 'Modelica.Units.SI.ComplexVoltage'
     Real 're';
     Real 'im';
-  end 'Complex';
+  end 'Modelica.Units.SI.ComplexVoltage';
 
   record 'Modelica.Units.SI.ComplexCurrent'
     Real 're';
     Real 'im';
   end 'Modelica.Units.SI.ComplexCurrent';
 
-  record 'Modelica.Units.SI.ComplexElectricPotential'
+  record 'Complex'
     Real 're';
     Real 'im';
-  end 'Modelica.Units.SI.ComplexElectricPotential';
+  end 'Complex';
 
-  record 'Modelica.Units.SI.ComplexVoltage'
+  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
     Real 're';
     Real 'im';
-  end 'Modelica.Units.SI.ComplexVoltage';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
+  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
 
   record 'Modelica.Units.SI.ComplexMagneticFlux'
     Real 're';
     Real 'im';
   end 'Modelica.Units.SI.ComplexMagneticFlux';
 
-  record 'Modelica.Units.SI.ComplexMagneticPotential'
+  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
     Real 're';
     Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotential';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
+  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
 
   model 'IMC_Inverter' "Induction machine with squirrel cage and inverter"
     constant Integer 'm' = 3 "Number of phases";
@@ -2735,7 +2586,7 @@ package 'IMC_Inverter'
     'aimc.wMechanical' = der('aimc.phiMechanical');
     'aimc.tauElectrical' = 'aimc.inertiaRotor.flange_a.tau';
     'aimc.tauShaft' = -'aimc.flange.tau';
-    'aimc.powerBalance.powerStator' = 'Modelica.ComplexMath.real'('Complex'('aimc.vs[1].re' * 'aimc.is[1].re' - 'aimc.vs[1].im' * (-'aimc.is[1].im'), 'aimc.vs[1].re' * (-'aimc.is[1].im') + 'aimc.vs[1].im' * 'aimc.is[1].re')) + 'Modelica.ComplexMath.real'('Complex'('aimc.vs[2].re' * 'aimc.is[2].re' - 'aimc.vs[2].im' * (-'aimc.is[2].im'), 'aimc.vs[2].re' * (-'aimc.is[2].im') + 'aimc.vs[2].im' * 'aimc.is[2].re')) + 'Modelica.ComplexMath.real'('Complex'('aimc.vs[3].re' * 'aimc.is[3].re' - 'aimc.vs[3].im' * (-'aimc.is[3].im'), 'aimc.vs[3].re' * (-'aimc.is[3].im') + 'aimc.vs[3].im' * 'aimc.is[3].re'));
+    'aimc.powerBalance.powerStator' = sum('Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[(1:size('aimc.vs', 1))['$i1168']]', 'Modelica.ComplexMath.conj'('aimc.is[(1:size('aimc.vs', 1))['$i1168']]'))) for '$i1168' in 1:size('aimc.vs', 1));
     'aimc.powerBalance.powerMechanical' = 'aimc.wMechanical' * 'aimc.tauShaft';
     'aimc.powerBalance.powerInertiaStator' = 0.29 * 'aimc.inertiaStator.a' * 'aimc.inertiaStator.w';
     'aimc.powerBalance.powerInertiaRotor' = 0.29 * 'aimc.inertiaRotor.a' * 'aimc.inertiaRotor.w';
@@ -2764,8 +2615,6 @@ package 'IMC_Inverter'
     'aimc.stator.P_total' = 'aimc.stator.P[1]' + 'aimc.stator.P[2]' + 'aimc.stator.P[3]';
     'aimc.stator.Q_total' = 'aimc.stator.Q[1]' + 'aimc.stator.Q[2]' + 'aimc.stator.Q[3]';
     'aimc.stator.S_total' = sqrt('aimc.stator.P_total' ^ 2.0 + 'aimc.stator.Q_total' ^ 2.0);
-    'aimc.stator.V_m.re' = 'aimc.stator.port_p.V_m.re' - 'aimc.stator.port_n.V_m.re';
-    'aimc.stator.V_m.im' = 'aimc.stator.port_p.V_m.im' - 'aimc.stator.port_n.V_m.im';
     'aimc.stator.abs_V_m' = sqrt('aimc.stator.V_m.re' ^ 2.0 + 'aimc.stator.V_m.im' ^ 2.0);
     'aimc.stator.arg_V_m' = 'Modelica.Math.atan3'('aimc.stator.V_m.im', 'aimc.stator.V_m.re', 0.0);
     'aimc.stator.Phi.re' = 'aimc.stator.port_p.Phi.re';
@@ -2790,7 +2639,7 @@ package 'IMC_Inverter'
     'aimc.stator.resistor.resistor[1].P' = 'aimc.stator.resistor.resistor[1].v.re' * 'aimc.stator.resistor.resistor[1].i.re' - 'aimc.stator.resistor.resistor[1].v.im' * (-'aimc.stator.resistor.resistor[1].i.im');
     'aimc.stator.resistor.resistor[1].Q' = 'aimc.stator.resistor.resistor[1].v.re' * (-'aimc.stator.resistor.resistor[1].i.im') + 'aimc.stator.resistor.resistor[1].v.im' * 'aimc.stator.resistor.resistor[1].i.re';
     'aimc.stator.resistor.resistor[1].S' = sqrt(('aimc.stator.resistor.resistor[1].v.re' * 'aimc.stator.resistor.resistor[1].i.re' - 'aimc.stator.resistor.resistor[1].v.im' * (-'aimc.stator.resistor.resistor[1].i.im')) ^ 2.0 + ('aimc.stator.resistor.resistor[1].v.re' * (-'aimc.stator.resistor.resistor[1].i.im') + 'aimc.stator.resistor.resistor[1].v.im' * 'aimc.stator.resistor.resistor[1].i.re') ^ 2.0);
-    'aimc.stator.resistor.resistor[1].pf' = cos('Modelica.Math.atan3'('aimc.stator.resistor.resistor[1].Q', 'aimc.stator.resistor.resistor[1].P', 0.0));
+    'aimc.stator.resistor.resistor[1].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.resistor.resistor[1].P', 'aimc.stator.resistor.resistor[1].Q'), 0.0));
     'aimc.stator.resistor.resistor[1].heatPort.T' = 'aimc.stator.resistor.resistor[1].T_heatPort';
     'aimc.stator.resistor.resistor[1].heatPort.Q_flow' = -'aimc.stator.resistor.resistor[1].LossPower';
     'aimc.stator.resistor.resistor[2].abs_v' = sqrt('aimc.stator.resistor.resistor[2].v.re' ^ 2.0 + 'aimc.stator.resistor.resistor[2].v.im' ^ 2.0);
@@ -2800,7 +2649,7 @@ package 'IMC_Inverter'
     'aimc.stator.resistor.resistor[2].P' = 'aimc.stator.resistor.resistor[2].v.re' * 'aimc.stator.resistor.resistor[2].i.re' - 'aimc.stator.resistor.resistor[2].v.im' * (-'aimc.stator.resistor.resistor[2].i.im');
     'aimc.stator.resistor.resistor[2].Q' = 'aimc.stator.resistor.resistor[2].v.re' * (-'aimc.stator.resistor.resistor[2].i.im') + 'aimc.stator.resistor.resistor[2].v.im' * 'aimc.stator.resistor.resistor[2].i.re';
     'aimc.stator.resistor.resistor[2].S' = sqrt(('aimc.stator.resistor.resistor[2].v.re' * 'aimc.stator.resistor.resistor[2].i.re' - 'aimc.stator.resistor.resistor[2].v.im' * (-'aimc.stator.resistor.resistor[2].i.im')) ^ 2.0 + ('aimc.stator.resistor.resistor[2].v.re' * (-'aimc.stator.resistor.resistor[2].i.im') + 'aimc.stator.resistor.resistor[2].v.im' * 'aimc.stator.resistor.resistor[2].i.re') ^ 2.0);
-    'aimc.stator.resistor.resistor[2].pf' = cos('Modelica.Math.atan3'('aimc.stator.resistor.resistor[2].Q', 'aimc.stator.resistor.resistor[2].P', 0.0));
+    'aimc.stator.resistor.resistor[2].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.resistor.resistor[2].P', 'aimc.stator.resistor.resistor[2].Q'), 0.0));
     'aimc.stator.resistor.resistor[2].heatPort.T' = 'aimc.stator.resistor.resistor[2].T_heatPort';
     'aimc.stator.resistor.resistor[2].heatPort.Q_flow' = -'aimc.stator.resistor.resistor[2].LossPower';
     'aimc.stator.resistor.resistor[3].abs_v' = sqrt('aimc.stator.resistor.resistor[3].v.re' ^ 2.0 + 'aimc.stator.resistor.resistor[3].v.im' ^ 2.0);
@@ -2810,12 +2659,10 @@ package 'IMC_Inverter'
     'aimc.stator.resistor.resistor[3].P' = 'aimc.stator.resistor.resistor[3].v.re' * 'aimc.stator.resistor.resistor[3].i.re' - 'aimc.stator.resistor.resistor[3].v.im' * (-'aimc.stator.resistor.resistor[3].i.im');
     'aimc.stator.resistor.resistor[3].Q' = 'aimc.stator.resistor.resistor[3].v.re' * (-'aimc.stator.resistor.resistor[3].i.im') + 'aimc.stator.resistor.resistor[3].v.im' * 'aimc.stator.resistor.resistor[3].i.re';
     'aimc.stator.resistor.resistor[3].S' = sqrt(('aimc.stator.resistor.resistor[3].v.re' * 'aimc.stator.resistor.resistor[3].i.re' - 'aimc.stator.resistor.resistor[3].v.im' * (-'aimc.stator.resistor.resistor[3].i.im')) ^ 2.0 + ('aimc.stator.resistor.resistor[3].v.re' * (-'aimc.stator.resistor.resistor[3].i.im') + 'aimc.stator.resistor.resistor[3].v.im' * 'aimc.stator.resistor.resistor[3].i.re') ^ 2.0);
-    'aimc.stator.resistor.resistor[3].pf' = cos('Modelica.Math.atan3'('aimc.stator.resistor.resistor[3].Q', 'aimc.stator.resistor.resistor[3].P', 0.0));
+    'aimc.stator.resistor.resistor[3].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.resistor.resistor[3].P', 'aimc.stator.resistor.resistor[3].Q'), 0.0));
     'aimc.stator.resistor.resistor[3].heatPort.T' = 'aimc.stator.resistor.resistor[3].T_heatPort';
     'aimc.stator.resistor.resistor[3].heatPort.Q_flow' = -'aimc.stator.resistor.resistor[3].LossPower';
     'aimc.stator.core.omega' = der('aimc.stator.core.port_p.reference.gamma');
-    'aimc.stator.core.V_m.re' = 'aimc.stator.core.port_p.V_m.re' - 'aimc.stator.core.port_n.V_m.re';
-    'aimc.stator.core.V_m.im' = 'aimc.stator.core.port_p.V_m.im' - 'aimc.stator.core.port_n.V_m.im';
     'aimc.stator.core.abs_V_m' = sqrt('aimc.stator.core.V_m.re' ^ 2.0 + 'aimc.stator.core.V_m.im' ^ 2.0);
     'aimc.stator.core.arg_V_m' = 'Modelica.Math.atan3'('aimc.stator.core.V_m.im', 'aimc.stator.core.V_m.re', 0.0);
     'aimc.stator.core.Phi.re' = 'aimc.stator.core.port_p.Phi.re';
@@ -2825,8 +2672,6 @@ package 'IMC_Inverter'
     'aimc.stator.core.heatPort.T' = 'aimc.stator.core.TheatPort';
     'aimc.stator.core.heatPort.Q_flow' = -'aimc.stator.core.lossPower';
     'aimc.stator.stray.omega' = der('aimc.stator.stray.port_p.reference.gamma');
-    'aimc.stator.stray.V_m.re' = 'aimc.stator.stray.port_p.V_m.re' - 'aimc.stator.stray.port_n.V_m.re';
-    'aimc.stator.stray.V_m.im' = 'aimc.stator.stray.port_p.V_m.im' - 'aimc.stator.stray.port_n.V_m.im';
     'aimc.stator.stray.abs_V_m' = sqrt('aimc.stator.stray.V_m.re' ^ 2.0 + 'aimc.stator.stray.V_m.im' ^ 2.0);
     'aimc.stator.stray.arg_V_m' = 'Modelica.Math.atan3'('aimc.stator.stray.V_m.im', 'aimc.stator.stray.V_m.re', 0.0);
     'aimc.stator.stray.Phi.re' = 'aimc.stator.stray.port_p.Phi.re';
@@ -2840,14 +2685,6 @@ package 'IMC_Inverter'
     'aimc.thermalAmbient.Q_flowFriction' = 'aimc.thermalAmbient.temperatureFriction.port.Q_flow';
     'aimc.thermalAmbient.Q_flowRotorWinding' = 'aimc.thermalAmbient.temperatureRotorWinding.port.Q_flow';
     'aimc.thermalAmbient.Q_flowTotal' = 'aimc.thermalAmbient.Q_flowStatorWinding' + 'aimc.thermalAmbient.Q_flowRotorWinding' + 'aimc.thermalAmbient.Q_flowStatorCore' + 'aimc.thermalAmbient.Q_flowRotorCore' + 'aimc.thermalAmbient.Q_flowStrayLoad' + 'aimc.thermalAmbient.Q_flowFriction';
-    'aimc.airGap.V_msr.re' = 'aimc.airGap.V_ms.re' * cos('aimc.airGap.gammar') - 'aimc.airGap.V_ms.im' * sin('aimc.airGap.gammar');
-    'aimc.airGap.V_msr.im' = 'aimc.airGap.V_ms.re' * sin('aimc.airGap.gammar') + 'aimc.airGap.V_ms.im' * cos('aimc.airGap.gammar');
-    'aimc.airGap.V_mrr.re' = 'aimc.airGap.V_mr.re' * cos('aimc.airGap.gammar') - 'aimc.airGap.V_mr.im' * sin('aimc.airGap.gammar');
-    'aimc.airGap.V_mrr.im' = 'aimc.airGap.V_mr.re' * sin('aimc.airGap.gammar') + 'aimc.airGap.V_mr.im' * cos('aimc.airGap.gammar');
-    'aimc.airGap.Phi_sr.re' = 'aimc.airGap.Phi_s.re' * cos('aimc.airGap.gammar') - 'aimc.airGap.Phi_s.im' * sin('aimc.airGap.gammar');
-    'aimc.airGap.Phi_sr.im' = 'aimc.airGap.Phi_s.re' * sin('aimc.airGap.gammar') + 'aimc.airGap.Phi_s.im' * cos('aimc.airGap.gammar');
-    'aimc.airGap.Phi_rr.re' = 'aimc.airGap.Phi_r.re' * cos('aimc.airGap.gammar') - 'aimc.airGap.Phi_r.im' * sin('aimc.airGap.gammar');
-    'aimc.airGap.Phi_rr.im' = 'aimc.airGap.Phi_r.re' * sin('aimc.airGap.gammar') + 'aimc.airGap.Phi_r.im' * cos('aimc.airGap.gammar');
     'aimc.airGap.gamma' = 2.0 * ('aimc.airGap.flange_a.phi' - 'aimc.airGap.support.phi');
     'aimc.airGap.gammas' = 'aimc.airGap.port_sp.reference.gamma';
     'aimc.airGap.gammar' = 'aimc.airGap.port_rp.reference.gamma';
@@ -2864,8 +2701,6 @@ package 'IMC_Inverter'
     'aimc.ir[3].re' = 'aimc.rotorCage.i[3].re';
     'aimc.ir[3].im' = 'aimc.rotorCage.i[3].im';
     'aimc.rotorCage.omega' = der('aimc.rotorCage.port_p.reference.gamma');
-    'aimc.rotorCage.V_m.re' = 'aimc.rotorCage.port_p.V_m.re' - 'aimc.rotorCage.port_n.V_m.re';
-    'aimc.rotorCage.V_m.im' = 'aimc.rotorCage.port_p.V_m.im' - 'aimc.rotorCage.port_n.V_m.im';
     'aimc.rotorCage.abs_V_m' = sqrt('aimc.rotorCage.V_m.re' ^ 2.0 + 'aimc.rotorCage.V_m.im' ^ 2.0);
     'aimc.rotorCage.arg_V_m' = 'Modelica.Math.atan3'('aimc.rotorCage.V_m.im', 'aimc.rotorCage.V_m.re', 0.0);
     'aimc.rotorCage.Phi.re' = 'aimc.rotorCage.port_p.Phi.re';
@@ -2896,7 +2731,7 @@ package 'IMC_Inverter'
     'aimc.rotorCage.resistor.resistor[1].P' = 'aimc.rotorCage.resistor.resistor[1].v.re' * 'aimc.rotorCage.resistor.resistor[1].i.re' - 'aimc.rotorCage.resistor.resistor[1].v.im' * (-'aimc.rotorCage.resistor.resistor[1].i.im');
     'aimc.rotorCage.resistor.resistor[1].Q' = 'aimc.rotorCage.resistor.resistor[1].v.re' * (-'aimc.rotorCage.resistor.resistor[1].i.im') + 'aimc.rotorCage.resistor.resistor[1].v.im' * 'aimc.rotorCage.resistor.resistor[1].i.re';
     'aimc.rotorCage.resistor.resistor[1].S' = sqrt(('aimc.rotorCage.resistor.resistor[1].v.re' * 'aimc.rotorCage.resistor.resistor[1].i.re' - 'aimc.rotorCage.resistor.resistor[1].v.im' * (-'aimc.rotorCage.resistor.resistor[1].i.im')) ^ 2.0 + ('aimc.rotorCage.resistor.resistor[1].v.re' * (-'aimc.rotorCage.resistor.resistor[1].i.im') + 'aimc.rotorCage.resistor.resistor[1].v.im' * 'aimc.rotorCage.resistor.resistor[1].i.re') ^ 2.0);
-    'aimc.rotorCage.resistor.resistor[1].pf' = cos('Modelica.Math.atan3'('aimc.rotorCage.resistor.resistor[1].Q', 'aimc.rotorCage.resistor.resistor[1].P', 0.0));
+    'aimc.rotorCage.resistor.resistor[1].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.rotorCage.resistor.resistor[1].P', 'aimc.rotorCage.resistor.resistor[1].Q'), 0.0));
     'aimc.rotorCage.resistor.resistor[1].heatPort.T' = 'aimc.rotorCage.resistor.resistor[1].T_heatPort';
     'aimc.rotorCage.resistor.resistor[1].heatPort.Q_flow' = -'aimc.rotorCage.resistor.resistor[1].LossPower';
     'aimc.rotorCage.resistor.resistor[2].abs_v' = sqrt('aimc.rotorCage.resistor.resistor[2].v.re' ^ 2.0 + 'aimc.rotorCage.resistor.resistor[2].v.im' ^ 2.0);
@@ -2906,7 +2741,7 @@ package 'IMC_Inverter'
     'aimc.rotorCage.resistor.resistor[2].P' = 'aimc.rotorCage.resistor.resistor[2].v.re' * 'aimc.rotorCage.resistor.resistor[2].i.re' - 'aimc.rotorCage.resistor.resistor[2].v.im' * (-'aimc.rotorCage.resistor.resistor[2].i.im');
     'aimc.rotorCage.resistor.resistor[2].Q' = 'aimc.rotorCage.resistor.resistor[2].v.re' * (-'aimc.rotorCage.resistor.resistor[2].i.im') + 'aimc.rotorCage.resistor.resistor[2].v.im' * 'aimc.rotorCage.resistor.resistor[2].i.re';
     'aimc.rotorCage.resistor.resistor[2].S' = sqrt(('aimc.rotorCage.resistor.resistor[2].v.re' * 'aimc.rotorCage.resistor.resistor[2].i.re' - 'aimc.rotorCage.resistor.resistor[2].v.im' * (-'aimc.rotorCage.resistor.resistor[2].i.im')) ^ 2.0 + ('aimc.rotorCage.resistor.resistor[2].v.re' * (-'aimc.rotorCage.resistor.resistor[2].i.im') + 'aimc.rotorCage.resistor.resistor[2].v.im' * 'aimc.rotorCage.resistor.resistor[2].i.re') ^ 2.0);
-    'aimc.rotorCage.resistor.resistor[2].pf' = cos('Modelica.Math.atan3'('aimc.rotorCage.resistor.resistor[2].Q', 'aimc.rotorCage.resistor.resistor[2].P', 0.0));
+    'aimc.rotorCage.resistor.resistor[2].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.rotorCage.resistor.resistor[2].P', 'aimc.rotorCage.resistor.resistor[2].Q'), 0.0));
     'aimc.rotorCage.resistor.resistor[2].heatPort.T' = 'aimc.rotorCage.resistor.resistor[2].T_heatPort';
     'aimc.rotorCage.resistor.resistor[2].heatPort.Q_flow' = -'aimc.rotorCage.resistor.resistor[2].LossPower';
     'aimc.rotorCage.resistor.resistor[3].abs_v' = sqrt('aimc.rotorCage.resistor.resistor[3].v.re' ^ 2.0 + 'aimc.rotorCage.resistor.resistor[3].v.im' ^ 2.0);
@@ -2916,12 +2751,10 @@ package 'IMC_Inverter'
     'aimc.rotorCage.resistor.resistor[3].P' = 'aimc.rotorCage.resistor.resistor[3].v.re' * 'aimc.rotorCage.resistor.resistor[3].i.re' - 'aimc.rotorCage.resistor.resistor[3].v.im' * (-'aimc.rotorCage.resistor.resistor[3].i.im');
     'aimc.rotorCage.resistor.resistor[3].Q' = 'aimc.rotorCage.resistor.resistor[3].v.re' * (-'aimc.rotorCage.resistor.resistor[3].i.im') + 'aimc.rotorCage.resistor.resistor[3].v.im' * 'aimc.rotorCage.resistor.resistor[3].i.re';
     'aimc.rotorCage.resistor.resistor[3].S' = sqrt(('aimc.rotorCage.resistor.resistor[3].v.re' * 'aimc.rotorCage.resistor.resistor[3].i.re' - 'aimc.rotorCage.resistor.resistor[3].v.im' * (-'aimc.rotorCage.resistor.resistor[3].i.im')) ^ 2.0 + ('aimc.rotorCage.resistor.resistor[3].v.re' * (-'aimc.rotorCage.resistor.resistor[3].i.im') + 'aimc.rotorCage.resistor.resistor[3].v.im' * 'aimc.rotorCage.resistor.resistor[3].i.re') ^ 2.0);
-    'aimc.rotorCage.resistor.resistor[3].pf' = cos('Modelica.Math.atan3'('aimc.rotorCage.resistor.resistor[3].Q', 'aimc.rotorCage.resistor.resistor[3].P', 0.0));
+    'aimc.rotorCage.resistor.resistor[3].pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.rotorCage.resistor.resistor[3].P', 'aimc.rotorCage.resistor.resistor[3].Q'), 0.0));
     'aimc.rotorCage.resistor.resistor[3].heatPort.T' = 'aimc.rotorCage.resistor.resistor[3].T_heatPort';
     'aimc.rotorCage.resistor.resistor[3].heatPort.Q_flow' = -'aimc.rotorCage.resistor.resistor[3].LossPower';
     'aimc.rotorCage.strayReluctance.omega' = der('aimc.rotorCage.strayReluctance.port_p.reference.gamma');
-    'aimc.rotorCage.strayReluctance.V_m.re' = 'aimc.rotorCage.strayReluctance.port_p.V_m.re' - 'aimc.rotorCage.strayReluctance.port_n.V_m.re';
-    'aimc.rotorCage.strayReluctance.V_m.im' = 'aimc.rotorCage.strayReluctance.port_p.V_m.im' - 'aimc.rotorCage.strayReluctance.port_n.V_m.im';
     'aimc.rotorCage.strayReluctance.abs_V_m' = sqrt('aimc.rotorCage.strayReluctance.V_m.re' ^ 2.0 + 'aimc.rotorCage.strayReluctance.V_m.im' ^ 2.0);
     'aimc.rotorCage.strayReluctance.arg_V_m' = 'Modelica.Math.atan3'('aimc.rotorCage.strayReluctance.V_m.im', 'aimc.rotorCage.strayReluctance.V_m.re', 0.0);
     'aimc.rotorCage.strayReluctance.Phi.re' = 'aimc.rotorCage.strayReluctance.port_p.Phi.re';
@@ -3981,12 +3814,12 @@ package 'IMC_Inverter'
     'terminalBox.plugSupply.pin[3].i.im' + 'currentQuasiRMSSensor.plug_n.pin[3].i.im' = 0.0;
     'ground1.pin.i.re' + 'terminalBox.starpoint.i.re' = 0.0;
     'ground1.pin.i.im' + 'terminalBox.starpoint.i.im' = 0.0;
-    'aimc.vs[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.plug_sp.pin[1].v', 'aimc.plug_sn.pin[1].v')).re;
-    'aimc.vs[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.plug_sp.pin[1].v', 'aimc.plug_sn.pin[1].v')).im;
-    'aimc.vs[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.plug_sp.pin[2].v', 'aimc.plug_sn.pin[2].v')).re;
-    'aimc.vs[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.plug_sp.pin[2].v', 'aimc.plug_sn.pin[2].v')).im;
-    'aimc.vs[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.plug_sp.pin[3].v', 'aimc.plug_sn.pin[3].v')).re;
-    'aimc.vs[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.plug_sp.pin[3].v', 'aimc.plug_sn.pin[3].v')).im;
+    'aimc.vs[1].re' = 'aimc.plug_sp.pin[1].v.re' - 'aimc.plug_sn.pin[1].v.re';
+    'aimc.vs[1].im' = 'aimc.plug_sp.pin[1].v.im' - 'aimc.plug_sn.pin[1].v.im';
+    'aimc.vs[2].re' = 'aimc.plug_sp.pin[2].v.re' - 'aimc.plug_sn.pin[2].v.re';
+    'aimc.vs[2].im' = 'aimc.plug_sp.pin[2].v.im' - 'aimc.plug_sn.pin[2].v.im';
+    'aimc.vs[3].re' = 'aimc.plug_sp.pin[3].v.re' - 'aimc.plug_sn.pin[3].v.re';
+    'aimc.vs[3].im' = 'aimc.plug_sp.pin[3].v.im' - 'aimc.plug_sn.pin[3].v.im';
     'aimc.abs_vs[1]' = 'Modelica.ComplexMath.abs'('aimc.vs[1]');
     'aimc.abs_vs[2]' = 'Modelica.ComplexMath.abs'('aimc.vs[2]');
     'aimc.abs_vs[3]' = 'Modelica.ComplexMath.abs'('aimc.vs[3]');
@@ -3999,18 +3832,18 @@ package 'IMC_Inverter'
     'aimc.arg_is[1]' = 'Modelica.ComplexMath.arg'('aimc.is[1]', 0.0);
     'aimc.arg_is[2]' = 'Modelica.ComplexMath.arg'('aimc.is[2]', 0.0);
     'aimc.arg_is[3]' = 'Modelica.ComplexMath.arg'('aimc.is[3]', 0.0);
-    'aimc.Ps[1]' = 'aimc.vs[1].re' * 'aimc.is[1].re' - 'aimc.vs[1].im' * (-'aimc.is[1].im');
-    'aimc.Ps[2]' = 'aimc.vs[2].re' * 'aimc.is[2].re' - 'aimc.vs[2].im' * (-'aimc.is[2].im');
-    'aimc.Ps[3]' = 'aimc.vs[3].re' * 'aimc.is[3].re' - 'aimc.vs[3].im' * (-'aimc.is[3].im');
-    'aimc.Qs[1]' = 'aimc.vs[1].re' * (-'aimc.is[1].im') + 'aimc.vs[1].im' * 'aimc.is[1].re';
-    'aimc.Qs[2]' = 'aimc.vs[2].re' * (-'aimc.is[2].im') + 'aimc.vs[2].im' * 'aimc.is[2].re';
-    'aimc.Qs[3]' = 'aimc.vs[3].re' * (-'aimc.is[3].im') + 'aimc.vs[3].im' * 'aimc.is[3].re';
-    'aimc.Ss[1]' = sqrt(('aimc.vs[1].re' * 'aimc.is[1].re' - 'aimc.vs[1].im' * (-'aimc.is[1].im')) ^ 2.0 + ('aimc.vs[1].re' * (-'aimc.is[1].im') + 'aimc.vs[1].im' * 'aimc.is[1].re') ^ 2.0);
-    'aimc.Ss[2]' = sqrt(('aimc.vs[2].re' * 'aimc.is[2].re' - 'aimc.vs[2].im' * (-'aimc.is[2].im')) ^ 2.0 + ('aimc.vs[2].re' * (-'aimc.is[2].im') + 'aimc.vs[2].im' * 'aimc.is[2].re') ^ 2.0);
-    'aimc.Ss[3]' = sqrt(('aimc.vs[3].re' * 'aimc.is[3].re' - 'aimc.vs[3].im' * (-'aimc.is[3].im')) ^ 2.0 + ('aimc.vs[3].re' * (-'aimc.is[3].im') + 'aimc.vs[3].im' * 'aimc.is[3].re') ^ 2.0);
-    'aimc.pfs[1]' = cos('Modelica.Math.atan3'('aimc.Qs[1]', 'aimc.Ps[1]', 0.0));
-    'aimc.pfs[2]' = cos('Modelica.Math.atan3'('aimc.Qs[2]', 'aimc.Ps[2]', 0.0));
-    'aimc.pfs[3]' = cos('Modelica.Math.atan3'('aimc.Qs[3]', 'aimc.Ps[3]', 0.0));
+    'aimc.Ps[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[1]', 'Modelica.ComplexMath.conj'('aimc.is[1]')));
+    'aimc.Ps[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[2]', 'Modelica.ComplexMath.conj'('aimc.is[2]')));
+    'aimc.Ps[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[3]', 'Modelica.ComplexMath.conj'('aimc.is[3]')));
+    'aimc.Qs[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[1]', 'Modelica.ComplexMath.conj'('aimc.is[1]')));
+    'aimc.Qs[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[2]', 'Modelica.ComplexMath.conj'('aimc.is[2]')));
+    'aimc.Qs[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[3]', 'Modelica.ComplexMath.conj'('aimc.is[3]')));
+    'aimc.Ss[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[1]', 'Modelica.ComplexMath.conj'('aimc.is[1]')));
+    'aimc.Ss[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[2]', 'Modelica.ComplexMath.conj'('aimc.is[2]')));
+    'aimc.Ss[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[3]', 'Modelica.ComplexMath.conj'('aimc.is[3]')));
+    'aimc.pfs[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.Ps[1]', 'aimc.Qs[1]'), 0.0));
+    'aimc.pfs[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.Ps[2]', 'aimc.Qs[2]'), 0.0));
+    'aimc.pfs[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.Ps[3]', 'aimc.Qs[3]'), 0.0));
     'aimc.inertiaRotor.phi' = 'aimc.inertiaRotor.flange_a.phi';
     'aimc.inertiaRotor.phi' = 'aimc.inertiaRotor.flange_b.phi';
     'aimc.inertiaRotor.w' = der('aimc.inertiaRotor.phi');
@@ -4022,12 +3855,12 @@ package 'IMC_Inverter'
     'aimc.inertiaStator.a' = der('aimc.inertiaStator.w');
     0.29 * 'aimc.inertiaStator.a' = 'aimc.inertiaStator.flange_a.tau' + 'aimc.inertiaStator.flange_b.tau';
     'aimc.fixed.flange.phi' = 0.0;
-    'aimc.stator.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.plug_p.pin[1].v', 'aimc.stator.plug_n.pin[1].v')).re;
-    'aimc.stator.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.plug_p.pin[1].v', 'aimc.stator.plug_n.pin[1].v')).im;
-    'aimc.stator.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.plug_p.pin[2].v', 'aimc.stator.plug_n.pin[2].v')).re;
-    'aimc.stator.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.plug_p.pin[2].v', 'aimc.stator.plug_n.pin[2].v')).im;
-    'aimc.stator.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.plug_p.pin[3].v', 'aimc.stator.plug_n.pin[3].v')).re;
-    'aimc.stator.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.plug_p.pin[3].v', 'aimc.stator.plug_n.pin[3].v')).im;
+    'aimc.stator.v[1].re' = 'aimc.stator.plug_p.pin[1].v.re' - 'aimc.stator.plug_n.pin[1].v.re';
+    'aimc.stator.v[1].im' = 'aimc.stator.plug_p.pin[1].v.im' - 'aimc.stator.plug_n.pin[1].v.im';
+    'aimc.stator.v[2].re' = 'aimc.stator.plug_p.pin[2].v.re' - 'aimc.stator.plug_n.pin[2].v.re';
+    'aimc.stator.v[2].im' = 'aimc.stator.plug_p.pin[2].v.im' - 'aimc.stator.plug_n.pin[2].v.im';
+    'aimc.stator.v[3].re' = 'aimc.stator.plug_p.pin[3].v.re' - 'aimc.stator.plug_n.pin[3].v.re';
+    'aimc.stator.v[3].im' = 'aimc.stator.plug_p.pin[3].v.im' - 'aimc.stator.plug_n.pin[3].v.im';
     'aimc.stator.abs_v[1]' = 'Modelica.ComplexMath.abs'('aimc.stator.v[1]');
     'aimc.stator.abs_v[2]' = 'Modelica.ComplexMath.abs'('aimc.stator.v[2]');
     'aimc.stator.abs_v[3]' = 'Modelica.ComplexMath.abs'('aimc.stator.v[3]');
@@ -4040,18 +3873,20 @@ package 'IMC_Inverter'
     'aimc.stator.arg_i[1]' = 'Modelica.ComplexMath.arg'('aimc.stator.i[1]', 0.0);
     'aimc.stator.arg_i[2]' = 'Modelica.ComplexMath.arg'('aimc.stator.i[2]', 0.0);
     'aimc.stator.arg_i[3]' = 'Modelica.ComplexMath.arg'('aimc.stator.i[3]', 0.0);
-    'aimc.stator.P[1]' = 'aimc.stator.v[1].re' * 'aimc.stator.i[1].re' - 'aimc.stator.v[1].im' * (-'aimc.stator.i[1].im');
-    'aimc.stator.P[2]' = 'aimc.stator.v[2].re' * 'aimc.stator.i[2].re' - 'aimc.stator.v[2].im' * (-'aimc.stator.i[2].im');
-    'aimc.stator.P[3]' = 'aimc.stator.v[3].re' * 'aimc.stator.i[3].re' - 'aimc.stator.v[3].im' * (-'aimc.stator.i[3].im');
-    'aimc.stator.Q[1]' = 'aimc.stator.v[1].re' * (-'aimc.stator.i[1].im') + 'aimc.stator.v[1].im' * 'aimc.stator.i[1].re';
-    'aimc.stator.Q[2]' = 'aimc.stator.v[2].re' * (-'aimc.stator.i[2].im') + 'aimc.stator.v[2].im' * 'aimc.stator.i[2].re';
-    'aimc.stator.Q[3]' = 'aimc.stator.v[3].re' * (-'aimc.stator.i[3].im') + 'aimc.stator.v[3].im' * 'aimc.stator.i[3].re';
-    'aimc.stator.S[1]' = sqrt(('aimc.stator.v[1].re' * 'aimc.stator.i[1].re' - 'aimc.stator.v[1].im' * (-'aimc.stator.i[1].im')) ^ 2.0 + ('aimc.stator.v[1].re' * (-'aimc.stator.i[1].im') + 'aimc.stator.v[1].im' * 'aimc.stator.i[1].re') ^ 2.0);
-    'aimc.stator.S[2]' = sqrt(('aimc.stator.v[2].re' * 'aimc.stator.i[2].re' - 'aimc.stator.v[2].im' * (-'aimc.stator.i[2].im')) ^ 2.0 + ('aimc.stator.v[2].re' * (-'aimc.stator.i[2].im') + 'aimc.stator.v[2].im' * 'aimc.stator.i[2].re') ^ 2.0);
-    'aimc.stator.S[3]' = sqrt(('aimc.stator.v[3].re' * 'aimc.stator.i[3].re' - 'aimc.stator.v[3].im' * (-'aimc.stator.i[3].im')) ^ 2.0 + ('aimc.stator.v[3].re' * (-'aimc.stator.i[3].im') + 'aimc.stator.v[3].im' * 'aimc.stator.i[3].re') ^ 2.0);
-    'aimc.stator.pf[1]' = cos('Modelica.Math.atan3'('aimc.stator.Q[1]', 'aimc.stator.P[1]', 0.0));
-    'aimc.stator.pf[2]' = cos('Modelica.Math.atan3'('aimc.stator.Q[2]', 'aimc.stator.P[2]', 0.0));
-    'aimc.stator.pf[3]' = cos('Modelica.Math.atan3'('aimc.stator.Q[3]', 'aimc.stator.P[3]', 0.0));
+    'aimc.stator.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.v[1]', 'Modelica.ComplexMath.conj'('aimc.stator.i[1]')));
+    'aimc.stator.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.v[2]', 'Modelica.ComplexMath.conj'('aimc.stator.i[2]')));
+    'aimc.stator.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.v[3]', 'Modelica.ComplexMath.conj'('aimc.stator.i[3]')));
+    'aimc.stator.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.v[1]', 'Modelica.ComplexMath.conj'('aimc.stator.i[1]')));
+    'aimc.stator.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.v[2]', 'Modelica.ComplexMath.conj'('aimc.stator.i[2]')));
+    'aimc.stator.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.v[3]', 'Modelica.ComplexMath.conj'('aimc.stator.i[3]')));
+    'aimc.stator.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.v[1]', 'Modelica.ComplexMath.conj'('aimc.stator.i[1]')));
+    'aimc.stator.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.v[2]', 'Modelica.ComplexMath.conj'('aimc.stator.i[2]')));
+    'aimc.stator.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.v[3]', 'Modelica.ComplexMath.conj'('aimc.stator.i[3]')));
+    'aimc.stator.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.P[1]', 'aimc.stator.Q[1]'), 0.0));
+    'aimc.stator.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.P[2]', 'aimc.stator.Q[2]'), 0.0));
+    'aimc.stator.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.P[3]', 'aimc.stator.Q[3]'), 0.0));
+    'aimc.stator.V_m.re' = 'aimc.stator.port_p.V_m.re' - 'aimc.stator.port_n.V_m.re';
+    'aimc.stator.V_m.im' = 'aimc.stator.port_p.V_m.im' - 'aimc.stator.port_n.V_m.im';
     'aimc.stator.electroMagneticConverter.abs_v[1]' = 'Modelica.ComplexMath.abs'('aimc.stator.electroMagneticConverter.v[1]');
     'aimc.stator.electroMagneticConverter.abs_v[2]' = 'Modelica.ComplexMath.abs'('aimc.stator.electroMagneticConverter.v[2]');
     'aimc.stator.electroMagneticConverter.abs_v[3]' = 'Modelica.ComplexMath.abs'('aimc.stator.electroMagneticConverter.v[3]');
@@ -4064,18 +3899,18 @@ package 'IMC_Inverter'
     'aimc.stator.electroMagneticConverter.arg_i[1]' = 'Modelica.ComplexMath.arg'('aimc.stator.electroMagneticConverter.i[1]', 0.0);
     'aimc.stator.electroMagneticConverter.arg_i[2]' = 'Modelica.ComplexMath.arg'('aimc.stator.electroMagneticConverter.i[2]', 0.0);
     'aimc.stator.electroMagneticConverter.arg_i[3]' = 'Modelica.ComplexMath.arg'('aimc.stator.electroMagneticConverter.i[3]', 0.0);
-    'aimc.stator.electroMagneticConverter.P[1]' = 'aimc.stator.electroMagneticConverter.v[1].re' * 'aimc.stator.electroMagneticConverter.i[1].re' - 'aimc.stator.electroMagneticConverter.v[1].im' * (-'aimc.stator.electroMagneticConverter.i[1].im');
-    'aimc.stator.electroMagneticConverter.P[2]' = 'aimc.stator.electroMagneticConverter.v[2].re' * 'aimc.stator.electroMagneticConverter.i[2].re' - 'aimc.stator.electroMagneticConverter.v[2].im' * (-'aimc.stator.electroMagneticConverter.i[2].im');
-    'aimc.stator.electroMagneticConverter.P[3]' = 'aimc.stator.electroMagneticConverter.v[3].re' * 'aimc.stator.electroMagneticConverter.i[3].re' - 'aimc.stator.electroMagneticConverter.v[3].im' * (-'aimc.stator.electroMagneticConverter.i[3].im');
-    'aimc.stator.electroMagneticConverter.Q[1]' = 'aimc.stator.electroMagneticConverter.v[1].re' * (-'aimc.stator.electroMagneticConverter.i[1].im') + 'aimc.stator.electroMagneticConverter.v[1].im' * 'aimc.stator.electroMagneticConverter.i[1].re';
-    'aimc.stator.electroMagneticConverter.Q[2]' = 'aimc.stator.electroMagneticConverter.v[2].re' * (-'aimc.stator.electroMagneticConverter.i[2].im') + 'aimc.stator.electroMagneticConverter.v[2].im' * 'aimc.stator.electroMagneticConverter.i[2].re';
-    'aimc.stator.electroMagneticConverter.Q[3]' = 'aimc.stator.electroMagneticConverter.v[3].re' * (-'aimc.stator.electroMagneticConverter.i[3].im') + 'aimc.stator.electroMagneticConverter.v[3].im' * 'aimc.stator.electroMagneticConverter.i[3].re';
-    'aimc.stator.electroMagneticConverter.S[1]' = sqrt(('aimc.stator.electroMagneticConverter.v[1].re' * 'aimc.stator.electroMagneticConverter.i[1].re' - 'aimc.stator.electroMagneticConverter.v[1].im' * (-'aimc.stator.electroMagneticConverter.i[1].im')) ^ 2.0 + ('aimc.stator.electroMagneticConverter.v[1].re' * (-'aimc.stator.electroMagneticConverter.i[1].im') + 'aimc.stator.electroMagneticConverter.v[1].im' * 'aimc.stator.electroMagneticConverter.i[1].re') ^ 2.0);
-    'aimc.stator.electroMagneticConverter.S[2]' = sqrt(('aimc.stator.electroMagneticConverter.v[2].re' * 'aimc.stator.electroMagneticConverter.i[2].re' - 'aimc.stator.electroMagneticConverter.v[2].im' * (-'aimc.stator.electroMagneticConverter.i[2].im')) ^ 2.0 + ('aimc.stator.electroMagneticConverter.v[2].re' * (-'aimc.stator.electroMagneticConverter.i[2].im') + 'aimc.stator.electroMagneticConverter.v[2].im' * 'aimc.stator.electroMagneticConverter.i[2].re') ^ 2.0);
-    'aimc.stator.electroMagneticConverter.S[3]' = sqrt(('aimc.stator.electroMagneticConverter.v[3].re' * 'aimc.stator.electroMagneticConverter.i[3].re' - 'aimc.stator.electroMagneticConverter.v[3].im' * (-'aimc.stator.electroMagneticConverter.i[3].im')) ^ 2.0 + ('aimc.stator.electroMagneticConverter.v[3].re' * (-'aimc.stator.electroMagneticConverter.i[3].im') + 'aimc.stator.electroMagneticConverter.v[3].im' * 'aimc.stator.electroMagneticConverter.i[3].re') ^ 2.0);
-    'aimc.stator.electroMagneticConverter.pf[1]' = cos('Modelica.Math.atan3'('aimc.stator.electroMagneticConverter.Q[1]', 'aimc.stator.electroMagneticConverter.P[1]', 0.0));
-    'aimc.stator.electroMagneticConverter.pf[2]' = cos('Modelica.Math.atan3'('aimc.stator.electroMagneticConverter.Q[2]', 'aimc.stator.electroMagneticConverter.P[2]', 0.0));
-    'aimc.stator.electroMagneticConverter.pf[3]' = cos('Modelica.Math.atan3'('aimc.stator.electroMagneticConverter.Q[3]', 'aimc.stator.electroMagneticConverter.P[3]', 0.0));
+    'aimc.stator.electroMagneticConverter.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.electroMagneticConverter.v[1]', 'Modelica.ComplexMath.conj'('aimc.stator.electroMagneticConverter.i[1]')));
+    'aimc.stator.electroMagneticConverter.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.electroMagneticConverter.v[2]', 'Modelica.ComplexMath.conj'('aimc.stator.electroMagneticConverter.i[2]')));
+    'aimc.stator.electroMagneticConverter.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.electroMagneticConverter.v[3]', 'Modelica.ComplexMath.conj'('aimc.stator.electroMagneticConverter.i[3]')));
+    'aimc.stator.electroMagneticConverter.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.electroMagneticConverter.v[1]', 'Modelica.ComplexMath.conj'('aimc.stator.electroMagneticConverter.i[1]')));
+    'aimc.stator.electroMagneticConverter.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.electroMagneticConverter.v[2]', 'Modelica.ComplexMath.conj'('aimc.stator.electroMagneticConverter.i[2]')));
+    'aimc.stator.electroMagneticConverter.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.electroMagneticConverter.v[3]', 'Modelica.ComplexMath.conj'('aimc.stator.electroMagneticConverter.i[3]')));
+    'aimc.stator.electroMagneticConverter.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.electroMagneticConverter.v[1]', 'Modelica.ComplexMath.conj'('aimc.stator.electroMagneticConverter.i[1]')));
+    'aimc.stator.electroMagneticConverter.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.electroMagneticConverter.v[2]', 'Modelica.ComplexMath.conj'('aimc.stator.electroMagneticConverter.i[2]')));
+    'aimc.stator.electroMagneticConverter.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.electroMagneticConverter.v[3]', 'Modelica.ComplexMath.conj'('aimc.stator.electroMagneticConverter.i[3]')));
+    'aimc.stator.electroMagneticConverter.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.electroMagneticConverter.P[1]', 'aimc.stator.electroMagneticConverter.Q[1]'), 0.0));
+    'aimc.stator.electroMagneticConverter.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.electroMagneticConverter.P[2]', 'aimc.stator.electroMagneticConverter.Q[2]'), 0.0));
+    'aimc.stator.electroMagneticConverter.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.electroMagneticConverter.P[3]', 'aimc.stator.electroMagneticConverter.Q[3]'), 0.0));
     'aimc.stator.electroMagneticConverter.vSymmetricalComponent[1].re' = 'aimc.stator.electroMagneticConverter.sTM[1,1].re' * 'aimc.stator.electroMagneticConverter.v[1].re' - 'aimc.stator.electroMagneticConverter.sTM[1,1].im' * 'aimc.stator.electroMagneticConverter.v[1].im' + 'aimc.stator.electroMagneticConverter.sTM[1,2].re' * 'aimc.stator.electroMagneticConverter.v[2].re' - 'aimc.stator.electroMagneticConverter.sTM[1,2].im' * 'aimc.stator.electroMagneticConverter.v[2].im' + 'aimc.stator.electroMagneticConverter.sTM[1,3].re' * 'aimc.stator.electroMagneticConverter.v[3].re' - 'aimc.stator.electroMagneticConverter.sTM[1,3].im' * 'aimc.stator.electroMagneticConverter.v[3].im';
     'aimc.stator.electroMagneticConverter.vSymmetricalComponent[1].im' = 'aimc.stator.electroMagneticConverter.sTM[1,1].re' * 'aimc.stator.electroMagneticConverter.v[1].im' + 'aimc.stator.electroMagneticConverter.sTM[1,1].im' * 'aimc.stator.electroMagneticConverter.v[1].re' + 'aimc.stator.electroMagneticConverter.sTM[1,2].re' * 'aimc.stator.electroMagneticConverter.v[2].im' + 'aimc.stator.electroMagneticConverter.sTM[1,2].im' * 'aimc.stator.electroMagneticConverter.v[2].re' + 'aimc.stator.electroMagneticConverter.sTM[1,3].re' * 'aimc.stator.electroMagneticConverter.v[3].im' + 'aimc.stator.electroMagneticConverter.sTM[1,3].im' * 'aimc.stator.electroMagneticConverter.v[3].re';
     'aimc.stator.electroMagneticConverter.iSymmetricalComponent[1].re' = 'aimc.stator.electroMagneticConverter.sTM[1,1].re' * 'aimc.stator.electroMagneticConverter.i[1].re' - 'aimc.stator.electroMagneticConverter.sTM[1,1].im' * 'aimc.stator.electroMagneticConverter.i[1].im' + 'aimc.stator.electroMagneticConverter.sTM[1,2].re' * 'aimc.stator.electroMagneticConverter.i[2].re' - 'aimc.stator.electroMagneticConverter.sTM[1,2].im' * 'aimc.stator.electroMagneticConverter.i[2].im' + 'aimc.stator.electroMagneticConverter.sTM[1,3].re' * 'aimc.stator.electroMagneticConverter.i[3].re' - 'aimc.stator.electroMagneticConverter.sTM[1,3].im' * 'aimc.stator.electroMagneticConverter.i[3].im';
@@ -4094,12 +3929,12 @@ package 'IMC_Inverter'
     'aimc.stator.electroMagneticConverter.port_p.Phi.im' + 'aimc.stator.electroMagneticConverter.port_n.Phi.im' = 0.0;
     'aimc.stator.electroMagneticConverter.port_p.V_m.re' - 'aimc.stator.electroMagneticConverter.port_n.V_m.re' = 'aimc.stator.electroMagneticConverter.V_m.re';
     'aimc.stator.electroMagneticConverter.port_p.V_m.im' - 'aimc.stator.electroMagneticConverter.port_n.V_m.im' = 'aimc.stator.electroMagneticConverter.V_m.im';
-    'aimc.stator.electroMagneticConverter.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.electroMagneticConverter.plug_p.pin[1].v', 'aimc.stator.electroMagneticConverter.plug_n.pin[1].v')).re;
-    'aimc.stator.electroMagneticConverter.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.electroMagneticConverter.plug_p.pin[1].v', 'aimc.stator.electroMagneticConverter.plug_n.pin[1].v')).im;
-    'aimc.stator.electroMagneticConverter.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.electroMagneticConverter.plug_p.pin[2].v', 'aimc.stator.electroMagneticConverter.plug_n.pin[2].v')).re;
-    'aimc.stator.electroMagneticConverter.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.electroMagneticConverter.plug_p.pin[2].v', 'aimc.stator.electroMagneticConverter.plug_n.pin[2].v')).im;
-    'aimc.stator.electroMagneticConverter.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.electroMagneticConverter.plug_p.pin[3].v', 'aimc.stator.electroMagneticConverter.plug_n.pin[3].v')).re;
-    'aimc.stator.electroMagneticConverter.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.electroMagneticConverter.plug_p.pin[3].v', 'aimc.stator.electroMagneticConverter.plug_n.pin[3].v')).im;
+    'aimc.stator.electroMagneticConverter.v[1].re' = 'aimc.stator.electroMagneticConverter.plug_p.pin[1].v.re' - 'aimc.stator.electroMagneticConverter.plug_n.pin[1].v.re';
+    'aimc.stator.electroMagneticConverter.v[1].im' = 'aimc.stator.electroMagneticConverter.plug_p.pin[1].v.im' - 'aimc.stator.electroMagneticConverter.plug_n.pin[1].v.im';
+    'aimc.stator.electroMagneticConverter.v[2].re' = 'aimc.stator.electroMagneticConverter.plug_p.pin[2].v.re' - 'aimc.stator.electroMagneticConverter.plug_n.pin[2].v.re';
+    'aimc.stator.electroMagneticConverter.v[2].im' = 'aimc.stator.electroMagneticConverter.plug_p.pin[2].v.im' - 'aimc.stator.electroMagneticConverter.plug_n.pin[2].v.im';
+    'aimc.stator.electroMagneticConverter.v[3].re' = 'aimc.stator.electroMagneticConverter.plug_p.pin[3].v.re' - 'aimc.stator.electroMagneticConverter.plug_n.pin[3].v.re';
+    'aimc.stator.electroMagneticConverter.v[3].im' = 'aimc.stator.electroMagneticConverter.plug_p.pin[3].v.im' - 'aimc.stator.electroMagneticConverter.plug_n.pin[3].v.im';
     'aimc.stator.electroMagneticConverter.i[1].re' = 'aimc.stator.electroMagneticConverter.plug_p.pin[1].i.re';
     'aimc.stator.electroMagneticConverter.i[1].im' = 'aimc.stator.electroMagneticConverter.plug_p.pin[1].i.im';
     'aimc.stator.electroMagneticConverter.i[2].re' = 'aimc.stator.electroMagneticConverter.plug_p.pin[2].i.re';
@@ -4112,14 +3947,14 @@ package 'IMC_Inverter'
     ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.stator.electroMagneticConverter.plug_p.pin[1].i', 'aimc.stator.electroMagneticConverter.plug_n.pin[1].i')).im = 0.0;
     ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.stator.electroMagneticConverter.plug_p.pin[2].i', 'aimc.stator.electroMagneticConverter.plug_n.pin[2].i')).im = 0.0;
     ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.stator.electroMagneticConverter.plug_p.pin[3].i', 'aimc.stator.electroMagneticConverter.plug_n.pin[3].i')).im = 0.0;
-    'aimc.stator.electroMagneticConverter.V_m.re' = 0.9003163161571062 * ('aimc.stator.electroMagneticConverter.N.re' * 'aimc.stator.electroMagneticConverter.iSymmetricalComponent[1].re' - 'aimc.stator.electroMagneticConverter.N.im' * 'aimc.stator.electroMagneticConverter.iSymmetricalComponent[1].im') * 3.0 / 2.0;
-    'aimc.stator.electroMagneticConverter.V_m.im' = 0.9003163161571062 * ('aimc.stator.electroMagneticConverter.N.re' * 'aimc.stator.electroMagneticConverter.iSymmetricalComponent[1].im' + 'aimc.stator.electroMagneticConverter.N.im' * 'aimc.stator.electroMagneticConverter.iSymmetricalComponent[1].re') * 3.0 / 2.0;
+    'aimc.stator.electroMagneticConverter.V_m.re' = 0.9003163161571062 * 'Modelica.ComplexMath.real'('Complex.\'*\'.multiply'('Complex'(1.0, 0.0), 'aimc.stator.electroMagneticConverter.iSymmetricalComponent[1]')) * 3.0 / 2.0;
+    'aimc.stator.electroMagneticConverter.V_m.im' = 0.9003163161571062 * 'Modelica.ComplexMath.imag'('Complex.\'*\'.multiply'('Complex'(1.0, 0.0), 'aimc.stator.electroMagneticConverter.iSymmetricalComponent[1]')) * 3.0 / 2.0;
     'aimc.stator.electroMagneticConverter.iSymmetricalComponent[2].re' = 0.0;
     'aimc.stator.electroMagneticConverter.iSymmetricalComponent[2].im' = 0.0;
     'aimc.stator.electroMagneticConverter.iSymmetricalComponent[3].re' = 0.0;
     'aimc.stator.electroMagneticConverter.iSymmetricalComponent[3].im' = 0.0;
-    -1.4142135623730951 * 'aimc.stator.electroMagneticConverter.vSymmetricalComponent[1].re' = 'aimc.stator.electroMagneticConverter.N.im' * 'aimc.stator.electroMagneticConverter.omega' * 'aimc.stator.electroMagneticConverter.Phi.re' - 'aimc.stator.electroMagneticConverter.N.re' * 'aimc.stator.electroMagneticConverter.omega' * 'aimc.stator.electroMagneticConverter.Phi.im';
-    -1.4142135623730951 * 'aimc.stator.electroMagneticConverter.vSymmetricalComponent[1].im' = 'aimc.stator.electroMagneticConverter.N.im' * 'aimc.stator.electroMagneticConverter.omega' * 'aimc.stator.electroMagneticConverter.Phi.im' + 'aimc.stator.electroMagneticConverter.N.re' * 'aimc.stator.electroMagneticConverter.omega' * 'aimc.stator.electroMagneticConverter.Phi.re';
+    -(1.4142135623730951 * 'aimc.stator.electroMagneticConverter.vSymmetricalComponent[1].re' - 0.0 * 'aimc.stator.electroMagneticConverter.vSymmetricalComponent[1].im') = (0.0 * 'aimc.stator.electroMagneticConverter.omega' - 1.0 * 0.0) * 'aimc.stator.electroMagneticConverter.Phi.re' - (0.0 * 0.0 + 1.0 * 'aimc.stator.electroMagneticConverter.omega') * 'aimc.stator.electroMagneticConverter.Phi.im';
+    -(1.4142135623730951 * 'aimc.stator.electroMagneticConverter.vSymmetricalComponent[1].im' + 0.0 * 'aimc.stator.electroMagneticConverter.vSymmetricalComponent[1].re') = (0.0 * 'aimc.stator.electroMagneticConverter.omega' - 1.0 * 0.0) * 'aimc.stator.electroMagneticConverter.Phi.im' + (0.0 * 0.0 + 1.0 * 'aimc.stator.electroMagneticConverter.omega') * 'aimc.stator.electroMagneticConverter.Phi.re';
     'aimc.stator.electroMagneticConverter.port_p.reference.gamma' = 'aimc.stator.electroMagneticConverter.port_n.reference.gamma';
     'aimc.stator.electroMagneticConverter.plug_p.reference.gamma' = 'aimc.stator.electroMagneticConverter.plug_n.reference.gamma';
     'aimc.stator.electroMagneticConverter.plug_p.reference.gamma' = 'aimc.stator.electroMagneticConverter.port_p.reference.gamma';
@@ -4189,21 +4024,21 @@ package 'IMC_Inverter'
     'aimc.stator.resistor.arg_i[1]' = 'Modelica.ComplexMath.arg'('aimc.stator.resistor.i[1]', 0.0);
     'aimc.stator.resistor.arg_i[2]' = 'Modelica.ComplexMath.arg'('aimc.stator.resistor.i[2]', 0.0);
     'aimc.stator.resistor.arg_i[3]' = 'Modelica.ComplexMath.arg'('aimc.stator.resistor.i[3]', 0.0);
-    'aimc.stator.resistor.P[1]' = 'aimc.stator.resistor.v[1].re' * 'aimc.stator.resistor.i[1].re' - 'aimc.stator.resistor.v[1].im' * (-'aimc.stator.resistor.i[1].im');
-    'aimc.stator.resistor.P[2]' = 'aimc.stator.resistor.v[2].re' * 'aimc.stator.resistor.i[2].re' - 'aimc.stator.resistor.v[2].im' * (-'aimc.stator.resistor.i[2].im');
-    'aimc.stator.resistor.P[3]' = 'aimc.stator.resistor.v[3].re' * 'aimc.stator.resistor.i[3].re' - 'aimc.stator.resistor.v[3].im' * (-'aimc.stator.resistor.i[3].im');
-    'aimc.stator.resistor.Q[1]' = 'aimc.stator.resistor.v[1].re' * (-'aimc.stator.resistor.i[1].im') + 'aimc.stator.resistor.v[1].im' * 'aimc.stator.resistor.i[1].re';
-    'aimc.stator.resistor.Q[2]' = 'aimc.stator.resistor.v[2].re' * (-'aimc.stator.resistor.i[2].im') + 'aimc.stator.resistor.v[2].im' * 'aimc.stator.resistor.i[2].re';
-    'aimc.stator.resistor.Q[3]' = 'aimc.stator.resistor.v[3].re' * (-'aimc.stator.resistor.i[3].im') + 'aimc.stator.resistor.v[3].im' * 'aimc.stator.resistor.i[3].re';
-    'aimc.stator.resistor.S[1]' = sqrt(('aimc.stator.resistor.v[1].re' * 'aimc.stator.resistor.i[1].re' - 'aimc.stator.resistor.v[1].im' * (-'aimc.stator.resistor.i[1].im')) ^ 2.0 + ('aimc.stator.resistor.v[1].re' * (-'aimc.stator.resistor.i[1].im') + 'aimc.stator.resistor.v[1].im' * 'aimc.stator.resistor.i[1].re') ^ 2.0);
-    'aimc.stator.resistor.S[2]' = sqrt(('aimc.stator.resistor.v[2].re' * 'aimc.stator.resistor.i[2].re' - 'aimc.stator.resistor.v[2].im' * (-'aimc.stator.resistor.i[2].im')) ^ 2.0 + ('aimc.stator.resistor.v[2].re' * (-'aimc.stator.resistor.i[2].im') + 'aimc.stator.resistor.v[2].im' * 'aimc.stator.resistor.i[2].re') ^ 2.0);
-    'aimc.stator.resistor.S[3]' = sqrt(('aimc.stator.resistor.v[3].re' * 'aimc.stator.resistor.i[3].re' - 'aimc.stator.resistor.v[3].im' * (-'aimc.stator.resistor.i[3].im')) ^ 2.0 + ('aimc.stator.resistor.v[3].re' * (-'aimc.stator.resistor.i[3].im') + 'aimc.stator.resistor.v[3].im' * 'aimc.stator.resistor.i[3].re') ^ 2.0);
-    'aimc.stator.resistor.pf[1]' = cos('Modelica.Math.atan3'('aimc.stator.resistor.Q[1]', 'aimc.stator.resistor.P[1]', 0.0));
-    'aimc.stator.resistor.pf[2]' = cos('Modelica.Math.atan3'('aimc.stator.resistor.Q[2]', 'aimc.stator.resistor.P[2]', 0.0));
-    'aimc.stator.resistor.pf[3]' = cos('Modelica.Math.atan3'('aimc.stator.resistor.Q[3]', 'aimc.stator.resistor.P[3]', 0.0));
+    'aimc.stator.resistor.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.resistor.v[1]', 'Modelica.ComplexMath.conj'('aimc.stator.resistor.i[1]')));
+    'aimc.stator.resistor.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.resistor.v[2]', 'Modelica.ComplexMath.conj'('aimc.stator.resistor.i[2]')));
+    'aimc.stator.resistor.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.resistor.v[3]', 'Modelica.ComplexMath.conj'('aimc.stator.resistor.i[3]')));
+    'aimc.stator.resistor.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.resistor.v[1]', 'Modelica.ComplexMath.conj'('aimc.stator.resistor.i[1]')));
+    'aimc.stator.resistor.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.resistor.v[2]', 'Modelica.ComplexMath.conj'('aimc.stator.resistor.i[2]')));
+    'aimc.stator.resistor.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.resistor.v[3]', 'Modelica.ComplexMath.conj'('aimc.stator.resistor.i[3]')));
+    'aimc.stator.resistor.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.resistor.v[1]', 'Modelica.ComplexMath.conj'('aimc.stator.resistor.i[1]')));
+    'aimc.stator.resistor.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.resistor.v[2]', 'Modelica.ComplexMath.conj'('aimc.stator.resistor.i[2]')));
+    'aimc.stator.resistor.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.stator.resistor.v[3]', 'Modelica.ComplexMath.conj'('aimc.stator.resistor.i[3]')));
+    'aimc.stator.resistor.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.resistor.P[1]', 'aimc.stator.resistor.Q[1]'), 0.0));
+    'aimc.stator.resistor.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.resistor.P[2]', 'aimc.stator.resistor.Q[2]'), 0.0));
+    'aimc.stator.resistor.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.stator.resistor.P[3]', 'aimc.stator.resistor.Q[3]'), 0.0));
     'aimc.stator.resistor.resistor[1].R_actual' = 0.03;
-    'aimc.stator.resistor.resistor[1].v.re' = 'aimc.stator.resistor.resistor[1].R_actual' * 'aimc.stator.resistor.resistor[1].i.re';
-    'aimc.stator.resistor.resistor[1].v.im' = 'aimc.stator.resistor.resistor[1].R_actual' * 'aimc.stator.resistor.resistor[1].i.im';
+    'aimc.stator.resistor.resistor[1].v.re' = 'aimc.stator.resistor.resistor[1].R_actual' * 'aimc.stator.resistor.resistor[1].i.re' - 0.0 * 'aimc.stator.resistor.resistor[1].i.im';
+    'aimc.stator.resistor.resistor[1].v.im' = 'aimc.stator.resistor.resistor[1].R_actual' * 'aimc.stator.resistor.resistor[1].i.im' + 0.0 * 'aimc.stator.resistor.resistor[1].i.re';
     'aimc.stator.resistor.resistor[1].LossPower' = 'aimc.stator.resistor.resistor[1].v.re' * 'aimc.stator.resistor.resistor[1].i.re' - 'aimc.stator.resistor.resistor[1].v.im' * (-'aimc.stator.resistor.resistor[1].i.im');
     'aimc.stator.resistor.resistor[1].pin_p.i.re' + 'aimc.stator.resistor.resistor[1].pin_n.i.re' = 0.0;
     'aimc.stator.resistor.resistor[1].pin_p.i.im' + 'aimc.stator.resistor.resistor[1].pin_n.i.im' = 0.0;
@@ -4214,8 +4049,8 @@ package 'IMC_Inverter'
     'aimc.stator.resistor.resistor[1].pin_p.reference.gamma' = 'aimc.stator.resistor.resistor[1].pin_n.reference.gamma';
     'aimc.stator.resistor.resistor[1].omega' = der('aimc.stator.resistor.resistor[1].pin_p.reference.gamma');
     'aimc.stator.resistor.resistor[2].R_actual' = 0.03;
-    'aimc.stator.resistor.resistor[2].v.re' = 'aimc.stator.resistor.resistor[2].R_actual' * 'aimc.stator.resistor.resistor[2].i.re';
-    'aimc.stator.resistor.resistor[2].v.im' = 'aimc.stator.resistor.resistor[2].R_actual' * 'aimc.stator.resistor.resistor[2].i.im';
+    'aimc.stator.resistor.resistor[2].v.re' = 'aimc.stator.resistor.resistor[2].R_actual' * 'aimc.stator.resistor.resistor[2].i.re' - 0.0 * 'aimc.stator.resistor.resistor[2].i.im';
+    'aimc.stator.resistor.resistor[2].v.im' = 'aimc.stator.resistor.resistor[2].R_actual' * 'aimc.stator.resistor.resistor[2].i.im' + 0.0 * 'aimc.stator.resistor.resistor[2].i.re';
     'aimc.stator.resistor.resistor[2].LossPower' = 'aimc.stator.resistor.resistor[2].v.re' * 'aimc.stator.resistor.resistor[2].i.re' - 'aimc.stator.resistor.resistor[2].v.im' * (-'aimc.stator.resistor.resistor[2].i.im');
     'aimc.stator.resistor.resistor[2].pin_p.i.re' + 'aimc.stator.resistor.resistor[2].pin_n.i.re' = 0.0;
     'aimc.stator.resistor.resistor[2].pin_p.i.im' + 'aimc.stator.resistor.resistor[2].pin_n.i.im' = 0.0;
@@ -4226,8 +4061,8 @@ package 'IMC_Inverter'
     'aimc.stator.resistor.resistor[2].pin_p.reference.gamma' = 'aimc.stator.resistor.resistor[2].pin_n.reference.gamma';
     'aimc.stator.resistor.resistor[2].omega' = der('aimc.stator.resistor.resistor[2].pin_p.reference.gamma');
     'aimc.stator.resistor.resistor[3].R_actual' = 0.03;
-    'aimc.stator.resistor.resistor[3].v.re' = 'aimc.stator.resistor.resistor[3].R_actual' * 'aimc.stator.resistor.resistor[3].i.re';
-    'aimc.stator.resistor.resistor[3].v.im' = 'aimc.stator.resistor.resistor[3].R_actual' * 'aimc.stator.resistor.resistor[3].i.im';
+    'aimc.stator.resistor.resistor[3].v.re' = 'aimc.stator.resistor.resistor[3].R_actual' * 'aimc.stator.resistor.resistor[3].i.re' - 0.0 * 'aimc.stator.resistor.resistor[3].i.im';
+    'aimc.stator.resistor.resistor[3].v.im' = 'aimc.stator.resistor.resistor[3].R_actual' * 'aimc.stator.resistor.resistor[3].i.im' + 0.0 * 'aimc.stator.resistor.resistor[3].i.re';
     'aimc.stator.resistor.resistor[3].LossPower' = 'aimc.stator.resistor.resistor[3].v.re' * 'aimc.stator.resistor.resistor[3].i.re' - 'aimc.stator.resistor.resistor[3].v.im' * (-'aimc.stator.resistor.resistor[3].i.im');
     'aimc.stator.resistor.resistor[3].pin_p.i.re' + 'aimc.stator.resistor.resistor[3].pin_n.i.re' = 0.0;
     'aimc.stator.resistor.resistor[3].pin_p.i.im' + 'aimc.stator.resistor.resistor[3].pin_n.i.im' = 0.0;
@@ -4237,12 +4072,12 @@ package 'IMC_Inverter'
     'aimc.stator.resistor.resistor[3].i.im' = 'aimc.stator.resistor.resistor[3].pin_p.i.im';
     'aimc.stator.resistor.resistor[3].pin_p.reference.gamma' = 'aimc.stator.resistor.resistor[3].pin_n.reference.gamma';
     'aimc.stator.resistor.resistor[3].omega' = der('aimc.stator.resistor.resistor[3].pin_p.reference.gamma');
-    'aimc.stator.resistor.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.resistor.plug_p.pin[1].v', 'aimc.stator.resistor.plug_n.pin[1].v')).re;
-    'aimc.stator.resistor.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.resistor.plug_p.pin[1].v', 'aimc.stator.resistor.plug_n.pin[1].v')).im;
-    'aimc.stator.resistor.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.resistor.plug_p.pin[2].v', 'aimc.stator.resistor.plug_n.pin[2].v')).re;
-    'aimc.stator.resistor.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.resistor.plug_p.pin[2].v', 'aimc.stator.resistor.plug_n.pin[2].v')).im;
-    'aimc.stator.resistor.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.resistor.plug_p.pin[3].v', 'aimc.stator.resistor.plug_n.pin[3].v')).re;
-    'aimc.stator.resistor.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.stator.resistor.plug_p.pin[3].v', 'aimc.stator.resistor.plug_n.pin[3].v')).im;
+    'aimc.stator.resistor.v[1].re' = 'aimc.stator.resistor.plug_p.pin[1].v.re' - 'aimc.stator.resistor.plug_n.pin[1].v.re';
+    'aimc.stator.resistor.v[1].im' = 'aimc.stator.resistor.plug_p.pin[1].v.im' - 'aimc.stator.resistor.plug_n.pin[1].v.im';
+    'aimc.stator.resistor.v[2].re' = 'aimc.stator.resistor.plug_p.pin[2].v.re' - 'aimc.stator.resistor.plug_n.pin[2].v.re';
+    'aimc.stator.resistor.v[2].im' = 'aimc.stator.resistor.plug_p.pin[2].v.im' - 'aimc.stator.resistor.plug_n.pin[2].v.im';
+    'aimc.stator.resistor.v[3].re' = 'aimc.stator.resistor.plug_p.pin[3].v.re' - 'aimc.stator.resistor.plug_n.pin[3].v.re';
+    'aimc.stator.resistor.v[3].im' = 'aimc.stator.resistor.plug_p.pin[3].v.im' - 'aimc.stator.resistor.plug_n.pin[3].v.im';
     'aimc.stator.resistor.i[1].re' = 'aimc.stator.resistor.plug_p.pin[1].i.re';
     'aimc.stator.resistor.i[1].im' = 'aimc.stator.resistor.plug_p.pin[1].i.im';
     'aimc.stator.resistor.i[2].re' = 'aimc.stator.resistor.plug_p.pin[2].i.re';
@@ -4250,12 +4085,16 @@ package 'IMC_Inverter'
     'aimc.stator.resistor.i[3].re' = 'aimc.stator.resistor.plug_p.pin[3].i.re';
     'aimc.stator.resistor.i[3].im' = 'aimc.stator.resistor.plug_p.pin[3].i.im';
     'aimc.stator.resistor.omega' = der('aimc.stator.resistor.plug_p.reference.gamma');
-    'aimc.stator.core.lossPower' = 1.5707963267948966 * ('aimc.stator.core.omega' * 'aimc.stator.core.V_m.re' * (-'aimc.stator.core.Phi.im') + 'aimc.stator.core.omega' * 'aimc.stator.core.V_m.im' * 'aimc.stator.core.Phi.re');
+    'aimc.stator.core.V_m.re' = 'aimc.stator.core.port_p.V_m.re' - 'aimc.stator.core.port_n.V_m.re';
+    'aimc.stator.core.V_m.im' = 'aimc.stator.core.port_p.V_m.im' - 'aimc.stator.core.port_n.V_m.im';
+    'aimc.stator.core.lossPower' = 1.5707963267948966 * 'Modelica.ComplexMath.imag'('Complex.\'*\'.multiply'('Modelica.Units.SI.ComplexMagneticPotentialDifference.\'*\'.multiply'('Complex.\'constructor\'.fromReal'('aimc.stator.core.omega', 0.0), 'aimc.stator.core.V_m'), 'Modelica.ComplexMath.conj'('aimc.stator.core.Phi')));
     'aimc.stator.core.V_m.re' = 0.0;
     'aimc.stator.core.V_m.im' = 0.0;
     'aimc.stator.core.port_p.Phi.re' + 'aimc.stator.core.port_n.Phi.re' = 0.0;
     'aimc.stator.core.port_p.Phi.im' + 'aimc.stator.core.port_n.Phi.im' = 0.0;
     'aimc.stator.core.port_p.reference.gamma' = 'aimc.stator.core.port_n.reference.gamma';
+    'aimc.stator.stray.V_m.re' = 'aimc.stator.stray.port_p.V_m.re' - 'aimc.stator.stray.port_n.V_m.re';
+    'aimc.stator.stray.V_m.im' = 'aimc.stator.stray.port_p.V_m.im' - 'aimc.stator.stray.port_n.V_m.im';
     3.3925468713722927e-4 * 'aimc.stator.stray.V_m.re' = 'aimc.stator.stray.Phi.re';
     3.3925468713722927e-4 * 'aimc.stator.stray.V_m.im' = 'aimc.stator.stray.Phi.im';
     'aimc.stator.stray.port_p.Phi.re' + 'aimc.stator.stray.port_n.Phi.re' = 0.0;
@@ -4275,6 +4114,14 @@ package 'IMC_Inverter'
     'aimc.thermalAmbient.constTr.y' = 293.15;
     'aimc.groundS.port_p.V_m.re' = 0.0;
     'aimc.groundS.port_p.V_m.im' = 0.0;
+    'aimc.airGap.V_msr.re' = 'aimc.airGap.V_ms.re' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar')) - 'aimc.airGap.V_ms.im' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar'));
+    'aimc.airGap.V_msr.im' = 'aimc.airGap.V_ms.re' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar')) + 'aimc.airGap.V_ms.im' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar'));
+    'aimc.airGap.V_mrr.re' = 'aimc.airGap.V_mr.re' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar')) - 'aimc.airGap.V_mr.im' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar'));
+    'aimc.airGap.V_mrr.im' = 'aimc.airGap.V_mr.re' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar')) + 'aimc.airGap.V_mr.im' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar'));
+    'aimc.airGap.Phi_sr.re' = 'aimc.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar')) - 'aimc.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar'));
+    'aimc.airGap.Phi_sr.im' = 'aimc.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar')) + 'aimc.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar'));
+    'aimc.airGap.Phi_rr.re' = 'aimc.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar')) - 'aimc.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar'));
+    'aimc.airGap.Phi_rr.im' = 'aimc.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar')) + 'aimc.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar'));
     'aimc.airGap.port_sp.Phi.re' = 'aimc.airGap.Phi_s.re' "Stator flux into positive stator port";
     'aimc.airGap.port_sp.Phi.im' = 'aimc.airGap.Phi_s.im' "Stator flux into positive stator port";
     'aimc.airGap.port_sp.Phi.re' + 'aimc.airGap.port_sn.Phi.re' = 0.0 "Balance of stator flux";
@@ -4311,18 +4158,18 @@ package 'IMC_Inverter'
     'aimc.strayLoad.arg_i[1]' = 'Modelica.ComplexMath.arg'('aimc.strayLoad.i[1]', 0.0);
     'aimc.strayLoad.arg_i[2]' = 'Modelica.ComplexMath.arg'('aimc.strayLoad.i[2]', 0.0);
     'aimc.strayLoad.arg_i[3]' = 'Modelica.ComplexMath.arg'('aimc.strayLoad.i[3]', 0.0);
-    'aimc.strayLoad.P[1]' = 'aimc.strayLoad.v[1].re' * 'aimc.strayLoad.i[1].re' - 'aimc.strayLoad.v[1].im' * (-'aimc.strayLoad.i[1].im');
-    'aimc.strayLoad.P[2]' = 'aimc.strayLoad.v[2].re' * 'aimc.strayLoad.i[2].re' - 'aimc.strayLoad.v[2].im' * (-'aimc.strayLoad.i[2].im');
-    'aimc.strayLoad.P[3]' = 'aimc.strayLoad.v[3].re' * 'aimc.strayLoad.i[3].re' - 'aimc.strayLoad.v[3].im' * (-'aimc.strayLoad.i[3].im');
-    'aimc.strayLoad.Q[1]' = 'aimc.strayLoad.v[1].re' * (-'aimc.strayLoad.i[1].im') + 'aimc.strayLoad.v[1].im' * 'aimc.strayLoad.i[1].re';
-    'aimc.strayLoad.Q[2]' = 'aimc.strayLoad.v[2].re' * (-'aimc.strayLoad.i[2].im') + 'aimc.strayLoad.v[2].im' * 'aimc.strayLoad.i[2].re';
-    'aimc.strayLoad.Q[3]' = 'aimc.strayLoad.v[3].re' * (-'aimc.strayLoad.i[3].im') + 'aimc.strayLoad.v[3].im' * 'aimc.strayLoad.i[3].re';
-    'aimc.strayLoad.S[1]' = sqrt(('aimc.strayLoad.v[1].re' * 'aimc.strayLoad.i[1].re' - 'aimc.strayLoad.v[1].im' * (-'aimc.strayLoad.i[1].im')) ^ 2.0 + ('aimc.strayLoad.v[1].re' * (-'aimc.strayLoad.i[1].im') + 'aimc.strayLoad.v[1].im' * 'aimc.strayLoad.i[1].re') ^ 2.0);
-    'aimc.strayLoad.S[2]' = sqrt(('aimc.strayLoad.v[2].re' * 'aimc.strayLoad.i[2].re' - 'aimc.strayLoad.v[2].im' * (-'aimc.strayLoad.i[2].im')) ^ 2.0 + ('aimc.strayLoad.v[2].re' * (-'aimc.strayLoad.i[2].im') + 'aimc.strayLoad.v[2].im' * 'aimc.strayLoad.i[2].re') ^ 2.0);
-    'aimc.strayLoad.S[3]' = sqrt(('aimc.strayLoad.v[3].re' * 'aimc.strayLoad.i[3].re' - 'aimc.strayLoad.v[3].im' * (-'aimc.strayLoad.i[3].im')) ^ 2.0 + ('aimc.strayLoad.v[3].re' * (-'aimc.strayLoad.i[3].im') + 'aimc.strayLoad.v[3].im' * 'aimc.strayLoad.i[3].re') ^ 2.0);
-    'aimc.strayLoad.pf[1]' = cos('Modelica.Math.atan3'('aimc.strayLoad.Q[1]', 'aimc.strayLoad.P[1]', 0.0));
-    'aimc.strayLoad.pf[2]' = cos('Modelica.Math.atan3'('aimc.strayLoad.Q[2]', 'aimc.strayLoad.P[2]', 0.0));
-    'aimc.strayLoad.pf[3]' = cos('Modelica.Math.atan3'('aimc.strayLoad.Q[3]', 'aimc.strayLoad.P[3]', 0.0));
+    'aimc.strayLoad.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.strayLoad.v[1]', 'Modelica.ComplexMath.conj'('aimc.strayLoad.i[1]')));
+    'aimc.strayLoad.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.strayLoad.v[2]', 'Modelica.ComplexMath.conj'('aimc.strayLoad.i[2]')));
+    'aimc.strayLoad.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.strayLoad.v[3]', 'Modelica.ComplexMath.conj'('aimc.strayLoad.i[3]')));
+    'aimc.strayLoad.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.strayLoad.v[1]', 'Modelica.ComplexMath.conj'('aimc.strayLoad.i[1]')));
+    'aimc.strayLoad.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.strayLoad.v[2]', 'Modelica.ComplexMath.conj'('aimc.strayLoad.i[2]')));
+    'aimc.strayLoad.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.strayLoad.v[3]', 'Modelica.ComplexMath.conj'('aimc.strayLoad.i[3]')));
+    'aimc.strayLoad.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.strayLoad.v[1]', 'Modelica.ComplexMath.conj'('aimc.strayLoad.i[1]')));
+    'aimc.strayLoad.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.strayLoad.v[2]', 'Modelica.ComplexMath.conj'('aimc.strayLoad.i[2]')));
+    'aimc.strayLoad.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.strayLoad.v[3]', 'Modelica.ComplexMath.conj'('aimc.strayLoad.i[3]')));
+    'aimc.strayLoad.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.strayLoad.P[1]', 'aimc.strayLoad.Q[1]'), 0.0));
+    'aimc.strayLoad.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.strayLoad.P[2]', 'aimc.strayLoad.Q[2]'), 0.0));
+    'aimc.strayLoad.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.strayLoad.P[3]', 'aimc.strayLoad.Q[3]'), 0.0));
     'aimc.strayLoad.v[1].re' = 0.0;
     'aimc.strayLoad.v[2].re' = 0.0;
     'aimc.strayLoad.v[3].re' = 0.0;
@@ -4337,24 +4184,24 @@ package 'IMC_Inverter'
     'aimc.strayLoad.tau' = 'aimc.strayLoad.support.tau';
     'aimc.strayLoad.plug_p.reference.gamma' = 'aimc.strayLoad.plug_n.reference.gamma';
     'aimc.strayLoad.omega' = der('aimc.strayLoad.plug_p.reference.gamma');
-    'aimc.strayLoad.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.strayLoad.plug_p.pin[1].v', 'aimc.strayLoad.plug_n.pin[1].v')).re;
-    'aimc.strayLoad.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.strayLoad.plug_p.pin[1].v', 'aimc.strayLoad.plug_n.pin[1].v')).im;
-    'aimc.strayLoad.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.strayLoad.plug_p.pin[2].v', 'aimc.strayLoad.plug_n.pin[2].v')).re;
-    'aimc.strayLoad.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.strayLoad.plug_p.pin[2].v', 'aimc.strayLoad.plug_n.pin[2].v')).im;
-    'aimc.strayLoad.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.strayLoad.plug_p.pin[3].v', 'aimc.strayLoad.plug_n.pin[3].v')).re;
-    'aimc.strayLoad.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.strayLoad.plug_p.pin[3].v', 'aimc.strayLoad.plug_n.pin[3].v')).im;
+    'aimc.strayLoad.v[1].re' = 'aimc.strayLoad.plug_p.pin[1].v.re' - 'aimc.strayLoad.plug_n.pin[1].v.re';
+    'aimc.strayLoad.v[1].im' = 'aimc.strayLoad.plug_p.pin[1].v.im' - 'aimc.strayLoad.plug_n.pin[1].v.im';
+    'aimc.strayLoad.v[2].re' = 'aimc.strayLoad.plug_p.pin[2].v.re' - 'aimc.strayLoad.plug_n.pin[2].v.re';
+    'aimc.strayLoad.v[2].im' = 'aimc.strayLoad.plug_p.pin[2].v.im' - 'aimc.strayLoad.plug_n.pin[2].v.im';
+    'aimc.strayLoad.v[3].re' = 'aimc.strayLoad.plug_p.pin[3].v.re' - 'aimc.strayLoad.plug_n.pin[3].v.re';
+    'aimc.strayLoad.v[3].im' = 'aimc.strayLoad.plug_p.pin[3].v.im' - 'aimc.strayLoad.plug_n.pin[3].v.im';
     'aimc.strayLoad.i[1].re' = 'aimc.strayLoad.plug_p.pin[1].i.re';
     'aimc.strayLoad.i[1].im' = 'aimc.strayLoad.plug_p.pin[1].i.im';
     'aimc.strayLoad.i[2].re' = 'aimc.strayLoad.plug_p.pin[2].i.re';
     'aimc.strayLoad.i[2].im' = 'aimc.strayLoad.plug_p.pin[2].i.im';
     'aimc.strayLoad.i[3].re' = 'aimc.strayLoad.plug_p.pin[3].i.re';
     'aimc.strayLoad.i[3].im' = 'aimc.strayLoad.plug_p.pin[3].i.im';
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.strayLoad.plug_p.pin[1].i', 'aimc.strayLoad.plug_n.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.strayLoad.plug_p.pin[1].i', 'aimc.strayLoad.plug_n.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.strayLoad.plug_p.pin[2].i', 'aimc.strayLoad.plug_n.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.strayLoad.plug_p.pin[2].i', 'aimc.strayLoad.plug_n.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.strayLoad.plug_p.pin[3].i', 'aimc.strayLoad.plug_n.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.strayLoad.plug_p.pin[3].i', 'aimc.strayLoad.plug_n.pin[3].i')).im = 0.0;
+    'aimc.strayLoad.plug_p.pin[1].i.re' + 'aimc.strayLoad.plug_n.pin[1].i.re' = 0.0;
+    'aimc.strayLoad.plug_p.pin[1].i.im' + 'aimc.strayLoad.plug_n.pin[1].i.im' = 0.0;
+    'aimc.strayLoad.plug_p.pin[2].i.re' + 'aimc.strayLoad.plug_n.pin[2].i.re' = 0.0;
+    'aimc.strayLoad.plug_p.pin[2].i.im' + 'aimc.strayLoad.plug_n.pin[2].i.im' = 0.0;
+    'aimc.strayLoad.plug_p.pin[3].i.re' + 'aimc.strayLoad.plug_n.pin[3].i.re' = 0.0;
+    'aimc.strayLoad.plug_p.pin[3].i.im' + 'aimc.strayLoad.plug_n.pin[3].i.im' = 0.0;
     'aimc.friction.tau' = 0.0;
     'aimc.friction.lossPower' = -'aimc.friction.tau' * 'aimc.friction.w';
     'aimc.friction.phi' = 'aimc.friction.flange.phi' - 'aimc.friction.support.phi';
@@ -4367,6 +4214,8 @@ package 'IMC_Inverter'
     'aimc.arg_ir[1]' = 'Modelica.ComplexMath.arg'('aimc.ir[1]', 0.0);
     'aimc.arg_ir[2]' = 'Modelica.ComplexMath.arg'('aimc.ir[2]', 0.0);
     'aimc.arg_ir[3]' = 'Modelica.ComplexMath.arg'('aimc.ir[3]', 0.0);
+    'aimc.rotorCage.V_m.re' = 'aimc.rotorCage.port_p.V_m.re' - 'aimc.rotorCage.port_n.V_m.re';
+    'aimc.rotorCage.V_m.im' = 'aimc.rotorCage.port_p.V_m.im' - 'aimc.rotorCage.port_n.V_m.im';
     'aimc.rotorCage.electroMagneticConverter.abs_v[1]' = 'Modelica.ComplexMath.abs'('aimc.rotorCage.electroMagneticConverter.v[1]');
     'aimc.rotorCage.electroMagneticConverter.abs_v[2]' = 'Modelica.ComplexMath.abs'('aimc.rotorCage.electroMagneticConverter.v[2]');
     'aimc.rotorCage.electroMagneticConverter.abs_v[3]' = 'Modelica.ComplexMath.abs'('aimc.rotorCage.electroMagneticConverter.v[3]');
@@ -4379,18 +4228,18 @@ package 'IMC_Inverter'
     'aimc.rotorCage.electroMagneticConverter.arg_i[1]' = 'Modelica.ComplexMath.arg'('aimc.rotorCage.electroMagneticConverter.i[1]', 0.0);
     'aimc.rotorCage.electroMagneticConverter.arg_i[2]' = 'Modelica.ComplexMath.arg'('aimc.rotorCage.electroMagneticConverter.i[2]', 0.0);
     'aimc.rotorCage.electroMagneticConverter.arg_i[3]' = 'Modelica.ComplexMath.arg'('aimc.rotorCage.electroMagneticConverter.i[3]', 0.0);
-    'aimc.rotorCage.electroMagneticConverter.P[1]' = 'aimc.rotorCage.electroMagneticConverter.v[1].re' * 'aimc.rotorCage.electroMagneticConverter.i[1].re' - 'aimc.rotorCage.electroMagneticConverter.v[1].im' * (-'aimc.rotorCage.electroMagneticConverter.i[1].im');
-    'aimc.rotorCage.electroMagneticConverter.P[2]' = 'aimc.rotorCage.electroMagneticConverter.v[2].re' * 'aimc.rotorCage.electroMagneticConverter.i[2].re' - 'aimc.rotorCage.electroMagneticConverter.v[2].im' * (-'aimc.rotorCage.electroMagneticConverter.i[2].im');
-    'aimc.rotorCage.electroMagneticConverter.P[3]' = 'aimc.rotorCage.electroMagneticConverter.v[3].re' * 'aimc.rotorCage.electroMagneticConverter.i[3].re' - 'aimc.rotorCage.electroMagneticConverter.v[3].im' * (-'aimc.rotorCage.electroMagneticConverter.i[3].im');
-    'aimc.rotorCage.electroMagneticConverter.Q[1]' = 'aimc.rotorCage.electroMagneticConverter.v[1].re' * (-'aimc.rotorCage.electroMagneticConverter.i[1].im') + 'aimc.rotorCage.electroMagneticConverter.v[1].im' * 'aimc.rotorCage.electroMagneticConverter.i[1].re';
-    'aimc.rotorCage.electroMagneticConverter.Q[2]' = 'aimc.rotorCage.electroMagneticConverter.v[2].re' * (-'aimc.rotorCage.electroMagneticConverter.i[2].im') + 'aimc.rotorCage.electroMagneticConverter.v[2].im' * 'aimc.rotorCage.electroMagneticConverter.i[2].re';
-    'aimc.rotorCage.electroMagneticConverter.Q[3]' = 'aimc.rotorCage.electroMagneticConverter.v[3].re' * (-'aimc.rotorCage.electroMagneticConverter.i[3].im') + 'aimc.rotorCage.electroMagneticConverter.v[3].im' * 'aimc.rotorCage.electroMagneticConverter.i[3].re';
-    'aimc.rotorCage.electroMagneticConverter.S[1]' = sqrt(('aimc.rotorCage.electroMagneticConverter.v[1].re' * 'aimc.rotorCage.electroMagneticConverter.i[1].re' - 'aimc.rotorCage.electroMagneticConverter.v[1].im' * (-'aimc.rotorCage.electroMagneticConverter.i[1].im')) ^ 2.0 + ('aimc.rotorCage.electroMagneticConverter.v[1].re' * (-'aimc.rotorCage.electroMagneticConverter.i[1].im') + 'aimc.rotorCage.electroMagneticConverter.v[1].im' * 'aimc.rotorCage.electroMagneticConverter.i[1].re') ^ 2.0);
-    'aimc.rotorCage.electroMagneticConverter.S[2]' = sqrt(('aimc.rotorCage.electroMagneticConverter.v[2].re' * 'aimc.rotorCage.electroMagneticConverter.i[2].re' - 'aimc.rotorCage.electroMagneticConverter.v[2].im' * (-'aimc.rotorCage.electroMagneticConverter.i[2].im')) ^ 2.0 + ('aimc.rotorCage.electroMagneticConverter.v[2].re' * (-'aimc.rotorCage.electroMagneticConverter.i[2].im') + 'aimc.rotorCage.electroMagneticConverter.v[2].im' * 'aimc.rotorCage.electroMagneticConverter.i[2].re') ^ 2.0);
-    'aimc.rotorCage.electroMagneticConverter.S[3]' = sqrt(('aimc.rotorCage.electroMagneticConverter.v[3].re' * 'aimc.rotorCage.electroMagneticConverter.i[3].re' - 'aimc.rotorCage.electroMagneticConverter.v[3].im' * (-'aimc.rotorCage.electroMagneticConverter.i[3].im')) ^ 2.0 + ('aimc.rotorCage.electroMagneticConverter.v[3].re' * (-'aimc.rotorCage.electroMagneticConverter.i[3].im') + 'aimc.rotorCage.electroMagneticConverter.v[3].im' * 'aimc.rotorCage.electroMagneticConverter.i[3].re') ^ 2.0);
-    'aimc.rotorCage.electroMagneticConverter.pf[1]' = cos('Modelica.Math.atan3'('aimc.rotorCage.electroMagneticConverter.Q[1]', 'aimc.rotorCage.electroMagneticConverter.P[1]', 0.0));
-    'aimc.rotorCage.electroMagneticConverter.pf[2]' = cos('Modelica.Math.atan3'('aimc.rotorCage.electroMagneticConverter.Q[2]', 'aimc.rotorCage.electroMagneticConverter.P[2]', 0.0));
-    'aimc.rotorCage.electroMagneticConverter.pf[3]' = cos('Modelica.Math.atan3'('aimc.rotorCage.electroMagneticConverter.Q[3]', 'aimc.rotorCage.electroMagneticConverter.P[3]', 0.0));
+    'aimc.rotorCage.electroMagneticConverter.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.electroMagneticConverter.v[1]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.electroMagneticConverter.i[1]')));
+    'aimc.rotorCage.electroMagneticConverter.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.electroMagneticConverter.v[2]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.electroMagneticConverter.i[2]')));
+    'aimc.rotorCage.electroMagneticConverter.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.electroMagneticConverter.v[3]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.electroMagneticConverter.i[3]')));
+    'aimc.rotorCage.electroMagneticConverter.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.electroMagneticConverter.v[1]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.electroMagneticConverter.i[1]')));
+    'aimc.rotorCage.electroMagneticConverter.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.electroMagneticConverter.v[2]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.electroMagneticConverter.i[2]')));
+    'aimc.rotorCage.electroMagneticConverter.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.electroMagneticConverter.v[3]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.electroMagneticConverter.i[3]')));
+    'aimc.rotorCage.electroMagneticConverter.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.electroMagneticConverter.v[1]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.electroMagneticConverter.i[1]')));
+    'aimc.rotorCage.electroMagneticConverter.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.electroMagneticConverter.v[2]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.electroMagneticConverter.i[2]')));
+    'aimc.rotorCage.electroMagneticConverter.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.electroMagneticConverter.v[3]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.electroMagneticConverter.i[3]')));
+    'aimc.rotorCage.electroMagneticConverter.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.rotorCage.electroMagneticConverter.P[1]', 'aimc.rotorCage.electroMagneticConverter.Q[1]'), 0.0));
+    'aimc.rotorCage.electroMagneticConverter.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.rotorCage.electroMagneticConverter.P[2]', 'aimc.rotorCage.electroMagneticConverter.Q[2]'), 0.0));
+    'aimc.rotorCage.electroMagneticConverter.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.rotorCage.electroMagneticConverter.P[3]', 'aimc.rotorCage.electroMagneticConverter.Q[3]'), 0.0));
     'aimc.rotorCage.electroMagneticConverter.vSymmetricalComponent[1].re' = 'aimc.rotorCage.electroMagneticConverter.sTM[1,1].re' * 'aimc.rotorCage.electroMagneticConverter.v[1].re' - 'aimc.rotorCage.electroMagneticConverter.sTM[1,1].im' * 'aimc.rotorCage.electroMagneticConverter.v[1].im' + 'aimc.rotorCage.electroMagneticConverter.sTM[1,2].re' * 'aimc.rotorCage.electroMagneticConverter.v[2].re' - 'aimc.rotorCage.electroMagneticConverter.sTM[1,2].im' * 'aimc.rotorCage.electroMagneticConverter.v[2].im' + 'aimc.rotorCage.electroMagneticConverter.sTM[1,3].re' * 'aimc.rotorCage.electroMagneticConverter.v[3].re' - 'aimc.rotorCage.electroMagneticConverter.sTM[1,3].im' * 'aimc.rotorCage.electroMagneticConverter.v[3].im';
     'aimc.rotorCage.electroMagneticConverter.vSymmetricalComponent[1].im' = 'aimc.rotorCage.electroMagneticConverter.sTM[1,1].re' * 'aimc.rotorCage.electroMagneticConverter.v[1].im' + 'aimc.rotorCage.electroMagneticConverter.sTM[1,1].im' * 'aimc.rotorCage.electroMagneticConverter.v[1].re' + 'aimc.rotorCage.electroMagneticConverter.sTM[1,2].re' * 'aimc.rotorCage.electroMagneticConverter.v[2].im' + 'aimc.rotorCage.electroMagneticConverter.sTM[1,2].im' * 'aimc.rotorCage.electroMagneticConverter.v[2].re' + 'aimc.rotorCage.electroMagneticConverter.sTM[1,3].re' * 'aimc.rotorCage.electroMagneticConverter.v[3].im' + 'aimc.rotorCage.electroMagneticConverter.sTM[1,3].im' * 'aimc.rotorCage.electroMagneticConverter.v[3].re';
     'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[1].re' = 'aimc.rotorCage.electroMagneticConverter.sTM[1,1].re' * 'aimc.rotorCage.electroMagneticConverter.i[1].re' - 'aimc.rotorCage.electroMagneticConverter.sTM[1,1].im' * 'aimc.rotorCage.electroMagneticConverter.i[1].im' + 'aimc.rotorCage.electroMagneticConverter.sTM[1,2].re' * 'aimc.rotorCage.electroMagneticConverter.i[2].re' - 'aimc.rotorCage.electroMagneticConverter.sTM[1,2].im' * 'aimc.rotorCage.electroMagneticConverter.i[2].im' + 'aimc.rotorCage.electroMagneticConverter.sTM[1,3].re' * 'aimc.rotorCage.electroMagneticConverter.i[3].re' - 'aimc.rotorCage.electroMagneticConverter.sTM[1,3].im' * 'aimc.rotorCage.electroMagneticConverter.i[3].im';
@@ -4409,12 +4258,12 @@ package 'IMC_Inverter'
     'aimc.rotorCage.electroMagneticConverter.port_p.Phi.im' + 'aimc.rotorCage.electroMagneticConverter.port_n.Phi.im' = 0.0;
     'aimc.rotorCage.electroMagneticConverter.port_p.V_m.re' - 'aimc.rotorCage.electroMagneticConverter.port_n.V_m.re' = 'aimc.rotorCage.electroMagneticConverter.V_m.re';
     'aimc.rotorCage.electroMagneticConverter.port_p.V_m.im' - 'aimc.rotorCage.electroMagneticConverter.port_n.V_m.im' = 'aimc.rotorCage.electroMagneticConverter.V_m.im';
-    'aimc.rotorCage.electroMagneticConverter.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.electroMagneticConverter.plug_p.pin[1].v', 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[1].v')).re;
-    'aimc.rotorCage.electroMagneticConverter.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.electroMagneticConverter.plug_p.pin[1].v', 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[1].v')).im;
-    'aimc.rotorCage.electroMagneticConverter.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.electroMagneticConverter.plug_p.pin[2].v', 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[2].v')).re;
-    'aimc.rotorCage.electroMagneticConverter.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.electroMagneticConverter.plug_p.pin[2].v', 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[2].v')).im;
-    'aimc.rotorCage.electroMagneticConverter.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.electroMagneticConverter.plug_p.pin[3].v', 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[3].v')).re;
-    'aimc.rotorCage.electroMagneticConverter.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.electroMagneticConverter.plug_p.pin[3].v', 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[3].v')).im;
+    'aimc.rotorCage.electroMagneticConverter.v[1].re' = 'aimc.rotorCage.electroMagneticConverter.plug_p.pin[1].v.re' - 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[1].v.re';
+    'aimc.rotorCage.electroMagneticConverter.v[1].im' = 'aimc.rotorCage.electroMagneticConverter.plug_p.pin[1].v.im' - 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[1].v.im';
+    'aimc.rotorCage.electroMagneticConverter.v[2].re' = 'aimc.rotorCage.electroMagneticConverter.plug_p.pin[2].v.re' - 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[2].v.re';
+    'aimc.rotorCage.electroMagneticConverter.v[2].im' = 'aimc.rotorCage.electroMagneticConverter.plug_p.pin[2].v.im' - 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[2].v.im';
+    'aimc.rotorCage.electroMagneticConverter.v[3].re' = 'aimc.rotorCage.electroMagneticConverter.plug_p.pin[3].v.re' - 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[3].v.re';
+    'aimc.rotorCage.electroMagneticConverter.v[3].im' = 'aimc.rotorCage.electroMagneticConverter.plug_p.pin[3].v.im' - 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[3].v.im';
     'aimc.rotorCage.electroMagneticConverter.i[1].re' = 'aimc.rotorCage.electroMagneticConverter.plug_p.pin[1].i.re';
     'aimc.rotorCage.electroMagneticConverter.i[1].im' = 'aimc.rotorCage.electroMagneticConverter.plug_p.pin[1].i.im';
     'aimc.rotorCage.electroMagneticConverter.i[2].re' = 'aimc.rotorCage.electroMagneticConverter.plug_p.pin[2].i.re';
@@ -4427,14 +4276,14 @@ package 'IMC_Inverter'
     ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.rotorCage.electroMagneticConverter.plug_p.pin[1].i', 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[1].i')).im = 0.0;
     ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.rotorCage.electroMagneticConverter.plug_p.pin[2].i', 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[2].i')).im = 0.0;
     ('Modelica.Units.SI.ComplexCurrent.\'+\''('aimc.rotorCage.electroMagneticConverter.plug_p.pin[3].i', 'aimc.rotorCage.electroMagneticConverter.plug_n.pin[3].i')).im = 0.0;
-    'aimc.rotorCage.electroMagneticConverter.V_m.re' = 0.9003163161571062 * ('aimc.rotorCage.electroMagneticConverter.N.re' * 'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[1].re' - 'aimc.rotorCage.electroMagneticConverter.N.im' * 'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[1].im') * 3.0 / 2.0;
-    'aimc.rotorCage.electroMagneticConverter.V_m.im' = 0.9003163161571062 * ('aimc.rotorCage.electroMagneticConverter.N.re' * 'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[1].im' + 'aimc.rotorCage.electroMagneticConverter.N.im' * 'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[1].re') * 3.0 / 2.0;
+    'aimc.rotorCage.electroMagneticConverter.V_m.re' = 0.9003163161571062 * 'Modelica.ComplexMath.real'('Complex.\'*\'.multiply'('Complex'(1.0, 0.0), 'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[1]')) * 3.0 / 2.0;
+    'aimc.rotorCage.electroMagneticConverter.V_m.im' = 0.9003163161571062 * 'Modelica.ComplexMath.imag'('Complex.\'*\'.multiply'('Complex'(1.0, 0.0), 'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[1]')) * 3.0 / 2.0;
     'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[2].re' = 0.0;
     'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[2].im' = 0.0;
     'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[3].re' = 0.0;
     'aimc.rotorCage.electroMagneticConverter.iSymmetricalComponent[3].im' = 0.0;
-    -1.4142135623730951 * 'aimc.rotorCage.electroMagneticConverter.vSymmetricalComponent[1].re' = 'aimc.rotorCage.electroMagneticConverter.N.im' * 'aimc.rotorCage.electroMagneticConverter.omega' * 'aimc.rotorCage.electroMagneticConverter.Phi.re' - 'aimc.rotorCage.electroMagneticConverter.N.re' * 'aimc.rotorCage.electroMagneticConverter.omega' * 'aimc.rotorCage.electroMagneticConverter.Phi.im';
-    -1.4142135623730951 * 'aimc.rotorCage.electroMagneticConverter.vSymmetricalComponent[1].im' = 'aimc.rotorCage.electroMagneticConverter.N.im' * 'aimc.rotorCage.electroMagneticConverter.omega' * 'aimc.rotorCage.electroMagneticConverter.Phi.im' + 'aimc.rotorCage.electroMagneticConverter.N.re' * 'aimc.rotorCage.electroMagneticConverter.omega' * 'aimc.rotorCage.electroMagneticConverter.Phi.re';
+    -(1.4142135623730951 * 'aimc.rotorCage.electroMagneticConverter.vSymmetricalComponent[1].re' - 0.0 * 'aimc.rotorCage.electroMagneticConverter.vSymmetricalComponent[1].im') = (0.0 * 'aimc.rotorCage.electroMagneticConverter.omega' - 1.0 * 0.0) * 'aimc.rotorCage.electroMagneticConverter.Phi.re' - (0.0 * 0.0 + 1.0 * 'aimc.rotorCage.electroMagneticConverter.omega') * 'aimc.rotorCage.electroMagneticConverter.Phi.im';
+    -(1.4142135623730951 * 'aimc.rotorCage.electroMagneticConverter.vSymmetricalComponent[1].im' + 0.0 * 'aimc.rotorCage.electroMagneticConverter.vSymmetricalComponent[1].re') = (0.0 * 'aimc.rotorCage.electroMagneticConverter.omega' - 1.0 * 0.0) * 'aimc.rotorCage.electroMagneticConverter.Phi.im' + (0.0 * 0.0 + 1.0 * 'aimc.rotorCage.electroMagneticConverter.omega') * 'aimc.rotorCage.electroMagneticConverter.Phi.re';
     'aimc.rotorCage.electroMagneticConverter.port_p.reference.gamma' = 'aimc.rotorCage.electroMagneticConverter.port_n.reference.gamma';
     'aimc.rotorCage.electroMagneticConverter.plug_p.reference.gamma' = 'aimc.rotorCage.electroMagneticConverter.plug_n.reference.gamma';
     'aimc.rotorCage.electroMagneticConverter.plug_p.reference.gamma' = 'aimc.rotorCage.electroMagneticConverter.port_p.reference.gamma';
@@ -4504,21 +4353,21 @@ package 'IMC_Inverter'
     'aimc.rotorCage.resistor.arg_i[1]' = 'Modelica.ComplexMath.arg'('aimc.rotorCage.resistor.i[1]', 0.0);
     'aimc.rotorCage.resistor.arg_i[2]' = 'Modelica.ComplexMath.arg'('aimc.rotorCage.resistor.i[2]', 0.0);
     'aimc.rotorCage.resistor.arg_i[3]' = 'Modelica.ComplexMath.arg'('aimc.rotorCage.resistor.i[3]', 0.0);
-    'aimc.rotorCage.resistor.P[1]' = 'aimc.rotorCage.resistor.v[1].re' * 'aimc.rotorCage.resistor.i[1].re' - 'aimc.rotorCage.resistor.v[1].im' * (-'aimc.rotorCage.resistor.i[1].im');
-    'aimc.rotorCage.resistor.P[2]' = 'aimc.rotorCage.resistor.v[2].re' * 'aimc.rotorCage.resistor.i[2].re' - 'aimc.rotorCage.resistor.v[2].im' * (-'aimc.rotorCage.resistor.i[2].im');
-    'aimc.rotorCage.resistor.P[3]' = 'aimc.rotorCage.resistor.v[3].re' * 'aimc.rotorCage.resistor.i[3].re' - 'aimc.rotorCage.resistor.v[3].im' * (-'aimc.rotorCage.resistor.i[3].im');
-    'aimc.rotorCage.resistor.Q[1]' = 'aimc.rotorCage.resistor.v[1].re' * (-'aimc.rotorCage.resistor.i[1].im') + 'aimc.rotorCage.resistor.v[1].im' * 'aimc.rotorCage.resistor.i[1].re';
-    'aimc.rotorCage.resistor.Q[2]' = 'aimc.rotorCage.resistor.v[2].re' * (-'aimc.rotorCage.resistor.i[2].im') + 'aimc.rotorCage.resistor.v[2].im' * 'aimc.rotorCage.resistor.i[2].re';
-    'aimc.rotorCage.resistor.Q[3]' = 'aimc.rotorCage.resistor.v[3].re' * (-'aimc.rotorCage.resistor.i[3].im') + 'aimc.rotorCage.resistor.v[3].im' * 'aimc.rotorCage.resistor.i[3].re';
-    'aimc.rotorCage.resistor.S[1]' = sqrt(('aimc.rotorCage.resistor.v[1].re' * 'aimc.rotorCage.resistor.i[1].re' - 'aimc.rotorCage.resistor.v[1].im' * (-'aimc.rotorCage.resistor.i[1].im')) ^ 2.0 + ('aimc.rotorCage.resistor.v[1].re' * (-'aimc.rotorCage.resistor.i[1].im') + 'aimc.rotorCage.resistor.v[1].im' * 'aimc.rotorCage.resistor.i[1].re') ^ 2.0);
-    'aimc.rotorCage.resistor.S[2]' = sqrt(('aimc.rotorCage.resistor.v[2].re' * 'aimc.rotorCage.resistor.i[2].re' - 'aimc.rotorCage.resistor.v[2].im' * (-'aimc.rotorCage.resistor.i[2].im')) ^ 2.0 + ('aimc.rotorCage.resistor.v[2].re' * (-'aimc.rotorCage.resistor.i[2].im') + 'aimc.rotorCage.resistor.v[2].im' * 'aimc.rotorCage.resistor.i[2].re') ^ 2.0);
-    'aimc.rotorCage.resistor.S[3]' = sqrt(('aimc.rotorCage.resistor.v[3].re' * 'aimc.rotorCage.resistor.i[3].re' - 'aimc.rotorCage.resistor.v[3].im' * (-'aimc.rotorCage.resistor.i[3].im')) ^ 2.0 + ('aimc.rotorCage.resistor.v[3].re' * (-'aimc.rotorCage.resistor.i[3].im') + 'aimc.rotorCage.resistor.v[3].im' * 'aimc.rotorCage.resistor.i[3].re') ^ 2.0);
-    'aimc.rotorCage.resistor.pf[1]' = cos('Modelica.Math.atan3'('aimc.rotorCage.resistor.Q[1]', 'aimc.rotorCage.resistor.P[1]', 0.0));
-    'aimc.rotorCage.resistor.pf[2]' = cos('Modelica.Math.atan3'('aimc.rotorCage.resistor.Q[2]', 'aimc.rotorCage.resistor.P[2]', 0.0));
-    'aimc.rotorCage.resistor.pf[3]' = cos('Modelica.Math.atan3'('aimc.rotorCage.resistor.Q[3]', 'aimc.rotorCage.resistor.P[3]', 0.0));
+    'aimc.rotorCage.resistor.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.resistor.v[1]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.resistor.i[1]')));
+    'aimc.rotorCage.resistor.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.resistor.v[2]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.resistor.i[2]')));
+    'aimc.rotorCage.resistor.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.resistor.v[3]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.resistor.i[3]')));
+    'aimc.rotorCage.resistor.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.resistor.v[1]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.resistor.i[1]')));
+    'aimc.rotorCage.resistor.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.resistor.v[2]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.resistor.i[2]')));
+    'aimc.rotorCage.resistor.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.resistor.v[3]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.resistor.i[3]')));
+    'aimc.rotorCage.resistor.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.resistor.v[1]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.resistor.i[1]')));
+    'aimc.rotorCage.resistor.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.resistor.v[2]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.resistor.i[2]')));
+    'aimc.rotorCage.resistor.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.rotorCage.resistor.v[3]', 'Modelica.ComplexMath.conj'('aimc.rotorCage.resistor.i[3]')));
+    'aimc.rotorCage.resistor.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.rotorCage.resistor.P[1]', 'aimc.rotorCage.resistor.Q[1]'), 0.0));
+    'aimc.rotorCage.resistor.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.rotorCage.resistor.P[2]', 'aimc.rotorCage.resistor.Q[2]'), 0.0));
+    'aimc.rotorCage.resistor.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('aimc.rotorCage.resistor.P[3]', 'aimc.rotorCage.resistor.Q[3]'), 0.0));
     'aimc.rotorCage.resistor.resistor[1].R_actual' = 0.04;
-    'aimc.rotorCage.resistor.resistor[1].v.re' = 'aimc.rotorCage.resistor.resistor[1].R_actual' * 'aimc.rotorCage.resistor.resistor[1].i.re';
-    'aimc.rotorCage.resistor.resistor[1].v.im' = 'aimc.rotorCage.resistor.resistor[1].R_actual' * 'aimc.rotorCage.resistor.resistor[1].i.im';
+    'aimc.rotorCage.resistor.resistor[1].v.re' = 'aimc.rotorCage.resistor.resistor[1].R_actual' * 'aimc.rotorCage.resistor.resistor[1].i.re' - 0.0 * 'aimc.rotorCage.resistor.resistor[1].i.im';
+    'aimc.rotorCage.resistor.resistor[1].v.im' = 'aimc.rotorCage.resistor.resistor[1].R_actual' * 'aimc.rotorCage.resistor.resistor[1].i.im' + 0.0 * 'aimc.rotorCage.resistor.resistor[1].i.re';
     'aimc.rotorCage.resistor.resistor[1].LossPower' = 'aimc.rotorCage.resistor.resistor[1].v.re' * 'aimc.rotorCage.resistor.resistor[1].i.re' - 'aimc.rotorCage.resistor.resistor[1].v.im' * (-'aimc.rotorCage.resistor.resistor[1].i.im');
     'aimc.rotorCage.resistor.resistor[1].pin_p.i.re' + 'aimc.rotorCage.resistor.resistor[1].pin_n.i.re' = 0.0;
     'aimc.rotorCage.resistor.resistor[1].pin_p.i.im' + 'aimc.rotorCage.resistor.resistor[1].pin_n.i.im' = 0.0;
@@ -4529,8 +4378,8 @@ package 'IMC_Inverter'
     'aimc.rotorCage.resistor.resistor[1].pin_p.reference.gamma' = 'aimc.rotorCage.resistor.resistor[1].pin_n.reference.gamma';
     'aimc.rotorCage.resistor.resistor[1].omega' = der('aimc.rotorCage.resistor.resistor[1].pin_p.reference.gamma');
     'aimc.rotorCage.resistor.resistor[2].R_actual' = 0.04;
-    'aimc.rotorCage.resistor.resistor[2].v.re' = 'aimc.rotorCage.resistor.resistor[2].R_actual' * 'aimc.rotorCage.resistor.resistor[2].i.re';
-    'aimc.rotorCage.resistor.resistor[2].v.im' = 'aimc.rotorCage.resistor.resistor[2].R_actual' * 'aimc.rotorCage.resistor.resistor[2].i.im';
+    'aimc.rotorCage.resistor.resistor[2].v.re' = 'aimc.rotorCage.resistor.resistor[2].R_actual' * 'aimc.rotorCage.resistor.resistor[2].i.re' - 0.0 * 'aimc.rotorCage.resistor.resistor[2].i.im';
+    'aimc.rotorCage.resistor.resistor[2].v.im' = 'aimc.rotorCage.resistor.resistor[2].R_actual' * 'aimc.rotorCage.resistor.resistor[2].i.im' + 0.0 * 'aimc.rotorCage.resistor.resistor[2].i.re';
     'aimc.rotorCage.resistor.resistor[2].LossPower' = 'aimc.rotorCage.resistor.resistor[2].v.re' * 'aimc.rotorCage.resistor.resistor[2].i.re' - 'aimc.rotorCage.resistor.resistor[2].v.im' * (-'aimc.rotorCage.resistor.resistor[2].i.im');
     'aimc.rotorCage.resistor.resistor[2].pin_p.i.re' + 'aimc.rotorCage.resistor.resistor[2].pin_n.i.re' = 0.0;
     'aimc.rotorCage.resistor.resistor[2].pin_p.i.im' + 'aimc.rotorCage.resistor.resistor[2].pin_n.i.im' = 0.0;
@@ -4541,8 +4390,8 @@ package 'IMC_Inverter'
     'aimc.rotorCage.resistor.resistor[2].pin_p.reference.gamma' = 'aimc.rotorCage.resistor.resistor[2].pin_n.reference.gamma';
     'aimc.rotorCage.resistor.resistor[2].omega' = der('aimc.rotorCage.resistor.resistor[2].pin_p.reference.gamma');
     'aimc.rotorCage.resistor.resistor[3].R_actual' = 0.04;
-    'aimc.rotorCage.resistor.resistor[3].v.re' = 'aimc.rotorCage.resistor.resistor[3].R_actual' * 'aimc.rotorCage.resistor.resistor[3].i.re';
-    'aimc.rotorCage.resistor.resistor[3].v.im' = 'aimc.rotorCage.resistor.resistor[3].R_actual' * 'aimc.rotorCage.resistor.resistor[3].i.im';
+    'aimc.rotorCage.resistor.resistor[3].v.re' = 'aimc.rotorCage.resistor.resistor[3].R_actual' * 'aimc.rotorCage.resistor.resistor[3].i.re' - 0.0 * 'aimc.rotorCage.resistor.resistor[3].i.im';
+    'aimc.rotorCage.resistor.resistor[3].v.im' = 'aimc.rotorCage.resistor.resistor[3].R_actual' * 'aimc.rotorCage.resistor.resistor[3].i.im' + 0.0 * 'aimc.rotorCage.resistor.resistor[3].i.re';
     'aimc.rotorCage.resistor.resistor[3].LossPower' = 'aimc.rotorCage.resistor.resistor[3].v.re' * 'aimc.rotorCage.resistor.resistor[3].i.re' - 'aimc.rotorCage.resistor.resistor[3].v.im' * (-'aimc.rotorCage.resistor.resistor[3].i.im');
     'aimc.rotorCage.resistor.resistor[3].pin_p.i.re' + 'aimc.rotorCage.resistor.resistor[3].pin_n.i.re' = 0.0;
     'aimc.rotorCage.resistor.resistor[3].pin_p.i.im' + 'aimc.rotorCage.resistor.resistor[3].pin_n.i.im' = 0.0;
@@ -4552,12 +4401,12 @@ package 'IMC_Inverter'
     'aimc.rotorCage.resistor.resistor[3].i.im' = 'aimc.rotorCage.resistor.resistor[3].pin_p.i.im';
     'aimc.rotorCage.resistor.resistor[3].pin_p.reference.gamma' = 'aimc.rotorCage.resistor.resistor[3].pin_n.reference.gamma';
     'aimc.rotorCage.resistor.resistor[3].omega' = der('aimc.rotorCage.resistor.resistor[3].pin_p.reference.gamma');
-    'aimc.rotorCage.resistor.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.resistor.plug_p.pin[1].v', 'aimc.rotorCage.resistor.plug_n.pin[1].v')).re;
-    'aimc.rotorCage.resistor.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.resistor.plug_p.pin[1].v', 'aimc.rotorCage.resistor.plug_n.pin[1].v')).im;
-    'aimc.rotorCage.resistor.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.resistor.plug_p.pin[2].v', 'aimc.rotorCage.resistor.plug_n.pin[2].v')).re;
-    'aimc.rotorCage.resistor.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.resistor.plug_p.pin[2].v', 'aimc.rotorCage.resistor.plug_n.pin[2].v')).im;
-    'aimc.rotorCage.resistor.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.resistor.plug_p.pin[3].v', 'aimc.rotorCage.resistor.plug_n.pin[3].v')).re;
-    'aimc.rotorCage.resistor.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('aimc.rotorCage.resistor.plug_p.pin[3].v', 'aimc.rotorCage.resistor.plug_n.pin[3].v')).im;
+    'aimc.rotorCage.resistor.v[1].re' = 'aimc.rotorCage.resistor.plug_p.pin[1].v.re' - 'aimc.rotorCage.resistor.plug_n.pin[1].v.re';
+    'aimc.rotorCage.resistor.v[1].im' = 'aimc.rotorCage.resistor.plug_p.pin[1].v.im' - 'aimc.rotorCage.resistor.plug_n.pin[1].v.im';
+    'aimc.rotorCage.resistor.v[2].re' = 'aimc.rotorCage.resistor.plug_p.pin[2].v.re' - 'aimc.rotorCage.resistor.plug_n.pin[2].v.re';
+    'aimc.rotorCage.resistor.v[2].im' = 'aimc.rotorCage.resistor.plug_p.pin[2].v.im' - 'aimc.rotorCage.resistor.plug_n.pin[2].v.im';
+    'aimc.rotorCage.resistor.v[3].re' = 'aimc.rotorCage.resistor.plug_p.pin[3].v.re' - 'aimc.rotorCage.resistor.plug_n.pin[3].v.re';
+    'aimc.rotorCage.resistor.v[3].im' = 'aimc.rotorCage.resistor.plug_p.pin[3].v.im' - 'aimc.rotorCage.resistor.plug_n.pin[3].v.im';
     'aimc.rotorCage.resistor.i[1].re' = 'aimc.rotorCage.resistor.plug_p.pin[1].i.re';
     'aimc.rotorCage.resistor.i[1].im' = 'aimc.rotorCage.resistor.plug_p.pin[1].i.im';
     'aimc.rotorCage.resistor.i[2].re' = 'aimc.rotorCage.resistor.plug_p.pin[2].i.re';
@@ -4576,6 +4425,8 @@ package 'IMC_Inverter'
     'aimc.rotorCage.thermalCollector.port_a[1].T' = 'aimc.rotorCage.thermalCollector.port_b.T';
     'aimc.rotorCage.thermalCollector.port_a[2].T' = 'aimc.rotorCage.thermalCollector.port_b.T';
     'aimc.rotorCage.thermalCollector.port_a[3].T' = 'aimc.rotorCage.thermalCollector.port_b.T';
+    'aimc.rotorCage.strayReluctance.V_m.re' = 'aimc.rotorCage.strayReluctance.port_p.V_m.re' - 'aimc.rotorCage.strayReluctance.port_n.V_m.re';
+    'aimc.rotorCage.strayReluctance.V_m.im' = 'aimc.rotorCage.strayReluctance.port_p.V_m.im' - 'aimc.rotorCage.strayReluctance.port_n.V_m.im';
     1.5707963267948966 * 'aimc.rotorCage.strayReluctance.V_m.re' = 4630.138908469983 * 'aimc.rotorCage.strayReluctance.Phi.re';
     1.5707963267948966 * 'aimc.rotorCage.strayReluctance.V_m.im' = 4630.138908469983 * 'aimc.rotorCage.strayReluctance.Phi.im';
     'aimc.rotorCage.strayReluctance.port_p.Phi.re' + 'aimc.rotorCage.strayReluctance.port_n.Phi.re' = 0.0;
@@ -4699,12 +4550,12 @@ package 'IMC_Inverter'
     'currentQuasiRMSSensor.currentSensor[3].pin_p.reference.gamma' = 'currentQuasiRMSSensor.currentSensor[3].pin_n.reference.gamma';
     'currentQuasiRMSSensor.currentSensor[3].omega' = der('currentQuasiRMSSensor.currentSensor[3].pin_p.reference.gamma');
     'currentQuasiRMSSensor.quasiRMS.y' = 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS'({'currentQuasiRMSSensor.quasiRMS.u[1]', 'currentQuasiRMSSensor.quasiRMS.u[2]', 'currentQuasiRMSSensor.quasiRMS.u[3]'});
-    'currentQuasiRMSSensor.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[1].v', 'currentQuasiRMSSensor.plug_n.pin[1].v')).re;
-    'currentQuasiRMSSensor.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[1].v', 'currentQuasiRMSSensor.plug_n.pin[1].v')).im;
-    'currentQuasiRMSSensor.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[2].v', 'currentQuasiRMSSensor.plug_n.pin[2].v')).re;
-    'currentQuasiRMSSensor.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[2].v', 'currentQuasiRMSSensor.plug_n.pin[2].v')).im;
-    'currentQuasiRMSSensor.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[3].v', 'currentQuasiRMSSensor.plug_n.pin[3].v')).re;
-    'currentQuasiRMSSensor.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('currentQuasiRMSSensor.plug_p.pin[3].v', 'currentQuasiRMSSensor.plug_n.pin[3].v')).im;
+    'currentQuasiRMSSensor.v[1].re' = 'currentQuasiRMSSensor.plug_p.pin[1].v.re' - 'currentQuasiRMSSensor.plug_n.pin[1].v.re';
+    'currentQuasiRMSSensor.v[1].im' = 'currentQuasiRMSSensor.plug_p.pin[1].v.im' - 'currentQuasiRMSSensor.plug_n.pin[1].v.im';
+    'currentQuasiRMSSensor.v[2].re' = 'currentQuasiRMSSensor.plug_p.pin[2].v.re' - 'currentQuasiRMSSensor.plug_n.pin[2].v.re';
+    'currentQuasiRMSSensor.v[2].im' = 'currentQuasiRMSSensor.plug_p.pin[2].v.im' - 'currentQuasiRMSSensor.plug_n.pin[2].v.im';
+    'currentQuasiRMSSensor.v[3].re' = 'currentQuasiRMSSensor.plug_p.pin[3].v.re' - 'currentQuasiRMSSensor.plug_n.pin[3].v.re';
+    'currentQuasiRMSSensor.v[3].im' = 'currentQuasiRMSSensor.plug_p.pin[3].v.im' - 'currentQuasiRMSSensor.plug_n.pin[3].v.im';
     'currentQuasiRMSSensor.omega' = der('currentQuasiRMSSensor.plug_p.reference.gamma');
     'ramp.y' = if time < 0.0 then 0.0 else if time < 1.0 then time * 50.0 else 50.0;
     'vfController.amplitude' = 100.0 * (if abs('vfController.u') < 50.0 then abs('vfController.u') / 50.0 else 1.0);
@@ -4726,18 +4577,18 @@ package 'IMC_Inverter'
     'voltageSource.arg_i[1]' = 'Modelica.ComplexMath.arg'('voltageSource.i[1]', 0.0);
     'voltageSource.arg_i[2]' = 'Modelica.ComplexMath.arg'('voltageSource.i[2]', 0.0);
     'voltageSource.arg_i[3]' = 'Modelica.ComplexMath.arg'('voltageSource.i[3]', 0.0);
-    'voltageSource.P[1]' = 'voltageSource.v[1].re' * 'voltageSource.i[1].re' - 'voltageSource.v[1].im' * (-'voltageSource.i[1].im');
-    'voltageSource.P[2]' = 'voltageSource.v[2].re' * 'voltageSource.i[2].re' - 'voltageSource.v[2].im' * (-'voltageSource.i[2].im');
-    'voltageSource.P[3]' = 'voltageSource.v[3].re' * 'voltageSource.i[3].re' - 'voltageSource.v[3].im' * (-'voltageSource.i[3].im');
-    'voltageSource.Q[1]' = 'voltageSource.v[1].re' * (-'voltageSource.i[1].im') + 'voltageSource.v[1].im' * 'voltageSource.i[1].re';
-    'voltageSource.Q[2]' = 'voltageSource.v[2].re' * (-'voltageSource.i[2].im') + 'voltageSource.v[2].im' * 'voltageSource.i[2].re';
-    'voltageSource.Q[3]' = 'voltageSource.v[3].re' * (-'voltageSource.i[3].im') + 'voltageSource.v[3].im' * 'voltageSource.i[3].re';
-    'voltageSource.S[1]' = sqrt(('voltageSource.v[1].re' * 'voltageSource.i[1].re' - 'voltageSource.v[1].im' * (-'voltageSource.i[1].im')) ^ 2.0 + ('voltageSource.v[1].re' * (-'voltageSource.i[1].im') + 'voltageSource.v[1].im' * 'voltageSource.i[1].re') ^ 2.0);
-    'voltageSource.S[2]' = sqrt(('voltageSource.v[2].re' * 'voltageSource.i[2].re' - 'voltageSource.v[2].im' * (-'voltageSource.i[2].im')) ^ 2.0 + ('voltageSource.v[2].re' * (-'voltageSource.i[2].im') + 'voltageSource.v[2].im' * 'voltageSource.i[2].re') ^ 2.0);
-    'voltageSource.S[3]' = sqrt(('voltageSource.v[3].re' * 'voltageSource.i[3].re' - 'voltageSource.v[3].im' * (-'voltageSource.i[3].im')) ^ 2.0 + ('voltageSource.v[3].re' * (-'voltageSource.i[3].im') + 'voltageSource.v[3].im' * 'voltageSource.i[3].re') ^ 2.0);
-    'voltageSource.pf[1]' = cos('Modelica.Math.atan3'('voltageSource.Q[1]', 'voltageSource.P[1]', 0.0));
-    'voltageSource.pf[2]' = cos('Modelica.Math.atan3'('voltageSource.Q[2]', 'voltageSource.P[2]', 0.0));
-    'voltageSource.pf[3]' = cos('Modelica.Math.atan3'('voltageSource.Q[3]', 'voltageSource.P[3]', 0.0));
+    'voltageSource.P[1]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[1]', 'Modelica.ComplexMath.conj'('voltageSource.i[1]')));
+    'voltageSource.P[2]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[2]', 'Modelica.ComplexMath.conj'('voltageSource.i[2]')));
+    'voltageSource.P[3]' = 'Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[3]', 'Modelica.ComplexMath.conj'('voltageSource.i[3]')));
+    'voltageSource.Q[1]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[1]', 'Modelica.ComplexMath.conj'('voltageSource.i[1]')));
+    'voltageSource.Q[2]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[2]', 'Modelica.ComplexMath.conj'('voltageSource.i[2]')));
+    'voltageSource.Q[3]' = 'Modelica.ComplexMath.imag'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[3]', 'Modelica.ComplexMath.conj'('voltageSource.i[3]')));
+    'voltageSource.S[1]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[1]', 'Modelica.ComplexMath.conj'('voltageSource.i[1]')));
+    'voltageSource.S[2]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[2]', 'Modelica.ComplexMath.conj'('voltageSource.i[2]')));
+    'voltageSource.S[3]' = 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('voltageSource.v[3]', 'Modelica.ComplexMath.conj'('voltageSource.i[3]')));
+    'voltageSource.pf[1]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P[1]', 'voltageSource.Q[1]'), 0.0));
+    'voltageSource.pf[2]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P[2]', 'voltageSource.Q[2]'), 0.0));
+    'voltageSource.pf[3]' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P[3]', 'voltageSource.Q[3]'), 0.0));
     'voltageSource.omega' = 6.283185307179586 * 'voltageSource.f';
     'voltageSource.v[1].re' = 'voltageSource.V[1].re';
     'voltageSource.v[1].im' = 'voltageSource.V[1].im';
@@ -4747,24 +4598,24 @@ package 'IMC_Inverter'
     'voltageSource.v[3].im' = 'voltageSource.V[3].im';
     'voltageSource.plug_p.reference.gamma' = 'voltageSource.plug_n.reference.gamma';
     'voltageSource.omega' = der('voltageSource.plug_p.reference.gamma');
-    'voltageSource.v[1].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[1].v', 'voltageSource.plug_n.pin[1].v')).re;
-    'voltageSource.v[1].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[1].v', 'voltageSource.plug_n.pin[1].v')).im;
-    'voltageSource.v[2].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[2].v', 'voltageSource.plug_n.pin[2].v')).re;
-    'voltageSource.v[2].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[2].v', 'voltageSource.plug_n.pin[2].v')).im;
-    'voltageSource.v[3].re' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[3].v', 'voltageSource.plug_n.pin[3].v')).re;
-    'voltageSource.v[3].im' = ('Modelica.Units.SI.ComplexElectricPotential.\'-\'.subtract'('voltageSource.plug_p.pin[3].v', 'voltageSource.plug_n.pin[3].v')).im;
+    'voltageSource.v[1].re' = 'voltageSource.plug_p.pin[1].v.re' - 'voltageSource.plug_n.pin[1].v.re';
+    'voltageSource.v[1].im' = 'voltageSource.plug_p.pin[1].v.im' - 'voltageSource.plug_n.pin[1].v.im';
+    'voltageSource.v[2].re' = 'voltageSource.plug_p.pin[2].v.re' - 'voltageSource.plug_n.pin[2].v.re';
+    'voltageSource.v[2].im' = 'voltageSource.plug_p.pin[2].v.im' - 'voltageSource.plug_n.pin[2].v.im';
+    'voltageSource.v[3].re' = 'voltageSource.plug_p.pin[3].v.re' - 'voltageSource.plug_n.pin[3].v.re';
+    'voltageSource.v[3].im' = 'voltageSource.plug_p.pin[3].v.im' - 'voltageSource.plug_n.pin[3].v.im';
     'voltageSource.i[1].re' = 'voltageSource.plug_p.pin[1].i.re';
     'voltageSource.i[1].im' = 'voltageSource.plug_p.pin[1].i.im';
     'voltageSource.i[2].re' = 'voltageSource.plug_p.pin[2].i.re';
     'voltageSource.i[2].im' = 'voltageSource.plug_p.pin[2].i.im';
     'voltageSource.i[3].re' = 'voltageSource.plug_p.pin[3].i.re';
     'voltageSource.i[3].im' = 'voltageSource.plug_p.pin[3].i.im';
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[1].i', 'voltageSource.plug_n.pin[1].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[1].i', 'voltageSource.plug_n.pin[1].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[2].i', 'voltageSource.plug_n.pin[2].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[2].i', 'voltageSource.plug_n.pin[2].i')).im = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[3].i', 'voltageSource.plug_n.pin[3].i')).re = 0.0;
-    ('Modelica.Units.SI.ComplexCurrent.\'+\''('voltageSource.plug_p.pin[3].i', 'voltageSource.plug_n.pin[3].i')).im = 0.0;
+    'voltageSource.plug_p.pin[1].i.re' + 'voltageSource.plug_n.pin[1].i.re' = 0.0;
+    'voltageSource.plug_p.pin[1].i.im' + 'voltageSource.plug_n.pin[1].i.im' = 0.0;
+    'voltageSource.plug_p.pin[2].i.re' + 'voltageSource.plug_n.pin[2].i.re' = 0.0;
+    'voltageSource.plug_p.pin[2].i.im' + 'voltageSource.plug_n.pin[2].i.im' = 0.0;
+    'voltageSource.plug_p.pin[3].i.re' + 'voltageSource.plug_n.pin[3].i.re' = 0.0;
+    'voltageSource.plug_p.pin[3].i.im' + 'voltageSource.plug_n.pin[3].i.im' = 0.0;
     'star.plugToPins_p.plugToPin_p[1].plug_p.reference.gamma' = 'star.plugToPins_p.plugToPin_p[1].pin_p.reference.gamma';
     'star.plugToPins_p.plugToPin_p[1].pin_p.v.re' = 'star.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.re';
     'star.plugToPins_p.plugToPin_p[1].pin_p.v.im' = 'star.plugToPins_p.plugToPin_p[1].plug_p.pin[1].v.im';

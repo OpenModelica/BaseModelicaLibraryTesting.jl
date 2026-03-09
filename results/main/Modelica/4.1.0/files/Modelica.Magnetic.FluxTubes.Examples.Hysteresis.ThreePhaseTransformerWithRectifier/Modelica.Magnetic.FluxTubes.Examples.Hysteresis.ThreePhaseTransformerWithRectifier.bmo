@@ -1,48 +1,5 @@
 //! base 0.1.0
 package 'ThreePhaseTransformerWithRectifier'
-  function 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass' "Return low pass filter coefficients at given cut-off frequency"
-    input Real[:] 'cr_in';
-    input Real[:] 'c0_in';
-    input Real[size('c0_in', 1)] 'c1_in';
-    input Real 'f_cut'(unit = "Hz", quantity = "Frequency");
-    output Real[size('cr_in', 1)] 'cr';
-    output Real[size('c0_in', 1)] 'c0';
-    output Real[size('c0_in', 1)] 'c1';
-    Real 'w_cut'(unit = "rad/s", quantity = "AngularVelocity") = 6.283185307179586 * 'f_cut';
-    Real 'w_cut2' = 'w_cut' * 'w_cut';
-  algorithm
-    assert('f_cut' > 0.0, "Cut-off frequency f_cut must be positive", AssertionLevel.error);
-    'cr' := 'w_cut' * 'cr_in';
-    'c1' := 'w_cut' * 'c1_in';
-    'c0' := 'w_cut2' * 'c0_in';
-  end 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass';
-
-  function 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass' "Return low pass filter roots as needed for block for given cut-off frequency"
-    input Real[:] 'cr_in';
-    input Real[:] 'c0_in';
-    input Real[size('c0_in', 1)] 'c1_in';
-    input Real 'f_cut'(unit = "Hz", quantity = "Frequency");
-    output Real[size('cr_in', 1)] 'r';
-    output Real[size('c0_in', 1)] 'a';
-    output Real[size('c0_in', 1)] 'b';
-    output Real[size('c0_in', 1)] 'ku';
-    Real[size('c0_in', 1)] 'c0';
-    Real[size('c0_in', 1)] 'c1';
-    Real[size('cr_in', 1)] 'cr';
-  algorithm
-    ('cr', 'c0', 'c1') := 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass'('cr_in', 'c0_in', 'c1_in', 'f_cut');
-
-    for 'i' in 1:size('cr_in', 1) loop
-      'r'['i'] := -'cr'['i'];
-    end for;
-
-    for 'i' in 1:size('c0_in', 1) loop
-      'a'['i'] := -'c1'['i'] / 2.0;
-      'b'['i'] := sqrt('c0'['i'] - 'a'['i'] * 'a'['i']);
-      'ku'['i'] := 'c0'['i'] / 'b'['i'];
-    end for;
-  end 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass';
-
   type 'Modelica.Blocks.Types.AnalogFilter' = enumeration('CriticalDamping', 'Bessel', 'Butterworth', 'ChebyshevI');
 
   type 'Modelica.Blocks.Types.FilterType' = enumeration('LowPass', 'HighPass', 'BandPass', 'BandStop');
@@ -1065,7 +1022,7 @@ package 'ThreePhaseTransformerWithRectifier'
     'inductor3.p.i' + 'transformer.n3.i' = 0.0;
     'ground1.p.v' = 0.0;
     'ground2.p.v' = 0.0;
-    'vSource1.signalSource.y' = if time < 0.0 then 0.0 else 50.0 * sin(314.1592653589793 * time);
+    'vSource1.signalSource.y' = if time < 0.0 then 0.0 else 50.0 * 'Modelica.Math.sin'(314.1592653589793 * time);
     'vSource1.v' = 'vSource1.signalSource.y';
     0.0 = 'vSource1.p.i' + 'vSource1.n.i';
     'vSource1.i' = 'vSource1.p.i';
@@ -1332,12 +1289,12 @@ package 'ThreePhaseTransformerWithRectifier'
     'transformer.LossPowerEddy' = 'transformer.core1.LossPowerEddy' + 'transformer.core2.LossPowerEddy' + 'transformer.core3.LossPowerEddy';
     'transformer.LossPower' = 'transformer.LossPowerWinding' + 'transformer.LossPowerEddy' + 'transformer.LossPowerStat';
     'transformer.T_heatPort' = 293.15;
-    'vSource2.signalSource.y' = if time < 0.0 then 0.0 else 50.0 * sin(314.1592653589793 * time + 4.1887902047864);
+    'vSource2.signalSource.y' = if time < 0.0 then 0.0 else 50.0 * 'Modelica.Math.sin'(314.1592653589793 * time + 4.1887902047864);
     'vSource2.v' = 'vSource2.signalSource.y';
     0.0 = 'vSource2.p.i' + 'vSource2.n.i';
     'vSource2.i' = 'vSource2.p.i';
     'vSource2.v' = 'vSource2.p.v' - 'vSource2.n.v';
-    'vSource3.signalSource.y' = if time < 0.0 then 0.0 else 50.0 * sin(314.1592653589793 * time + 2.0943951023932);
+    'vSource3.signalSource.y' = if time < 0.0 then 0.0 else 50.0 * 'Modelica.Math.sin'(314.1592653589793 * time + 2.0943951023932);
     'vSource3.v' = 'vSource3.signalSource.y';
     0.0 = 'vSource3.p.i' + 'vSource3.n.i';
     'vSource3.i' = 'vSource3.p.i';
