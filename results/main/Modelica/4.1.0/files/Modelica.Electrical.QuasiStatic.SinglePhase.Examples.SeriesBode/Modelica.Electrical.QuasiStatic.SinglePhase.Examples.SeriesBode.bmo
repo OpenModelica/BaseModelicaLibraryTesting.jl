@@ -2,11 +2,6 @@
 package 'SeriesBode'
   type 'Modelica.Blocks.Types.LimiterHomotopy' = enumeration('NoHomotopy', 'Linear', 'UpperLimit', 'LowerLimit');
 
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
   model 'SeriesBode' "Series circuit with Bode analysis"
     output Real 'abs_y' "Magnitude of voltage ratio";
     output Real 'dB_y'(unit = "dB", quantity = "AmplitudeLevelDifference") "Log10 of magnitude of voltage ratio";
@@ -192,7 +187,7 @@ package 'SeriesBode'
     'voltageSource.P' = 'voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im');
     'voltageSource.Q' = 'voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re';
     'voltageSource.S' = sqrt(('voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im')) ^ 2.0 + ('voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re') ^ 2.0);
-    'voltageSource.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P', 'voltageSource.Q'), 0.0));
+    'voltageSource.pf' = cos('Modelica.Math.atan3'('voltageSource.Q', 'voltageSource.P', 0.0));
     'voltageSource.gamma' = 'voltageSource.pin_p.reference.gamma';
     'resistor.abs_v' = sqrt('resistor.v.re' ^ 2.0 + 'resistor.v.im' ^ 2.0);
     'resistor.arg_v' = 'Modelica.Math.atan3'('resistor.v.im', 'resistor.v.re', 0.0);
@@ -201,7 +196,7 @@ package 'SeriesBode'
     'resistor.P' = 'resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im');
     'resistor.Q' = 'resistor.v.re' * (-'resistor.i.im') + 'resistor.v.im' * 'resistor.i.re';
     'resistor.S' = sqrt(('resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im')) ^ 2.0 + ('resistor.v.re' * (-'resistor.i.im') + 'resistor.v.im' * 'resistor.i.re') ^ 2.0);
-    'resistor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistor.P', 'resistor.Q'), 0.0));
+    'resistor.pf' = cos('Modelica.Math.atan3'('resistor.Q', 'resistor.P', 0.0));
     'inductor.abs_v' = sqrt('inductor.v.re' ^ 2.0 + 'inductor.v.im' ^ 2.0);
     'inductor.arg_v' = 'Modelica.Math.atan3'('inductor.v.im', 'inductor.v.re', 0.0);
     'inductor.abs_i' = sqrt('inductor.i.re' ^ 2.0 + 'inductor.i.im' ^ 2.0);
@@ -209,7 +204,7 @@ package 'SeriesBode'
     'inductor.P' = 'inductor.v.re' * 'inductor.i.re' - 'inductor.v.im' * (-'inductor.i.im');
     'inductor.Q' = 'inductor.v.re' * (-'inductor.i.im') + 'inductor.v.im' * 'inductor.i.re';
     'inductor.S' = sqrt(('inductor.v.re' * 'inductor.i.re' - 'inductor.v.im' * (-'inductor.i.im')) ^ 2.0 + ('inductor.v.re' * (-'inductor.i.im') + 'inductor.v.im' * 'inductor.i.re') ^ 2.0);
-    'inductor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('inductor.P', 'inductor.Q'), 0.0));
+    'inductor.pf' = cos('Modelica.Math.atan3'('inductor.Q', 'inductor.P', 0.0));
     'currentSensor.abs_i' = sqrt('currentSensor.i.re' ^ 2.0 + 'currentSensor.i.im' ^ 2.0);
     'currentSensor.arg_i' = 'Modelica.Math.atan3'('currentSensor.i.im', 'currentSensor.i.re', 0.0);
     'voltageSensor.abs_v' = sqrt('voltageSensor.v.re' ^ 2.0 + 'voltageSensor.v.im' ^ 2.0);

@@ -1,10 +1,5 @@
 //! base 0.1.0
 package 'ShowTransferFunction'
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
   model 'ShowTransferFunction' "Test complex transfer function block"
     parameter Real 'm'(min = 0.0, unit = "kg", quantity = "Mass") = 0.2 "Mass";
     parameter Real 'd'(unit = "N.s/m", quantity = "TranslationalDampingConstant") = 0.01 "Damping coefficient (not the damping ratio)";
@@ -75,11 +70,11 @@ package 'ShowTransferFunction'
     'const.y.im' = 'const.k.im';
     'transferFunction.bw[1].re' = -0.2;
     'transferFunction.bw[1].im' = 0.0;
-    'transferFunction.aw[1].re' = ('Complex.\'*\'.multiply'('Complex.\'constructor\'.fromReal'(0.2 * 'transferFunction.w' ^ 2.0, 0.0), 'Complex'(-1.0, 0.0))).re;
-    'transferFunction.aw[2].re' = ('Complex.\'*\'.multiply'('Complex.\'constructor\'.fromReal'(0.01 * 'transferFunction.w', 0.0), 'Complex'(0.0, 1.0))).re;
+    'transferFunction.aw[1].re' = 0.2 * 'transferFunction.w' ^ 2.0 * (-1.0);
+    'transferFunction.aw[2].re' = 0.0;
     'transferFunction.aw[3].re' = 0.1;
-    'transferFunction.aw[1].im' = ('Complex.\'*\'.multiply'('Complex.\'constructor\'.fromReal'(0.2 * 'transferFunction.w' ^ 2.0, 0.0), 'Complex'(-1.0, 0.0))).im;
-    'transferFunction.aw[2].im' = ('Complex.\'*\'.multiply'('Complex.\'constructor\'.fromReal'(0.01 * 'transferFunction.w', 0.0), 'Complex'(0.0, 1.0))).im;
+    'transferFunction.aw[1].im' = 0.0;
+    'transferFunction.aw[2].im' = 0.01 * 'transferFunction.w';
     'transferFunction.aw[3].im' = 0.0;
     'transferFunction.bSum.re' = 'transferFunction.bw[1].re';
     'transferFunction.bSum.im' = 'transferFunction.bw[1].im';

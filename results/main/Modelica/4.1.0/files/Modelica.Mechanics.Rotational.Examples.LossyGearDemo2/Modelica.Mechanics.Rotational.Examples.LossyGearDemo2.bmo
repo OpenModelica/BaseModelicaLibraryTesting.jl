@@ -95,7 +95,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'gear.eta_mf2_0'(unit = "1") = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 2, 0.0);
     parameter Real 'gear.tau_bf1_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 3, 0.0));
     parameter Real 'gear.tau_bf2_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gear.tableID', 4, 0.0));
-    parameter Real 'gear.tau_bf_a_0'(unit = "N.m", quantity = "Torque") = if 'Modelica.Math.isEqual'('gear.eta_mf1_0', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('gear.eta_mf2_0', 1.0, 2.220446049250313e-16) then 'gear.tau_bf1_0' / 2.0 else ('gear.tau_bf1_0' - 'gear.tau_bf2_0') / ('gear.eta_mf1_0' - 1.0 / 'gear.eta_mf2_0');
+    parameter Real 'gear.tau_bf_a_0'(unit = "N.m", quantity = "Torque") = if abs('gear.eta_mf1_0' - 1.0) <= 2.220446049250313e-16 and abs('gear.eta_mf2_0' - 1.0) <= 2.220446049250313e-16 then 'gear.tau_bf1_0' / 2.0 else ('gear.tau_bf1_0' - 'gear.tau_bf2_0') / ('gear.eta_mf1_0' - 1.0 / 'gear.eta_mf2_0');
     parameter 'Modelica.Blocks.Types.ExternalCombiTable1D' 'gear.tableID' = 'Modelica.Blocks.Types.ExternalCombiTable1D'("NoName", "NoName", {{0.0, 0.5, 0.5, 0.0, 0.0}}, {2, 3, 4, 5}, 'Modelica.Blocks.Types.Smoothness'.'LinearSegments', 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints', false, ",", 0) "External table object for sliding friction coefficient";
     Real 'Inertia1.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'Inertia1.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
@@ -234,7 +234,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
       'gear.tau_bf2' = noEvent(abs('gear.interpolation_result[1,4]'));
     end if;
 
-    if 'Modelica.Math.isEqual'('gear.eta_mf1', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('gear.eta_mf2', 1.0, 2.220446049250313e-16) then
+    if abs('gear.eta_mf1' - 1.0) <= 2.220446049250313e-16 and abs('gear.eta_mf2' - 1.0) <= 2.220446049250313e-16 then
       'gear.tau_bf_a' = 'gear.tau_bf1' / 2.0;
     elseif true then
       'gear.tau_bf_a' = ('gear.tau_bf1' - 'gear.tau_bf2') / ('gear.eta_mf1' - 1.0 / 'gear.eta_mf2');
@@ -282,7 +282,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     1.5 * 'Inertia2.a' = 'Inertia2.flange_a.tau' + 'Inertia2.flange_b.tau';
     'torque1.flange.tau' = -'torque1.tau';
     'torque2.flange.tau' = -'torque2.tau';
-    'DriveSine.y' = if time < 0.0 then 0.0 else 10.0 * 'Modelica.Math.sin'(6.283185307179586 * time);
+    'DriveSine.y' = if time < 0.0 then 0.0 else 10.0 * sin(6.283185307179586 * time);
     'load.y' = (if time < 0.0 then 0.0 else if time < 2.0 then time * 5.0 / 2.0 else 5.0) - 10.0;
     'bearingFriction.tau0' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('bearingFriction.tableID', 1, 0.0);
     'bearingFriction.tau0_max' = 'bearingFriction.tau0';

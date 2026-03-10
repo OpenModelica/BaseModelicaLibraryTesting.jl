@@ -1,20 +1,5 @@
 //! base 0.1.0
 package 'ToroidalCoreAirgap'
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.Units.SI.ComplexCurrent'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexCurrent';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
   model 'ToroidalCoreAirgap' "Educational example: iron core with airgap"
     parameter Real 'r'(unit = "m", quantity = "Length") = 0.05 "Middle radius of iron core";
     parameter Real 'd'(unit = "m", quantity = "Length") = 0.01 "Diameter of cylindrical cross section";
@@ -288,7 +273,7 @@ package 'ToroidalCoreAirgap'
     'currentSource.P' = 'currentSource.v.re' * 'currentSource.i.re' - 'currentSource.v.im' * (-'currentSource.i.im');
     'currentSource.Q' = 'currentSource.v.re' * (-'currentSource.i.im') + 'currentSource.v.im' * 'currentSource.i.re';
     'currentSource.S' = sqrt(('currentSource.v.re' * 'currentSource.i.re' - 'currentSource.v.im' * (-'currentSource.i.im')) ^ 2.0 + ('currentSource.v.re' * (-'currentSource.i.im') + 'currentSource.v.im' * 'currentSource.i.re') ^ 2.0);
-    'currentSource.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('currentSource.P', 'currentSource.Q'), 0.0));
+    'currentSource.pf' = cos('Modelica.Math.atan3'('currentSource.Q', 'currentSource.P', 0.0));
     'currentSource.gamma' = 'currentSource.pin_p.reference.gamma';
     'core.port_n.V_m.re' = 'measuringCoil.port_p.V_m.re';
     'core.port_n.V_m.im' = 'measuringCoil.port_p.V_m.im';
@@ -362,7 +347,7 @@ package 'ToroidalCoreAirgap'
     'excitingCoil.V_m.im' = 500.0 * 'excitingCoil.i.im' + 0.0 * 'excitingCoil.i.re';
     'excitingCoil.Psi.re' = 500.0 * 'excitingCoil.Phi.re' - 0.0 * 'excitingCoil.Phi.im';
     'excitingCoil.Psi.im' = 500.0 * 'excitingCoil.Phi.im' + 0.0 * 'excitingCoil.Phi.re';
-    'excitingCoil.L_stat' = noEvent(if 'Modelica.ComplexMath.abs'('excitingCoil.i') > 'excitingCoil.eps' then 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('excitingCoil.Psi', 'excitingCoil.i')) else 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('excitingCoil.Psi', 'Complex.\'constructor\'.fromReal'('excitingCoil.eps', 0.0))));
+    'excitingCoil.L_stat' = noEvent(if sqrt('excitingCoil.i.re' ^ 2.0 + 'excitingCoil.i.im' ^ 2.0) > 'excitingCoil.eps' then sqrt((('excitingCoil.Psi.re' * 'excitingCoil.i.re' + 'excitingCoil.Psi.im' * 'excitingCoil.i.im') / ('excitingCoil.i.re' * 'excitingCoil.i.re' + 'excitingCoil.i.im' * 'excitingCoil.i.im')) ^ 2.0 + (('excitingCoil.Psi.im' * 'excitingCoil.i.re' - 'excitingCoil.Psi.re' * 'excitingCoil.i.im') / ('excitingCoil.i.re' * 'excitingCoil.i.re' + 'excitingCoil.i.im' * 'excitingCoil.i.im')) ^ 2.0) else sqrt((('excitingCoil.Psi.re' * 'excitingCoil.eps' + 'excitingCoil.Psi.im' * 0.0) / ('excitingCoil.eps' * 'excitingCoil.eps' + 0.0 * 0.0)) ^ 2.0 + (('excitingCoil.Psi.im' * 'excitingCoil.eps' - 'excitingCoil.Psi.re' * 0.0) / ('excitingCoil.eps' * 'excitingCoil.eps' + 0.0 * 0.0)) ^ 2.0));
     'excitingCoil.omega' = der('excitingCoil.port_p.reference.gamma');
     'excitingCoil.port_p.reference.gamma' = 'excitingCoil.port_n.reference.gamma';
     'excitingCoil.pin_p.reference.gamma' = 'excitingCoil.pin_n.reference.gamma';
@@ -421,7 +406,7 @@ package 'ToroidalCoreAirgap'
     'measuringCoil.V_m.im' = 1.0 * 'measuringCoil.i.im' + 0.0 * 'measuringCoil.i.re';
     'measuringCoil.Psi.re' = 1.0 * 'measuringCoil.Phi.re' - 0.0 * 'measuringCoil.Phi.im';
     'measuringCoil.Psi.im' = 1.0 * 'measuringCoil.Phi.im' + 0.0 * 'measuringCoil.Phi.re';
-    'measuringCoil.L_stat' = noEvent(if 'Modelica.ComplexMath.abs'('measuringCoil.i') > 'measuringCoil.eps' then 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('measuringCoil.Psi', 'measuringCoil.i')) else 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('measuringCoil.Psi', 'Complex.\'constructor\'.fromReal'('measuringCoil.eps', 0.0))));
+    'measuringCoil.L_stat' = noEvent(if sqrt('measuringCoil.i.re' ^ 2.0 + 'measuringCoil.i.im' ^ 2.0) > 'measuringCoil.eps' then sqrt((('measuringCoil.Psi.re' * 'measuringCoil.i.re' + 'measuringCoil.Psi.im' * 'measuringCoil.i.im') / ('measuringCoil.i.re' * 'measuringCoil.i.re' + 'measuringCoil.i.im' * 'measuringCoil.i.im')) ^ 2.0 + (('measuringCoil.Psi.im' * 'measuringCoil.i.re' - 'measuringCoil.Psi.re' * 'measuringCoil.i.im') / ('measuringCoil.i.re' * 'measuringCoil.i.re' + 'measuringCoil.i.im' * 'measuringCoil.i.im')) ^ 2.0) else sqrt((('measuringCoil.Psi.re' * 'measuringCoil.eps' + 'measuringCoil.Psi.im' * 0.0) / ('measuringCoil.eps' * 'measuringCoil.eps' + 0.0 * 0.0)) ^ 2.0 + (('measuringCoil.Psi.im' * 'measuringCoil.eps' - 'measuringCoil.Psi.re' * 0.0) / ('measuringCoil.eps' * 'measuringCoil.eps' + 0.0 * 0.0)) ^ 2.0));
     'measuringCoil.omega' = der('measuringCoil.port_p.reference.gamma');
     'measuringCoil.port_p.reference.gamma' = 'measuringCoil.port_n.reference.gamma';
     'measuringCoil.pin_p.reference.gamma' = 'measuringCoil.pin_n.reference.gamma';

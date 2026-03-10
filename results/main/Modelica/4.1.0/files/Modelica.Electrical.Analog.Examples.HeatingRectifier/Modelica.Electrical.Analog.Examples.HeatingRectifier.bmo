@@ -101,8 +101,8 @@ package 'HeatingRectifier'
     assert('HeatingDiode1.T_heatPort' > 0.0, "Temperature must be positive", AssertionLevel.error);
     'HeatingDiode1.htemp' = 'HeatingDiode1.T_heatPort';
     'HeatingDiode1.vt_t' = 1.380649e-23 * 'HeatingDiode1.htemp' / 1.602176634e-19;
-    'HeatingDiode1.id' = 1e-6 * ('Modelica.Electrical.Analog.Semiconductors.exlin'('HeatingDiode1.v' / 'HeatingDiode1.vt_t', 15.0) - 1.0);
-    'HeatingDiode1.i' = 'HeatingDiode1.id' * 'Modelica.Electrical.Analog.Semiconductors.pow'('HeatingDiode1.htemp' / 300.15, 3.0) * 'HeatingDiode1.auxp' + 'HeatingDiode1.v' / 1e8;
+    'HeatingDiode1.id' = 1e-6 * ((if 'HeatingDiode1.v' / 'HeatingDiode1.vt_t' > 15.0 then exp(15.0) * (1.0 + 'HeatingDiode1.v' / 'HeatingDiode1.vt_t' - 15.0) else exp('HeatingDiode1.v' / 'HeatingDiode1.vt_t')) - 1.0);
+    'HeatingDiode1.i' = 'HeatingDiode1.id' * ('HeatingDiode1.htemp' / 300.15) ^ 3.0 * 'HeatingDiode1.auxp' + 'HeatingDiode1.v' / 1e8;
     'HeatingDiode1.aux' = ('HeatingDiode1.htemp' / 300.15 - 1.0) * 1.11 / 'HeatingDiode1.vt_t';
     'HeatingDiode1.auxp' = exp('HeatingDiode1.aux');
     'HeatingDiode1.LossPower' = 'HeatingDiode1.i' * 'HeatingDiode1.v';
@@ -110,7 +110,7 @@ package 'HeatingRectifier'
     'HeatingDiode1.i' = 'HeatingDiode1.p.i';
     'HeatingDiode1.v' = 'HeatingDiode1.p.v' - 'HeatingDiode1.n.v';
     'G.p.v' = 0.0;
-    'SineVoltage1.signalSource.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(6.283185307179586 * time);
+    'SineVoltage1.signalSource.y' = if time < 0.0 then 0.0 else sin(6.283185307179586 * time);
     'SineVoltage1.v' = 'SineVoltage1.signalSource.y';
     0.0 = 'SineVoltage1.p.i' + 'SineVoltage1.n.i';
     'SineVoltage1.i' = 'SineVoltage1.p.i';

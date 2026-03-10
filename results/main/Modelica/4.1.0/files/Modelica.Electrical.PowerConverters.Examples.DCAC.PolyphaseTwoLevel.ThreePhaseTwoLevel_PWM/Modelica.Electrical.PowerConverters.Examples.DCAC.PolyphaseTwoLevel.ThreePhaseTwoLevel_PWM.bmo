@@ -942,8 +942,8 @@ package 'ThreePhaseTwoLevel_PWM'
     'potentialSensor.potentialSensor[1].p.i' - 'potentialSensor.plug_p.pin[1].i' = 0.0;
     'potentialSensor.potentialSensor[2].p.i' - 'potentialSensor.plug_p.pin[2].i' = 0.0;
     'potentialSensor.potentialSensor[3].p.i' - 'potentialSensor.plug_p.pin[3].i' = 0.0;
-    'cosine.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.cos'(12.566370614359172 * time);
-    'sine.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.sin'(12.566370614359172 * time);
+    'cosine.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * cos(12.566370614359172 * time);
+    'sine.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * sin(12.566370614359172 * time);
 
     if time < 0.0 then
       'pwm.svPWM.fire_p[1]' = true;
@@ -1144,8 +1144,8 @@ package 'ThreePhaseTwoLevel_PWM'
     'potentialSensor.potentialSensor[2].phi' = 'potentialSensor.potentialSensor[2].p.v';
     'potentialSensor.potentialSensor[3].p.i' = 0.0;
     'potentialSensor.potentialSensor[3].phi' = 'potentialSensor.potentialSensor[3].p.v';
-    'harmonic.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.cos'(12.566370614359172 * time);
-    'harmonic.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.sin'(12.566370614359172 * time);
+    'harmonic.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * cos(12.566370614359172 * time);
+    'harmonic.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * sin(12.566370614359172 * time);
     'harmonic.product1.y' = 'harmonic.product1.u[1]' * 'harmonic.product1.u[2]';
     'harmonic.product2.y' = 'harmonic.product2.u[1]' * 'harmonic.product2.u[2]';
     der('harmonic.mean1.x') = 'harmonic.mean1.u';
@@ -1193,11 +1193,11 @@ package 'ThreePhaseTwoLevel_PWM'
     'filter[2].uu[3]' = 'filter[2].x[2]';
     'filter[2].y' = 'filter[2].uu[3]';
     'toPolar.y[1]' = sqrt('toPolar.u[1]' ^ 2.0 + 'toPolar.u[2]' ^ 2.0);
-    'toPolar.y[2]' = if noEvent('toPolar.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('toPolar.u[2]', 'toPolar.u[1]');
+    'toPolar.y[2]' = if noEvent('toPolar.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('toPolar.u[2]', 'toPolar.u[1]');
   algorithm
     when 'pwm.svPWM.sampleTrigger' then
       'pwm.svPWM.uRef' := min(sqrt('pwm.svPWM.u[1]' ^ 2.0 + 'pwm.svPWM.u[2]' ^ 2.0) / 1.6329931618554518, 0.8660254037844387);
-      'pwm.svPWM.phiRef' := if 'pwm.svPWM.uRef' < 2.2250738585072014e-308 then 0.0 else 'Modelica.Math.atan2'('pwm.svPWM.u[2]', 'pwm.svPWM.u[1]');
+      'pwm.svPWM.phiRef' := if 'pwm.svPWM.uRef' < 2.2250738585072014e-308 then 0.0 else atan2('pwm.svPWM.u[2]', 'pwm.svPWM.u[1]');
       'pwm.svPWM.phiPos' := max(0.0, 'pwm.svPWM.phiRef' + (if 'pwm.svPWM.phiRef' < (-1.3951473992034527e-15) then 6.283185307179586 else 0.0));
       'pwm.svPWM.ka' := min(integer('pwm.svPWM.phiPos' / 1.0471975511965976), 5);
       'pwm.svPWM.kb' := mod('pwm.svPWM.ka' + 1, 6);

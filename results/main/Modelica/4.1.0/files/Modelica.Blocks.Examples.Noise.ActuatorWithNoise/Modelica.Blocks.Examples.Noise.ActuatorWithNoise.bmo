@@ -1223,7 +1223,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'gearbox.lossyGear.eta_mf2_0'(unit = "1") = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 2, 0.0);
     parameter Real 'gearbox.lossyGear.tau_bf1_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 3, 0.0));
     parameter Real 'gearbox.lossyGear.tau_bf2_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 4, 0.0));
-    parameter Real 'gearbox.lossyGear.tau_bf_a_0'(unit = "N.m", quantity = "Torque") = if 'Modelica.Math.isEqual'('gearbox.lossyGear.eta_mf1_0', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('gearbox.lossyGear.eta_mf2_0', 1.0, 2.220446049250313e-16) then 'gearbox.lossyGear.tau_bf1_0' / 2.0 else ('gearbox.lossyGear.tau_bf1_0' - 'gearbox.lossyGear.tau_bf2_0') / ('gearbox.lossyGear.eta_mf1_0' - 1.0 / 'gearbox.lossyGear.eta_mf2_0');
+    parameter Real 'gearbox.lossyGear.tau_bf_a_0'(unit = "N.m", quantity = "Torque") = if abs('gearbox.lossyGear.eta_mf1_0' - 1.0) <= 2.220446049250313e-16 and abs('gearbox.lossyGear.eta_mf2_0' - 1.0) <= 2.220446049250313e-16 then 'gearbox.lossyGear.tau_bf1_0' / 2.0 else ('gearbox.lossyGear.tau_bf1_0' - 'gearbox.lossyGear.tau_bf2_0') / ('gearbox.lossyGear.eta_mf1_0' - 1.0 / 'gearbox.lossyGear.eta_mf2_0');
     parameter 'Modelica.Blocks.Types.ExternalCombiTable1D' 'gearbox.lossyGear.tableID' = 'Modelica.Blocks.Types.ExternalCombiTable1D'("NoName", "NoName", {{0.0, 0.85, 0.8, 0.1, 0.1}}, {2, 3, 4, 5}, 'Modelica.Blocks.Types.Smoothness'.'LinearSegments', 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints', false, ",", 0) "External table object for sliding friction coefficient";
     parameter Real 'gearbox.elastoBacklash.c'(start = 1e5, min = 2.2250738585072014e-308, unit = "N.m/rad", quantity = "RotationalSpringConstant") = 1e6 "Spring constant (c > 0 required)";
     parameter Real 'gearbox.elastoBacklash.d'(start = 0.0, min = 0.0, unit = "N.m.s/rad", quantity = "RotationalDampingConstant") = 1e4 "Damping constant";
@@ -2010,7 +2010,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.rotorDisplacementAngle.rotatorVS2R.y[1]' = 'motor.rotorDisplacementAngle.rotatorVS2R.RotationMatrix[1,1]' * 'motor.rotorDisplacementAngle.rotatorVS2R.u[1]' + 'motor.rotorDisplacementAngle.rotatorVS2R.RotationMatrix[1,2]' * 'motor.rotorDisplacementAngle.rotatorVS2R.u[2]';
     'motor.rotorDisplacementAngle.rotatorVS2R.y[2]' = 'motor.rotorDisplacementAngle.rotatorVS2R.RotationMatrix[2,1]' * 'motor.rotorDisplacementAngle.rotatorVS2R.u[1]' + 'motor.rotorDisplacementAngle.rotatorVS2R.RotationMatrix[2,2]' * 'motor.rotorDisplacementAngle.rotatorVS2R.u[2]';
     'motor.rotorDisplacementAngle.ToPolarVSR.y[1]' = sqrt('motor.rotorDisplacementAngle.ToPolarVSR.u[1]' ^ 2.0 + 'motor.rotorDisplacementAngle.ToPolarVSR.u[2]' ^ 2.0);
-    'motor.rotorDisplacementAngle.ToPolarVSR.y[2]' = if noEvent('motor.rotorDisplacementAngle.ToPolarVSR.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('motor.rotorDisplacementAngle.ToPolarVSR.u[2]', 'motor.rotorDisplacementAngle.ToPolarVSR.u[1]');
+    'motor.rotorDisplacementAngle.ToPolarVSR.y[2]' = if noEvent('motor.rotorDisplacementAngle.ToPolarVSR.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('motor.rotorDisplacementAngle.ToPolarVSR.u[2]', 'motor.rotorDisplacementAngle.ToPolarVSR.u[1]');
     'motor.rotorDisplacementAngle.fixed.flange.phi' = 0.0;
     'motor.rotorDisplacementAngle.wrapAngle.y' = 'Modelica.Math.wrapAngle'('motor.rotorDisplacementAngle.wrapAngle.u', false);
     'motor.rotorDisplacementAngle.lessThreshold.y' = if noEvent('motor.rotorDisplacementAngle.lessThreshold.u[1]' < 0.0) then 0.0 else 'motor.rotorDisplacementAngle.lessThreshold.u[2]';
@@ -2035,7 +2035,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.voltageQuasiRMSSensor.ToSpacePhasor1.y[1]' = 0.6666666666666666 * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[1]' + (-0.33333333333333315) * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.3333333333333336) * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'motor.voltageQuasiRMSSensor.ToSpacePhasor1.y[2]' = 0.5773502691896257 * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.5773502691896255) * 'motor.voltageQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'motor.voltageQuasiRMSSensor.ToPolar1.y[1]' = sqrt('motor.voltageQuasiRMSSensor.ToPolar1.u[1]' ^ 2.0 + 'motor.voltageQuasiRMSSensor.ToPolar1.u[2]' ^ 2.0);
-    'motor.voltageQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('motor.voltageQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('motor.voltageQuasiRMSSensor.ToPolar1.u[2]', 'motor.voltageQuasiRMSSensor.ToPolar1.u[1]');
+    'motor.voltageQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('motor.voltageQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('motor.voltageQuasiRMSSensor.ToPolar1.u[2]', 'motor.voltageQuasiRMSSensor.ToPolar1.u[1]');
     'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].p.v' = 'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].n.v';
     'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].p.i' = 'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].i';
     'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].n.i' = -'motor.currentQuasiRMSSensor.CurrentSensor1.currentSensor[1].i';
@@ -2050,7 +2050,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.currentQuasiRMSSensor.ToSpacePhasor1.y[1]' = 0.6666666666666666 * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[1]' + (-0.33333333333333315) * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.3333333333333336) * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'motor.currentQuasiRMSSensor.ToSpacePhasor1.y[2]' = 0.5773502691896257 * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[2]' + (-0.5773502691896255) * 'motor.currentQuasiRMSSensor.ToSpacePhasor1.u[3]';
     'motor.currentQuasiRMSSensor.ToPolar1.y[1]' = sqrt('motor.currentQuasiRMSSensor.ToPolar1.u[1]' ^ 2.0 + 'motor.currentQuasiRMSSensor.ToPolar1.u[2]' ^ 2.0);
-    'motor.currentQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('motor.currentQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else 'Modelica.Math.atan2'('motor.currentQuasiRMSSensor.ToPolar1.u[2]', 'motor.currentQuasiRMSSensor.ToPolar1.u[1]');
+    'motor.currentQuasiRMSSensor.ToPolar1.y[2]' = if noEvent('motor.currentQuasiRMSSensor.ToPolar1.y[1]' <= 2.2250738585072014e-308) then 0.0 else atan2('motor.currentQuasiRMSSensor.ToPolar1.u[2]', 'motor.currentQuasiRMSSensor.ToPolar1.u[1]');
     'motor.inertiaLoad.phi' = 'motor.inertiaLoad.flange_a.phi';
     'motor.inertiaLoad.phi' = 'motor.inertiaLoad.flange_b.phi';
     'motor.inertiaLoad.w' = der('motor.inertiaLoad.phi');
@@ -2102,7 +2102,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
       'gearbox.lossyGear.tau_bf2' = noEvent(abs('gearbox.lossyGear.interpolation_result[1,4]'));
     end if;
 
-    if 'Modelica.Math.isEqual'('gearbox.lossyGear.eta_mf1', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('gearbox.lossyGear.eta_mf2', 1.0, 2.220446049250313e-16) then
+    if abs('gearbox.lossyGear.eta_mf1' - 1.0) <= 2.220446049250313e-16 and abs('gearbox.lossyGear.eta_mf2' - 1.0) <= 2.220446049250313e-16 then
       'gearbox.lossyGear.tau_bf_a' = 'gearbox.lossyGear.tau_bf1' / 2.0;
     elseif true then
       'gearbox.lossyGear.tau_bf_a' = ('gearbox.lossyGear.tau_bf1' - 'gearbox.lossyGear.tau_bf2') / ('gearbox.lossyGear.eta_mf1' - 1.0 / 'gearbox.lossyGear.eta_mf2');

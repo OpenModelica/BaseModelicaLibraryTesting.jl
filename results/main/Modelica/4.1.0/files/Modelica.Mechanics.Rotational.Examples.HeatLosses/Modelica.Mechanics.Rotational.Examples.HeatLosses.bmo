@@ -267,7 +267,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'lossyGear.eta_mf2_0'(unit = "1") = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('lossyGear.tableID', 2, 0.0);
     parameter Real 'lossyGear.tau_bf1_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('lossyGear.tableID', 3, 0.0));
     parameter Real 'lossyGear.tau_bf2_0'(unit = "N.m", quantity = "Torque") = abs('Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('lossyGear.tableID', 4, 0.0));
-    parameter Real 'lossyGear.tau_bf_a_0'(unit = "N.m", quantity = "Torque") = if 'Modelica.Math.isEqual'('lossyGear.eta_mf1_0', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('lossyGear.eta_mf2_0', 1.0, 2.220446049250313e-16) then 'lossyGear.tau_bf1_0' / 2.0 else ('lossyGear.tau_bf1_0' - 'lossyGear.tau_bf2_0') / ('lossyGear.eta_mf1_0' - 1.0 / 'lossyGear.eta_mf2_0');
+    parameter Real 'lossyGear.tau_bf_a_0'(unit = "N.m", quantity = "Torque") = if abs('lossyGear.eta_mf1_0' - 1.0) <= 2.220446049250313e-16 and abs('lossyGear.eta_mf2_0' - 1.0) <= 2.220446049250313e-16 then 'lossyGear.tau_bf1_0' / 2.0 else ('lossyGear.tau_bf1_0' - 'lossyGear.tau_bf2_0') / ('lossyGear.eta_mf1_0' - 1.0 / 'lossyGear.eta_mf2_0');
     parameter 'Modelica.Blocks.Types.ExternalCombiTable1D' 'lossyGear.tableID' = 'Modelica.Blocks.Types.ExternalCombiTable1D'("NoName", "NoName", {{0.0, 0.8, 0.8, 1.0, 1.0}, {1.0, 0.7, 0.7, 2.0, 2.0}}, {2, 3, 4, 5}, 'Modelica.Blocks.Types.Smoothness'.'LinearSegments', 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints', false, ",", 0) "External table object for sliding friction coefficient";
     Real 'clutch.phi_rel'(stateSelect = StateSelect.prefer, nominal = 1e-4, fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") "Relative rotation angle (= flange_b.phi - flange_a.phi)";
     Real 'clutch.w_rel'(stateSelect = StateSelect.prefer, fixed = true, start = 0.0, unit = "rad/s", quantity = "AngularVelocity") "Relative angular velocity (= der(phi_rel))";
@@ -481,7 +481,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'brake.flange_a.tau' + 'inertia6.flange_b.tau' = 0.0;
     'oneWayClutch.flange_b.tau' + 'inertia6.flange_a.tau' = 0.0;
     'brake.flange_b.tau' = 0.0;
-    'sine.y' = if time < 0.0 then 0.0 else 20.0 * 'Modelica.Math.sin'(31.41592653589793 * time);
+    'sine.y' = if time < 0.0 then 0.0 else 20.0 * sin(31.41592653589793 * time);
     'torque.flange.tau' = -'torque.tau';
     'torque.phi_support' = 0.0;
     'inertia1.phi' = 'inertia1.flange_a.phi';
@@ -591,7 +591,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
       'lossyGear.tau_bf2' = noEvent(abs('lossyGear.interpolation_result[1,4]'));
     end if;
 
-    if 'Modelica.Math.isEqual'('lossyGear.eta_mf1', 1.0, 2.220446049250313e-16) and 'Modelica.Math.isEqual'('lossyGear.eta_mf2', 1.0, 2.220446049250313e-16) then
+    if abs('lossyGear.eta_mf1' - 1.0) <= 2.220446049250313e-16 and abs('lossyGear.eta_mf2' - 1.0) <= 2.220446049250313e-16 then
       'lossyGear.tau_bf_a' = 'lossyGear.tau_bf1' / 2.0;
     elseif true then
       'lossyGear.tau_bf_a' = ('lossyGear.tau_bf1' - 'lossyGear.tau_bf2') / ('lossyGear.eta_mf1' - 1.0 / 'lossyGear.eta_mf2');
@@ -654,7 +654,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'inertia5.w' = der('inertia5.phi');
     'inertia5.a' = der('inertia5.w');
     2.0 * 'inertia5.a' = 'inertia5.flange_a.tau' + 'inertia5.flange_b.tau';
-    'sine2.y' = if time < 0.0 then 0.0 else 'Modelica.Math.sin'(1.2566370614359172 * time);
+    'sine2.y' = if time < 0.0 then 0.0 else sin(1.2566370614359172 * time);
     'inertia6.phi' = 'inertia6.flange_a.phi';
     'inertia6.phi' = 'inertia6.flange_b.phi';
     'inertia6.w' = der('inertia6.phi');

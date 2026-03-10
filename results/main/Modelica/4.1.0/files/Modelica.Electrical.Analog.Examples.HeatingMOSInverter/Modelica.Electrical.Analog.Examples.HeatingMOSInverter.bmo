@@ -181,7 +181,7 @@ package 'HeatingMOSInverter'
     'TC2.port_a.Q_flow' + 'H_NMOS.heatPort.Q_flow' = 0.0;
     'TC3.port_b.Q_flow' + 'FixedTemperature1.port.Q_flow' = 0.0;
     'G.p.v' = 0.0;
-    'Sin.signalSource.y' = if time < 0.0 then 0.0 else 5.0 * 'Modelica.Math.sin'(6.283185307179586 * time);
+    'Sin.signalSource.y' = if time < 0.0 then 0.0 else 5.0 * sin(6.283185307179586 * time);
     'Sin.v' = 'Sin.signalSource.y';
     0.0 = 'Sin.p.i' + 'Sin.n.i';
     'Sin.i' = 'Sin.p.i';
@@ -206,7 +206,7 @@ package 'HeatingMOSInverter'
     'H_PMOS.ubs' = smooth(0, if 'H_PMOS.B.v' < 'H_PMOS.us' then 0.0 else 'H_PMOS.B.v' - 'H_PMOS.us');
     'H_PMOS.ugst' = ('H_PMOS.G.v' - 'H_PMOS.us' - 'H_PMOS.vt_t' + 'H_PMOS.k2_t' * 'H_PMOS.ubs') * 0.839;
     'H_PMOS.id' = smooth(0, if 'H_PMOS.ugst' >= 0.0 then 'H_PMOS.uds' * 'H_PMOS.gds' else if 'H_PMOS.ugst' < 'H_PMOS.uds' then 'H_PMOS.uds' * 'H_PMOS.gds' - 'H_PMOS.v' * 'H_PMOS.uds' * ('H_PMOS.ugst' - 'H_PMOS.uds' / 2.0) else 'H_PMOS.uds' * 'H_PMOS.gds' - 'H_PMOS.v' * 'H_PMOS.ugst' * 'H_PMOS.ugst' / 2.0);
-    'H_PMOS.beta_t' = 1.05e-5 * 'Modelica.Electrical.Analog.Semiconductors.pow'('H_PMOS.T_heatPort' / 300.15, -1.5);
+    'H_PMOS.beta_t' = 1.05e-5 * ('H_PMOS.T_heatPort' / 300.15) ^ (-1.5);
     'H_PMOS.vt_t' = (-1.0) * (1.0 + ('H_PMOS.T_heatPort' - 300.15) * (-0.0029));
     'H_PMOS.k2_t' = 0.41 * (1.0 + ('H_PMOS.T_heatPort' - 300.15) * 6.2e-4);
     'H_PMOS.G.i' = 0.0;
@@ -223,7 +223,7 @@ package 'HeatingMOSInverter'
     'H_NMOS.ubs' = smooth(0, if 'H_NMOS.B.v' > 'H_NMOS.us' then 0.0 else 'H_NMOS.B.v' - 'H_NMOS.us');
     'H_NMOS.ugst' = ('H_NMOS.G.v' - 'H_NMOS.us' - 'H_NMOS.vt_t' + 'H_NMOS.k2_t' * 'H_NMOS.ubs') * 0.7311;
     'H_NMOS.id' = smooth(0, if 'H_NMOS.ugst' <= 0.0 then 'H_NMOS.uds' * 'H_NMOS.gds' else if 'H_NMOS.ugst' > 'H_NMOS.uds' then 'H_NMOS.v' * 'H_NMOS.uds' * ('H_NMOS.ugst' - 'H_NMOS.uds' / 2.0) + 'H_NMOS.uds' * 'H_NMOS.gds' else 'H_NMOS.v' * 'H_NMOS.ugst' * 'H_NMOS.ugst' / 2.0 + 'H_NMOS.uds' * 'H_NMOS.gds');
-    'H_NMOS.beta_t' = 4.1e-5 * 'Modelica.Electrical.Analog.Semiconductors.pow'('H_NMOS.T_heatPort' / 300.15, -1.5);
+    'H_NMOS.beta_t' = 4.1e-5 * ('H_NMOS.T_heatPort' / 300.15) ^ (-1.5);
     'H_NMOS.vt_t' = 0.8 * (1.0 + ('H_NMOS.T_heatPort' - 300.15) * (-0.00696));
     'H_NMOS.k2_t' = 1.144 * (1.0 + ('H_NMOS.T_heatPort' - 300.15) * 6e-4);
     'H_NMOS.G.i' = 0.0;

@@ -1,20 +1,5 @@
 //! base 0.1.0
 package 'GeneralLeakage'
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
   model 'GeneralLeakage' "Magnetic circuit with generic leakage mode"
     Real 'constantReluctance.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
     Real 'constantReluctance.port_p.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
@@ -171,7 +156,7 @@ package 'GeneralLeakage'
     'leakageWithCoefficient.V_m.im' = 'leakageWithCoefficient.port_p.V_m.im' - 'leakageWithCoefficient.port_n.V_m.im';
     'leakageWithCoefficient.Phi.re' = 'leakageWithCoefficient.port_p.Phi.re';
     'leakageWithCoefficient.Phi.im' = 'leakageWithCoefficient.port_p.Phi.im';
-    'eddyCurrent.lossPower' = 1.5707963267948966 * 'Modelica.ComplexMath.imag'('Complex.\'*\'.multiply'('Modelica.Units.SI.ComplexMagneticPotentialDifference.\'*\'.multiply'('Complex.\'constructor\'.fromReal'('eddyCurrent.omega', 0.0), 'eddyCurrent.V_m'), 'Modelica.ComplexMath.conj'('eddyCurrent.Phi')));
+    'eddyCurrent.lossPower' = 1.5707963267948966 * (('eddyCurrent.omega' * 'eddyCurrent.V_m.re' - 0.0 * 'eddyCurrent.V_m.im') * (-'eddyCurrent.Phi.im') + ('eddyCurrent.omega' * 'eddyCurrent.V_m.im' + 0.0 * 'eddyCurrent.V_m.re') * 'eddyCurrent.Phi.re');
     1.5707963267948966 * 'eddyCurrent.V_m.re' - 0.0 * 'eddyCurrent.V_m.im' = ((0.0 * 'eddyCurrent.omega' - 1.0 * 0.0) * 'eddyCurrent.Phi.re' - (0.0 * 0.0 + 1.0 * 'eddyCurrent.omega') * 'eddyCurrent.Phi.im') * 1e4 - ((0.0 * 'eddyCurrent.omega' - 1.0 * 0.0) * 'eddyCurrent.Phi.im' + (0.0 * 0.0 + 1.0 * 'eddyCurrent.omega') * 'eddyCurrent.Phi.re') * 0.0;
     1.5707963267948966 * 'eddyCurrent.V_m.im' + 0.0 * 'eddyCurrent.V_m.re' = ((0.0 * 'eddyCurrent.omega' - 1.0 * 0.0) * 'eddyCurrent.Phi.re' - (0.0 * 0.0 + 1.0 * 'eddyCurrent.omega') * 'eddyCurrent.Phi.im') * 0.0 + ((0.0 * 'eddyCurrent.omega' - 1.0 * 0.0) * 'eddyCurrent.Phi.im' + (0.0 * 0.0 + 1.0 * 'eddyCurrent.omega') * 'eddyCurrent.Phi.re') * 1e4;
     'eddyCurrent.TheatPort' = 273.15;

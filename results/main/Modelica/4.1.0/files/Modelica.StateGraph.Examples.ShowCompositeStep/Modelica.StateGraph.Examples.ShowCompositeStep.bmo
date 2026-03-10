@@ -345,8 +345,8 @@ package 'ShowCompositeStep'
     pre('transition7.t_start') = time;
     pre('transition7.enableFire') = false;
   equation
-    'compositeStep.stateGraphRoot.suspend' = 'Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.suspend[1].reset'}) or 'compositeStep.outerState.subgraphStatePort.suspend';
-    'compositeStep.stateGraphRoot.resume' = 'Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.resume[1].set'}) or 'compositeStep.outerState.subgraphStatePort.resume';
+    'compositeStep.stateGraphRoot.suspend' = size({'compositeStep.suspend[1].reset'}, 1) > 0 and max({'compositeStep.suspend[1].reset'}) or 'compositeStep.outerState.subgraphStatePort.suspend';
+    'compositeStep.stateGraphRoot.resume' = size({'compositeStep.resume[1].set'}, 1) > 0 and max({'compositeStep.resume[1].set'}) or 'compositeStep.outerState.subgraphStatePort.resume';
     'compositeStep.outerState.active' = 'compositeStep.active';
     'compositeStep.transition3.condition' = true;
     'compositeStep.transition3.localCondition' = 'compositeStep.transition3.condition';
@@ -487,7 +487,7 @@ package 'ShowCompositeStep'
     'compositeStep.step3.outerStatePort.subgraphStatePort.activeSteps' = if 'compositeStep.step3.outerStatePort.localActive' then 1.0 else 0.0;
     'compositeStep.step3.active' = 'compositeStep.step3.localActive';
     'compositeStep.step3.localActive' = pre('compositeStep.step3.newActive');
-    'compositeStep.step3.newActive' = if 'compositeStep.step3.outerStatePort.subgraphStatePort.resume' then 'compositeStep.step3.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.step3.inPort[1].set'}) or 'compositeStep.step3.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.step3.outPort[1].reset'})) and not 'compositeStep.step3.outerStatePort.subgraphStatePort.suspend';
+    'compositeStep.step3.newActive' = if 'compositeStep.step3.outerStatePort.subgraphStatePort.resume' then 'compositeStep.step3.oldActive' else (size({'compositeStep.step3.inPort[1].set'}, 1) > 0 and max({'compositeStep.step3.inPort[1].set'}) or 'compositeStep.step3.localActive' and not (size({'compositeStep.step3.outPort[1].reset'}, 1) > 0 and max({'compositeStep.step3.outPort[1].reset'}))) and not 'compositeStep.step3.outerStatePort.subgraphStatePort.suspend';
 
     when 'compositeStep.step3.outerStatePort.subgraphStatePort.suspend' then
       'compositeStep.step3.oldActive' = 'compositeStep.step3.localActive';
@@ -498,7 +498,7 @@ package 'ShowCompositeStep'
     'compositeStep.step4.outerStatePort.subgraphStatePort.activeSteps' = if 'compositeStep.step4.outerStatePort.localActive' then 1.0 else 0.0;
     'compositeStep.step4.active' = 'compositeStep.step4.localActive';
     'compositeStep.step4.localActive' = pre('compositeStep.step4.newActive');
-    'compositeStep.step4.newActive' = if 'compositeStep.step4.outerStatePort.subgraphStatePort.resume' then 'compositeStep.step4.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.step4.inPort[1].set'}) or 'compositeStep.step4.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.step4.outPort[1].reset'})) and not 'compositeStep.step4.outerStatePort.subgraphStatePort.suspend';
+    'compositeStep.step4.newActive' = if 'compositeStep.step4.outerStatePort.subgraphStatePort.resume' then 'compositeStep.step4.oldActive' else (size({'compositeStep.step4.inPort[1].set'}, 1) > 0 and max({'compositeStep.step4.inPort[1].set'}) or 'compositeStep.step4.localActive' and not (size({'compositeStep.step4.outPort[1].reset'}, 1) > 0 and max({'compositeStep.step4.outPort[1].reset'}))) and not 'compositeStep.step4.outerStatePort.subgraphStatePort.suspend';
 
     when 'compositeStep.step4.outerStatePort.subgraphStatePort.suspend' then
       'compositeStep.step4.oldActive' = 'compositeStep.step4.localActive';
@@ -542,7 +542,7 @@ package 'ShowCompositeStep'
     'compositeStep.step4a.outerStatePort.subgraphStatePort.activeSteps' = if 'compositeStep.step4a.outerStatePort.localActive' then 1.0 else 0.0;
     'compositeStep.step4a.active' = 'compositeStep.step4a.localActive';
     'compositeStep.step4a.localActive' = pre('compositeStep.step4a.newActive');
-    'compositeStep.step4a.newActive' = if 'compositeStep.step4a.outerStatePort.subgraphStatePort.resume' then 'compositeStep.step4a.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.step4a.inPort[1].set'}) or 'compositeStep.step4a.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.step4a.outPort[1].reset'})) and not 'compositeStep.step4a.outerStatePort.subgraphStatePort.suspend';
+    'compositeStep.step4a.newActive' = if 'compositeStep.step4a.outerStatePort.subgraphStatePort.resume' then 'compositeStep.step4a.oldActive' else (size({'compositeStep.step4a.inPort[1].set'}, 1) > 0 and max({'compositeStep.step4a.inPort[1].set'}) or 'compositeStep.step4a.localActive' and not (size({'compositeStep.step4a.outPort[1].reset'}, 1) > 0 and max({'compositeStep.step4a.outPort[1].reset'}))) and not 'compositeStep.step4a.outerStatePort.subgraphStatePort.suspend';
 
     when 'compositeStep.step4a.outerStatePort.subgraphStatePort.suspend' then
       'compositeStep.step4a.oldActive' = 'compositeStep.step4a.localActive';
@@ -564,7 +564,7 @@ package 'ShowCompositeStep'
     'compositeStep.initStep.outerStatePort.subgraphStatePort.activeSteps' = if 'compositeStep.initStep.outerStatePort.localActive' then 1.0 else 0.0;
     'compositeStep.initStep.active' = 'compositeStep.initStep.localActive';
     'compositeStep.initStep.localActive' = pre('compositeStep.initStep.newActive');
-    'compositeStep.initStep.newActive' = if 'compositeStep.initStep.outerStatePort.subgraphStatePort.resume' then 'compositeStep.initStep.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.initStep.inPort[1].set'}) or 'compositeStep.initStep.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.initStep.outPort[1].reset'})) and not 'compositeStep.initStep.outerStatePort.subgraphStatePort.suspend';
+    'compositeStep.initStep.newActive' = if 'compositeStep.initStep.outerStatePort.subgraphStatePort.resume' then 'compositeStep.initStep.oldActive' else (size({'compositeStep.initStep.inPort[1].set'}, 1) > 0 and max({'compositeStep.initStep.inPort[1].set'}) or 'compositeStep.initStep.localActive' and not (size({'compositeStep.initStep.outPort[1].reset'}, 1) > 0 and max({'compositeStep.initStep.outPort[1].reset'}))) and not 'compositeStep.initStep.outerStatePort.subgraphStatePort.suspend';
 
     when 'compositeStep.initStep.outerStatePort.subgraphStatePort.suspend' then
       'compositeStep.initStep.oldActive' = 'compositeStep.initStep.localActive';
@@ -575,7 +575,7 @@ package 'ShowCompositeStep'
     'compositeStep.exitStep.outerStatePort.subgraphStatePort.activeSteps' = if 'compositeStep.exitStep.outerStatePort.localActive' then 1.0 else 0.0;
     'compositeStep.exitStep.active' = 'compositeStep.exitStep.localActive';
     'compositeStep.exitStep.localActive' = pre('compositeStep.exitStep.newActive');
-    'compositeStep.exitStep.newActive' = if 'compositeStep.exitStep.outerStatePort.subgraphStatePort.resume' then 'compositeStep.exitStep.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.exitStep.inPort[1].set'}) or 'compositeStep.exitStep.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.exitStep.outPort[1].reset'})) and not 'compositeStep.exitStep.outerStatePort.subgraphStatePort.suspend';
+    'compositeStep.exitStep.newActive' = if 'compositeStep.exitStep.outerStatePort.subgraphStatePort.resume' then 'compositeStep.exitStep.oldActive' else (size({'compositeStep.exitStep.inPort[1].set'}, 1) > 0 and max({'compositeStep.exitStep.inPort[1].set'}) or 'compositeStep.exitStep.localActive' and not (size({'compositeStep.exitStep.outPort[1].reset'}, 1) > 0 and max({'compositeStep.exitStep.outPort[1].reset'}))) and not 'compositeStep.exitStep.outerStatePort.subgraphStatePort.suspend';
 
     when 'compositeStep.exitStep.outerStatePort.subgraphStatePort.suspend' then
       'compositeStep.exitStep.oldActive' = 'compositeStep.exitStep.localActive';
@@ -593,7 +593,7 @@ package 'ShowCompositeStep'
     'compositeStep.Alternative1.outPort.set' = size({'compositeStep.Alternative1.join[1].set', 'compositeStep.Alternative1.join[2].set', 'compositeStep.Alternative1.join[3].set'}, 1) > 0 and max({'compositeStep.Alternative1.join[1].set', 'compositeStep.Alternative1.join[2].set', 'compositeStep.Alternative1.join[3].set'});
     'compositeStep.activeSteps' = -integer('compositeStep.stateGraphRoot.subgraphStatePort.activeSteps');
     'compositeStep.active' = pre('compositeStep.newActive');
-    'compositeStep.newActive' = (('compositeStep.activeSteps' > 0 and not 'Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.suspend[1].reset'})) and not 'compositeStep.outerState.subgraphStatePort.suspend' or 'Modelica.Math.BooleanVectors.anyTrue'({'compositeStep.resume[1].set'})) or 'compositeStep.outerState.subgraphStatePort.resume';
+    'compositeStep.newActive' = (('compositeStep.activeSteps' > 0 and not (size({'compositeStep.suspend[1].reset'}, 1) > 0 and max({'compositeStep.suspend[1].reset'}))) and not 'compositeStep.outerState.subgraphStatePort.suspend' or size({'compositeStep.resume[1].set'}, 1) > 0 and max({'compositeStep.resume[1].set'})) or 'compositeStep.outerState.subgraphStatePort.resume';
     'compositeStep.resume[1].occupied' = 'compositeStep.active';
     'compositeStep.suspend[1].available' = 'compositeStep.active';
     'compositeStep.suspend[1].reset' = false;
@@ -601,7 +601,7 @@ package 'ShowCompositeStep'
     'step0.outerStatePort.subgraphStatePort.activeSteps' = if 'step0.outerStatePort.localActive' then 1.0 else 0.0;
     'step0.active' = 'step0.localActive';
     'step0.localActive' = pre('step0.newActive');
-    'step0.newActive' = if 'step0.outerStatePort.subgraphStatePort.resume' then 'step0.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'step0.inPort[1].set'}) or 'step0.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'step0.outPort[1].reset'})) and not 'step0.outerStatePort.subgraphStatePort.suspend';
+    'step0.newActive' = if 'step0.outerStatePort.subgraphStatePort.resume' then 'step0.oldActive' else (size({'step0.inPort[1].set'}, 1) > 0 and max({'step0.inPort[1].set'}) or 'step0.localActive' and not (size({'step0.outPort[1].reset'}, 1) > 0 and max({'step0.outPort[1].reset'}))) and not 'step0.outerStatePort.subgraphStatePort.suspend';
 
     when 'step0.outerStatePort.subgraphStatePort.suspend' then
       'step0.oldActive' = 'step0.localActive';
@@ -623,7 +623,7 @@ package 'ShowCompositeStep'
     'step1.outerStatePort.subgraphStatePort.activeSteps' = if 'step1.outerStatePort.localActive' then 1.0 else 0.0;
     'step1.active' = 'step1.localActive';
     'step1.localActive' = pre('step1.newActive');
-    'step1.newActive' = if 'step1.outerStatePort.subgraphStatePort.resume' then 'step1.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'step1.inPort[1].set'}) or 'step1.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'step1.outPort[1].reset'})) and not 'step1.outerStatePort.subgraphStatePort.suspend';
+    'step1.newActive' = if 'step1.outerStatePort.subgraphStatePort.resume' then 'step1.oldActive' else (size({'step1.inPort[1].set'}, 1) > 0 and max({'step1.inPort[1].set'}) or 'step1.localActive' and not (size({'step1.outPort[1].reset'}, 1) > 0 and max({'step1.outPort[1].reset'}))) and not 'step1.outerStatePort.subgraphStatePort.suspend';
 
     when 'step1.outerStatePort.subgraphStatePort.suspend' then
       'step1.oldActive' = 'step1.localActive';
@@ -645,7 +645,7 @@ package 'ShowCompositeStep'
     'step6.outerStatePort.subgraphStatePort.activeSteps' = if 'step6.outerStatePort.localActive' then 1.0 else 0.0;
     'step6.active' = 'step6.localActive';
     'step6.localActive' = pre('step6.newActive');
-    'step6.newActive' = if 'step6.outerStatePort.subgraphStatePort.resume' then 'step6.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'step6.inPort[1].set'}) or 'step6.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'step6.outPort[1].reset'})) and not 'step6.outerStatePort.subgraphStatePort.suspend';
+    'step6.newActive' = if 'step6.outerStatePort.subgraphStatePort.resume' then 'step6.oldActive' else (size({'step6.inPort[1].set'}, 1) > 0 and max({'step6.inPort[1].set'}) or 'step6.localActive' and not (size({'step6.outPort[1].reset'}, 1) > 0 and max({'step6.outPort[1].reset'}))) and not 'step6.outerStatePort.subgraphStatePort.suspend';
 
     when 'step6.outerStatePort.subgraphStatePort.suspend' then
       'step6.oldActive' = 'step6.localActive';

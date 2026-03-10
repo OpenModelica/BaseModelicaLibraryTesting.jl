@@ -111,7 +111,7 @@ package 'FirstExample_Variant2'
     'initialStep.outerStatePort.subgraphStatePort.activeSteps' = if 'initialStep.outerStatePort.localActive' then 1.0 else 0.0;
     'initialStep.active' = 'initialStep.localActive';
     'initialStep.localActive' = pre('initialStep.newActive');
-    'initialStep.newActive' = if 'initialStep.outerStatePort.subgraphStatePort.resume' then 'initialStep.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'initialStep.inPort[1].set'}) or 'initialStep.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'initialStep.outPort[1].reset'})) and not 'initialStep.outerStatePort.subgraphStatePort.suspend';
+    'initialStep.newActive' = if 'initialStep.outerStatePort.subgraphStatePort.resume' then 'initialStep.oldActive' else (size({'initialStep.inPort[1].set'}, 1) > 0 and max({'initialStep.inPort[1].set'}) or 'initialStep.localActive' and not (size({'initialStep.outPort[1].reset'}, 1) > 0 and max({'initialStep.outPort[1].reset'}))) and not 'initialStep.outerStatePort.subgraphStatePort.suspend';
 
     when 'initialStep.outerStatePort.subgraphStatePort.suspend' then
       'initialStep.oldActive' = 'initialStep.localActive';
@@ -133,7 +133,7 @@ package 'FirstExample_Variant2'
     'step.outerStatePort.subgraphStatePort.activeSteps' = if 'step.outerStatePort.localActive' then 1.0 else 0.0;
     'step.active' = 'step.localActive';
     'step.localActive' = pre('step.newActive');
-    'step.newActive' = if 'step.outerStatePort.subgraphStatePort.resume' then 'step.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'step.inPort[1].set'}) or 'step.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'step.outPort[1].reset'})) and not 'step.outerStatePort.subgraphStatePort.suspend';
+    'step.newActive' = if 'step.outerStatePort.subgraphStatePort.resume' then 'step.oldActive' else (size({'step.inPort[1].set'}, 1) > 0 and max({'step.inPort[1].set'}) or 'step.localActive' and not (size({'step.outPort[1].reset'}, 1) > 0 and max({'step.outPort[1].reset'}))) and not 'step.outerStatePort.subgraphStatePort.suspend';
 
     when 'step.outerStatePort.subgraphStatePort.suspend' then
       'step.oldActive' = 'step.localActive';

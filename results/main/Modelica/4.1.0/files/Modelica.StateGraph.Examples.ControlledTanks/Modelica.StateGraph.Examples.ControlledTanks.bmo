@@ -600,8 +600,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     pre('shut.reset[2]') = false;
   equation
     'tankController.s1.outerStatePort.localActive' = 'tankController.s1.localActive';
-    'tankController.makeProduct.stateGraphRoot.suspend' = 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.suspend[1].reset'}) or 'tankController.makeProduct.outerState.subgraphStatePort.suspend';
-    'tankController.makeProduct.stateGraphRoot.resume' = 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.resume[1].set'}) or 'tankController.makeProduct.outerState.subgraphStatePort.resume';
+    'tankController.makeProduct.stateGraphRoot.suspend' = size({'tankController.makeProduct.suspend[1].reset'}, 1) > 0 and max({'tankController.makeProduct.suspend[1].reset'}) or 'tankController.makeProduct.outerState.subgraphStatePort.suspend';
+    'tankController.makeProduct.stateGraphRoot.resume' = size({'tankController.makeProduct.resume[1].set'}, 1) > 0 and max({'tankController.makeProduct.resume[1].set'}) or 'tankController.makeProduct.outerState.subgraphStatePort.resume';
     'tankController.makeProduct.outerState.active' = 'tankController.makeProduct.active';
     'tankController.makeProduct.fillTank1.outerStatePort.localActive' = 'tankController.makeProduct.fillTank1.localActive';
     'tankController.makeProduct.T1.condition' = 'tankController.makeProduct.level1' > 0.98;
@@ -737,7 +737,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.s1.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.s1.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.s1.active' = 'tankController.s1.localActive';
     'tankController.s1.localActive' = pre('tankController.s1.newActive');
-    'tankController.s1.newActive' = if 'tankController.s1.outerStatePort.subgraphStatePort.resume' then 'tankController.s1.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'tankController.s1.inPort[1].set', 'tankController.s1.inPort[2].set'}) or 'tankController.s1.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.s1.outPort[1].reset'})) and not 'tankController.s1.outerStatePort.subgraphStatePort.suspend';
+    'tankController.s1.newActive' = if 'tankController.s1.outerStatePort.subgraphStatePort.resume' then 'tankController.s1.oldActive' else (size({'tankController.s1.inPort[1].set', 'tankController.s1.inPort[2].set'}, 1) > 0 and max({'tankController.s1.inPort[1].set', 'tankController.s1.inPort[2].set'}) or 'tankController.s1.localActive' and not (size({'tankController.s1.outPort[1].reset'}, 1) > 0 and max({'tankController.s1.outPort[1].reset'}))) and not 'tankController.s1.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.s1.outerStatePort.subgraphStatePort.suspend' then
       'tankController.s1.oldActive' = 'tankController.s1.localActive';
@@ -753,7 +753,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.makeProduct.fillTank1.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.makeProduct.fillTank1.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.makeProduct.fillTank1.active' = 'tankController.makeProduct.fillTank1.localActive';
     'tankController.makeProduct.fillTank1.localActive' = pre('tankController.makeProduct.fillTank1.newActive');
-    'tankController.makeProduct.fillTank1.newActive' = if 'tankController.makeProduct.fillTank1.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.fillTank1.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.fillTank1.inPort[1].set'}) or 'tankController.makeProduct.fillTank1.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.fillTank1.outPort[1].reset'})) and not 'tankController.makeProduct.fillTank1.outerStatePort.subgraphStatePort.suspend';
+    'tankController.makeProduct.fillTank1.newActive' = if 'tankController.makeProduct.fillTank1.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.fillTank1.oldActive' else (size({'tankController.makeProduct.fillTank1.inPort[1].set'}, 1) > 0 and max({'tankController.makeProduct.fillTank1.inPort[1].set'}) or 'tankController.makeProduct.fillTank1.localActive' and not (size({'tankController.makeProduct.fillTank1.outPort[1].reset'}, 1) > 0 and max({'tankController.makeProduct.fillTank1.outPort[1].reset'}))) and not 'tankController.makeProduct.fillTank1.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.makeProduct.fillTank1.outerStatePort.subgraphStatePort.suspend' then
       'tankController.makeProduct.fillTank1.oldActive' = 'tankController.makeProduct.fillTank1.localActive';
@@ -775,7 +775,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.makeProduct.fillTank2.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.makeProduct.fillTank2.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.makeProduct.fillTank2.active' = 'tankController.makeProduct.fillTank2.localActive';
     'tankController.makeProduct.fillTank2.localActive' = pre('tankController.makeProduct.fillTank2.newActive');
-    'tankController.makeProduct.fillTank2.newActive' = if 'tankController.makeProduct.fillTank2.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.fillTank2.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.fillTank2.inPort[1].set'}) or 'tankController.makeProduct.fillTank2.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.fillTank2.outPort[1].reset'})) and not 'tankController.makeProduct.fillTank2.outerStatePort.subgraphStatePort.suspend';
+    'tankController.makeProduct.fillTank2.newActive' = if 'tankController.makeProduct.fillTank2.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.fillTank2.oldActive' else (size({'tankController.makeProduct.fillTank2.inPort[1].set'}, 1) > 0 and max({'tankController.makeProduct.fillTank2.inPort[1].set'}) or 'tankController.makeProduct.fillTank2.localActive' and not (size({'tankController.makeProduct.fillTank2.outPort[1].reset'}, 1) > 0 and max({'tankController.makeProduct.fillTank2.outPort[1].reset'}))) and not 'tankController.makeProduct.fillTank2.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.makeProduct.fillTank2.outerStatePort.subgraphStatePort.suspend' then
       'tankController.makeProduct.fillTank2.oldActive' = 'tankController.makeProduct.fillTank2.localActive';
@@ -797,7 +797,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.makeProduct.emptyTank2.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.makeProduct.emptyTank2.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.makeProduct.emptyTank2.active' = 'tankController.makeProduct.emptyTank2.localActive';
     'tankController.makeProduct.emptyTank2.localActive' = pre('tankController.makeProduct.emptyTank2.newActive');
-    'tankController.makeProduct.emptyTank2.newActive' = if 'tankController.makeProduct.emptyTank2.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.emptyTank2.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.emptyTank2.inPort[1].set'}) or 'tankController.makeProduct.emptyTank2.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.emptyTank2.outPort[1].reset'})) and not 'tankController.makeProduct.emptyTank2.outerStatePort.subgraphStatePort.suspend';
+    'tankController.makeProduct.emptyTank2.newActive' = if 'tankController.makeProduct.emptyTank2.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.emptyTank2.oldActive' else (size({'tankController.makeProduct.emptyTank2.inPort[1].set'}, 1) > 0 and max({'tankController.makeProduct.emptyTank2.inPort[1].set'}) or 'tankController.makeProduct.emptyTank2.localActive' and not (size({'tankController.makeProduct.emptyTank2.outPort[1].reset'}, 1) > 0 and max({'tankController.makeProduct.emptyTank2.outPort[1].reset'}))) and not 'tankController.makeProduct.emptyTank2.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.makeProduct.emptyTank2.outerStatePort.subgraphStatePort.suspend' then
       'tankController.makeProduct.emptyTank2.oldActive' = 'tankController.makeProduct.emptyTank2.localActive';
@@ -808,7 +808,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.makeProduct.wait1.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.makeProduct.wait1.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.makeProduct.wait1.active' = 'tankController.makeProduct.wait1.localActive';
     'tankController.makeProduct.wait1.localActive' = pre('tankController.makeProduct.wait1.newActive');
-    'tankController.makeProduct.wait1.newActive' = if 'tankController.makeProduct.wait1.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.wait1.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.wait1.inPort[1].set'}) or 'tankController.makeProduct.wait1.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.wait1.outPort[1].reset'})) and not 'tankController.makeProduct.wait1.outerStatePort.subgraphStatePort.suspend';
+    'tankController.makeProduct.wait1.newActive' = if 'tankController.makeProduct.wait1.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.wait1.oldActive' else (size({'tankController.makeProduct.wait1.inPort[1].set'}, 1) > 0 and max({'tankController.makeProduct.wait1.inPort[1].set'}) or 'tankController.makeProduct.wait1.localActive' and not (size({'tankController.makeProduct.wait1.outPort[1].reset'}, 1) > 0 and max({'tankController.makeProduct.wait1.outPort[1].reset'}))) and not 'tankController.makeProduct.wait1.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.makeProduct.wait1.outerStatePort.subgraphStatePort.suspend' then
       'tankController.makeProduct.wait1.oldActive' = 'tankController.makeProduct.wait1.localActive';
@@ -830,7 +830,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.makeProduct.wait2.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.makeProduct.wait2.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.makeProduct.wait2.active' = 'tankController.makeProduct.wait2.localActive';
     'tankController.makeProduct.wait2.localActive' = pre('tankController.makeProduct.wait2.newActive');
-    'tankController.makeProduct.wait2.newActive' = if 'tankController.makeProduct.wait2.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.wait2.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.wait2.inPort[1].set'}) or 'tankController.makeProduct.wait2.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.wait2.outPort[1].reset'})) and not 'tankController.makeProduct.wait2.outerStatePort.subgraphStatePort.suspend';
+    'tankController.makeProduct.wait2.newActive' = if 'tankController.makeProduct.wait2.outerStatePort.subgraphStatePort.resume' then 'tankController.makeProduct.wait2.oldActive' else (size({'tankController.makeProduct.wait2.inPort[1].set'}, 1) > 0 and max({'tankController.makeProduct.wait2.inPort[1].set'}) or 'tankController.makeProduct.wait2.localActive' and not (size({'tankController.makeProduct.wait2.outPort[1].reset'}, 1) > 0 and max({'tankController.makeProduct.wait2.outPort[1].reset'}))) and not 'tankController.makeProduct.wait2.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.makeProduct.wait2.outerStatePort.subgraphStatePort.suspend' then
       'tankController.makeProduct.wait2.oldActive' = 'tankController.makeProduct.wait2.localActive';
@@ -851,7 +851,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.makeProduct.T4.outPort.set' = 'tankController.makeProduct.T4.fire';
     'tankController.makeProduct.activeSteps' = -integer('tankController.makeProduct.stateGraphRoot.subgraphStatePort.activeSteps');
     'tankController.makeProduct.active' = pre('tankController.makeProduct.newActive');
-    'tankController.makeProduct.newActive' = (('tankController.makeProduct.activeSteps' > 0 and not 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.suspend[1].reset'})) and not 'tankController.makeProduct.outerState.subgraphStatePort.suspend' or 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.makeProduct.resume[1].set'})) or 'tankController.makeProduct.outerState.subgraphStatePort.resume';
+    'tankController.makeProduct.newActive' = (('tankController.makeProduct.activeSteps' > 0 and not (size({'tankController.makeProduct.suspend[1].reset'}, 1) > 0 and max({'tankController.makeProduct.suspend[1].reset'}))) and not 'tankController.makeProduct.outerState.subgraphStatePort.suspend' or size({'tankController.makeProduct.resume[1].set'}, 1) > 0 and max({'tankController.makeProduct.resume[1].set'})) or 'tankController.makeProduct.outerState.subgraphStatePort.resume';
     'tankController.makeProduct.resume[1].occupied' = 'tankController.makeProduct.active';
     'tankController.makeProduct.suspend[1].available' = 'tankController.makeProduct.active';
 
@@ -890,7 +890,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.s2.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.s2.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.s2.active' = 'tankController.s2.localActive';
     'tankController.s2.localActive' = pre('tankController.s2.newActive');
-    'tankController.s2.newActive' = if 'tankController.s2.outerStatePort.subgraphStatePort.resume' then 'tankController.s2.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'tankController.s2.inPort[1].set'}) or 'tankController.s2.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.s2.outPort[1].reset', 'tankController.s2.outPort[2].reset'})) and not 'tankController.s2.outerStatePort.subgraphStatePort.suspend';
+    'tankController.s2.newActive' = if 'tankController.s2.outerStatePort.subgraphStatePort.resume' then 'tankController.s2.oldActive' else (size({'tankController.s2.inPort[1].set'}, 1) > 0 and max({'tankController.s2.inPort[1].set'}) or 'tankController.s2.localActive' and not (size({'tankController.s2.outPort[1].reset', 'tankController.s2.outPort[2].reset'}, 1) > 0 and max({'tankController.s2.outPort[1].reset', 'tankController.s2.outPort[2].reset'}))) and not 'tankController.s2.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.s2.outerStatePort.subgraphStatePort.suspend' then
       'tankController.s2.oldActive' = 'tankController.s2.localActive';
@@ -924,7 +924,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.emptyTanks.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.emptyTanks.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.emptyTanks.active' = 'tankController.emptyTanks.localActive';
     'tankController.emptyTanks.localActive' = pre('tankController.emptyTanks.newActive');
-    'tankController.emptyTanks.newActive' = if 'tankController.emptyTanks.outerStatePort.subgraphStatePort.resume' then 'tankController.emptyTanks.oldActive' else ('Modelica.Math.BooleanVectors.anyTrue'({'tankController.emptyTanks.inPort[1].set'}) or 'tankController.emptyTanks.localActive' and not 'Modelica.Math.BooleanVectors.anyTrue'({'tankController.emptyTanks.outPort[1].reset'})) and not 'tankController.emptyTanks.outerStatePort.subgraphStatePort.suspend';
+    'tankController.emptyTanks.newActive' = if 'tankController.emptyTanks.outerStatePort.subgraphStatePort.resume' then 'tankController.emptyTanks.oldActive' else (size({'tankController.emptyTanks.inPort[1].set'}, 1) > 0 and max({'tankController.emptyTanks.inPort[1].set'}) or 'tankController.emptyTanks.localActive' and not (size({'tankController.emptyTanks.outPort[1].reset'}, 1) > 0 and max({'tankController.emptyTanks.outPort[1].reset'}))) and not 'tankController.emptyTanks.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.emptyTanks.outerStatePort.subgraphStatePort.suspend' then
       'tankController.emptyTanks.oldActive' = 'tankController.emptyTanks.localActive';

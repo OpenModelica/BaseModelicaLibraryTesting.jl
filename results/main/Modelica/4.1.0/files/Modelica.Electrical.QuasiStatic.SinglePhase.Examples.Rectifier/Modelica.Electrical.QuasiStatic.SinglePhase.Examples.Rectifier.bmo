@@ -1,10 +1,5 @@
 //! base 0.1.0
 package 'Rectifier'
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
   model 'Rectifier' "Rectifier example"
     parameter Real 'VAC'(unit = "V", quantity = "ElectricPotential") = 100.0 "AC rms voltage";
     parameter Real 'conversionFactor' = 1.0 "Ratio of DC voltage / AC rms voltage";
@@ -389,7 +384,7 @@ package 'Rectifier'
     'voltageQS.P' = 'voltageQS.v.re' * 'voltageQS.i.re' - 'voltageQS.v.im' * (-'voltageQS.i.im');
     'voltageQS.Q' = 'voltageQS.v.re' * (-'voltageQS.i.im') + 'voltageQS.v.im' * 'voltageQS.i.re';
     'voltageQS.S' = sqrt(('voltageQS.v.re' * 'voltageQS.i.re' - 'voltageQS.v.im' * (-'voltageQS.i.im')) ^ 2.0 + ('voltageQS.v.re' * (-'voltageQS.i.im') + 'voltageQS.v.im' * 'voltageQS.i.re') ^ 2.0);
-    'voltageQS.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageQS.P', 'voltageQS.Q'), 0.0));
+    'voltageQS.pf' = cos('Modelica.Math.atan3'('voltageQS.Q', 'voltageQS.P', 0.0));
     'voltageQS.gamma' = 'voltageQS.pin_p.reference.gamma';
     'resistorQS.abs_v' = sqrt('resistorQS.v.re' ^ 2.0 + 'resistorQS.v.im' ^ 2.0);
     'resistorQS.arg_v' = 'Modelica.Math.atan3'('resistorQS.v.im', 'resistorQS.v.re', 0.0);
@@ -398,7 +393,7 @@ package 'Rectifier'
     'resistorQS.P' = 'resistorQS.v.re' * 'resistorQS.i.re' - 'resistorQS.v.im' * (-'resistorQS.i.im');
     'resistorQS.Q' = 'resistorQS.v.re' * (-'resistorQS.i.im') + 'resistorQS.v.im' * 'resistorQS.i.re';
     'resistorQS.S' = sqrt(('resistorQS.v.re' * 'resistorQS.i.re' - 'resistorQS.v.im' * (-'resistorQS.i.im')) ^ 2.0 + ('resistorQS.v.re' * (-'resistorQS.i.im') + 'resistorQS.v.im' * 'resistorQS.i.re') ^ 2.0);
-    'resistorQS.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('resistorQS.P', 'resistorQS.Q'), 0.0));
+    'resistorQS.pf' = cos('Modelica.Math.atan3'('resistorQS.Q', 'resistorQS.P', 0.0));
     'currentSensorQS.abs_i' = sqrt('currentSensorQS.i.re' ^ 2.0 + 'currentSensorQS.i.im' ^ 2.0);
     'currentSensorQS.arg_i' = 'Modelica.Math.atan3'('currentSensorQS.i.im', 'currentSensorQS.i.re', 0.0);
     'rectifierQS.iQS.re' = 'rectifierQS.pin_pQS.i.re';
@@ -554,7 +549,7 @@ package 'Rectifier'
     0.0 = 'load1.p.i' + 'load1.n.i';
     'load1.i' = 'load1.p.i';
     'load1.v' = 'load1.p.v' - 'load1.n.v';
-    'voltageAC.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * 'Modelica.Math.sin'(314.1592653589793 * time + 1.5707963267948966);
+    'voltageAC.signalSource.y' = if time < 0.0 then 0.0 else 141.4213562373095 * sin(314.1592653589793 * time + 1.5707963267948966);
     'voltageAC.v' = 'voltageAC.signalSource.y';
     0.0 = 'voltageAC.p.i' + 'voltageAC.n.i';
     'voltageAC.i' = 'voltageAC.p.i';
@@ -569,8 +564,8 @@ package 'Rectifier'
     'currentSensorAC.p.v' = 'currentSensorAC.n.v';
     'currentSensorAC.p.i' = 'currentSensorAC.i';
     'currentSensorAC.n.i' = -'currentSensorAC.i';
-    'iAC.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.cos'(314.1592653589793 * time);
-    'iAC.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * 'Modelica.Math.sin'(314.1592653589793 * time);
+    'iAC.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * cos(314.1592653589793 * time);
+    'iAC.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * sin(314.1592653589793 * time);
     'iAC.product1.y' = 'iAC.product1.u[1]' * 'iAC.product1.u[2]';
     'iAC.product2.y' = 'iAC.product2.u[1]' * 'iAC.product2.u[2]';
     der('iAC.mean1.x') = 'iAC.mean1.u';

@@ -1,20 +1,5 @@
 //! base 0.1.0
 package 'LinearInductor'
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.Units.SI.ComplexCurrent'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexCurrent';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
   model 'LinearInductor' "Linear inductor with ferromagnetic core"
     output Real 'deviation'(unit = "A", quantity = "ElectricCurrent") "Deviation of transient and quasi-static current";
     Real 'ground_mQS.port.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
@@ -378,7 +363,7 @@ package 'LinearInductor'
     'sourceQS.P' = 'sourceQS.v.re' * 'sourceQS.i.re' - 'sourceQS.v.im' * (-'sourceQS.i.im');
     'sourceQS.Q' = 'sourceQS.v.re' * (-'sourceQS.i.im') + 'sourceQS.v.im' * 'sourceQS.i.re';
     'sourceQS.S' = sqrt(('sourceQS.v.re' * 'sourceQS.i.re' - 'sourceQS.v.im' * (-'sourceQS.i.im')) ^ 2.0 + ('sourceQS.v.re' * (-'sourceQS.i.im') + 'sourceQS.v.im' * 'sourceQS.i.re') ^ 2.0);
-    'sourceQS.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('sourceQS.P', 'sourceQS.Q'), 0.0));
+    'sourceQS.pf' = cos('Modelica.Math.atan3'('sourceQS.Q', 'sourceQS.P', 0.0));
     'sourceQS.gamma' = 'sourceQS.pin_p.reference.gamma';
     'rQS.abs_v' = sqrt('rQS.v.re' ^ 2.0 + 'rQS.v.im' ^ 2.0);
     'rQS.arg_v' = 'Modelica.Math.atan3'('rQS.v.im', 'rQS.v.re', 0.0);
@@ -387,7 +372,7 @@ package 'LinearInductor'
     'rQS.P' = 'rQS.v.re' * 'rQS.i.re' - 'rQS.v.im' * (-'rQS.i.im');
     'rQS.Q' = 'rQS.v.re' * (-'rQS.i.im') + 'rQS.v.im' * 'rQS.i.re';
     'rQS.S' = sqrt(('rQS.v.re' * 'rQS.i.re' - 'rQS.v.im' * (-'rQS.i.im')) ^ 2.0 + ('rQS.v.re' * (-'rQS.i.im') + 'rQS.v.im' * 'rQS.i.re') ^ 2.0);
-    'rQS.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('rQS.P', 'rQS.Q'), 0.0));
+    'rQS.pf' = cos('Modelica.Math.atan3'('rQS.Q', 'rQS.P', 0.0));
     'coilQS.eps' = 2.220446049250313e-14;
     'r_mLeakQS.abs_V_m' = sqrt('r_mLeakQS.V_m.re' ^ 2.0 + 'r_mLeakQS.V_m.im' ^ 2.0);
     'r_mLeakQS.arg_V_m' = 'Modelica.Math.atan3'('r_mLeakQS.V_m.im', 'r_mLeakQS.V_m.re', 0.0);
@@ -528,7 +513,7 @@ package 'LinearInductor'
     'coilQS.V_m.im' = 600.0 * 'coilQS.i.im' + 0.0 * 'coilQS.i.re';
     'coilQS.Psi.re' = 600.0 * 'coilQS.Phi.re' - 0.0 * 'coilQS.Phi.im';
     'coilQS.Psi.im' = 600.0 * 'coilQS.Phi.im' + 0.0 * 'coilQS.Phi.re';
-    'coilQS.L_stat' = noEvent(if 'Modelica.ComplexMath.abs'('coilQS.i') > 'coilQS.eps' then 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('coilQS.Psi', 'coilQS.i')) else 'Modelica.ComplexMath.abs'('Modelica.Units.SI.ComplexMagneticFlux.\'/\''('coilQS.Psi', 'Complex.\'constructor\'.fromReal'('coilQS.eps', 0.0))));
+    'coilQS.L_stat' = noEvent(if sqrt('coilQS.i.re' ^ 2.0 + 'coilQS.i.im' ^ 2.0) > 'coilQS.eps' then sqrt((('coilQS.Psi.re' * 'coilQS.i.re' + 'coilQS.Psi.im' * 'coilQS.i.im') / ('coilQS.i.re' * 'coilQS.i.re' + 'coilQS.i.im' * 'coilQS.i.im')) ^ 2.0 + (('coilQS.Psi.im' * 'coilQS.i.re' - 'coilQS.Psi.re' * 'coilQS.i.im') / ('coilQS.i.re' * 'coilQS.i.re' + 'coilQS.i.im' * 'coilQS.i.im')) ^ 2.0) else sqrt((('coilQS.Psi.re' * 'coilQS.eps' + 'coilQS.Psi.im' * 0.0) / ('coilQS.eps' * 'coilQS.eps' + 0.0 * 0.0)) ^ 2.0 + (('coilQS.Psi.im' * 'coilQS.eps' - 'coilQS.Psi.re' * 0.0) / ('coilQS.eps' * 'coilQS.eps' + 0.0 * 0.0)) ^ 2.0));
     'coilQS.omega' = der('coilQS.port_p.reference.gamma');
     'coilQS.port_p.reference.gamma' = 'coilQS.port_n.reference.gamma';
     'coilQS.pin_p.reference.gamma' = 'coilQS.pin_n.reference.gamma';
@@ -582,7 +567,7 @@ package 'LinearInductor'
     'groundQS.pin.v.re' = 0.0;
     'groundQS.pin.v.im' = 0.0;
     'ground_m.port.V_m' = 0.0;
-    'source.signalSource.y' = if time < 0.0 then 0.0 else 325.2691193458119 * 'Modelica.Math.sin'(314.1592653589793 * time + 1.5707963267948966);
+    'source.signalSource.y' = if time < 0.0 then 0.0 else 325.2691193458119 * sin(314.1592653589793 * time + 1.5707963267948966);
     'source.v' = 'source.signalSource.y';
     0.0 = 'source.p.i' + 'source.n.i';
     'source.i' = 'source.p.i';

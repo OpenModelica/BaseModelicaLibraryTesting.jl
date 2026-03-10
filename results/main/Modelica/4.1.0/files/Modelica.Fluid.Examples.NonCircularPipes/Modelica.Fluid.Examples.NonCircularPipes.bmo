@@ -6,10 +6,21 @@ package 'NonCircularPipes'
 
   type 'Modelica.Fluid.Types.ModelStructure' = enumeration('av_vb', 'a_v_b', 'av_b', 'a_vb');
 
-  record 'boundary.Medium.SaturationProperties'
-    Real 'psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'boundary.Medium.SaturationProperties';
+  record 'Modelica.Media.Common.IF97PhaseBoundaryProperties'
+    Boolean 'region3boundary';
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'dpT'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+    Real 'vt'(unit = "m3/(kg.K)");
+    Real 'vp'(unit = "m3/(kg.Pa)");
+  end 'Modelica.Media.Common.IF97PhaseBoundaryProperties';
 
   record 'Modelica.Media.Common.IF97BaseTwoPhase'
     Integer 'phase'(start = 0);
@@ -29,58 +40,6 @@ package 'NonCircularPipes'
     Real 'x';
     Real 'dpT';
   end 'Modelica.Media.Common.IF97BaseTwoPhase';
-
-  record 'massflowsink1.Medium.SaturationProperties'
-    Real 'psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'massflowsink1.Medium.SaturationProperties';
-
-  record 'massflowsink2.Medium.SaturationProperties'
-    Real 'psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'massflowsink2.Medium.SaturationProperties';
-
-  record 'circular_pipe.Medium.SaturationProperties'
-    Real 'psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'circular_pipe.Medium.SaturationProperties';
-
-  record 'circular_pipe.flowModel.Medium.ThermodynamicState'
-    Integer 'phase'(max = 2, min = 0);
-    Real 'h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'd'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real 'p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  end 'circular_pipe.flowModel.Medium.ThermodynamicState';
-
-  record 'circular_pipe.heatTransfer.Medium.ThermodynamicState'
-    Integer 'phase'(max = 2, min = 0);
-    Real 'h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'd'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real 'p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  end 'circular_pipe.heatTransfer.Medium.ThermodynamicState';
-
-  record 'annulus_pipe.Medium.SaturationProperties'
-    Real 'psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'annulus_pipe.Medium.SaturationProperties';
-
-  record 'annulus_pipe.flowModel.Medium.ThermodynamicState'
-    Integer 'phase'(max = 2, min = 0);
-    Real 'h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'd'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real 'p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  end 'annulus_pipe.flowModel.Medium.ThermodynamicState';
-
-  record 'annulus_pipe.heatTransfer.Medium.ThermodynamicState'
-    Integer 'phase'(max = 2, min = 0);
-    Real 'h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'd'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real 'p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  end 'annulus_pipe.heatTransfer.Medium.ThermodynamicState';
 
   model 'NonCircularPipes' "Comparing a circular with a non-circular pipe"
     constant Real 'odim' = 0.015;
@@ -775,7 +734,7 @@ package 'NonCircularPipes'
     'annulus_pipe.heatTransfer.heatPorts[1].Q_flow' = 0.0;
     'annulus_pipe.heatTransfer.heatPorts[2].Q_flow' = 0.0;
     'boundary.medium.MM' = 0.018015268;
-    'boundary.medium.phase' = if ('boundary.medium.h' < 'Modelica.Fluid.Examples.NonCircularPipes.boundary.Medium.bubbleEnthalpy'('boundary.medium.sat') or 'boundary.medium.h' > 'Modelica.Fluid.Examples.NonCircularPipes.boundary.Medium.dewEnthalpy'('boundary.medium.sat')) or 'boundary.medium.p' > 2.2064e7 then 1 else 2;
+    'boundary.medium.phase' = if ('boundary.medium.h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('boundary.medium.sat.psat')).h or 'boundary.medium.h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('boundary.medium.sat.psat')).h) or 'boundary.medium.p' > 2.2064e7 then 1 else 2;
     'boundary.medium.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('boundary.medium.p', 'boundary.medium.h', 'boundary.medium.phase', 0)).rho;
     'boundary.medium.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('boundary.medium.p', 'boundary.medium.h', 'boundary.medium.phase', 0)).T;
     'boundary.medium.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('boundary.medium.p');
@@ -801,7 +760,7 @@ package 'NonCircularPipes'
     'boundary.ports[2].p' = 'boundary.medium.p';
     'boundary.ports[2].h_outflow' = 'boundary.medium.h';
     'massflowsink1.medium.MM' = 0.018015268;
-    'massflowsink1.medium.phase' = if ('massflowsink1.medium.h' < 'Modelica.Fluid.Examples.NonCircularPipes.massflowsink1.Medium.bubbleEnthalpy'('massflowsink1.medium.sat') or 'massflowsink1.medium.h' > 'Modelica.Fluid.Examples.NonCircularPipes.massflowsink1.Medium.dewEnthalpy'('massflowsink1.medium.sat')) or 'massflowsink1.medium.p' > 2.2064e7 then 1 else 2;
+    'massflowsink1.medium.phase' = if ('massflowsink1.medium.h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('massflowsink1.medium.sat.psat')).h or 'massflowsink1.medium.h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('massflowsink1.medium.sat.psat')).h) or 'massflowsink1.medium.p' > 2.2064e7 then 1 else 2;
     'massflowsink1.medium.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('massflowsink1.medium.p', 'massflowsink1.medium.h', 'massflowsink1.medium.phase', 0)).rho;
     'massflowsink1.medium.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('massflowsink1.medium.p', 'massflowsink1.medium.h', 'massflowsink1.medium.phase', 0)).T;
     'massflowsink1.medium.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('massflowsink1.medium.p');
@@ -825,7 +784,7 @@ package 'NonCircularPipes'
     'massflowsink1.ports[1].p' = 'massflowsink1.medium.p';
     'massflowsink1.ports[1].h_outflow' = 'massflowsink1.medium.h';
     'massflowsink2.medium.MM' = 0.018015268;
-    'massflowsink2.medium.phase' = if ('massflowsink2.medium.h' < 'Modelica.Fluid.Examples.NonCircularPipes.massflowsink2.Medium.bubbleEnthalpy'('massflowsink2.medium.sat') or 'massflowsink2.medium.h' > 'Modelica.Fluid.Examples.NonCircularPipes.massflowsink2.Medium.dewEnthalpy'('massflowsink2.medium.sat')) or 'massflowsink2.medium.p' > 2.2064e7 then 1 else 2;
+    'massflowsink2.medium.phase' = if ('massflowsink2.medium.h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('massflowsink2.medium.sat.psat')).h or 'massflowsink2.medium.h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('massflowsink2.medium.sat.psat')).h) or 'massflowsink2.medium.p' > 2.2064e7 then 1 else 2;
     'massflowsink2.medium.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('massflowsink2.medium.p', 'massflowsink2.medium.h', 'massflowsink2.medium.phase', 0)).rho;
     'massflowsink2.medium.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('massflowsink2.medium.p', 'massflowsink2.medium.h', 'massflowsink2.medium.phase', 0)).T;
     'massflowsink2.medium.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('massflowsink2.medium.p');
@@ -851,7 +810,7 @@ package 'NonCircularPipes'
     'circular_pipe.fluidVolumes[1]' = 0.003926990816987242;
     'circular_pipe.fluidVolumes[2]' = 0.003926990816987242;
     'circular_pipe.mediums[1].MM' = 0.018015268;
-    'circular_pipe.mediums[1].phase' = if ('circular_pipe.mediums[1].h' < 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.Medium.bubbleEnthalpy'('circular_pipe.mediums[1].sat') or 'circular_pipe.mediums[1].h' > 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.Medium.dewEnthalpy'('circular_pipe.mediums[1].sat')) or 'circular_pipe.mediums[1].p' > 2.2064e7 then 1 else 2;
+    'circular_pipe.mediums[1].phase' = if ('circular_pipe.mediums[1].h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('circular_pipe.mediums[1].sat.psat')).h or 'circular_pipe.mediums[1].h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('circular_pipe.mediums[1].sat.psat')).h) or 'circular_pipe.mediums[1].p' > 2.2064e7 then 1 else 2;
     'circular_pipe.mediums[1].d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('circular_pipe.mediums[1].p', 'circular_pipe.mediums[1].h', 'circular_pipe.mediums[1].phase', 0)).rho;
     'circular_pipe.mediums[1].T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('circular_pipe.mediums[1].p', 'circular_pipe.mediums[1].h', 'circular_pipe.mediums[1].phase', 0)).T;
     'circular_pipe.mediums[1].sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('circular_pipe.mediums[1].p');
@@ -867,7 +826,7 @@ package 'NonCircularPipes'
     assert('circular_pipe.mediums[1].X[1]' >= (-1e-5) and 'circular_pipe.mediums[1].X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('circular_pipe.mediums[1].X[1]') + "of substance " + "water" + "\nof medium " + "WaterIF97" + " is not in the range 0..1", AssertionLevel.error);
     assert('circular_pipe.mediums[1].p' >= 0.0, "Pressure (= " + String('circular_pipe.mediums[1].p') + " Pa) of medium \"" + "WaterIF97" + "\" is negative\n(Temperature = " + String('circular_pipe.mediums[1].T') + " K)", AssertionLevel.error);
     'circular_pipe.mediums[2].MM' = 0.018015268;
-    'circular_pipe.mediums[2].phase' = if ('circular_pipe.mediums[2].h' < 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.Medium.bubbleEnthalpy'('circular_pipe.mediums[2].sat') or 'circular_pipe.mediums[2].h' > 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.Medium.dewEnthalpy'('circular_pipe.mediums[2].sat')) or 'circular_pipe.mediums[2].p' > 2.2064e7 then 1 else 2;
+    'circular_pipe.mediums[2].phase' = if ('circular_pipe.mediums[2].h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('circular_pipe.mediums[2].sat.psat')).h or 'circular_pipe.mediums[2].h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('circular_pipe.mediums[2].sat.psat')).h) or 'circular_pipe.mediums[2].p' > 2.2064e7 then 1 else 2;
     'circular_pipe.mediums[2].d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('circular_pipe.mediums[2].p', 'circular_pipe.mediums[2].h', 'circular_pipe.mediums[2].phase', 0)).rho;
     'circular_pipe.mediums[2].T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('circular_pipe.mediums[2].p', 'circular_pipe.mediums[2].h', 'circular_pipe.mediums[2].phase', 0)).T;
     'circular_pipe.mediums[2].sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('circular_pipe.mediums[2].p');
@@ -892,10 +851,10 @@ package 'NonCircularPipes'
     'circular_pipe.flowModel.roughnesses[2]' = 'circular_pipe.roughnessesFM[2]';
     'circular_pipe.flowModel.dheights[1]' = 'circular_pipe.dheightsFM[1]';
     'circular_pipe.flowModel.pathLengths[1]' = 'circular_pipe.pathLengths[1]';
-    'circular_pipe.flowModel.rhos[1]' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.Medium.density'('circular_pipe.flowModel.states[1]');
-    'circular_pipe.flowModel.rhos[2]' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.Medium.density'('circular_pipe.flowModel.states[2]');
-    'circular_pipe.flowModel.mus[1]' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.Medium.dynamicViscosity'('circular_pipe.flowModel.states[1]');
-    'circular_pipe.flowModel.mus[2]' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.Medium.dynamicViscosity'('circular_pipe.flowModel.states[2]');
+    'circular_pipe.flowModel.rhos[1]' = 'circular_pipe.flowModel.states[1].d';
+    'circular_pipe.flowModel.rhos[2]' = 'circular_pipe.flowModel.states[2].d';
+    'circular_pipe.flowModel.mus[1]' = 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity'('circular_pipe.flowModel.states[1].d', 'circular_pipe.flowModel.states[1].T', 'circular_pipe.flowModel.states[1].p', 'circular_pipe.flowModel.states[1].phase', true);
+    'circular_pipe.flowModel.mus[2]' = 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity'('circular_pipe.flowModel.states[2].d', 'circular_pipe.flowModel.states[2].T', 'circular_pipe.flowModel.states[2].p', 'circular_pipe.flowModel.states[2].phase', true);
     'circular_pipe.flowModel.pathLengths_internal[1]' = 'circular_pipe.flowModel.pathLengths[1]';
     'circular_pipe.flowModel.Res_turbulent_internal[1]' = 4000.0;
     'circular_pipe.flowModel.diameters[1]' = 0.5 * ('circular_pipe.flowModel.dimensions[1]' + 'circular_pipe.flowModel.dimensions[2]');
@@ -903,7 +862,7 @@ package 'NonCircularPipes'
     'circular_pipe.flowModel.rhos_act[1]' = noEvent(if 'circular_pipe.flowModel.m_flows[1]' > 0.0 then 'circular_pipe.flowModel.rhos[1]' else 'circular_pipe.flowModel.rhos[2]');
     'circular_pipe.flowModel.mus_act[1]' = noEvent(if 'circular_pipe.flowModel.m_flows[1]' > 0.0 then 'circular_pipe.flowModel.mus[1]' else 'circular_pipe.flowModel.mus[2]');
     'circular_pipe.flowModel.Ib_flows[1]' = 0.0;
-    'circular_pipe.flowModel.Fs_p[1]' = 0.5 * ('circular_pipe.flowModel.crossAreas[1]' + 'circular_pipe.flowModel.crossAreas[2]') * ('Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.Medium.pressure'('circular_pipe.flowModel.states[2]') - 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.Medium.pressure'('circular_pipe.flowModel.states[1]'));
+    'circular_pipe.flowModel.Fs_p[1]' = 0.5 * ('circular_pipe.flowModel.crossAreas[1]' + 'circular_pipe.flowModel.crossAreas[2]') * ('circular_pipe.flowModel.states[2].p' - 'circular_pipe.flowModel.states[1].p');
     'circular_pipe.flowModel.dps_fg[1]' = 'circular_pipe.flowModel.Fs_fg[1]' * 2.0 / ('circular_pipe.flowModel.crossAreas[1]' + 'circular_pipe.flowModel.crossAreas[2]');
     'circular_pipe.flowModel.Is[1]' = 'circular_pipe.flowModel.m_flows[1]' * 'circular_pipe.flowModel.pathLengths[1]';
     0.0 = 'circular_pipe.flowModel.Ib_flows[1]' - 'circular_pipe.flowModel.Fs_p[1]' - 'circular_pipe.flowModel.Fs_fg[1]';
@@ -911,8 +870,8 @@ package 'NonCircularPipes'
     'circular_pipe.vs[2]' = 0.5 * ('circular_pipe.m_flows[2]' + 'circular_pipe.m_flows[3]') / 'circular_pipe.mediums[2].d' / 7.853981633974484e-5;
     'circular_pipe.heatTransfer.surfaceAreas[1]' = 1.5707963267948968;
     'circular_pipe.heatTransfer.surfaceAreas[2]' = 1.5707963267948968;
-    'circular_pipe.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.heatTransfer.Medium.temperature'('circular_pipe.heatTransfer.states[1]');
-    'circular_pipe.heatTransfer.Ts[2]' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.heatTransfer.Medium.temperature'('circular_pipe.heatTransfer.states[2]');
+    'circular_pipe.heatTransfer.Ts[1]' = 'circular_pipe.heatTransfer.states[1].T';
+    'circular_pipe.heatTransfer.Ts[2]' = 'circular_pipe.heatTransfer.states[2].T';
     'circular_pipe.heatTransfer.vs[1]' = 'circular_pipe.vs[1]';
     'circular_pipe.heatTransfer.vs[2]' = 'circular_pipe.vs[2]';
     'circular_pipe.heatTransfer.lengths[1]' = 50.0;
@@ -984,7 +943,7 @@ package 'NonCircularPipes'
     'annulus_pipe.fluidVolumes[1]' = 0.007853981633974483;
     'annulus_pipe.fluidVolumes[2]' = 0.007853981633974483;
     'annulus_pipe.mediums[1].MM' = 0.018015268;
-    'annulus_pipe.mediums[1].phase' = if ('annulus_pipe.mediums[1].h' < 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.Medium.bubbleEnthalpy'('annulus_pipe.mediums[1].sat') or 'annulus_pipe.mediums[1].h' > 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.Medium.dewEnthalpy'('annulus_pipe.mediums[1].sat')) or 'annulus_pipe.mediums[1].p' > 2.2064e7 then 1 else 2;
+    'annulus_pipe.mediums[1].phase' = if ('annulus_pipe.mediums[1].h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('annulus_pipe.mediums[1].sat.psat')).h or 'annulus_pipe.mediums[1].h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('annulus_pipe.mediums[1].sat.psat')).h) or 'annulus_pipe.mediums[1].p' > 2.2064e7 then 1 else 2;
     'annulus_pipe.mediums[1].d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('annulus_pipe.mediums[1].p', 'annulus_pipe.mediums[1].h', 'annulus_pipe.mediums[1].phase', 0)).rho;
     'annulus_pipe.mediums[1].T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('annulus_pipe.mediums[1].p', 'annulus_pipe.mediums[1].h', 'annulus_pipe.mediums[1].phase', 0)).T;
     'annulus_pipe.mediums[1].sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('annulus_pipe.mediums[1].p');
@@ -1000,7 +959,7 @@ package 'NonCircularPipes'
     assert('annulus_pipe.mediums[1].X[1]' >= (-1e-5) and 'annulus_pipe.mediums[1].X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('annulus_pipe.mediums[1].X[1]') + "of substance " + "water" + "\nof medium " + "WaterIF97" + " is not in the range 0..1", AssertionLevel.error);
     assert('annulus_pipe.mediums[1].p' >= 0.0, "Pressure (= " + String('annulus_pipe.mediums[1].p') + " Pa) of medium \"" + "WaterIF97" + "\" is negative\n(Temperature = " + String('annulus_pipe.mediums[1].T') + " K)", AssertionLevel.error);
     'annulus_pipe.mediums[2].MM' = 0.018015268;
-    'annulus_pipe.mediums[2].phase' = if ('annulus_pipe.mediums[2].h' < 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.Medium.bubbleEnthalpy'('annulus_pipe.mediums[2].sat') or 'annulus_pipe.mediums[2].h' > 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.Medium.dewEnthalpy'('annulus_pipe.mediums[2].sat')) or 'annulus_pipe.mediums[2].p' > 2.2064e7 then 1 else 2;
+    'annulus_pipe.mediums[2].phase' = if ('annulus_pipe.mediums[2].h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('annulus_pipe.mediums[2].sat.psat')).h or 'annulus_pipe.mediums[2].h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('annulus_pipe.mediums[2].sat.psat')).h) or 'annulus_pipe.mediums[2].p' > 2.2064e7 then 1 else 2;
     'annulus_pipe.mediums[2].d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('annulus_pipe.mediums[2].p', 'annulus_pipe.mediums[2].h', 'annulus_pipe.mediums[2].phase', 0)).rho;
     'annulus_pipe.mediums[2].T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('annulus_pipe.mediums[2].p', 'annulus_pipe.mediums[2].h', 'annulus_pipe.mediums[2].phase', 0)).T;
     'annulus_pipe.mediums[2].sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('annulus_pipe.mediums[2].p');
@@ -1025,10 +984,10 @@ package 'NonCircularPipes'
     'annulus_pipe.flowModel.roughnesses[2]' = 'annulus_pipe.roughnessesFM[2]';
     'annulus_pipe.flowModel.dheights[1]' = 'annulus_pipe.dheightsFM[1]';
     'annulus_pipe.flowModel.pathLengths[1]' = 'annulus_pipe.pathLengths[1]';
-    'annulus_pipe.flowModel.rhos[1]' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.Medium.density'('annulus_pipe.flowModel.states[1]');
-    'annulus_pipe.flowModel.rhos[2]' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.Medium.density'('annulus_pipe.flowModel.states[2]');
-    'annulus_pipe.flowModel.mus[1]' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.Medium.dynamicViscosity'('annulus_pipe.flowModel.states[1]');
-    'annulus_pipe.flowModel.mus[2]' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.Medium.dynamicViscosity'('annulus_pipe.flowModel.states[2]');
+    'annulus_pipe.flowModel.rhos[1]' = 'annulus_pipe.flowModel.states[1].d';
+    'annulus_pipe.flowModel.rhos[2]' = 'annulus_pipe.flowModel.states[2].d';
+    'annulus_pipe.flowModel.mus[1]' = 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity'('annulus_pipe.flowModel.states[1].d', 'annulus_pipe.flowModel.states[1].T', 'annulus_pipe.flowModel.states[1].p', 'annulus_pipe.flowModel.states[1].phase', true);
+    'annulus_pipe.flowModel.mus[2]' = 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity'('annulus_pipe.flowModel.states[2].d', 'annulus_pipe.flowModel.states[2].T', 'annulus_pipe.flowModel.states[2].p', 'annulus_pipe.flowModel.states[2].phase', true);
     'annulus_pipe.flowModel.pathLengths_internal[1]' = 'annulus_pipe.flowModel.pathLengths[1]';
     'annulus_pipe.flowModel.Res_turbulent_internal[1]' = 4000.0;
     'annulus_pipe.flowModel.diameters[1]' = 0.5 * ('annulus_pipe.flowModel.dimensions[1]' + 'annulus_pipe.flowModel.dimensions[2]');
@@ -1036,7 +995,7 @@ package 'NonCircularPipes'
     'annulus_pipe.flowModel.rhos_act[1]' = noEvent(if 'annulus_pipe.flowModel.m_flows[1]' > 0.0 then 'annulus_pipe.flowModel.rhos[1]' else 'annulus_pipe.flowModel.rhos[2]');
     'annulus_pipe.flowModel.mus_act[1]' = noEvent(if 'annulus_pipe.flowModel.m_flows[1]' > 0.0 then 'annulus_pipe.flowModel.mus[1]' else 'annulus_pipe.flowModel.mus[2]');
     'annulus_pipe.flowModel.Ib_flows[1]' = 0.0;
-    'annulus_pipe.flowModel.Fs_p[1]' = 0.5 * ('annulus_pipe.flowModel.crossAreas[1]' + 'annulus_pipe.flowModel.crossAreas[2]') * ('Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.Medium.pressure'('annulus_pipe.flowModel.states[2]') - 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.Medium.pressure'('annulus_pipe.flowModel.states[1]'));
+    'annulus_pipe.flowModel.Fs_p[1]' = 0.5 * ('annulus_pipe.flowModel.crossAreas[1]' + 'annulus_pipe.flowModel.crossAreas[2]') * ('annulus_pipe.flowModel.states[2].p' - 'annulus_pipe.flowModel.states[1].p');
     'annulus_pipe.flowModel.dps_fg[1]' = 'annulus_pipe.flowModel.Fs_fg[1]' * 2.0 / ('annulus_pipe.flowModel.crossAreas[1]' + 'annulus_pipe.flowModel.crossAreas[2]');
     'annulus_pipe.flowModel.Is[1]' = 'annulus_pipe.flowModel.m_flows[1]' * 'annulus_pipe.flowModel.pathLengths[1]';
     0.0 = 'annulus_pipe.flowModel.Ib_flows[1]' - 'annulus_pipe.flowModel.Fs_p[1]' - 'annulus_pipe.flowModel.Fs_fg[1]';
@@ -1044,8 +1003,8 @@ package 'NonCircularPipes'
     'annulus_pipe.vs[2]' = 0.5 * ('annulus_pipe.m_flows[2]' + 'annulus_pipe.m_flows[3]') / 'annulus_pipe.mediums[2].d' / 1.5707963267948965e-4;
     'annulus_pipe.heatTransfer.surfaceAreas[1]' = 3.1415926535897936;
     'annulus_pipe.heatTransfer.surfaceAreas[2]' = 3.1415926535897936;
-    'annulus_pipe.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.heatTransfer.Medium.temperature'('annulus_pipe.heatTransfer.states[1]');
-    'annulus_pipe.heatTransfer.Ts[2]' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.heatTransfer.Medium.temperature'('annulus_pipe.heatTransfer.states[2]');
+    'annulus_pipe.heatTransfer.Ts[1]' = 'annulus_pipe.heatTransfer.states[1].T';
+    'annulus_pipe.heatTransfer.Ts[2]' = 'annulus_pipe.heatTransfer.states[2].T';
     'annulus_pipe.heatTransfer.vs[1]' = 'annulus_pipe.vs[1]';
     'annulus_pipe.heatTransfer.vs[2]' = 'annulus_pipe.vs[2]';
     'annulus_pipe.heatTransfer.lengths[1]' = 50.0;

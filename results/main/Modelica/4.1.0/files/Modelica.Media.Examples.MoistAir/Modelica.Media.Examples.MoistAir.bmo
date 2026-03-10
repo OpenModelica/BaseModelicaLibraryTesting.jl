@@ -66,7 +66,7 @@ package 'MoistAir'
     'MM' = 1.0 / ((1.0 - 'medium.X[1]') / 0.0289651159 + 'medium.X[1]' / 0.01801528);
     assert('medium.T' >= 190.0 and 'medium.T' <= 647.0, "\nTemperature T is not in the allowed range\n190.0 K <= (T =" + String('medium.T') + " K) <= 647.0 K\nrequired from medium model \"" + "Moist air" + "\".", AssertionLevel.error);
     'medium.MM' = 1.0 / ('medium.Xi[1]' / 0.01801528 + (1.0 - 'medium.Xi[1]') / 0.0289651159);
-    'medium.p_steam_sat' = min('Modelica.Media.Examples.MoistAir.Medium.saturationPressure'('medium.T'), 0.999 * 'medium.p');
+    'medium.p_steam_sat' = min('Modelica.Media.Examples.MoistAir.Medium.Utilities.spliceFunction'('Modelica.Media.Examples.MoistAir.Medium.saturationPressureLiquid'('medium.T'), 'Modelica.Media.Examples.MoistAir.Medium.sublimationPressureIce'('medium.T'), 'medium.T' - 273.16, 1.0), 0.999 * 'medium.p');
     'medium.X_sat' = min('medium.p_steam_sat' * 0.6219647130774989 / max(2.220446049250313e-14, 'medium.p' - 'medium.p_steam_sat') * (1.0 - 'medium.Xi[1]'), 1.0) "Water content at saturation with respect to actual water content";
     'medium.X_liquid' = max('medium.Xi[1]' - 'medium.X_sat', 0.0);
     'medium.X_steam' = 'medium.Xi[1]' - 'medium.X_liquid';

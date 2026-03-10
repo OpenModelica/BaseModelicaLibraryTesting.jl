@@ -1,9 +1,20 @@
 //! base 0.1.0
 package 'WaterIF97'
-  record 'Medium.SaturationProperties'
-    Real 'psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'Medium.SaturationProperties';
+  record 'Modelica.Media.Common.IF97PhaseBoundaryProperties'
+    Boolean 'region3boundary';
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'dpT'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+    Real 'vt'(unit = "m3/(kg.K)");
+    Real 'vp'(unit = "m3/(kg.Pa)");
+  end 'Modelica.Media.Common.IF97PhaseBoundaryProperties';
 
   record 'Modelica.Media.Common.IF97BaseTwoPhase'
     Integer 'phase'(start = 0);
@@ -68,7 +79,7 @@ package 'WaterIF97'
     'medium.T_degC' = 'medium.T' - 273.15;
     'medium.p_bar' = 'medium.p' / 1e5;
     'medium.MM' = 0.018015268;
-    'medium.phase' = if ('medium.h' < 'Modelica.Media.Examples.WaterIF97.Medium.bubbleEnthalpy'('medium.sat') or 'medium.h' > 'Modelica.Media.Examples.WaterIF97.Medium.dewEnthalpy'('medium.sat')) or 'medium.p' > 2.2064e7 then 1 else 2;
+    'medium.phase' = if ('medium.h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('medium.sat.psat')).h or 'medium.h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('medium.sat.psat')).h) or 'medium.p' > 2.2064e7 then 1 else 2;
     'medium.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.p', 'medium.h', 'medium.phase', 0)).rho;
     'medium.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.p', 'medium.h', 'medium.phase', 0)).T;
     'medium.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('medium.p');

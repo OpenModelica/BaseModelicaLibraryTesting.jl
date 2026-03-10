@@ -1,10 +1,5 @@
 //! base 0.1.0
 package 'MultipleResonance'
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
   model 'MultipleResonance' "Demonstrates series and parallel resonance using a transformer"
     parameter Real 'V'(unit = "V", quantity = "ElectricPotential") = 0.5 "Source rms voltage";
     parameter Real 'fLo'(unit = "Hz", quantity = "Frequency") = 5e6 "Lower source frequency";
@@ -251,7 +246,7 @@ package 'MultipleResonance'
     'voltageSource.P' = 'voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im');
     'voltageSource.Q' = 'voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re';
     'voltageSource.S' = sqrt(('voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im')) ^ 2.0 + ('voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re') ^ 2.0);
-    'voltageSource.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('voltageSource.P', 'voltageSource.Q'), 0.0));
+    'voltageSource.pf' = cos('Modelica.Math.atan3'('voltageSource.Q', 'voltageSource.P', 0.0));
     'voltageSource.gamma' = 'voltageSource.pin_p.reference.gamma';
     'zi.abs_v' = sqrt('zi.v.re' ^ 2.0 + 'zi.v.im' ^ 2.0);
     'zi.arg_v' = 'Modelica.Math.atan3'('zi.v.im', 'zi.v.re', 0.0);
@@ -260,7 +255,7 @@ package 'MultipleResonance'
     'zi.P' = 'zi.v.re' * 'zi.i.re' - 'zi.v.im' * (-'zi.i.im');
     'zi.Q' = 'zi.v.re' * (-'zi.i.im') + 'zi.v.im' * 'zi.i.re';
     'zi.S' = sqrt(('zi.v.re' * 'zi.i.re' - 'zi.v.im' * (-'zi.i.im')) ^ 2.0 + ('zi.v.re' * (-'zi.i.im') + 'zi.v.im' * 'zi.i.re') ^ 2.0);
-    'zi.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('zi.P', 'zi.Q'), 0.0));
+    'zi.pf' = cos('Modelica.Math.atan3'('zi.Q', 'zi.P', 0.0));
     'transformer.omega' = der('transformer.pin_p1.reference.gamma');
     'transformer.i1.re' = 'transformer.pin_p1.i.re';
     'transformer.i1.im' = 'transformer.pin_p1.i.im';
@@ -287,7 +282,7 @@ package 'MultipleResonance'
     'loadResistor.P' = 'loadResistor.v.re' * 'loadResistor.i.re' - 'loadResistor.v.im' * (-'loadResistor.i.im');
     'loadResistor.Q' = 'loadResistor.v.re' * (-'loadResistor.i.im') + 'loadResistor.v.im' * 'loadResistor.i.re';
     'loadResistor.S' = sqrt(('loadResistor.v.re' * 'loadResistor.i.re' - 'loadResistor.v.im' * (-'loadResistor.i.im')) ^ 2.0 + ('loadResistor.v.re' * (-'loadResistor.i.im') + 'loadResistor.v.im' * 'loadResistor.i.re') ^ 2.0);
-    'loadResistor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('loadResistor.P', 'loadResistor.Q'), 0.0));
+    'loadResistor.pf' = cos('Modelica.Math.atan3'('loadResistor.Q', 'loadResistor.P', 0.0));
     'loadInductor.abs_v' = sqrt('loadInductor.v.re' ^ 2.0 + 'loadInductor.v.im' ^ 2.0);
     'loadInductor.arg_v' = 'Modelica.Math.atan3'('loadInductor.v.im', 'loadInductor.v.re', 0.0);
     'loadInductor.abs_i' = sqrt('loadInductor.i.re' ^ 2.0 + 'loadInductor.i.im' ^ 2.0);
@@ -295,7 +290,7 @@ package 'MultipleResonance'
     'loadInductor.P' = 'loadInductor.v.re' * 'loadInductor.i.re' - 'loadInductor.v.im' * (-'loadInductor.i.im');
     'loadInductor.Q' = 'loadInductor.v.re' * (-'loadInductor.i.im') + 'loadInductor.v.im' * 'loadInductor.i.re';
     'loadInductor.S' = sqrt(('loadInductor.v.re' * 'loadInductor.i.re' - 'loadInductor.v.im' * (-'loadInductor.i.im')) ^ 2.0 + ('loadInductor.v.re' * (-'loadInductor.i.im') + 'loadInductor.v.im' * 'loadInductor.i.re') ^ 2.0);
-    'loadInductor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('loadInductor.P', 'loadInductor.Q'), 0.0));
+    'loadInductor.pf' = cos('Modelica.Math.atan3'('loadInductor.Q', 'loadInductor.P', 0.0));
     'loadCapacitor.abs_v' = sqrt('loadCapacitor.v.re' ^ 2.0 + 'loadCapacitor.v.im' ^ 2.0);
     'loadCapacitor.arg_v' = 'Modelica.Math.atan3'('loadCapacitor.v.im', 'loadCapacitor.v.re', 0.0);
     'loadCapacitor.abs_i' = sqrt('loadCapacitor.i.re' ^ 2.0 + 'loadCapacitor.i.im' ^ 2.0);
@@ -303,7 +298,7 @@ package 'MultipleResonance'
     'loadCapacitor.P' = 'loadCapacitor.v.re' * 'loadCapacitor.i.re' - 'loadCapacitor.v.im' * (-'loadCapacitor.i.im');
     'loadCapacitor.Q' = 'loadCapacitor.v.re' * (-'loadCapacitor.i.im') + 'loadCapacitor.v.im' * 'loadCapacitor.i.re';
     'loadCapacitor.S' = sqrt(('loadCapacitor.v.re' * 'loadCapacitor.i.re' - 'loadCapacitor.v.im' * (-'loadCapacitor.i.im')) ^ 2.0 + ('loadCapacitor.v.re' * (-'loadCapacitor.i.im') + 'loadCapacitor.v.im' * 'loadCapacitor.i.re') ^ 2.0);
-    'loadCapacitor.pf' = cos('Modelica.ComplexMath.arg'('Complex.\'constructor\'.fromReal'('loadCapacitor.P', 'loadCapacitor.Q'), 0.0));
+    'loadCapacitor.pf' = cos('Modelica.Math.atan3'('loadCapacitor.Q', 'loadCapacitor.P', 0.0));
     'currentSensor.abs_i' = sqrt('currentSensor.i.re' ^ 2.0 + 'currentSensor.i.im' ^ 2.0);
     'currentSensor.arg_i' = 'Modelica.Math.atan3'('currentSensor.i.im', 'currentSensor.i.re', 0.0);
     'ground1.pin.v.re' = 'transformer.pin_n1.v.re';

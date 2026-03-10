@@ -1,13 +1,5 @@
 //! base 0.1.0
 package 'TestTwoPhaseStates'
-  record 'Modelica.Media.Examples.TwoPhaseWater.ThermodynamicState'
-    Integer 'phase'(max = 2, min = 0);
-    Real 'h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'd'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real 'p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  end 'Modelica.Media.Examples.TwoPhaseWater.ThermodynamicState';
-
   record 'Modelica.Media.Examples.TwoPhaseWater.SaturationProperties'
     Real 'psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
@@ -31,6 +23,22 @@ package 'TestTwoPhaseStates'
     Real 'x';
     Real 'dpT';
   end 'Modelica.Media.Common.IF97BaseTwoPhase';
+
+  record 'Modelica.Media.Common.IF97PhaseBoundaryProperties'
+    Boolean 'region3boundary';
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'dpT'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+    Real 'vt'(unit = "m3/(kg.K)");
+    Real 'vp'(unit = "m3/(kg.Pa)");
+  end 'Modelica.Media.Common.IF97PhaseBoundaryProperties';
 
   model 'TestTwoPhaseStates' "Test the TwoPhaseWater model"
     Real 'medium.p'(stateSelect = StateSelect.default, nominal = 1e5, fixed = true, start = 2000.0, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
@@ -93,7 +101,7 @@ package 'TestTwoPhaseStates'
   equation
     'medium.T_degC' = 'medium.T' - 273.15;
     'medium.p_bar' = 'medium.p' / 1e5;
-    'medium.eta' = if 'medium.phase' == 1 then 'Modelica.Media.Examples.TwoPhaseWater.dynamicViscosity'('medium.state') else 1.0 / ('medium.x' / 'medium.eta_d' + (1.0 - 'medium.x') / 'medium.eta_b');
+    'medium.eta' = if 'medium.phase' == 1 then 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity'('medium.state.d', 'medium.state.T', 'medium.state.p', 'medium.state.phase', true) else 1.0 / ('medium.x' / 'medium.eta_d' + (1.0 - 'medium.x') / 'medium.eta_b');
     'medium.dew.phase' = 1;
     'medium.dew.h' = 'Modelica.Media.Examples.TwoPhaseWater.dewEnthalpy'('medium.sat');
     'medium.dew.d' = 'Modelica.Media.Examples.TwoPhaseWater.dewDensity'('medium.sat');
@@ -129,7 +137,7 @@ package 'TestTwoPhaseStates'
     'medium.dTp' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('medium.p');
     'medium.dTp2' = (1.0 / 'medium.dew.d' - 1.0 / 'medium.bubble.d') / max('medium.s_d' - 'medium.s_b', 1e-6);
     'medium.MM' = 0.018015268;
-    'medium.phase' = if ('medium.h' < 'Modelica.Media.Examples.TwoPhaseWater.bubbleEnthalpy'('medium.sat') or 'medium.h' > 'Modelica.Media.Examples.TwoPhaseWater.dewEnthalpy'('medium.sat')) or 'medium.p' > 2.2064e7 then 1 else 2;
+    'medium.phase' = if ('medium.h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('medium.sat.psat')).h or 'medium.h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('medium.sat.psat')).h) or 'medium.p' > 2.2064e7 then 1 else 2;
     'medium.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.p', 'medium.h', 'medium.phase', 0)).rho;
     'medium.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.p', 'medium.h', 'medium.phase', 0)).T;
     'medium.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('medium.p');
