@@ -1,5 +1,56 @@
 //! base 0.1.0
 package 'SMEE_Generator'
+  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
+    input 'Complex'[:] 'u';
+    output Real 'y';
+    Integer 'm' = size('u', 1);
+  algorithm
+    'y' := sum(sqrt('u['k']'.'re' ^ 2.0 + 'u['k']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
+    annotation(Inline = true);
+  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
+
+  function 'Complex.\'*\'.scalarProduct' "Scalar product of two complex vectors c1 and c2"
+    input 'Complex'[:] 'c1';
+    input 'Complex'[size('c1', 1)] 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex'(0.0, 0.0);
+
+    for 'i' in 1:size('c1', 1) loop
+      'c3' := 'Complex.\'constructor\'.fromReal'('c3'.'re' + 'c1['i']'.'re' * 'c2['i']'.'re' + 'c1['i']'.'im' * 'c2['i']'.'im', 'c3'.'im' + 'c1['i']'.'re' * 'c2['i']'.'im' - 'c1['i']'.'im' * 'c2['i']'.'re');
+    end for;
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Complex.\'*\'.scalarProduct';
+
+  function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    input Boolean 'positiveRange' = false;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'y' := mod('u', 6.283185307179586);
+
+    if 'y' > 3.141592653589793 and not 'positiveRange' then
+      'y' := 'y' - 6.283185307179586;
+    end if;
+  end 'Modelica.Math.wrapAngle';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   record 'Modelica.Units.SI.ComplexVoltage'
     Real 're';
     Real 'im';
@@ -3971,7 +4022,7 @@ package 'SMEE_Generator'
     'smeeQS.wMechanical' = der('smeeQS.phiMechanical');
     'smeeQS.tauElectrical' = 'smeeQS.inertiaRotor.flange_a.tau';
     'smeeQS.tauShaft' = -'smeeQS.flange.tau';
-    'smeeQS.powerBalance.powerStator' = sum('Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('smeeQS.vs[(1:size('smeeQS.vs', 1))['$i1955']]', 'Modelica.ComplexMath.conj'('smeeQS.is[(1:size('smeeQS.vs', 1))['$i1955']]'))) for '$i1955' in 1:size('smeeQS.vs', 1));
+    'smeeQS.powerBalance.powerStator' = sum('smeeQS.vs[(1:size('smeeQS.vs', 1))['$i1955']].re' * 'smeeQS.is[(1:size('smeeQS.vs', 1))['$i1955']].re' - 'smeeQS.vs[(1:size('smeeQS.vs', 1))['$i1955']].im' * (-'smeeQS.is[(1:size('smeeQS.vs', 1))['$i1955']].im') for '$i1955' in 1:size('smeeQS.vs', 1));
     'smeeQS.powerBalance.powerMechanical' = 'smeeQS.wMechanical' * 'smeeQS.tauShaft';
     'smeeQS.powerBalance.powerInertiaStator' = 0.29 * 'smeeQS.inertiaStator.a' * 'smeeQS.inertiaStator.w';
     'smeeQS.powerBalance.powerInertiaRotor' = 0.29 * 'smeeQS.inertiaRotor.a' * 'smeeQS.inertiaRotor.w';
@@ -5961,8 +6012,8 @@ package 'SMEE_Generator'
     'smee.airGap.flange_a.tau' = -'smee.airGap.tauElectrical';
     'smee.airGap.support.tau' = 'smee.airGap.tauElectrical';
     'smee.airGap.gamma' = 2.0 * ('smee.airGap.flange_a.phi' - 'smee.airGap.support.phi');
-    'smee.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('smee.airGap.gamma');
-    'smee.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('smee.airGap.gamma');
+    'smee.airGap.rotator.re' = exp(0.0) * cos('smee.airGap.gamma');
+    'smee.airGap.rotator.im' = exp(0.0) * sin('smee.airGap.gamma');
     'smee.groundR.port_p.V_m.re' = 0.0;
     'smee.groundR.port_p.V_m.im' = 0.0;
     'smee.strayLoad.v[1]' = 0.0;
@@ -6324,14 +6375,14 @@ package 'SMEE_Generator'
     'smeeQS.thermalAmbient.temperatureBrush.port.T' = 293.15;
     'smeeQS.groundS.port_p.V_m.re' = 0.0;
     'smeeQS.groundS.port_p.V_m.im' = 0.0;
-    'smeeQS.airGap.V_msr.re' = 'smeeQS.airGap.V_ms.re' * (1.0 * 'Modelica.Math.cos'('smeeQS.airGap.gammar')) - 'smeeQS.airGap.V_ms.im' * (1.0 * 'Modelica.Math.sin'('smeeQS.airGap.gammar'));
-    'smeeQS.airGap.V_msr.im' = 'smeeQS.airGap.V_ms.re' * (1.0 * 'Modelica.Math.sin'('smeeQS.airGap.gammar')) + 'smeeQS.airGap.V_ms.im' * (1.0 * 'Modelica.Math.cos'('smeeQS.airGap.gammar'));
-    'smeeQS.airGap.V_mrr.re' = 'smeeQS.airGap.V_mr.re' * (1.0 * 'Modelica.Math.cos'('smeeQS.airGap.gammar')) - 'smeeQS.airGap.V_mr.im' * (1.0 * 'Modelica.Math.sin'('smeeQS.airGap.gammar'));
-    'smeeQS.airGap.V_mrr.im' = 'smeeQS.airGap.V_mr.re' * (1.0 * 'Modelica.Math.sin'('smeeQS.airGap.gammar')) + 'smeeQS.airGap.V_mr.im' * (1.0 * 'Modelica.Math.cos'('smeeQS.airGap.gammar'));
-    'smeeQS.airGap.Phi_sr.re' = 'smeeQS.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.cos'('smeeQS.airGap.gammar')) - 'smeeQS.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.sin'('smeeQS.airGap.gammar'));
-    'smeeQS.airGap.Phi_sr.im' = 'smeeQS.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.sin'('smeeQS.airGap.gammar')) + 'smeeQS.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.cos'('smeeQS.airGap.gammar'));
-    'smeeQS.airGap.Phi_rr.re' = 'smeeQS.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.cos'('smeeQS.airGap.gammar')) - 'smeeQS.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.sin'('smeeQS.airGap.gammar'));
-    'smeeQS.airGap.Phi_rr.im' = 'smeeQS.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.sin'('smeeQS.airGap.gammar')) + 'smeeQS.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.cos'('smeeQS.airGap.gammar'));
+    'smeeQS.airGap.V_msr.re' = 'smeeQS.airGap.V_ms.re' * (1.0 * cos('smeeQS.airGap.gammar')) - 'smeeQS.airGap.V_ms.im' * (1.0 * sin('smeeQS.airGap.gammar'));
+    'smeeQS.airGap.V_msr.im' = 'smeeQS.airGap.V_ms.re' * (1.0 * sin('smeeQS.airGap.gammar')) + 'smeeQS.airGap.V_ms.im' * (1.0 * cos('smeeQS.airGap.gammar'));
+    'smeeQS.airGap.V_mrr.re' = 'smeeQS.airGap.V_mr.re' * (1.0 * cos('smeeQS.airGap.gammar')) - 'smeeQS.airGap.V_mr.im' * (1.0 * sin('smeeQS.airGap.gammar'));
+    'smeeQS.airGap.V_mrr.im' = 'smeeQS.airGap.V_mr.re' * (1.0 * sin('smeeQS.airGap.gammar')) + 'smeeQS.airGap.V_mr.im' * (1.0 * cos('smeeQS.airGap.gammar'));
+    'smeeQS.airGap.Phi_sr.re' = 'smeeQS.airGap.Phi_s.re' * (1.0 * cos('smeeQS.airGap.gammar')) - 'smeeQS.airGap.Phi_s.im' * (1.0 * sin('smeeQS.airGap.gammar'));
+    'smeeQS.airGap.Phi_sr.im' = 'smeeQS.airGap.Phi_s.re' * (1.0 * sin('smeeQS.airGap.gammar')) + 'smeeQS.airGap.Phi_s.im' * (1.0 * cos('smeeQS.airGap.gammar'));
+    'smeeQS.airGap.Phi_rr.re' = 'smeeQS.airGap.Phi_r.re' * (1.0 * cos('smeeQS.airGap.gammar')) - 'smeeQS.airGap.Phi_r.im' * (1.0 * sin('smeeQS.airGap.gammar'));
+    'smeeQS.airGap.Phi_rr.im' = 'smeeQS.airGap.Phi_r.re' * (1.0 * sin('smeeQS.airGap.gammar')) + 'smeeQS.airGap.Phi_r.im' * (1.0 * cos('smeeQS.airGap.gammar'));
     'smeeQS.airGap.port_sp.Phi.re' = 'smeeQS.airGap.Phi_s.re' "Stator flux into positive stator port";
     'smeeQS.airGap.port_sp.Phi.im' = 'smeeQS.airGap.Phi_s.im' "Stator flux into positive stator port";
     'smeeQS.airGap.port_sp.Phi.re' + 'smeeQS.airGap.port_sn.Phi.re' = 0.0 "Balance of stator flux";
@@ -6436,8 +6487,8 @@ package 'SMEE_Generator'
     'smeeQS.excitation.electroMagneticConverter.v' = 'smeeQS.excitation.electroMagneticConverter.pin_p.v' - 'smeeQS.excitation.electroMagneticConverter.pin_n.v';
     'smeeQS.excitation.electroMagneticConverter.i' = 'smeeQS.excitation.electroMagneticConverter.pin_p.i';
     'smeeQS.excitation.electroMagneticConverter.pin_p.i' + 'smeeQS.excitation.electroMagneticConverter.pin_n.i' = 0.0;
-    'smeeQS.excitation.electroMagneticConverter.V_m.re' = 0.6366197723675814 * 'smeeQS.excitation.electroMagneticConverter.effectiveTurns' * 'smeeQS.excitation.electroMagneticConverter.i' * (1.0 * 'Modelica.Math.cos'(-'smeeQS.excitation.electroMagneticConverter.gamma')) - 0.0 * (1.0 * 'Modelica.Math.sin'(-'smeeQS.excitation.electroMagneticConverter.gamma'));
-    'smeeQS.excitation.electroMagneticConverter.V_m.im' = 0.6366197723675814 * 'smeeQS.excitation.electroMagneticConverter.effectiveTurns' * 'smeeQS.excitation.electroMagneticConverter.i' * (1.0 * 'Modelica.Math.sin'(-'smeeQS.excitation.electroMagneticConverter.gamma')) + 0.0 * (1.0 * 'Modelica.Math.cos'(-'smeeQS.excitation.electroMagneticConverter.gamma'));
+    'smeeQS.excitation.electroMagneticConverter.V_m.re' = 0.6366197723675814 * 'smeeQS.excitation.electroMagneticConverter.effectiveTurns' * 'smeeQS.excitation.electroMagneticConverter.i' * (1.0 * cos(-'smeeQS.excitation.electroMagneticConverter.gamma')) - 0.0 * (1.0 * sin(-'smeeQS.excitation.electroMagneticConverter.gamma'));
+    'smeeQS.excitation.electroMagneticConverter.V_m.im' = 0.6366197723675814 * 'smeeQS.excitation.electroMagneticConverter.effectiveTurns' * 'smeeQS.excitation.electroMagneticConverter.i' * (1.0 * sin(-'smeeQS.excitation.electroMagneticConverter.gamma')) + 0.0 * (1.0 * cos(-'smeeQS.excitation.electroMagneticConverter.gamma'));
     'smeeQS.excitation.electroMagneticConverter.v' = 0.0;
     'smeeQS.excitation.electroMagneticConverter.port_p.reference.gamma' = 'smeeQS.excitation.electroMagneticConverter.port_n.reference.gamma';
     'smeeQS.excitation.electroMagneticConverter.gamma' = 'smeeQS.excitation.electroMagneticConverter.port_p.reference.gamma';

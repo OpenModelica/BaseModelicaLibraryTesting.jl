@@ -1,5 +1,22 @@
 //! base 0.1.0
 package 'Rectifier'
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   model 'Rectifier' "Rectifier example"
     parameter Real 'VAC'(unit = "V", quantity = "ElectricPotential") = 100.0 "AC rms voltage";
     parameter Real 'conversionFactor' = 1.0 "Ratio of DC voltage / AC rms voltage";

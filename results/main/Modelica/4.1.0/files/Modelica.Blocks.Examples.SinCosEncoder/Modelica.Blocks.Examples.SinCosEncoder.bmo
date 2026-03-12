@@ -1,5 +1,17 @@
 //! base 0.1.0
 package 'SinCosEncoder'
+  function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    input Boolean 'positiveRange' = false;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'y' := mod('u', 6.283185307179586);
+
+    if 'y' > 3.141592653589793 and not 'positiveRange' then
+      'y' := 'y' - 6.283185307179586;
+    end if;
+  end 'Modelica.Math.wrapAngle';
+
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 
   model 'SinCosEncoder' "Evaluation of a sinusoidal encoder"

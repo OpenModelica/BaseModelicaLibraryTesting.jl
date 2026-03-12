@@ -1,5 +1,31 @@
 //! base 0.1.0
 package 'ThreePhaseTransformerWithRectifier'
+  function 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass' "Return low pass filter roots as needed for block for given cut-off frequency"
+    input Real[:] 'cr_in';
+    input Real[:] 'c0_in';
+    input Real[size('c0_in', 1)] 'c1_in';
+    input Real 'f_cut'(unit = "Hz", quantity = "Frequency");
+    output Real[size('cr_in', 1)] 'r';
+    output Real[size('c0_in', 1)] 'a';
+    output Real[size('c0_in', 1)] 'b';
+    output Real[size('c0_in', 1)] 'ku';
+    Real[size('c0_in', 1)] 'c0';
+    Real[size('c0_in', 1)] 'c1';
+    Real[size('cr_in', 1)] 'cr';
+  algorithm
+    ('cr', 'c0', 'c1') := 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass'('cr_in', 'c0_in', 'c1_in', 'f_cut');
+
+    for 'i' in 1:size('cr_in', 1) loop
+      'r'['i'] := -'cr'['i'];
+    end for;
+
+    for 'i' in 1:size('c0_in', 1) loop
+      'a'['i'] := -'c1'['i'] / 2.0;
+      'b'['i'] := sqrt('c0'['i'] - 'a'['i'] * 'a'['i']);
+      'ku'['i'] := 'c0'['i'] / 'b'['i'];
+    end for;
+  end 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass';
+
   type 'Modelica.Blocks.Types.AnalogFilter' = enumeration('CriticalDamping', 'Bessel', 'Butterworth', 'ChebyshevI');
 
   type 'Modelica.Blocks.Types.FilterType' = enumeration('LowPass', 'HighPass', 'BandPass', 'BandStop');

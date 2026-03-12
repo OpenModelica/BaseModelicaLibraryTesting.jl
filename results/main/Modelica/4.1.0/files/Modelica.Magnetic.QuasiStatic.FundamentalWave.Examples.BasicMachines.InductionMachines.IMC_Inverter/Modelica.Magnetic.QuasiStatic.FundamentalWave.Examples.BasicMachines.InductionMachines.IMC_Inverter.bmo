@@ -1,5 +1,31 @@
 //! base 0.1.0
 package 'IMC_Inverter'
+  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
+    input 'Complex'[:] 'u';
+    output Real 'y';
+    Integer 'm' = size('u', 1);
+  algorithm
+    'y' := sum(sqrt('u['k']'.'re' ^ 2.0 + 'u['k']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
+    annotation(Inline = true);
+  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   record 'Modelica.Units.SI.ComplexVoltage'
     Real 're';
     Real 'im';
@@ -10,15 +36,15 @@ package 'IMC_Inverter'
     Real 'im';
   end 'Modelica.Units.SI.ComplexCurrent';
 
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
   record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
     Real 're';
     Real 'im';
   end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
 
   model 'IMC_Inverter' "Induction machine with squirrel cage and inverter"
     constant Integer 'm' = 3 "Number of phases";
@@ -2576,7 +2602,7 @@ package 'IMC_Inverter'
     'aimc.wMechanical' = der('aimc.phiMechanical');
     'aimc.tauElectrical' = 'aimc.inertiaRotor.flange_a.tau';
     'aimc.tauShaft' = -'aimc.flange.tau';
-    'aimc.powerBalance.powerStator' = sum('Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('aimc.vs[(1:size('aimc.vs', 1))['$i1168']]', 'Modelica.ComplexMath.conj'('aimc.is[(1:size('aimc.vs', 1))['$i1168']]'))) for '$i1168' in 1:size('aimc.vs', 1));
+    'aimc.powerBalance.powerStator' = sum('aimc.vs[(1:size('aimc.vs', 1))['$i1168']].re' * 'aimc.is[(1:size('aimc.vs', 1))['$i1168']].re' - 'aimc.vs[(1:size('aimc.vs', 1))['$i1168']].im' * (-'aimc.is[(1:size('aimc.vs', 1))['$i1168']].im') for '$i1168' in 1:size('aimc.vs', 1));
     'aimc.powerBalance.powerMechanical' = 'aimc.wMechanical' * 'aimc.tauShaft';
     'aimc.powerBalance.powerInertiaStator' = 0.29 * 'aimc.inertiaStator.a' * 'aimc.inertiaStator.w';
     'aimc.powerBalance.powerInertiaRotor' = 0.29 * 'aimc.inertiaRotor.a' * 'aimc.inertiaRotor.w';
@@ -4104,14 +4130,14 @@ package 'IMC_Inverter'
     'aimc.thermalAmbient.constTr.y' = 293.15;
     'aimc.groundS.port_p.V_m.re' = 0.0;
     'aimc.groundS.port_p.V_m.im' = 0.0;
-    'aimc.airGap.V_msr.re' = 'aimc.airGap.V_ms.re' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar')) - 'aimc.airGap.V_ms.im' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar'));
-    'aimc.airGap.V_msr.im' = 'aimc.airGap.V_ms.re' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar')) + 'aimc.airGap.V_ms.im' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar'));
-    'aimc.airGap.V_mrr.re' = 'aimc.airGap.V_mr.re' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar')) - 'aimc.airGap.V_mr.im' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar'));
-    'aimc.airGap.V_mrr.im' = 'aimc.airGap.V_mr.re' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar')) + 'aimc.airGap.V_mr.im' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar'));
-    'aimc.airGap.Phi_sr.re' = 'aimc.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar')) - 'aimc.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar'));
-    'aimc.airGap.Phi_sr.im' = 'aimc.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar')) + 'aimc.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar'));
-    'aimc.airGap.Phi_rr.re' = 'aimc.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar')) - 'aimc.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar'));
-    'aimc.airGap.Phi_rr.im' = 'aimc.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.sin'('aimc.airGap.gammar')) + 'aimc.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.cos'('aimc.airGap.gammar'));
+    'aimc.airGap.V_msr.re' = 'aimc.airGap.V_ms.re' * (1.0 * cos('aimc.airGap.gammar')) - 'aimc.airGap.V_ms.im' * (1.0 * sin('aimc.airGap.gammar'));
+    'aimc.airGap.V_msr.im' = 'aimc.airGap.V_ms.re' * (1.0 * sin('aimc.airGap.gammar')) + 'aimc.airGap.V_ms.im' * (1.0 * cos('aimc.airGap.gammar'));
+    'aimc.airGap.V_mrr.re' = 'aimc.airGap.V_mr.re' * (1.0 * cos('aimc.airGap.gammar')) - 'aimc.airGap.V_mr.im' * (1.0 * sin('aimc.airGap.gammar'));
+    'aimc.airGap.V_mrr.im' = 'aimc.airGap.V_mr.re' * (1.0 * sin('aimc.airGap.gammar')) + 'aimc.airGap.V_mr.im' * (1.0 * cos('aimc.airGap.gammar'));
+    'aimc.airGap.Phi_sr.re' = 'aimc.airGap.Phi_s.re' * (1.0 * cos('aimc.airGap.gammar')) - 'aimc.airGap.Phi_s.im' * (1.0 * sin('aimc.airGap.gammar'));
+    'aimc.airGap.Phi_sr.im' = 'aimc.airGap.Phi_s.re' * (1.0 * sin('aimc.airGap.gammar')) + 'aimc.airGap.Phi_s.im' * (1.0 * cos('aimc.airGap.gammar'));
+    'aimc.airGap.Phi_rr.re' = 'aimc.airGap.Phi_r.re' * (1.0 * cos('aimc.airGap.gammar')) - 'aimc.airGap.Phi_r.im' * (1.0 * sin('aimc.airGap.gammar'));
+    'aimc.airGap.Phi_rr.im' = 'aimc.airGap.Phi_r.re' * (1.0 * sin('aimc.airGap.gammar')) + 'aimc.airGap.Phi_r.im' * (1.0 * cos('aimc.airGap.gammar'));
     'aimc.airGap.port_sp.Phi.re' = 'aimc.airGap.Phi_s.re' "Stator flux into positive stator port";
     'aimc.airGap.port_sp.Phi.im' = 'aimc.airGap.Phi_s.im' "Stator flux into positive stator port";
     'aimc.airGap.port_sp.Phi.re' + 'aimc.airGap.port_sn.Phi.re' = 0.0 "Balance of stator flux";

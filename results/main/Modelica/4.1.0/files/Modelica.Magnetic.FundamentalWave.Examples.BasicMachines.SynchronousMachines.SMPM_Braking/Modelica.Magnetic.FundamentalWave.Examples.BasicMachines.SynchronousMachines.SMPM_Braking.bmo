@@ -1,5 +1,22 @@
 //! base 0.1.0
 package 'SMPM_Braking'
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   type 'Modelica.Blocks.Types.LimiterHomotopy' = enumeration('NoHomotopy', 'Linear', 'UpperLimit', 'LowerLimit');
 
   model 'SMPM_Braking' "Test example: PermanentMagnetSynchronousMachine acting as brake"
@@ -1890,8 +1907,8 @@ package 'SMPM_Braking'
     'smpm.airGap.flange_a.tau' = -'smpm.airGap.tauElectrical';
     'smpm.airGap.support.tau' = 'smpm.airGap.tauElectrical';
     'smpm.airGap.gamma' = 2.0 * ('smpm.airGap.flange_a.phi' - 'smpm.airGap.support.phi');
-    'smpm.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('smpm.airGap.gamma');
-    'smpm.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('smpm.airGap.gamma');
+    'smpm.airGap.rotator.re' = exp(0.0) * cos('smpm.airGap.gamma');
+    'smpm.airGap.rotator.im' = exp(0.0) * sin('smpm.airGap.gamma');
     'smpm.groundR.port_p.V_m.re' = 0.0;
     'smpm.groundR.port_p.V_m.im' = 0.0;
     'smpm.strayLoad.v[1]' = 0.0;

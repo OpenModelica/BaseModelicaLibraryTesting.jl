@@ -1,5 +1,136 @@
 //! base 0.1.0
 package 'HysteresisModelComparison'
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMax';
+  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
+
+  function 'Modelica.Magnetic.FluxTubes.Utilities.everett' "Everett function, see [YUY89]"
+    input Real 'a_'(unit = "A/m", quantity = "MagneticFieldStrength");
+    input Real 'b_'(unit = "A/m", quantity = "MagneticFieldStrength");
+    input 'Modelica.Magnetic.FluxTubes.Material.HysteresisEverettParameter.BaseData' 'p';
+    input Boolean 'mirror';
+    output Real 'J'(unit = "T", quantity = "MagneticFluxDensity");
+    Real 'a'(unit = "A/m", quantity = "MagneticFieldStrength");
+    Real 'b'(unit = "A/m", quantity = "MagneticFieldStrength");
+    Real 'h1'(unit = "A/m", quantity = "MagneticFieldStrength");
+    Real 'h2'(unit = "A/m", quantity = "MagneticFieldStrength");
+    Real 'h3'(unit = "A/m", quantity = "MagneticFieldStrength");
+    Real 'h4'(unit = "A/m", quantity = "MagneticFieldStrength");
+    constant Real 'unitT'(unit = "T", quantity = "MagneticFluxDensity") = 1.0;
+  algorithm
+    if 'a_' >= 'b_' or 'mirror' then
+      'a' := if 'a_' > 'p'.'Hsat' then 'p'.'Hsat' else if 'a_' < (-'p'.'Hsat') then -'p'.'Hsat' else 'a_';
+      'b' := if 'b_' > 'p'.'Hsat' then 'p'.'Hsat' else if 'b_' < (-'p'.'Hsat') then -'p'.'Hsat' else 'b_';
+      'h1' := -('b' + 'p'.'Hc');
+      'h2' := 'a' - 'p'.'Hc';
+      'h3' := -('a' + 'p'.'Hc');
+      'h4' := 'b' - 'p'.'Hc';
+      'J' := 'unitT' * (('p'.'M' * 'p'.'r' * (0.6366197723675814 * atan('p'.'q' * 'h1') + 1.0) + 2.0 * 'p'.'M' * (1.0 - 'p'.'r') / (1.0 + 0.5 * (exp(-'p'.'p1' * 'h1') + exp(-'p'.'p2' * 'h1')))) * ('p'.'M' * 'p'.'r' * (0.6366197723675814 * atan('p'.'q' * 'h2') + 1.0) + 2.0 * 'p'.'M' * (1.0 - 'p'.'r') / (1.0 + 0.5 * (exp(-'p'.'p1' * 'h2') + exp(-'p'.'p2' * 'h2')))) - ('p'.'M' * 'p'.'r' * (0.6366197723675814 * atan('p'.'q' * 'h3') + 1.0) + 2.0 * 'p'.'M' * (1.0 - 'p'.'r') / (1.0 + 0.5 * (exp(-'p'.'p1' * 'h3') + exp(-'p'.'p2' * 'h3')))) * ('p'.'M' * 'p'.'r' * (0.6366197723675814 * atan('p'.'q' * 'h4') + 1.0) + 2.0 * 'p'.'M' * (1.0 - 'p'.'r') / (1.0 + 0.5 * (exp(-'p'.'p1' * 'h4') + exp(-'p'.'p2' * 'h4')))));
+    elseif true then
+      'J' := 0.0;
+    end if;
+  end 'Modelica.Magnetic.FluxTubes.Utilities.everett';
+
+  function 'Modelica.Magnetic.FluxTubes.Utilities.initPreisach' "Function used for the initialization of the Preisach hysteresis model GenericHystPreisachEverett"
+    input Real 'x'(unit = "A/m", quantity = "MagneticFieldStrength");
+    input Real 'H'(unit = "A/m", quantity = "MagneticFieldStrength");
+    input 'Modelica.Magnetic.FluxTubes.Material.HysteresisEverettParameter.BaseData' 'p';
+    output Real 'B'(unit = "T", quantity = "MagneticFluxDensity");
+    Real 'hmax'(unit = "A/m", quantity = "MagneticFieldStrength");
+    Real 'H_l'(unit = "A/m", quantity = "MagneticFieldStrength");
+  algorithm
+    'H_l' := if 'H' <= (-'p'.'Hsat') then -'p'.'Hsat' else if 'H' >= 'p'.'Hsat' then 'p'.'Hsat' else 'H';
+    'hmax' := abs('H') + abs('x');
+    'B' := if 'x' < 0.0 then 'Modelica.Magnetic.FluxTubes.Utilities.everett'('H_l', -'hmax', 'p', false) - 0.5 * 'Modelica.Magnetic.FluxTubes.Utilities.everett'('hmax', -'hmax', 'p', false) + 'p'.'K' * 1.25663706212e-6 * 'H' else 0.5 * 'Modelica.Magnetic.FluxTubes.Utilities.everett'('hmax', -'hmax', 'p', false) - 'Modelica.Magnetic.FluxTubes.Utilities.everett'('hmax', 'H_l', 'p', false) + 'p'.'K' * 1.25663706212e-6 * 'H';
+  end 'Modelica.Magnetic.FluxTubes.Utilities.initPreisach';
+
+  function 'Modelica.Magnetic.FluxTubes.Examples.Hysteresis.HysteresisModelComparison.timeTable.getInterpolationCoefficients' "Determine interpolation coefficients and next time event"
+    input Real[:, 2] 'table';
+    input Real 'offset';
+    input Real 'startTimeScaled';
+    input Real 'timeScaled';
+    input Integer 'last';
+    input Real 'TimeEps';
+    input Real 'shiftTimeScaled';
+    output Real 'a';
+    output Real 'b';
+    output Real 'nextEventScaled';
+    output Integer 'next';
+    Integer 'columns' = 2;
+    Integer 'ncol' = 2;
+    Integer 'nrow' = size('table', 1);
+    Integer 'next0';
+    Real 'tp';
+    Real 'dt';
+  algorithm
+    'next' := 'last';
+    'nextEventScaled' := 'timeScaled' - 'TimeEps' * abs('timeScaled');
+    'tp' := 'timeScaled' + 'TimeEps' * abs('timeScaled');
+
+    if 'tp' < 'startTimeScaled' then
+      'nextEventScaled' := 'startTimeScaled';
+      'a' := 0.0;
+      'b' := 'offset';
+    elseif 'nrow' < 2 then
+      'a' := 0.0;
+      'b' := 'offset' + 'table'[1,'columns'];
+    elseif true then
+      'tp' := 'tp' - 'shiftTimeScaled';
+
+      while 'next' < 'nrow' and 'tp' >= 'table'['next',1] loop
+        'next' := 'next' + 1;
+      end while;
+
+      if 'next' < 'nrow' then
+        'nextEventScaled' := 'shiftTimeScaled' + 'table'['next',1];
+      end if;
+
+      if 'next' == 1 then
+        'next' := 2;
+      end if;
+
+      'next0' := 'next' - 1;
+      'dt' := 'table'['next',1] - 'table'['next0',1];
+
+      if 'dt' <= 'TimeEps' * abs('table'['next',1]) then
+        'a' := 0.0;
+        'b' := 'offset' + 'table'['next','columns'];
+      elseif true then
+        'a' := ('table'['next','columns'] - 'table'['next0','columns']) / 'dt';
+        'b' := 'offset' + 'table'['next0','columns'] - 'a' * 'table'['next0',1];
+      end if;
+    end if;
+
+    'b' := 'b' - 'a' * 'shiftTimeScaled';
+  end 'Modelica.Magnetic.FluxTubes.Examples.Hysteresis.HysteresisModelComparison.timeTable.getInterpolationCoefficients';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValue' "Interpolate 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValue');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValue';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMin';
+  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValue' "Derivative of interpolated 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 2) = 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue');
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValue';
+
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
@@ -39,6 +170,18 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'K'(unit = "1") = 50.0;
     parameter Real 'sigma'(unit = "S/m", quantity = "Conductivity") = 2.2e6;
   end 'Modelica.Magnetic.FluxTubes.Material.HysteresisEverettParameter.M330_50A';
+
+  record 'Modelica.Magnetic.FluxTubes.Material.HysteresisEverettParameter.BaseData'
+    parameter Real 'Hsat'(unit = "A/m", quantity = "MagneticFieldStrength") = 100.0;
+    parameter Real 'M'(unit = "1") = 0.95;
+    parameter Real 'r'(unit = "1") = 0.55;
+    parameter Real 'q'(unit = "m/A") = 0.24;
+    parameter Real 'p1'(unit = "m/A") = 0.12;
+    parameter Real 'p2'(unit = "m/A") = 0.8;
+    parameter Real 'Hc'(unit = "A/m", quantity = "MagneticFieldStrength") = 7.4;
+    parameter Real 'K'(unit = "1") = 1.0;
+    parameter Real 'sigma'(unit = "S/m", quantity = "Conductivity") = 1.0;
+  end 'Modelica.Magnetic.FluxTubes.Material.HysteresisEverettParameter.BaseData';
 
   model 'HysteresisModelComparison' "Comparison of the different hysteresis models"
     parameter Real 'timeTable.table[1,1]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";

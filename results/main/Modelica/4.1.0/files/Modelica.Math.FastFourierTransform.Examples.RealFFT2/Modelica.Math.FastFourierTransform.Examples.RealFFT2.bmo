@@ -1,5 +1,70 @@
 //! base 0.1.0
 package 'RealFFT2'
+  function 'Modelica.Math.FastFourierTransform.realFFTwriteToFile' "Write real FFT computation to file"
+    input Real 't_computed';
+    input String 'fileName';
+    input Real 'f_max'(unit = "Hz", quantity = "Frequency");
+    input Real[:] 'amplitudes';
+    input Real[:] 'phases' = fill(0.0, 0);
+    input String 'format' = "4";
+    output Boolean 'success';
+    Integer 'nA' = size('amplitudes', 1);
+    Real[3 * size('amplitudes', 1), if size('phases', 1) == 0 then 2 else 3] 'fA';
+    Real 'f';
+  algorithm
+    assert(size('phases', 1) == 0 or size('phases', 1) == size('amplitudes', 1), "Input vector phases has the wrong size", AssertionLevel.error);
+    'Modelica.Utilities.Files.removeFile'('fileName');
+
+    if size('phases', 1) == size('amplitudes', 1) then
+      for 'i' in 1:'nA' loop
+        'f' := 'f_max' * ('i' - 1) / ('nA' - 1);
+        'fA'[1 + 3 * ('i' - 1):1 + 3 * ('i' - 1) + 2,:] := {{'f', 0.0, 0.0}, {'f', 'amplitudes'['i'], 'phases'['i']}, {'f', 0.0, 0.0}};
+      end for;
+    elseif true then
+      for 'i' in 1:'nA' loop
+        'f' := 'f_max' * ('i' - 1) / ('nA' - 1);
+        'fA'[1 + 3 * ('i' - 1):1 + 3 * ('i' - 1) + 2,:] := {{'f', 0.0}, {'f', 'amplitudes'['i']}, {'f', 0.0}};
+      end for;
+    end if;
+
+    'success' := 'Modelica.Utilities.Streams.writeRealMatrix'('fileName', "FFT", 'fA', false, 'format');
+
+    if 'success' then
+      'Modelica.Utilities.Streams.print'("... FFT result computed at time = " + String('t_computed') + " s stored on file: " + 'Modelica.Utilities.Files.fullPathName'('fileName'), "");
+    end if;
+  end 'Modelica.Math.FastFourierTransform.realFFTwriteToFile';
+
+  function 'Modelica.Math.FastFourierTransform.realFFT' "Return amplitude and phase vectors for a real FFT"
+    input Real[:] 'u';
+    input Integer 'nfi';
+    output Integer 'info';
+    output Real['nfi'] 'amplitudes';
+    output Real['nfi'] 'phases';
+    Integer 'nu' = size('u', 1);
+    Integer 'nf' = div(size('u', 1), 2) + 1;
+    Real 'u_DC';
+    Real[size('u', 1)] 'u2';
+    Real[div(size('u', 1), 2) + 1] 'A';
+    Real[div(size('u', 1), 2) + 1] 'Phi';
+    Real 'Aeps';
+  algorithm
+    assert('nfi' > 0 and 'nfi' <= div(size('u', 1), 2) + 1, "Argument nfi is out of range", AssertionLevel.error);
+    'u_DC' := sum('u') / 'nu';
+    'u2' := 'u' - fill('u_DC', 'nu');
+    ('info', 'A', 'Phi') := 'Modelica.Math.FastFourierTransform.Internal.rawRealFFT'('u2');
+    'amplitudes' := 'A'[1:'nfi'];
+    'phases' := 'Modelica.Units.Conversions.to_deg'('Phi'[(1:'nfi')[1:'nfi']]);
+    'Aeps' := 1e-4 * max('amplitudes');
+    'amplitudes'[1] := 'u_DC';
+    'phases'[1] := 0.0;
+
+    for 'i' in 2:'nfi' loop
+      if 'amplitudes'['i'] < 'Aeps' then
+        'phases'['i'] := 0.0;
+      end if;
+    end for;
+  end 'Modelica.Math.FastFourierTransform.realFFT';
+
   model 'RealFFT2' "Example demonstrating the use of an FFT calculation during simulation (and storing only amplitudes on file)"
     parameter Real 'f_max'(unit = "Hz", quantity = "Frequency") = 4.0 "Maximum frequency of interest";
     parameter Real 'f_resolution'(unit = "Hz", quantity = "Frequency") = 0.2 "Frequency resolution";

@@ -1,5 +1,68 @@
 //! base 0.1.0
 package 'Distributions'
+  function 'Modelica.Math.Distributions.TruncatedNormal.quantile' "Quantile of truncated normal distribution"
+    input Real 'u'(max = 1.0, min = 0.0);
+    input Real 'y_min' = 0.0;
+    input Real 'y_max' = 1.0;
+    input Real 'mu' = ('y_max' + 'y_min') / 2.0;
+    input Real 'sigma' = ('y_max' - 'y_min') / 6.0;
+    output Real 'y';
+    Real 'cdf_min' = 'Modelica.Math.Distributions.Normal.cumulative'('y_min', 'mu', 'sigma');
+    Real 'cdf_max' = 'Modelica.Math.Distributions.Normal.cumulative'('y_max', 'mu', 'sigma');
+  algorithm
+    'y' := 'Modelica.Math.Distributions.Normal.quantile'('cdf_min' + 'u' * ('cdf_max' - 'cdf_min'), 'mu', 'sigma');
+    'y' := min('y_max', max('y_min', 'y'));
+    annotation(smoothOrder = 1);
+  end 'Modelica.Math.Distributions.TruncatedNormal.quantile';
+
+  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
+    input Integer[4] 'stateIn';
+    output Real 'result';
+    output Integer[4] 'stateOut';
+  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
+
+  function 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star' "Return an initial state vector for a random number generator (based on xorshift64star algorithm)"
+    input Integer 'localSeed';
+    input Integer 'globalSeed';
+    input Integer 'nState'(min = 1);
+    output Integer['nState'] 'state';
+    Real 'r';
+    Integer[2] 'aux';
+    Integer 'nStateEven';
+  algorithm
+    'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
+
+    if 'nState' >= 2 then
+      'state'[1:2] := 'aux';
+    elseif true then
+      'state'[1] := 'aux'[1];
+    end if;
+
+    'nStateEven' := 2 * div('nState', 2);
+
+    for 'i' in 3:2:'nStateEven' loop
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['i' - 2:'i' - 1]);
+      'state'['i':'i' + 1] := 'aux';
+    end for;
+
+    if 'nState' >= 3 and 'nState' <> 'nStateEven' then
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['nState' - 2:'nState' - 1]);
+      'state'['nState'] := 'aux'[1];
+    end if;
+  end 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star';
+
+  function 'Modelica.Math.Random.Utilities.initializeImpureRandom' "Initializes the internal state of the impure random number generator"
+    input Integer 'seed';
+    output Integer 'id';
+    constant Integer 'localSeed' = 715827883;
+    Integer[33] 'rngState';
+  algorithm
+    'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
+    'id' := 'localSeed';
+    'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
+  end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
+
   model 'Distributions' "Demonstrates noise with different types of distributions"
     parameter Real 'samplePeriod'(unit = "s", quantity = "Time") = 0.02 "Sample period of all blocks";
     parameter Real 'y_min' = -1.0 "Minimum value of band for random values";

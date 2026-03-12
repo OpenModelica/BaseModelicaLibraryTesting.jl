@@ -1,0 +1,951 @@
+//! base 0.1.0
+package 'DrumBoiler'
+  function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph' "Intermediate property record for water"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    input Integer 'phase' = 0;
+    input Integer 'region' = 0;
+    output 'Modelica.Media.Common.IF97BaseTwoPhase' 'aux';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Integer 'error';
+    Real 'h_liq'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'd_liq'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h_vap'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'd_vap'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    'Modelica.Media.Common.PhaseBoundaryProperties' 'liq';
+    'Modelica.Media.Common.PhaseBoundaryProperties' 'vap';
+    'Modelica.Media.Common.GibbsDerivs' 'gl';
+    'Modelica.Media.Common.GibbsDerivs' 'gv';
+    'Modelica.Media.Common.HelmholtzDerivs' 'fl';
+    'Modelica.Media.Common.HelmholtzDerivs' 'fv';
+    Real 't1'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 't2'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+  algorithm
+    'aux'.'region' := if 'region' == 0 then if 'phase' == 2 then 4 else 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.region_ph'('p', 'h', 'phase', 0) else 'region';
+    'aux'.'phase' := if 'phase' <> 0 then 'phase' else if 'aux'.'region' == 4 then 2 else 1;
+    'aux'.'p' := max('p', 611.657);
+    'aux'.'h' := max('h', 1000.0);
+    'aux'.'R_s' := 461.526;
+    'aux'.'vt' := 0.0 "Initialized in case it is not needed";
+    'aux'.'vp' := 0.0 "Initialized in case it is not needed";
+
+    if 'aux'.'region' == 1 then
+      'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph1'('aux'.'p', 'aux'.'h');
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'aux'.'T');
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'aux'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'vp' := 'aux'.'R_s' * 'aux'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif 'aux'.'region' == 2 then
+      'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph2'('aux'.'p', 'aux'.'h');
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'aux'.'T', true);
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'aux'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'aux'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 1.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif 'aux'.'region' == 3 then
+      ('aux'.'rho', 'aux'.'T', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.dtofph3'('aux'.'p', 'aux'.'h', 1e-7, 1e-6);
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('aux'.'rho', 'aux'.'T');
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta');
+      'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'aux'.'pd' := 'aux'.'R_s' * 'aux'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+      'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'aux'.'cv' := abs('aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau')) "Can be close to neg. infinity near critical point";
+      'aux'.'cp' := ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd' * 'aux'.'cv' + 'aux'.'T' * 'aux'.'pt' * 'aux'.'pt') / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := 'aux'.'pt';
+    elseif 'aux'.'region' == 4 then
+      'h_liq' := 'Modelica.Media.Water.IF97_Utilities.hl_p'('p');
+      'h_vap' := 'Modelica.Media.Water.IF97_Utilities.hv_p'('p');
+      'aux'.'x' := if 'h_vap' <> 'h_liq' then ('h' - 'h_liq') / ('h_vap' - 'h_liq') else 1.0;
+
+      if 'p' < 1.65292e7 then
+        't1' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph1'('aux'.'p', 'h_liq');
+        't2' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph2'('aux'.'p', 'h_vap');
+        'gl' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('aux'.'p', 't1');
+        'gv' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('aux'.'p', 't2', true);
+        'liq' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gl');
+        'vap' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gv');
+        'aux'.'T' := 't1' + 'aux'.'x' * ('t2' - 't1');
+      elseif true then
+        'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('aux'.'p');
+        'd_liq' := 'Modelica.Media.Water.IF97_Utilities.rhol_T'('aux'.'T');
+        'd_vap' := 'Modelica.Media.Water.IF97_Utilities.rhov_T'('aux'.'T');
+        'fl' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('d_liq', 'aux'.'T');
+        'fv' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('d_vap', 'aux'.'T');
+        'liq' := 'Modelica.Media.Common.helmholtzToBoundaryProps'('fl');
+        'vap' := 'Modelica.Media.Common.helmholtzToBoundaryProps'('fv');
+      end if;
+
+      'aux'.'dpT' := if 'liq'.'d' <> 'vap'.'d' then ('vap'.'s' - 'liq'.'s') * 'liq'.'d' * 'vap'.'d' / ('liq'.'d' - 'vap'.'d') else 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('aux'.'T');
+      'aux'.'s' := 'liq'.'s' + 'aux'.'x' * ('vap'.'s' - 'liq'.'s');
+      'aux'.'rho' := 'liq'.'d' * 'vap'.'d' / ('vap'.'d' + 'aux'.'x' * ('liq'.'d' - 'vap'.'d'));
+      'aux'.'cv' := 'Modelica.Media.Common.cv2Phase'('liq', 'vap', 'aux'.'x', 'aux'.'T', 'p');
+      'aux'.'cp' := 'liq'.'cp' + 'aux'.'x' * ('vap'.'cp' - 'liq'.'cp');
+      'aux'.'pt' := 'liq'.'pt' + 'aux'.'x' * ('vap'.'pt' - 'liq'.'pt');
+      'aux'.'pd' := 'liq'.'pd' + 'aux'.'x' * ('vap'.'pd' - 'liq'.'pd');
+    elseif 'aux'.'region' == 5 then
+      ('aux'.'T', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.tofph5'('aux'.'p', 'aux'.'h', 1e-7);
+      assert('error' == 0, "Error in inverse iteration of steam tables", AssertionLevel.error);
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g5'('aux'.'p', 'aux'.'T');
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'aux'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'aux'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif true then
+      assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", h = " + String('h') + ")", AssertionLevel.error);
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p' "Properties on the dew curve"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
+  algorithm
+    'bpro'.'R_s' := 461.526;
+    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
+    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
+    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
+
+    if not 'bpro'.'region3boundary' then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'bpro'.'T', true);
+      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    elseif true then
+      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhov_p_R4b'('plim');
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
+      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hv_p_R4b'('plim');
+      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat' "Region 4 saturation temperature as a function of pressure"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pi';
+    Real[20] 'o';
+  algorithm
+    assert('p' > 611.657, "IF97 medium function tsat called with too low pressure\np = " + String('p') + " Pa <= " + "611.657" + " Pa (triple point pressure)", AssertionLevel.error);
+    'pi' := min('p', 2.2064e7) * 1e-6;
+    'o'[1] := 'pi' ^ 0.25;
+    'o'[2] := -3.2325550322333e6 * 'o'[1];
+    'o'[3] := 'pi' ^ 0.5;
+    'o'[4] := -724213.16703206 * 'o'[3];
+    'o'[5] := 405113.40542057 + 'o'[2] + 'o'[4];
+    'o'[6] := -17.073846940092 * 'o'[1];
+    'o'[7] := 14.91510861353 + 'o'[3] + 'o'[6];
+    'o'[8] := -4.0 * 'o'[5] * 'o'[7];
+    'o'[9] := 12020.82470247 * 'o'[1];
+    'o'[10] := 1167.0521452767 * 'o'[3];
+    'o'[11] := 'o'[10] - 4823.2657361591 + 'o'[9];
+    'o'[12] := 'o'[11] * 'o'[11];
+    'o'[13] := 'o'[12] + 'o'[8];
+    'o'[14] := 'o'[13] ^ 0.5;
+    'o'[15] := -'o'[14];
+    'o'[16] := -12020.82470247 * 'o'[1];
+    'o'[17] := -1167.0521452767 * 'o'[3];
+    'o'[18] := 4823.2657361591 + 'o'[15] + 'o'[16] + 'o'[17];
+    'o'[19] := 1.0 / 'o'[18];
+    'o'[20] := 2.0 * 'o'[19] * 'o'[5];
+    't_sat' := 0.5 * (650.17534844798 + 'o'[20] - ((650.17534844798 + 'o'[20]) ^ 2.0 - 4.0 * (1300.35069689596 * 'o'[19] * 'o'[5] - 0.23855557567849)) ^ 0.5);
+    annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der');
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p' "Properties on the boiling curve"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
+  algorithm
+    'bpro'.'R_s' := 461.526;
+    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
+    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
+    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
+
+    if not 'bpro'.'region3boundary' then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'bpro'.'T');
+      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    elseif true then
+      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhol_p_R4b'('plim');
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
+      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hl_p_R4b'('plim');
+      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p';
+
+  function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT' "Intermediate property record for water (p and T preferred states)"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Integer 'region' = 0;
+    output 'Modelica.Media.Common.IF97BaseTwoPhase' 'aux';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Integer 'error';
+  algorithm
+    'aux'.'phase' := 1;
+    'aux'.'region' := if 'region' == 0 then 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.region_pT'('p', 'T', 0) else 'region';
+    'aux'.'R_s' := 461.526;
+    'aux'.'p' := 'p';
+    'aux'.'T' := 'T';
+    'aux'.'vt' := 0.0 "Initialized in case it is not needed";
+    'aux'.'vp' := 0.0 "Initialized in case it is not needed";
+
+    if 'aux'.'region' == 1 then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'T');
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    elseif 'aux'.'region' == 2 then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'T', true);
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 1.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif 'aux'.'region' == 3 then
+      ('aux'.'rho', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.dofpt3'('p', 'T', 1e-7);
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('aux'.'rho', 'T');
+      'aux'.'h' := 'aux'.'R_s' * 'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta');
+      'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'aux'.'pd' := 'aux'.'R_s' * 'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+      'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'aux'.'cv' := 'aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := 'aux'.'pt';
+    elseif 'aux'.'region' == 5 then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g5'('p', 'T');
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 1.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif true then
+      assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", T = " + String('T') + ")", AssertionLevel.error);
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';
+
+  function 'Modelica.Fluid.Examples.DrumBoiler.DrumBoiler.Y_Valve_Tab.getInterpolationCoefficients' "Determine interpolation coefficients and next time event"
+    input Real[:, 2] 'table';
+    input Real 'offset';
+    input Real 'startTimeScaled';
+    input Real 'timeScaled';
+    input Integer 'last';
+    input Real 'TimeEps';
+    input Real 'shiftTimeScaled';
+    output Real 'a';
+    output Real 'b';
+    output Real 'nextEventScaled';
+    output Integer 'next';
+    Integer 'columns' = 2;
+    Integer 'ncol' = 2;
+    Integer 'nrow' = size('table', 1);
+    Integer 'next0';
+    Real 'tp';
+    Real 'dt';
+  algorithm
+    'next' := 'last';
+    'nextEventScaled' := 'timeScaled' - 'TimeEps' * abs('timeScaled');
+    'tp' := 'timeScaled' + 'TimeEps' * abs('timeScaled');
+
+    if 'tp' < 'startTimeScaled' then
+      'nextEventScaled' := 'startTimeScaled';
+      'a' := 0.0;
+      'b' := 'offset';
+    elseif 'nrow' < 2 then
+      'a' := 0.0;
+      'b' := 'offset' + 'table'[1,'columns'];
+    elseif true then
+      'tp' := 'tp' - 'shiftTimeScaled';
+
+      while 'next' < 'nrow' and 'tp' >= 'table'['next',1] loop
+        'next' := 'next' + 1;
+      end while;
+
+      if 'next' < 'nrow' then
+        'nextEventScaled' := 'shiftTimeScaled' + 'table'['next',1];
+      end if;
+
+      if 'next' == 1 then
+        'next' := 2;
+      end if;
+
+      'next0' := 'next' - 1;
+      'dt' := 'table'['next',1] - 'table'['next0',1];
+
+      if 'dt' <= 'TimeEps' * abs('table'['next',1]) then
+        'a' := 0.0;
+        'b' := 'offset' + 'table'['next','columns'];
+      elseif true then
+        'a' := ('table'['next','columns'] - 'table'['next0','columns']) / 'dt';
+        'b' := 'offset' + 'table'['next0','columns'] - 'a' * 'table'['next0',1];
+      end if;
+    end if;
+
+    'b' := 'b' - 'a' * 'shiftTimeScaled';
+  end 'Modelica.Fluid.Examples.DrumBoiler.DrumBoiler.Y_Valve_Tab.getInterpolationCoefficients';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der' "Derivative function for tsat"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'der_p'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    output Real 'der_tsat'(unit = "K/s", quantity = "TemperatureSlope");
+    Real 'dtp';
+  algorithm
+    'dtp' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('p');
+    'der_tsat' := 'dtp' * 'der_p';
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der';
+
+  function 'Modelica.Fluid.Utilities.checkBoundary' "Check whether boundary definition is correct"
+    input String 'mediumName';
+    input String[:] 'substanceNames';
+    input Boolean 'singleState';
+    input Boolean 'define_p';
+    input Real[:] 'X_boundary';
+    input String 'modelName' = "??? boundary ???";
+    Integer 'nX' = size('X_boundary', 1);
+    String 'X_str';
+  algorithm
+    assert(not 'singleState' or 'singleState' and 'define_p', "\nWrong value of parameter define_p (= false) in model \"" + 'modelName' + "\":\nThe selected medium \"" + 'mediumName' + "\" has Medium.singleState=true.\nTherefore, an boundary density cannot be defined and\ndefine_p = true is required.\n", AssertionLevel.error);
+
+    for 'i' in 1:'nX' loop
+      assert('X_boundary'['i'] >= 0.0, "\nWrong boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\":\nThe boundary value X_boundary(" + String('i') + ") = " + String('X_boundary'['i']) + "\nis negative. It must be positive.\n", AssertionLevel.error);
+    end for;
+
+    if 'nX' > 0 and abs(sum('X_boundary') - 1.0) > 1e-10 then
+      'X_str' := "";
+
+      for 'i' in 1:'nX' loop
+        'X_str' := 'X_str' + "   X_boundary[" + String('i') + "] = " + String('X_boundary'['i']) + " \"" + 'substanceNames'['i'] + "\"\n";
+      end for;
+
+      'Modelica.Utilities.Streams.error'("The boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\"\n" + "do not sum up to 1. Instead, sum(X_boundary) = " + String(sum('X_boundary')) + ":\n" + 'X_str');
+    end if;
+  end 'Modelica.Fluid.Utilities.checkBoundary';
+
+  function 'Modelica.Fluid.Examples.DrumBoiler.DrumBoiler.q_F_Tab.getInterpolationCoefficients' "Determine interpolation coefficients and next time event"
+    input Real[:, 2] 'table';
+    input Real 'offset';
+    input Real 'startTimeScaled';
+    input Real 'timeScaled';
+    input Integer 'last';
+    input Real 'TimeEps';
+    input Real 'shiftTimeScaled';
+    output Real 'a';
+    output Real 'b';
+    output Real 'nextEventScaled';
+    output Integer 'next';
+    Integer 'columns' = 2;
+    Integer 'ncol' = 2;
+    Integer 'nrow' = size('table', 1);
+    Integer 'next0';
+    Real 'tp';
+    Real 'dt';
+  algorithm
+    'next' := 'last';
+    'nextEventScaled' := 'timeScaled' - 'TimeEps' * abs('timeScaled');
+    'tp' := 'timeScaled' + 'TimeEps' * abs('timeScaled');
+
+    if 'tp' < 'startTimeScaled' then
+      'nextEventScaled' := 'startTimeScaled';
+      'a' := 0.0;
+      'b' := 'offset';
+    elseif 'nrow' < 2 then
+      'a' := 0.0;
+      'b' := 'offset' + 'table'[1,'columns'];
+    elseif true then
+      'tp' := 'tp' - 'shiftTimeScaled';
+
+      while 'next' < 'nrow' and 'tp' >= 'table'['next',1] loop
+        'next' := 'next' + 1;
+      end while;
+
+      if 'next' < 'nrow' then
+        'nextEventScaled' := 'shiftTimeScaled' + 'table'['next',1];
+      end if;
+
+      if 'next' == 1 then
+        'next' := 2;
+      end if;
+
+      'next0' := 'next' - 1;
+      'dt' := 'table'['next',1] - 'table'['next0',1];
+
+      if 'dt' <= 'TimeEps' * abs('table'['next',1]) then
+        'a' := 0.0;
+        'b' := 'offset' + 'table'['next','columns'];
+      elseif true then
+        'a' := ('table'['next','columns'] - 'table'['next0','columns']) / 'dt';
+        'b' := 'offset' + 'table'['next0','columns'] - 'a' * 'table'['next0',1];
+      end if;
+    end if;
+
+    'b' := 'b' - 'a' * 'shiftTimeScaled';
+  end 'Modelica.Fluid.Examples.DrumBoiler.DrumBoiler.q_F_Tab.getInterpolationCoefficients';
+
+  type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
+
+  type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
+
+  type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
+
+  type 'Modelica.Blocks.Types.LimiterHomotopy' = enumeration('NoHomotopy', 'Linear', 'UpperLimit', 'LowerLimit');
+
+  record 'Modelica.Media.Common.IF97PhaseBoundaryProperties'
+    Boolean 'region3boundary';
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'dpT'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+    Real 'vt'(unit = "m3/(kg.K)");
+    Real 'vp'(unit = "m3/(kg.Pa)");
+  end 'Modelica.Media.Common.IF97PhaseBoundaryProperties';
+
+  record 'Modelica.Media.Common.IF97BaseTwoPhase'
+    Integer 'phase'(start = 0);
+    Integer 'region'(max = 5, min = 1);
+    Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+    Real 'vt';
+    Real 'vp';
+    Real 'x';
+    Real 'dpT';
+  end 'Modelica.Media.Common.IF97BaseTwoPhase';
+
+  record 'Modelica.Media.Common.GibbsDerivs'
+    Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'pi'(unit = "1");
+    Real 'tau'(unit = "1");
+    Real 'g'(unit = "1");
+    Real 'gpi'(unit = "1");
+    Real 'gpipi'(unit = "1");
+    Real 'gtau'(unit = "1");
+    Real 'gtautau'(unit = "1");
+    Real 'gtaupi'(unit = "1");
+  end 'Modelica.Media.Common.GibbsDerivs';
+
+  record 'Modelica.Media.Common.HelmholtzDerivs'
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'delta'(unit = "1");
+    Real 'tau'(unit = "1");
+    Real 'f'(unit = "1");
+    Real 'fdelta'(unit = "1");
+    Real 'fdeltadelta'(unit = "1");
+    Real 'ftau'(unit = "1");
+    Real 'ftautau'(unit = "1");
+    Real 'fdeltatau'(unit = "1");
+  end 'Modelica.Media.Common.HelmholtzDerivs';
+
+  record 'Modelica.Media.Common.PhaseBoundaryProperties'
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'u'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+  end 'Modelica.Media.Common.PhaseBoundaryProperties';
+
+  model 'DrumBoiler' "Complete drum boiler model, including evaporator and supplementary components"
+    parameter Boolean 'use_inputs' = false "= true, if external inputs are used, otherwise use test data contained internally";
+    parameter Boolean 'evaporator.allowFlowReversal' = true "= true to allow flow reversal, false restricts to design direction (port_a -> port_b)" annotation(Evaluate = true);
+    Real 'evaporator.port_a.m_flow'(max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'evaporator.port_a.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'evaporator.port_a.h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    Real 'evaporator.port_b.m_flow'(max = 1e60, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'evaporator.port_b.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'evaporator.port_b.h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    parameter Boolean 'evaporator.port_a_exposesState' = true "= true if port_a exposes the state of a fluid volume";
+    parameter Boolean 'evaporator.port_b_exposesState' = true "= true if port_b.p exposes the state of a fluid volume";
+    parameter Boolean 'evaporator.showDesignFlowDirection' = true "= false to hide the arrow in the model icon";
+    parameter Real 'evaporator.m_D'(min = 0.0, unit = "kg", quantity = "Mass") = 3e5 "Mass of surrounding drum metal";
+    parameter Real 'evaporator.cp_D'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 500.0 "Specific heat capacity of drum metal";
+    parameter Real 'evaporator.V_t'(unit = "m3", quantity = "Volume") = 100.0 "Total volume inside drum";
+    parameter Real 'evaporator.p_start'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1e5 "Start value of pressure";
+    parameter Real 'evaporator.V_l_start'(unit = "m3", quantity = "Volume") = 67.0 "Start value of liquid volumeStart value of volume";
+    parameter 'Modelica.Fluid.Types.Dynamics' 'evaporator.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of energy balance" annotation(Evaluate = true);
+    parameter 'Modelica.Fluid.Types.Dynamics' 'evaporator.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
+    Real 'evaporator.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'evaporator.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'evaporator.V'(unit = "m3") "Liquid volume";
+    Real 'evaporator.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
+    Real 'evaporator.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
+    Real 'evaporator.p'(stateSelect = StateSelect.prefer, nominal = 1e6, start = 1e5, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure inside drum boiler";
+    Real 'evaporator.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature inside drum boiler";
+    Real 'evaporator.V_v'(unit = "m3", quantity = "Volume") "Volume of vapour phase";
+    Real 'evaporator.V_l'(stateSelect = StateSelect.prefer, start = 67.0, unit = "m3", quantity = "Volume") "Volumes of liquid phase";
+    Real 'evaporator.h_v'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of vapour";
+    Real 'evaporator.h_l'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of liquid";
+    Real 'evaporator.rho_v'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density in vapour phase";
+    Real 'evaporator.rho_l'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density in liquid phase";
+    Real 'evaporator.m'(min = 0.0, unit = "kg", quantity = "Mass") "Total mass of drum boiler";
+    Real 'evaporator.U'(unit = "J", quantity = "Energy") "Internal energy";
+    Real 'evaporator.T_D'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of drum";
+    Real 'evaporator.q_F'(unit = "W", quantity = "Power") "Heat flow rate from furnace";
+    Real 'evaporator.h_W'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Feed water enthalpy (specific enthalpy close to feedwater port when mass flows in to the boiler)";
+    Real 'evaporator.h_S'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Steam enthalpy (specific enthalpy close to steam port when mass flows in to the boiler)";
+    Real 'evaporator.qm_W'(unit = "kg/s", quantity = "MassFlowRate") "Feed water mass flow rate";
+    Real 'evaporator.qm_S'(unit = "kg/s", quantity = "MassFlowRate") "Steam mass flow rate";
+    parameter Real 'furnace.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Reference temperature";
+    parameter Real 'furnace.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of heat flow rate";
+    Real 'furnace.Q_flow'(unit = "W");
+    Real 'furnace.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'furnace.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
+    parameter Integer 'sink.nPorts' = 1 "Number of ports";
+    Real 'sink.medium.p'(stateSelect = StateSelect.default, nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'sink.medium.h'(stateSelect = StateSelect.default, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
+    Real 'sink.medium.d'(stateSelect = StateSelect.default, nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density of medium";
+    Real 'sink.medium.T'(stateSelect = StateSelect.default, nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
+    Real 'sink.medium.X[1]'(nominal = 0.1, start = 1.0, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fractions (= (component mass)/total mass  m_i/m)";
+    Real 'sink.medium.u'(nominal = 1e6, max = 1e8, min = -1e8, unit = "J/kg", quantity = "SpecificEnergy") "Specific internal energy of medium";
+    Real 'sink.medium.R_s'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") "Gas constant (of mixture if applicable)";
+    Real 'sink.medium.MM'(nominal = 0.032, max = 0.25, min = 0.001, unit = "kg/mol", quantity = "MolarMass") "Molar mass (of mixture or single fluid)";
+    Integer 'sink.medium.state.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'sink.medium.state.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'sink.medium.state.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'sink.medium.state.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'sink.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    parameter Boolean 'sink.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
+    parameter Boolean 'sink.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
+    Real 'sink.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'sink.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
+    Real 'sink.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
+    Real 'sink.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
+    Integer 'sink.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
+    Real 'sink.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'sink.ports[1].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'sink.ports[1].h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    parameter 'Modelica.Fluid.Types.PortFlowDirection' 'sink.flowDirection' = 'Modelica.Fluid.Types.PortFlowDirection'.'Bidirectional' "Allowed flow direction" annotation(Evaluate = true);
+    parameter Boolean 'sink.use_p' = true "Select p or d" annotation(Evaluate = true);
+    parameter Real 'sink.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 5e4 "Boundary pressure";
+    parameter Real 'sink.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 998.2060924679472 "Boundary density";
+    parameter Boolean 'sink.use_T' = true "Select T or h" annotation(Evaluate = true);
+    parameter Real 'sink.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 500.0 "Boundary temperature";
+    parameter Real 'sink.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 84013.0581525969 "Boundary specific enthalpy";
+    parameter Real 'sink.X[1]'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") = 1.0 "Boundary mass fractions m_i/m";
+    Integer 'sink.state.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'sink.state.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'sink.state.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'sink.state.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'sink.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    parameter Boolean 'massFlowRate.allowFlowReversal' = true "= true to allow flow reversal, false restricts to design direction (port_a -> port_b)" annotation(Evaluate = true);
+    Real 'massFlowRate.port_a.m_flow'(max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'massFlowRate.port_a.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'massFlowRate.port_a.h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    Real 'massFlowRate.port_b.m_flow'(max = 1e60, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'massFlowRate.port_b.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'massFlowRate.port_b.h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    parameter Boolean 'massFlowRate.port_a_exposesState' = false "= true if port_a exposes the state of a fluid volume";
+    parameter Boolean 'massFlowRate.port_b_exposesState' = false "= true if port_b.p exposes the state of a fluid volume";
+    parameter Boolean 'massFlowRate.showDesignFlowDirection' = true "= false to hide the arrow in the model icon";
+    parameter Real 'massFlowRate.m_flow_nominal'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") = 1.0 "Nominal value of m_flow = port_a.m_flow";
+    parameter Real 'massFlowRate.m_flow_small'(max = 1e5, min = 0.0, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") = 0.01 "Regularization for bi-directional flow in the region |m_flow| < m_flow_small (m_flow_small > 0 required)";
+    Real 'massFlowRate.m_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flow rate from port_a to port_b";
+    Real 'temperature.port.m_flow'(max = 1e5, min = 0.0, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'temperature.port.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'temperature.port.h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    Real 'temperature.T'(min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature in port medium";
+    Real 'pressure.port.m_flow'(max = 1e5, min = 0.0, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'pressure.port.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'pressure.port.h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    Real 'pressure.p'(min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure at port";
+    parameter Real 'controller.k' = 10.0 "Gain";
+    parameter Real 'controller.T'(start = 1.0, min = 2.2250738585072014e-308, unit = "s", quantity = "Time") = 120.0 "Time Constant (T>0 required)";
+    parameter 'Modelica.Blocks.Types.Init' 'controller.initType' = 'Modelica.Blocks.Types.Init'.'InitialState' "Type of initialization (1: no init, 2: steady state, 3: initial state, 4: initial output)" annotation(Evaluate = true);
+    parameter Real 'controller.x_start' = 0.0 "Initial or guess value of state";
+    parameter Real 'controller.y_start' = 0.0 "Initial value of output";
+    Real 'controller.u' "Connector of Real input signal";
+    Real 'controller.y' "Connector of Real output signal";
+    Real 'controller.x'(start = 0.0) "State of block";
+    parameter Integer 'pump.nPorts'(min = 1) = 1 "Number of ports";
+    Real 'pump.medium.p'(stateSelect = StateSelect.default, nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'pump.medium.h'(stateSelect = StateSelect.default, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
+    Real 'pump.medium.d'(stateSelect = StateSelect.default, nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density of medium";
+    Real 'pump.medium.T'(stateSelect = StateSelect.default, nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
+    Real 'pump.medium.X[1]'(nominal = 0.1, start = 1.0, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fractions (= (component mass)/total mass  m_i/m)";
+    Real 'pump.medium.u'(nominal = 1e6, max = 1e8, min = -1e8, unit = "J/kg", quantity = "SpecificEnergy") "Specific internal energy of medium";
+    Real 'pump.medium.R_s'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") "Gas constant (of mixture if applicable)";
+    Real 'pump.medium.MM'(nominal = 0.032, max = 0.25, min = 0.001, unit = "kg/mol", quantity = "MolarMass") "Molar mass (of mixture or single fluid)";
+    Integer 'pump.medium.state.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'pump.medium.state.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'pump.medium.state.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'pump.medium.state.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'pump.medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    parameter Boolean 'pump.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
+    parameter Boolean 'pump.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
+    Real 'pump.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'pump.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
+    Real 'pump.medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
+    Real 'pump.medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
+    Integer 'pump.medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
+    Real 'pump.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'pump.ports[1].p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'pump.ports[1].h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    parameter 'Modelica.Fluid.Types.PortFlowDirection' 'pump.flowDirection' = 'Modelica.Fluid.Types.PortFlowDirection'.'Bidirectional' "Allowed flow direction" annotation(Evaluate = true);
+    parameter Boolean 'pump.use_m_flow_in' = true "Get the mass flow rate from the input connector" annotation(Evaluate = true);
+    parameter Boolean 'pump.use_h_in' = false "Get the specific enthalpy from the input connector" annotation(Evaluate = true);
+    parameter Boolean 'pump.use_X_in' = false "Get the composition from the input connector" annotation(Evaluate = true);
+    parameter Boolean 'pump.use_C_in' = false "Get the trace substances from the input connector" annotation(Evaluate = true);
+    parameter Real 'pump.m_flow'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") = 0.0 "Fixed mass flow rate going out of the fluid port";
+    parameter Real 'pump.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 5e5 "Fixed value of specific enthalpy";
+    parameter Real 'pump.X[1]'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") = 1.0 "Fixed value of composition";
+    Real 'pump.m_flow_in'(unit = "kg/s") "Prescribed mass flow rate";
+    Real 'pump.m_flow_in_internal'(unit = "kg/s") "Needed to connect to conditional connector";
+    Real 'pump.h_in_internal'(unit = "J/kg") "Needed to connect to conditional connector";
+    Real 'pump.X_in_internal[1]'(unit = "1") "Needed to connect to conditional connector";
+    Real 'feedback.u1' "Commanded input";
+    Real 'feedback.u2' "Feedback input";
+    Real 'feedback.y';
+    parameter Real 'levelSetPoint.k'(start = 1.0) = 67.0 "Constant output value";
+    Real 'levelSetPoint.y' "Connector of Real output signal";
+    output Real 'T_S'(unit = "degC") "Steam temperature";
+    output Real 'p_S'(unit = "bar") "Steam pressure";
+    output Real 'qm_S'(unit = "kg/s") "Steam flow rate";
+    output Real 'V_l'(unit = "m3") "Liquid volume inside drum";
+    parameter Real 'MW2W.k'(start = 1.0) = 1e6 "Gain value multiplied with input signal";
+    Real 'MW2W.u' "Input signal connector";
+    Real 'MW2W.y' "Output signal connector";
+    parameter Real 'Pa2bar.k'(start = 1.0) = 1e-5 "Gain value multiplied with input signal";
+    Real 'Pa2bar.u' "Input signal connector";
+    Real 'Pa2bar.y' "Output signal connector";
+    Real 'K2degC.Kelvin'(unit = "K");
+    Real 'K2degC.Celsius'(unit = "degC");
+    parameter Real 'limiter.uMax'(start = 1.0) = 500.0 "Upper limits of input signals";
+    parameter Real 'limiter.uMin' = 0.0 "Lower limits of input signals";
+    parameter Boolean 'limiter.strict' = false "= true, if strict limits with noEvent(..)" annotation(Evaluate = true);
+    parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'limiter.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'Linear' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
+    Real 'limiter.u' "Connector of Real input signal";
+    Real 'limiter.y' "Connector of Real output signal";
+    Real 'limiter.simplifiedExpr' "Simplified expression for homotopy-based initialization";
+    parameter Boolean 'SteamValve.allowFlowReversal' = true "= true to allow flow reversal, false restricts to design direction (port_a -> port_b)" annotation(Evaluate = true);
+    Real 'SteamValve.port_a.m_flow'(max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'SteamValve.port_a.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'SteamValve.port_a.h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    Real 'SteamValve.port_b.m_flow'(max = 1e60, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate from the connection point into the component";
+    Real 'SteamValve.port_b.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
+    Real 'SteamValve.port_b.h_outflow'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
+    parameter Boolean 'SteamValve.port_a_exposesState' = false "= true if port_a exposes the state of a fluid volume";
+    parameter Boolean 'SteamValve.port_b_exposesState' = false "= true if port_b.p exposes the state of a fluid volume";
+    parameter Boolean 'SteamValve.showDesignFlowDirection' = true "= false to hide the arrow in the model icon";
+    parameter Real 'SteamValve.dp_start'(nominal = 1e6, start = 5e6, max = 1e8, min = -1e60, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1013.25 "Guess value of dp = port_a.p - port_b.p";
+    parameter Real 'SteamValve.m_flow_start'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") = 0.0 "Guess value of m_flow = port_a.m_flow";
+    parameter Real 'SteamValve.m_flow_small'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") = 0.01 "Small mass flow rate for regularization of zero flow";
+    parameter Boolean 'SteamValve.show_T' = true "= true, if temperatures at port_a and port_b are computed";
+    parameter Boolean 'SteamValve.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
+    Real 'SteamValve.m_flow'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") "Mass flow rate in design flow direction";
+    Real 'SteamValve.dp'(start = 1013.25, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
+    Real 'SteamValve.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'SteamValve.port_a_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'SteamValve.port_b_T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
+    Integer 'SteamValve.state_a.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'SteamValve.state_a.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'SteamValve.state_a.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'SteamValve.state_a.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'SteamValve.state_a.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    Integer 'SteamValve.state_b.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'SteamValve.state_b.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'SteamValve.state_b.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'SteamValve.state_b.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'SteamValve.state_b.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    parameter Real 'SteamValve.dp_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 9e6 "Nominal pressure drop at full opening";
+    parameter Real 'SteamValve.m_flow_nominal'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.WaterIF97") = 180.0 "Nominal mass flowrate at full opening";
+    parameter Real 'SteamValve.k'(unit = "kg/(s.Pa)", quantity = "HydraulicConductance") = 2e-5 "Hydraulic conductance at full opening";
+    Real 'SteamValve.opening'(max = 1.0, min = 0.0) "=1: completely open, =0: completely closed";
+    parameter Real 'system.p_ambient'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Default ambient pressure";
+    parameter Real 'system.T_ambient'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Default ambient temperature";
+    parameter Real 'system.g'(unit = "m/s2", quantity = "Acceleration") = 9.80665 "Constant gravity acceleration";
+    parameter Boolean 'system.allowFlowReversal' = true "= false to restrict to design flow direction (port_a -> port_b)" annotation(Evaluate = true);
+    parameter 'Modelica.Fluid.Types.Dynamics' 'system.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Default formulation of energy balances" annotation(Evaluate = true);
+    parameter 'Modelica.Fluid.Types.Dynamics' 'system.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Default formulation of mass balances" annotation(Evaluate = true);
+    parameter 'Modelica.Fluid.Types.Dynamics' 'system.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Default formulation of substance balances" annotation(Evaluate = true);
+    parameter 'Modelica.Fluid.Types.Dynamics' 'system.traceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Default formulation of trace substance balances" annotation(Evaluate = true);
+    parameter 'Modelica.Fluid.Types.Dynamics' 'system.momentumDynamics' = 'Modelica.Fluid.Types.Dynamics'.'SteadyState' "Default formulation of momentum balances, if options available" annotation(Evaluate = true);
+    parameter Real 'system.m_flow_start'(unit = "kg/s", quantity = "MassFlowRate") = 0.0 "Default start value for mass flow rates";
+    parameter Real 'system.p_start'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Default start value for pressures";
+    parameter Real 'system.T_start'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Default start value for temperatures";
+    parameter Boolean 'system.use_eps_Re' = false "= true to determine turbulent region automatically using Reynolds number" annotation(Evaluate = true);
+    parameter Real 'system.m_flow_nominal'(unit = "kg/s", quantity = "MassFlowRate") = 1.0 "Default nominal mass flow rate";
+    parameter Real 'system.eps_m_flow'(min = 0.0) = 1e-4 "Regularization of zero flow for |m_flow| < eps_m_flow*m_flow_nominal";
+    parameter Real 'system.dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0 "Default small pressure drop for regularization of laminar and zero flow";
+    parameter Real 'system.m_flow_small'(min = 0.0, unit = "kg/s", quantity = "MassFlowRate") = 0.01 "Default small mass flow rate for regularization of laminar and zero flow";
+    parameter Real 'q_F_Tab.table[1,1]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'q_F_Tab.table[1,2]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'q_F_Tab.table[2,1]' = 3600.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'q_F_Tab.table[2,2]' = 400.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'q_F_Tab.table[3,1]' = 7210.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'q_F_Tab.table[3,2]' = 400.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'q_F_Tab.timeScale'(min = 2.220446049250313e-16, unit = "s", quantity = "Time") = 1.0 "Time scale of first table column" annotation(Evaluate = true);
+    Real 'q_F_Tab.y' "Connector of Real output signal";
+    parameter Real 'q_F_Tab.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'q_F_Tab.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'q_F_Tab.shiftTime'(unit = "s", quantity = "Time") = 0.0 "Shift time of first table column";
+    discrete Real 'q_F_Tab.a' "Interpolation coefficient a of actual interval (y=a*x+b)";
+    discrete Real 'q_F_Tab.b' "Interpolation coefficient b of actual interval (y=a*x+b)";
+    Integer 'q_F_Tab.last'(start = 1) "Last used lower grid index";
+    discrete Real 'q_F_Tab.nextEvent'(fixed = true, start = 0.0, unit = "s", quantity = "Time") "Next event instant";
+    discrete Real 'q_F_Tab.nextEventScaled'(fixed = true, start = 0.0) "Next scaled event instant";
+    Real 'q_F_Tab.timeScaled' "Scaled time";
+    parameter Real 'Y_Valve_Tab.table[1,1]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'Y_Valve_Tab.table[1,2]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'Y_Valve_Tab.table[2,1]' = 900.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'Y_Valve_Tab.table[2,2]' = 1.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'Y_Valve_Tab.table[3,1]' = 7210.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'Y_Valve_Tab.table[3,2]' = 1.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'Y_Valve_Tab.timeScale'(min = 2.220446049250313e-16, unit = "s", quantity = "Time") = 1.0 "Time scale of first table column" annotation(Evaluate = true);
+    Real 'Y_Valve_Tab.y' "Connector of Real output signal";
+    parameter Real 'Y_Valve_Tab.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'Y_Valve_Tab.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'Y_Valve_Tab.shiftTime'(unit = "s", quantity = "Time") = 0.0 "Shift time of first table column";
+    discrete Real 'Y_Valve_Tab.a' "Interpolation coefficient a of actual interval (y=a*x+b)";
+    discrete Real 'Y_Valve_Tab.b' "Interpolation coefficient b of actual interval (y=a*x+b)";
+    Integer 'Y_Valve_Tab.last'(start = 1) "Last used lower grid index";
+    discrete Real 'Y_Valve_Tab.nextEvent'(fixed = true, start = 0.0, unit = "s", quantity = "Time") "Next event instant";
+    discrete Real 'Y_Valve_Tab.nextEventScaled'(fixed = true, start = 0.0) "Next scaled event instant";
+    Real 'Y_Valve_Tab.timeScaled' "Scaled time";
+  initial equation
+    'evaporator.p' = 1e5;
+    'evaporator.V_l' = 67.0;
+    'controller.x' = 0.0;
+  equation
+    'evaporator.h_v' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('evaporator.sat.psat')).h;
+    'evaporator.h_l' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('evaporator.sat.psat')).h;
+    'evaporator.rho_v' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('evaporator.sat.psat')).d;
+    'evaporator.rho_l' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('evaporator.sat.psat')).d;
+    'evaporator.T_D' = 'evaporator.heatPort.T';
+    'evaporator.q_F' = 'evaporator.heatPort.Q_flow';
+    'evaporator.h_W' = 'pump.ports[1].h_outflow';
+    'evaporator.h_S' = 'massFlowRate.port_a.h_outflow';
+    'evaporator.qm_W' = 'evaporator.port_a.m_flow';
+    'evaporator.qm_S' = 'evaporator.port_b.m_flow';
+    'sink.medium.T_degC' = 'sink.medium.T' - 273.15;
+    'sink.medium.p_bar' = 'sink.medium.p' / 1e5;
+    'pump.medium.T_degC' = 'pump.medium.T' - 273.15;
+    'pump.medium.p_bar' = 'pump.medium.p' / 1e5;
+    'SteamValve.V_flow' = 'SteamValve.m_flow' / smooth(1, if 'SteamValve.m_flow' > 0.01 then 'SteamValve.state_a.d' else if 'SteamValve.m_flow' < (-0.01) then 'SteamValve.state_b.d' else if 0.01 > 0.0 then 'SteamValve.m_flow' / 0.01 * (('SteamValve.m_flow' / 0.01) ^ 2.0 - 3.0) * ('SteamValve.state_b.d' - 'SteamValve.state_a.d') / 4.0 + ('SteamValve.state_a.d' + 'SteamValve.state_b.d') / 2.0 else ('SteamValve.state_a.d' + 'SteamValve.state_b.d') / 2.0);
+    'SteamValve.port_a_T' = smooth(1, if 'SteamValve.port_a.m_flow' > 0.01 then 'SteamValve.state_a.T' else if 'SteamValve.port_a.m_flow' < (-0.01) then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_a.p', 'SteamValve.port_a.h_outflow', 0, 0)).T else if 0.01 > 0.0 then 'SteamValve.port_a.m_flow' / 0.01 * (('SteamValve.port_a.m_flow' / 0.01) ^ 2.0 - 3.0) * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_a.p', 'SteamValve.port_a.h_outflow', 0, 0)).T - 'SteamValve.state_a.T') / 4.0 + ('SteamValve.state_a.T' + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_a.p', 'SteamValve.port_a.h_outflow', 0, 0)).T) / 2.0 else ('SteamValve.state_a.T' + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_a.p', 'SteamValve.port_a.h_outflow', 0, 0)).T) / 2.0);
+    'SteamValve.port_b_T' = smooth(1, if 'SteamValve.port_b.m_flow' > 0.01 then 'SteamValve.state_b.T' else if 'SteamValve.port_b.m_flow' < (-0.01) then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_b.p', 'SteamValve.port_b.h_outflow', 0, 0)).T else if 0.01 > 0.0 then 'SteamValve.port_b.m_flow' / 0.01 * (('SteamValve.port_b.m_flow' / 0.01) ^ 2.0 - 3.0) * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_b.p', 'SteamValve.port_b.h_outflow', 0, 0)).T - 'SteamValve.state_b.T') / 4.0 + ('SteamValve.state_b.T' + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_b.p', 'SteamValve.port_b.h_outflow', 0, 0)).T) / 2.0 else ('SteamValve.state_b.T' + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_b.p', 'SteamValve.port_b.h_outflow', 0, 0)).T) / 2.0);
+    'pump.m_flow_in' = 'pump.m_flow_in_internal';
+    'furnace.port.T' = 'evaporator.heatPort.T';
+    'controller.u' = 'feedback.y';
+    'massFlowRate.m_flow' = 'qm_S';
+    'evaporator.V' = 'feedback.u2';
+    'evaporator.V' = 'V_l';
+    'MW2W.y' = 'furnace.Q_flow';
+    'pressure.p' = 'Pa2bar.u';
+    'Pa2bar.y' = 'p_S';
+    'K2degC.Celsius' = 'T_S';
+    'controller.y' = 'limiter.u';
+    'limiter.y' = 'pump.m_flow_in';
+    'temperature.T' = 'K2degC.Kelvin';
+    'temperature.port.p' = 'massFlowRate.port_a.p';
+    'temperature.port.p' = 'evaporator.port_b.p';
+    'temperature.port.p' = 'pressure.port.p';
+    'pump.ports[1].p' = 'evaporator.port_a.p';
+    'massFlowRate.port_b.p' = 'SteamValve.port_a.p';
+    'SteamValve.port_b.p' = 'sink.ports[1].p';
+    'q_F_Tab.y' = 'MW2W.u';
+    'Y_Valve_Tab.y' = 'SteamValve.opening';
+    'levelSetPoint.y' = 'feedback.u1';
+    'furnace.port.Q_flow' + 'evaporator.heatPort.Q_flow' = 0.0;
+    'SteamValve.port_a.m_flow' + 'massFlowRate.port_b.m_flow' = 0.0;
+    'pressure.port.m_flow' + 'temperature.port.m_flow' + 'massFlowRate.port_a.m_flow' + 'evaporator.port_b.m_flow' = 0.0;
+    'pump.ports[1].m_flow' + 'evaporator.port_a.m_flow' = 0.0;
+    'SteamValve.port_b.m_flow' + 'sink.ports[1].m_flow' = 0.0;
+    'evaporator.m' = 'evaporator.rho_v' * 'evaporator.V_v' + 'evaporator.rho_l' * 'evaporator.V_l' + 3e5 "Total mass";
+    'evaporator.U' = 'evaporator.rho_v' * 'evaporator.V_v' * 'evaporator.h_v' + 'evaporator.rho_l' * 'evaporator.V_l' * 'evaporator.h_l' - 'evaporator.p' * 100.0 + 1.5e8 * 'evaporator.T_D' "Total energy";
+    der('evaporator.m') = 'evaporator.qm_W' + 'evaporator.qm_S' "Dynamic mass balance";
+    der('evaporator.U') = 'evaporator.q_F' + smooth(0, 'evaporator.port_a.m_flow' * (if 'evaporator.port_a.m_flow' > 0.0 then 'pump.ports[1].h_outflow' else 'evaporator.port_a.h_outflow')) + smooth(0, 'evaporator.port_b.m_flow' * (if 'evaporator.port_b.m_flow' > 0.0 then 'massFlowRate.port_a.h_outflow' else 'evaporator.port_b.h_outflow')) "Dynamic energy balance";
+    100.0 = 'evaporator.V_l' + 'evaporator.V_v';
+    'evaporator.sat.psat' = 'evaporator.p';
+    'evaporator.sat.Tsat' = 'evaporator.T';
+    'evaporator.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('evaporator.p');
+    'evaporator.T_D' = 'evaporator.T';
+    'evaporator.port_a.p' = 'evaporator.p';
+    'evaporator.port_a.h_outflow' = 'evaporator.h_l';
+    'evaporator.port_b.p' = 'evaporator.p';
+    'evaporator.port_b.h_outflow' = 'evaporator.h_v';
+    'evaporator.V' = 'evaporator.V_l';
+    assert('evaporator.p' < 2.2054e7, "Evaporator model requires subcritical pressure", AssertionLevel.error);
+    'furnace.port.Q_flow' = -'furnace.Q_flow';
+    'sink.medium.MM' = 0.018015268;
+    'sink.medium.phase' = 1;
+    'sink.medium.h' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT'('sink.medium.p', 'sink.medium.T', 0)).h;
+    'sink.medium.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT'('sink.medium.p', 'sink.medium.T', 0)).rho;
+    'sink.medium.sat.psat' = 'sink.medium.p';
+    'sink.medium.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('sink.medium.p');
+    'sink.medium.u' = 'sink.medium.h' - 'sink.medium.p' / 'sink.medium.d';
+    'sink.medium.R_s' = 461.5231157345669;
+    'sink.medium.h' = 'sink.medium.state.h';
+    'sink.medium.p' = 'sink.medium.state.p';
+    'sink.medium.T' = 'sink.medium.state.T';
+    'sink.medium.d' = 'sink.medium.state.d';
+    'sink.medium.phase' = 'sink.medium.state.phase';
+    'sink.medium.X[1]' = 1.0;
+    assert('sink.medium.X[1]' >= (-1e-5) and 'sink.medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('sink.medium.X[1]') + "of substance " + "water" + "\nof medium " + "WaterIF97" + " is not in the range 0..1", AssertionLevel.error);
+    assert('sink.medium.p' >= 0.0, "Pressure (= " + String('sink.medium.p') + " Pa) of medium \"" + "WaterIF97" + "\" is negative\n(Temperature = " + String('sink.medium.T') + " K)", AssertionLevel.error);
+    'sink.state.phase' = 1;
+    'sink.state.h' = 2.9304716214048015e6;
+    'sink.state.d' = 0.21711642343293586;
+    'sink.state.T' = 500.0;
+    'sink.state.p' = 5e4;
+    'sink.medium.p' = 'sink.state.p';
+    'sink.medium.T' = 'sink.state.T';
+    'sink.ports[1].p' = 'sink.medium.p';
+    'sink.ports[1].h_outflow' = 'sink.medium.h';
+    'massFlowRate.m_flow' = 'massFlowRate.port_a.m_flow';
+    0.0 = 'massFlowRate.port_a.m_flow' + 'massFlowRate.port_b.m_flow';
+    'massFlowRate.port_a.p' = 'massFlowRate.port_b.p';
+    'massFlowRate.port_a.h_outflow' = 'SteamValve.port_a.h_outflow';
+    'massFlowRate.port_b.h_outflow' = 'evaporator.port_b.h_outflow';
+    'temperature.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('temperature.port.p', (max(-'evaporator.port_b.m_flow', 1e-7) * 'evaporator.port_b.h_outflow' + max(-'massFlowRate.port_a.m_flow', 1e-7) * 'massFlowRate.port_a.h_outflow') / (max(-'evaporator.port_b.m_flow', 1e-7) + max(-'massFlowRate.port_a.m_flow', 1e-7)), 0, 0)).T;
+    'temperature.port.m_flow' = 0.0;
+    'temperature.port.h_outflow' = 84013.0581525969;
+    'pressure.p' = 'pressure.port.p';
+    'pressure.port.m_flow' = 0.0;
+    'pressure.port.h_outflow' = 84013.0581525969;
+    der('controller.x') = 'controller.u' / 120.0;
+    'controller.y' = 10.0 * ('controller.x' + 'controller.u');
+    'pump.medium.MM' = 0.018015268;
+    'pump.medium.phase' = if ('pump.medium.h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('pump.medium.sat.psat')).h or 'pump.medium.h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('pump.medium.sat.psat')).h) or 'pump.medium.p' > 2.2064e7 then 1 else 2;
+    'pump.medium.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pump.medium.p', 'pump.medium.h', 'pump.medium.phase', 0)).rho;
+    'pump.medium.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('pump.medium.p', 'pump.medium.h', 'pump.medium.phase', 0)).T;
+    'pump.medium.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('pump.medium.p');
+    'pump.medium.sat.psat' = 'pump.medium.p';
+    'pump.medium.u' = 'pump.medium.h' - 'pump.medium.p' / 'pump.medium.d';
+    'pump.medium.R_s' = 461.5231157345669;
+    'pump.medium.h' = 'pump.medium.state.h';
+    'pump.medium.p' = 'pump.medium.state.p';
+    'pump.medium.T' = 'pump.medium.state.T';
+    'pump.medium.d' = 'pump.medium.state.d';
+    'pump.medium.phase' = 'pump.medium.state.phase';
+    'pump.medium.X[1]' = 1.0;
+    assert('pump.medium.X[1]' >= (-1e-5) and 'pump.medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('pump.medium.X[1]') + "of substance " + "water" + "\nof medium " + "WaterIF97" + " is not in the range 0..1", AssertionLevel.error);
+    assert('pump.medium.p' >= 0.0, "Pressure (= " + String('pump.medium.p') + " Pa) of medium \"" + "WaterIF97" + "\" is negative\n(Temperature = " + String('pump.medium.T') + " K)", AssertionLevel.error);
+    'Modelica.Fluid.Utilities.checkBoundary'("WaterIF97", {"water"}, false, true, {'pump.X_in_internal[1]'}, "MassFlowSource_h");
+    'pump.h_in_internal' = 5e5;
+    'pump.X_in_internal[1]' = 1.0;
+    'pump.medium.h' = 'pump.h_in_internal';
+    'pump.ports[1].m_flow' = -'pump.m_flow_in_internal';
+    'pump.ports[1].p' = 'pump.medium.p';
+    'pump.ports[1].h_outflow' = 'pump.medium.h';
+    'feedback.y' = 'feedback.u1' - 'feedback.u2';
+    'levelSetPoint.y' = 67.0;
+    'MW2W.y' = 1e6 * 'MW2W.u';
+    'Pa2bar.y' = 1e-5 * 'Pa2bar.u';
+    'K2degC.Celsius' = 'K2degC.Kelvin' - 273.15;
+    'limiter.simplifiedExpr' = 'limiter.u';
+    'limiter.y' = homotopy(smooth(0, if 'limiter.u' > 500.0 then 500.0 else if 'limiter.u' < 0.0 then 0.0 else 'limiter.u'), 'limiter.simplifiedExpr');
+    'SteamValve.m_flow' = 'SteamValve.opening' * 2e-5 * 'SteamValve.dp';
+    'SteamValve.port_a.h_outflow' = 'sink.ports[1].h_outflow';
+    'SteamValve.port_b.h_outflow' = 'massFlowRate.port_b.h_outflow';
+    'SteamValve.state_a.phase' = if 0 == 0 then 0 else if 0 == 4 then 2 else 1;
+    'SteamValve.state_a.h' = 'massFlowRate.port_b.h_outflow';
+    'SteamValve.state_a.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_a.p', 'massFlowRate.port_b.h_outflow', 0, 0)).rho;
+    'SteamValve.state_a.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_a.p', 'massFlowRate.port_b.h_outflow', 0, 0)).T;
+    'SteamValve.state_a.p' = 'SteamValve.port_a.p';
+    'SteamValve.state_b.phase' = if 0 == 0 then 0 else if 0 == 4 then 2 else 1;
+    'SteamValve.state_b.h' = 'sink.ports[1].h_outflow';
+    'SteamValve.state_b.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_b.p', 'sink.ports[1].h_outflow', 0, 0)).rho;
+    'SteamValve.state_b.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('SteamValve.port_b.p', 'sink.ports[1].h_outflow', 0, 0)).T;
+    'SteamValve.state_b.p' = 'SteamValve.port_b.p';
+    'SteamValve.dp' = 'SteamValve.port_a.p' - 'SteamValve.port_b.p';
+    'SteamValve.m_flow' = 'SteamValve.port_a.m_flow';
+    'SteamValve.port_a.m_flow' + 'SteamValve.port_b.m_flow' = 0.0;
+    'q_F_Tab.timeScaled' = time;
+    'q_F_Tab.y' = 'q_F_Tab.a' * 'q_F_Tab.timeScaled' + 'q_F_Tab.b';
+    'Y_Valve_Tab.timeScaled' = time;
+    'Y_Valve_Tab.y' = 'Y_Valve_Tab.a' * 'Y_Valve_Tab.timeScaled' + 'Y_Valve_Tab.b';
+  algorithm
+    assert(true, "The first point in time has to be set to 0, but is table[1,1] = 0", AssertionLevel.error);
+
+    when {time >= pre('q_F_Tab.nextEvent'), initial()} then
+      ('q_F_Tab.a', 'q_F_Tab.b', 'q_F_Tab.nextEventScaled', 'q_F_Tab.last') := 'Modelica.Fluid.Examples.DrumBoiler.DrumBoiler.q_F_Tab.getInterpolationCoefficients'({{0.0, 0.0}, {3600.0, 400.0}, {7210.0, 400.0}}, 0.0, 0.0, 'q_F_Tab.timeScaled', 'q_F_Tab.last', 2.220446049250313e-14, 0.0);
+      'q_F_Tab.nextEvent' := 'q_F_Tab.nextEventScaled';
+    end when;
+  algorithm
+    assert(true, "The first point in time has to be set to 0, but is table[1,1] = 0", AssertionLevel.error);
+
+    when {time >= pre('Y_Valve_Tab.nextEvent'), initial()} then
+      ('Y_Valve_Tab.a', 'Y_Valve_Tab.b', 'Y_Valve_Tab.nextEventScaled', 'Y_Valve_Tab.last') := 'Modelica.Fluid.Examples.DrumBoiler.DrumBoiler.Y_Valve_Tab.getInterpolationCoefficients'({{0.0, 0.0}, {900.0, 1.0}, {7210.0, 1.0}}, 0.0, 0.0, 'Y_Valve_Tab.timeScaled', 'Y_Valve_Tab.last', 2.220446049250313e-14, 0.0);
+      'Y_Valve_Tab.nextEvent' := 'Y_Valve_Tab.nextEventScaled';
+    end when;
+    annotation(experiment(StopTime = 5400));
+  end 'DrumBoiler';
+end 'DrumBoiler';

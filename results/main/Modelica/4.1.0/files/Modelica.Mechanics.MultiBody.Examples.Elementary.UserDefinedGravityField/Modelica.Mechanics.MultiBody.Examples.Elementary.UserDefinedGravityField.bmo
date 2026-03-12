@@ -1,5 +1,57 @@
 //! base 0.1.0
 package 'UserDefinedGravityField'
+  function 'Modelica.Mechanics.MultiBody.Frames.planarRotation' "Return orientation object of a planar rotation"
+    input Real[3] 'e'(each unit = "1");
+    input Real 'angle'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    input Real 'der_angle'(unit = "rad/s", quantity = "AngularVelocity");
+    output 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
+  algorithm
+    'R' := 'Modelica.Mechanics.MultiBody.Frames.Orientation'(promote('e', 2) * transpose(promote('e', 2)) + ({{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}} - promote('e', 2) * transpose(promote('e', 2))) .* 'Modelica.Math.cos'('angle') - {{0.0, (-'e'[3]) * 'Modelica.Math.sin'('angle'), 'e'[2] * 'Modelica.Math.sin'('angle')}, {'e'[3] * 'Modelica.Math.sin'('angle'), 0.0, (-'e'[1]) * 'Modelica.Math.sin'('angle')}, {(-'e'[2]) * 'Modelica.Math.sin'('angle'), 'e'[1] * 'Modelica.Math.sin'('angle'), 0.0}}, {'e'[1] * 'der_angle', 'e'[2] * 'der_angle', 'e'[3] * 'der_angle'});
+    annotation(Inline = true);
+  end 'Modelica.Mechanics.MultiBody.Frames.planarRotation';
+
+  function 'Modelica.Mechanics.MultiBody.Examples.Elementary.UserDefinedGravityField.world.gravityAcceleration'
+    input Real[3] 'r'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
+    input Real 'phi'(unit = "deg", quantity = "Angle") = 0.0;
+    output Real[3] 'gravity'(unit = {"m/s2", "m/s2", "m/s2"}, quantity = {"Acceleration", "Acceleration", "Acceleration"});
+    constant Real 'a'(unit = "m", quantity = "Length") = 6.378137e6;
+    constant Real 'b'(unit = "m", quantity = "Length") = 6.3567523142e6;
+    constant Real 'g_e'(unit = "rad/s2", quantity = "AngularAcceleration") = 9.7803253359;
+    constant Real 'g_p'(unit = "rad/s2", quantity = "AngularAcceleration") = 9.8321849378;
+    constant Real 'e2' = 0.0066943799901414;
+    constant Real 'f' = 0.0033528106647474805;
+    constant Real 'w'(unit = "rad/s", quantity = "AngularVelocity") = 7.292115e-5;
+    constant Real 'GM'(unit = "m3/s2") = 3.986004418e14;
+    Real 'sinphi2'(unit = "1");
+    Real 'gn'(unit = "rad/s2", quantity = "AngularAcceleration");
+    Real 'gh'(unit = "rad/s2", quantity = "AngularAcceleration");
+    Real 'h'(unit = "m", quantity = "Length");
+    Real 'ha'(unit = "1");
+    constant Real 'k' = 'b' / 'a' * ('g_p' / 'g_e') - 1.0;
+    constant Real 'm'(unit = "1") = 'w' ^ 2.0 * 'a' ^ 2.0 * 'b' / 'GM';
+  algorithm
+    'h' := 'r'[2];
+    'sinphi2' := 'Modelica.Math.sin'('Modelica.Units.Conversions.from_deg'('phi')) ^ 2.0;
+    'gn' := 'g_e' * (1.0 + 'k' * 'sinphi2') / sqrt(1.0 - 'e2' * 'sinphi2');
+    'ha' := 'h' / 'a';
+    'gh' := 'gn' * (1.0 - 'ha' * (2.0 * (1.0 + 'f' + 'm' - 2.0 * 'f' * 'sinphi2') + 3.0 * 'ha'));
+    'gravity' := {0.0, -'gh', 0.0};
+  end 'Modelica.Mechanics.MultiBody.Examples.Elementary.UserDefinedGravityField.world.gravityAcceleration';
+
+  function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
+    input Real[3] 'n_x';
+    input Real[3] 'n_y';
+    output Real[3, 3] 'T';
+    Real[3] 'e_x'(each unit = "1") = if 'Modelica.Math.Vectors.length'('n_x') < 1e-10 then {1.0, 0.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_x', 2.220446049250313e-14);
+    Real[3] 'e_y'(each unit = "1") = if 'Modelica.Math.Vectors.length'('n_y') < 1e-10 then {0.0, 1.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_y', 2.220446049250313e-14);
+    Real[3] 'n_z_aux'(each unit = "1") = {'e_x'[2] * 'e_y'[3] - 'e_x'[3] * 'e_y'[2], 'e_x'[3] * 'e_y'[1] - 'e_x'[1] * 'e_y'[3], 'e_x'[1] * 'e_y'[2] - 'e_x'[2] * 'e_y'[1]};
+    Real[3] 'n_y_aux'(each unit = "1") = if 'n_z_aux'[1] * 'n_z_aux'[1] + 'n_z_aux'[2] * 'n_z_aux'[2] + 'n_z_aux'[3] * 'n_z_aux'[3] > 1e-6 then 'e_y' else if abs('e_x'[1]) > 1e-6 then {0.0, 1.0, 0.0} else {1.0, 0.0, 0.0};
+    Real[3] 'e_z_aux'(each unit = "1") = {'e_x'[2] * 'n_y_aux'[3] - 'e_x'[3] * 'n_y_aux'[2], 'e_x'[3] * 'n_y_aux'[1] - 'e_x'[1] * 'n_y_aux'[3], 'e_x'[1] * 'n_y_aux'[2] - 'e_x'[2] * 'n_y_aux'[1]};
+    Real[3] 'e_z'(each unit = "1") = 'Modelica.Math.Vectors.normalize'('e_z_aux', 2.220446049250313e-14);
+  algorithm
+    'T' := {'e_x', {'e_z'[2] * 'e_x'[3] - 'e_z'[3] * 'e_x'[2], 'e_z'[3] * 'e_x'[1] - 'e_z'[1] * 'e_x'[3], 'e_z'[1] * 'e_x'[2] - 'e_z'[2] * 'e_x'[1]}, 'e_z'};
+  end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
+
   type 'Modelica.Mechanics.MultiBody.Types.GravityTypes' = enumeration('NoGravity', 'UniformGravity', 'PointGravity');
 
   record 'Modelica.Mechanics.MultiBody.Frames.Orientation'
@@ -1890,18 +1942,18 @@ package 'UserDefinedGravityField'
     'rev.frame_b.r_0[1]' = 'rev.frame_a.r_0[1]';
     'rev.frame_b.r_0[2]' = 'rev.frame_a.r_0[2]';
     'rev.frame_b.r_0[3]' = 'rev.frame_a.r_0[3]';
-    'rev.R_rel.T[1,1]' = 'Modelica.Math.cos'('rev.phi');
-    'rev.R_rel.T[1,2]' = -(-1.0) * 'Modelica.Math.sin'('rev.phi');
-    'rev.R_rel.T[1,3]' = -0.0 * 'Modelica.Math.sin'('rev.phi');
-    'rev.R_rel.T[2,1]' = -1.0 * 'Modelica.Math.sin'('rev.phi');
-    'rev.R_rel.T[2,2]' = 'Modelica.Math.cos'('rev.phi');
-    'rev.R_rel.T[2,3]' = -(-0.0) * 'Modelica.Math.sin'('rev.phi');
-    'rev.R_rel.T[3,1]' = -(-0.0) * 'Modelica.Math.sin'('rev.phi');
-    'rev.R_rel.T[3,2]' = -0.0 * 'Modelica.Math.sin'('rev.phi');
-    'rev.R_rel.T[3,3]' = 1.0;
-    'rev.R_rel.w[1]' = 0.0 * 'rev.w';
-    'rev.R_rel.w[2]' = 0.0 * 'rev.w';
-    'rev.R_rel.w[3]' = 1.0 * 'rev.w';
+    'rev.R_rel.T[1,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[1,1];
+    'rev.R_rel.T[1,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[1,2];
+    'rev.R_rel.T[1,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[1,3];
+    'rev.R_rel.T[2,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[2,1];
+    'rev.R_rel.T[2,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[2,2];
+    'rev.R_rel.T[2,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[2,3];
+    'rev.R_rel.T[3,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[3,1];
+    'rev.R_rel.T[3,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[3,2];
+    'rev.R_rel.T[3,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[3,3];
+    'rev.R_rel.w[1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).w)[1];
+    'rev.R_rel.w[2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).w)[2];
+    'rev.R_rel.w[3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).w)[3];
     'rev.frame_b.R.T[1,1]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.T[1,1]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.T[2,1]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.T[3,1]';
     'rev.frame_b.R.T[1,2]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.T[1,2]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.T[2,2]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.T[3,2]';
     'rev.frame_b.R.T[1,3]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.T[1,3]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.T[2,3]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.T[3,3]';
@@ -1911,9 +1963,9 @@ package 'UserDefinedGravityField'
     'rev.frame_b.R.T[3,1]' = 'rev.R_rel.T[3,1]' * 'rev.frame_a.R.T[1,1]' + 'rev.R_rel.T[3,2]' * 'rev.frame_a.R.T[2,1]' + 'rev.R_rel.T[3,3]' * 'rev.frame_a.R.T[3,1]';
     'rev.frame_b.R.T[3,2]' = 'rev.R_rel.T[3,1]' * 'rev.frame_a.R.T[1,2]' + 'rev.R_rel.T[3,2]' * 'rev.frame_a.R.T[2,2]' + 'rev.R_rel.T[3,3]' * 'rev.frame_a.R.T[3,2]';
     'rev.frame_b.R.T[3,3]' = 'rev.R_rel.T[3,1]' * 'rev.frame_a.R.T[1,3]' + 'rev.R_rel.T[3,2]' * 'rev.frame_a.R.T[2,3]' + 'rev.R_rel.T[3,3]' * 'rev.frame_a.R.T[3,3]';
-    'rev.frame_b.R.w[1]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('rev.R_rel', 'rev.frame_a.R.w'))[1] + 'rev.R_rel.w[1]';
-    'rev.frame_b.R.w[2]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('rev.R_rel', 'rev.frame_a.R.w'))[2] + 'rev.R_rel.w[2]';
-    'rev.frame_b.R.w[3]' = ('Modelica.Mechanics.MultiBody.Frames.resolve2'('rev.R_rel', 'rev.frame_a.R.w'))[3] + 'rev.R_rel.w[3]';
+    'rev.frame_b.R.w[1]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.w[1]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.w[2]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.w[3]' + 'rev.R_rel.w[1]';
+    'rev.frame_b.R.w[2]' = 'rev.R_rel.T[2,1]' * 'rev.frame_a.R.w[1]' + 'rev.R_rel.T[2,2]' * 'rev.frame_a.R.w[2]' + 'rev.R_rel.T[2,3]' * 'rev.frame_a.R.w[3]' + 'rev.R_rel.w[2]';
+    'rev.frame_b.R.w[3]' = 'rev.R_rel.T[3,1]' * 'rev.frame_a.R.w[1]' + 'rev.R_rel.T[3,2]' * 'rev.frame_a.R.w[2]' + 'rev.R_rel.T[3,3]' * 'rev.frame_a.R.w[3]' + 'rev.R_rel.w[3]';
     'rev.frame_a.f[1]' = -('rev.R_rel.T[1,1]' * 'rev.frame_b.f[1]' + 'rev.R_rel.T[2,1]' * 'rev.frame_b.f[2]' + 'rev.R_rel.T[3,1]' * 'rev.frame_b.f[3]');
     'rev.frame_a.f[2]' = -('rev.R_rel.T[1,2]' * 'rev.frame_b.f[1]' + 'rev.R_rel.T[2,2]' * 'rev.frame_b.f[2]' + 'rev.R_rel.T[3,2]' * 'rev.frame_b.f[3]');
     'rev.frame_a.f[3]' = -('rev.R_rel.T[1,3]' * 'rev.frame_b.f[1]' + 'rev.R_rel.T[2,3]' * 'rev.frame_b.f[2]' + 'rev.R_rel.T[3,3]' * 'rev.frame_b.f[3]');

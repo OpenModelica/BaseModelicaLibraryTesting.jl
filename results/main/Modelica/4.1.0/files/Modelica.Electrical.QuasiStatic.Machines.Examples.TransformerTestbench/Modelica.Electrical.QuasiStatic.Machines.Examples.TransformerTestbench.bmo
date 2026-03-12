@@ -1,5 +1,35 @@
 //! base 0.1.0
 package 'TransformerTestbench'
+  function 'Complex.\'*\'.scalarProduct' "Scalar product of two complex vectors c1 and c2"
+    input 'Complex'[:] 'c1';
+    input 'Complex'[size('c1', 1)] 'c2';
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex'(0.0, 0.0);
+
+    for 'i' in 1:size('c1', 1) loop
+      'c3' := 'Complex.\'constructor\'.fromReal'('c3'.'re' + 'c1['i']'.'re' * 'c2['i']'.'re' + 'c1['i']'.'im' * 'c2['i']'.'im', 'c3'.'im' + 'c1['i']'.'re' * 'c2['i']'.'im' - 'c1['i']'.'im' * 'c2['i']'.'re');
+    end for;
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Complex.\'*\'.scalarProduct';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   record 'Complex'
     Real 're';
     Real 'im';

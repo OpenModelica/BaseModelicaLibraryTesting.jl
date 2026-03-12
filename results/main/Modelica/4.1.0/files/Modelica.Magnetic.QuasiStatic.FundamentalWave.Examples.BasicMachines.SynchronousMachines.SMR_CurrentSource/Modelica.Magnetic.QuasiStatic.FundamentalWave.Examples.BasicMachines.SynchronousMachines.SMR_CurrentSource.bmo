@@ -1,5 +1,43 @@
 //! base 0.1.0
 package 'SMR_CurrentSource'
+  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
+    input 'Complex'[:] 'u';
+    output Real 'y';
+    Integer 'm' = size('u', 1);
+  algorithm
+    'y' := sum(sqrt('u['k']'.'re' ^ 2.0 + 'u['k']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
+    annotation(Inline = true);
+  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
+
+  function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    input Boolean 'positiveRange' = false;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'y' := mod('u', 6.283185307179586);
+
+    if 'y' > 3.141592653589793 and not 'positiveRange' then
+      'y' := 'y' - 6.283185307179586;
+    end if;
+  end 'Modelica.Math.wrapAngle';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   record 'Modelica.Units.SI.ComplexVoltage'
     Real 're';
     Real 'im';
@@ -10,15 +48,15 @@ package 'SMR_CurrentSource'
     Real 'im';
   end 'Modelica.Units.SI.ComplexCurrent';
 
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
   record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
     Real 're';
     Real 'im';
   end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
 
   model 'SMR_CurrentSource' "Test example: Synchronous reluctance machine fed by current source"
     parameter Integer 'm' = 3 "Number of phases" annotation(Evaluate = true);
@@ -4152,7 +4190,7 @@ package 'SMR_CurrentSource'
     'smrQS.wMechanical' = der('smrQS.phiMechanical');
     'smrQS.tauElectrical' = 'smrQS.inertiaRotor.flange_a.tau';
     'smrQS.tauShaft' = -'smrQS.flange.tau';
-    'smrQS.powerBalance.powerStator' = sum('Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('smrQS.vs[(1:size('smrQS.vs', 1))['$i2032']]', 'Modelica.ComplexMath.conj'('smrQS.is[(1:size('smrQS.vs', 1))['$i2032']]'))) for '$i2032' in 1:size('smrQS.vs', 1));
+    'smrQS.powerBalance.powerStator' = sum('smrQS.vs[(1:size('smrQS.vs', 1))['$i2032']].re' * 'smrQS.is[(1:size('smrQS.vs', 1))['$i2032']].re' - 'smrQS.vs[(1:size('smrQS.vs', 1))['$i2032']].im' * (-'smrQS.is[(1:size('smrQS.vs', 1))['$i2032']].im') for '$i2032' in 1:size('smrQS.vs', 1));
     'smrQS.powerBalance.powerMechanical' = 'smrQS.wMechanical' * 'smrQS.tauShaft';
     'smrQS.powerBalance.powerInertiaStator' = 0.29 * 'smrQS.inertiaStator.a' * 'smrQS.inertiaStator.w';
     'smrQS.powerBalance.powerInertiaRotor' = 0.29 * 'smrQS.inertiaRotor.a' * 'smrQS.inertiaRotor.w';
@@ -6833,14 +6871,14 @@ package 'SMR_CurrentSource'
     'smrQS.thermalAmbient.constTr.y' = 293.15;
     'smrQS.groundS.port_p.V_m.re' = 0.0;
     'smrQS.groundS.port_p.V_m.im' = 0.0;
-    'smrQS.airGap.V_msr.re' = 'smrQS.airGap.V_ms.re' * (1.0 * 'Modelica.Math.cos'('smrQS.airGap.gammar')) - 'smrQS.airGap.V_ms.im' * (1.0 * 'Modelica.Math.sin'('smrQS.airGap.gammar'));
-    'smrQS.airGap.V_msr.im' = 'smrQS.airGap.V_ms.re' * (1.0 * 'Modelica.Math.sin'('smrQS.airGap.gammar')) + 'smrQS.airGap.V_ms.im' * (1.0 * 'Modelica.Math.cos'('smrQS.airGap.gammar'));
-    'smrQS.airGap.V_mrr.re' = 'smrQS.airGap.V_mr.re' * (1.0 * 'Modelica.Math.cos'('smrQS.airGap.gammar')) - 'smrQS.airGap.V_mr.im' * (1.0 * 'Modelica.Math.sin'('smrQS.airGap.gammar'));
-    'smrQS.airGap.V_mrr.im' = 'smrQS.airGap.V_mr.re' * (1.0 * 'Modelica.Math.sin'('smrQS.airGap.gammar')) + 'smrQS.airGap.V_mr.im' * (1.0 * 'Modelica.Math.cos'('smrQS.airGap.gammar'));
-    'smrQS.airGap.Phi_sr.re' = 'smrQS.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.cos'('smrQS.airGap.gammar')) - 'smrQS.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.sin'('smrQS.airGap.gammar'));
-    'smrQS.airGap.Phi_sr.im' = 'smrQS.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.sin'('smrQS.airGap.gammar')) + 'smrQS.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.cos'('smrQS.airGap.gammar'));
-    'smrQS.airGap.Phi_rr.re' = 'smrQS.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.cos'('smrQS.airGap.gammar')) - 'smrQS.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.sin'('smrQS.airGap.gammar'));
-    'smrQS.airGap.Phi_rr.im' = 'smrQS.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.sin'('smrQS.airGap.gammar')) + 'smrQS.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.cos'('smrQS.airGap.gammar'));
+    'smrQS.airGap.V_msr.re' = 'smrQS.airGap.V_ms.re' * (1.0 * cos('smrQS.airGap.gammar')) - 'smrQS.airGap.V_ms.im' * (1.0 * sin('smrQS.airGap.gammar'));
+    'smrQS.airGap.V_msr.im' = 'smrQS.airGap.V_ms.re' * (1.0 * sin('smrQS.airGap.gammar')) + 'smrQS.airGap.V_ms.im' * (1.0 * cos('smrQS.airGap.gammar'));
+    'smrQS.airGap.V_mrr.re' = 'smrQS.airGap.V_mr.re' * (1.0 * cos('smrQS.airGap.gammar')) - 'smrQS.airGap.V_mr.im' * (1.0 * sin('smrQS.airGap.gammar'));
+    'smrQS.airGap.V_mrr.im' = 'smrQS.airGap.V_mr.re' * (1.0 * sin('smrQS.airGap.gammar')) + 'smrQS.airGap.V_mr.im' * (1.0 * cos('smrQS.airGap.gammar'));
+    'smrQS.airGap.Phi_sr.re' = 'smrQS.airGap.Phi_s.re' * (1.0 * cos('smrQS.airGap.gammar')) - 'smrQS.airGap.Phi_s.im' * (1.0 * sin('smrQS.airGap.gammar'));
+    'smrQS.airGap.Phi_sr.im' = 'smrQS.airGap.Phi_s.re' * (1.0 * sin('smrQS.airGap.gammar')) + 'smrQS.airGap.Phi_s.im' * (1.0 * cos('smrQS.airGap.gammar'));
+    'smrQS.airGap.Phi_rr.re' = 'smrQS.airGap.Phi_r.re' * (1.0 * cos('smrQS.airGap.gammar')) - 'smrQS.airGap.Phi_r.im' * (1.0 * sin('smrQS.airGap.gammar'));
+    'smrQS.airGap.Phi_rr.im' = 'smrQS.airGap.Phi_r.re' * (1.0 * sin('smrQS.airGap.gammar')) + 'smrQS.airGap.Phi_r.im' * (1.0 * cos('smrQS.airGap.gammar'));
     'smrQS.airGap.port_sp.Phi.re' = 'smrQS.airGap.Phi_s.re' "Stator flux into positive stator port";
     'smrQS.airGap.port_sp.Phi.im' = 'smrQS.airGap.Phi_s.im' "Stator flux into positive stator port";
     'smrQS.airGap.port_sp.Phi.re' + 'smrQS.airGap.port_sn.Phi.re' = 0.0 "Balance of stator flux";
@@ -7087,8 +7125,8 @@ package 'SMR_CurrentSource'
     'smr.airGap.flange_a.tau' = -'smr.airGap.tauElectrical';
     'smr.airGap.support.tau' = 'smr.airGap.tauElectrical';
     'smr.airGap.gamma' = 2.0 * ('smr.airGap.flange_a.phi' - 'smr.airGap.support.phi');
-    'smr.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('smr.airGap.gamma');
-    'smr.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('smr.airGap.gamma');
+    'smr.airGap.rotator.re' = exp(0.0) * cos('smr.airGap.gamma');
+    'smr.airGap.rotator.im' = exp(0.0) * sin('smr.airGap.gamma');
     'smr.groundR.port_p.V_m.re' = 0.0;
     'smr.groundR.port_p.V_m.im' = 0.0;
     'smr.strayLoad.v[1]' = 0.0;

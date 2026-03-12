@@ -1,5 +1,29 @@
 //! base 0.1.0
 package 'ClockedWith_AD_DA_Effects'
+  function 'Modelica.Clocked.RealSignals.Sampler.Utilities.Internal.random' "Pseudo random number generator"
+    input Integer[3] 'seedIn';
+    output Real 'x';
+    output Integer[3] 'seedOut';
+  algorithm
+    'seedOut'[1] := 171 * 'seedIn'[1] - div(171 * 'seedIn'[1], 30269) * 30269;
+    'seedOut'[2] := 172 * 'seedIn'[2] - div(172 * 'seedIn'[2], 30307) * 30307;
+    'seedOut'[3] := 170 * 'seedIn'[3] - div(170 * 'seedIn'[3], 30323) * 30323;
+
+    if 'seedOut'[1] == 0 then
+      'seedOut'[1] := 1;
+    end if;
+
+    if 'seedOut'[2] == 0 then
+      'seedOut'[2] := 1;
+    end if;
+
+    if 'seedOut'[3] == 0 then
+      'seedOut'[3] := 1;
+    end if;
+
+    'x' := 'seedOut'[1] / 30269.0 + 'seedOut'[2] / 30307.0 + 'seedOut'[3] / 30323.0 - div('seedOut'[1] / 30269.0 + 'seedOut'[2] / 30307.0 + 'seedOut'[3] / 30323.0, 1.0);
+  end 'Modelica.Clocked.RealSignals.Sampler.Utilities.Internal.random';
+
   model 'ClockedWith_AD_DA_Effects' "Simple controlled drive with discrete controller and simulated AD and DA effects"
     Real 'load.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'load.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";

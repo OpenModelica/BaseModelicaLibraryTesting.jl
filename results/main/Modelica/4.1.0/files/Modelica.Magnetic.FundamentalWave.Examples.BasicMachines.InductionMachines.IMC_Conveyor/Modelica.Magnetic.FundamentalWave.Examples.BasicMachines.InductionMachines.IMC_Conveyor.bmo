@@ -1,5 +1,63 @@
 //! base 0.1.0
 package 'IMC_Conveyor'
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMin';
+  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer' "Derivative of interpolated 1-dim. table where first column is time (but do not provide a derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Integer 'icol';
+    input Real 'timeIn';
+    input Real 'nextTimeEvent';
+    input Real 'pre_nextTimeEvent';
+    input Real 'der_timeIn';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTimeTable_getDerValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent', 'der_timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer';
+
+  function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Real 'timeIn';
+    output Real 'nextTimeEvent';
+  external "C" 'nextTimeEvent' = ModelicaStandardTables_CombiTimeTable_nextTimeEvent('tableID', 'timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getNextTimeEvent';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2' "Interpolate 1-dim. table where first column is time (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Integer 'icol';
+    input Real 'timeIn';
+    input Real 'nextTimeEvent';
+    input Real 'pre_nextTimeEvent';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTimeTable_getValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1, noDerivative = 'nextTimeEvent', noDerivative = 'pre_nextTimeEvent') = 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMax';
+  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
+
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
@@ -1946,8 +2004,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'aimc.airGap.flange_a.tau' = -'aimc.airGap.tauElectrical';
     'aimc.airGap.support.tau' = 'aimc.airGap.tauElectrical';
     'aimc.airGap.gamma' = 2.0 * ('aimc.airGap.flange_a.phi' - 'aimc.airGap.support.phi');
-    'aimc.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('aimc.airGap.gamma');
-    'aimc.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('aimc.airGap.gamma');
+    'aimc.airGap.rotator.re' = exp(0.0) * cos('aimc.airGap.gamma');
+    'aimc.airGap.rotator.im' = exp(0.0) * sin('aimc.airGap.gamma');
     'aimc.groundR.port_p.V_m.re' = 0.0;
     'aimc.groundR.port_p.V_m.im' = 0.0;
     'aimc.strayLoad.v[1]' = 0.0;

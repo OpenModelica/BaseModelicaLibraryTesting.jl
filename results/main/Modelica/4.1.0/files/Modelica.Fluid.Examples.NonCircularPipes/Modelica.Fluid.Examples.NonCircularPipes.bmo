@@ -1,5 +1,546 @@
 //! base 0.1.0
 package 'NonCircularPipes'
+  function 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph' "Intermediate property record for water"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    input Integer 'phase' = 0;
+    input Integer 'region' = 0;
+    output 'Modelica.Media.Common.IF97BaseTwoPhase' 'aux';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Integer 'error';
+    Real 'h_liq'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'd_liq'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h_vap'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'd_vap'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    'Modelica.Media.Common.PhaseBoundaryProperties' 'liq';
+    'Modelica.Media.Common.PhaseBoundaryProperties' 'vap';
+    'Modelica.Media.Common.GibbsDerivs' 'gl';
+    'Modelica.Media.Common.GibbsDerivs' 'gv';
+    'Modelica.Media.Common.HelmholtzDerivs' 'fl';
+    'Modelica.Media.Common.HelmholtzDerivs' 'fv';
+    Real 't1'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 't2'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+  algorithm
+    'aux'.'region' := if 'region' == 0 then if 'phase' == 2 then 4 else 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.region_ph'('p', 'h', 'phase', 0) else 'region';
+    'aux'.'phase' := if 'phase' <> 0 then 'phase' else if 'aux'.'region' == 4 then 2 else 1;
+    'aux'.'p' := max('p', 611.657);
+    'aux'.'h' := max('h', 1000.0);
+    'aux'.'R_s' := 461.526;
+    'aux'.'vt' := 0.0 "Initialized in case it is not needed";
+    'aux'.'vp' := 0.0 "Initialized in case it is not needed";
+
+    if 'aux'.'region' == 1 then
+      'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph1'('aux'.'p', 'aux'.'h');
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'aux'.'T');
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'aux'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'vp' := 'aux'.'R_s' * 'aux'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif 'aux'.'region' == 2 then
+      'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph2'('aux'.'p', 'aux'.'h');
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'aux'.'T', true);
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'aux'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'aux'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 1.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif 'aux'.'region' == 3 then
+      ('aux'.'rho', 'aux'.'T', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.dtofph3'('aux'.'p', 'aux'.'h', 1e-7, 1e-6);
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('aux'.'rho', 'aux'.'T');
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta');
+      'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'aux'.'pd' := 'aux'.'R_s' * 'aux'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+      'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'aux'.'cv' := abs('aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau')) "Can be close to neg. infinity near critical point";
+      'aux'.'cp' := ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd' * 'aux'.'cv' + 'aux'.'T' * 'aux'.'pt' * 'aux'.'pt') / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := 'aux'.'pt';
+    elseif 'aux'.'region' == 4 then
+      'h_liq' := 'Modelica.Media.Water.IF97_Utilities.hl_p'('p');
+      'h_vap' := 'Modelica.Media.Water.IF97_Utilities.hv_p'('p');
+      'aux'.'x' := if 'h_vap' <> 'h_liq' then ('h' - 'h_liq') / ('h_vap' - 'h_liq') else 1.0;
+
+      if 'p' < 1.65292e7 then
+        't1' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph1'('aux'.'p', 'h_liq');
+        't2' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph2'('aux'.'p', 'h_vap');
+        'gl' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('aux'.'p', 't1');
+        'gv' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('aux'.'p', 't2', true);
+        'liq' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gl');
+        'vap' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gv');
+        'aux'.'T' := 't1' + 'aux'.'x' * ('t2' - 't1');
+      elseif true then
+        'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('aux'.'p');
+        'd_liq' := 'Modelica.Media.Water.IF97_Utilities.rhol_T'('aux'.'T');
+        'd_vap' := 'Modelica.Media.Water.IF97_Utilities.rhov_T'('aux'.'T');
+        'fl' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('d_liq', 'aux'.'T');
+        'fv' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('d_vap', 'aux'.'T');
+        'liq' := 'Modelica.Media.Common.helmholtzToBoundaryProps'('fl');
+        'vap' := 'Modelica.Media.Common.helmholtzToBoundaryProps'('fv');
+      end if;
+
+      'aux'.'dpT' := if 'liq'.'d' <> 'vap'.'d' then ('vap'.'s' - 'liq'.'s') * 'liq'.'d' * 'vap'.'d' / ('liq'.'d' - 'vap'.'d') else 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('aux'.'T');
+      'aux'.'s' := 'liq'.'s' + 'aux'.'x' * ('vap'.'s' - 'liq'.'s');
+      'aux'.'rho' := 'liq'.'d' * 'vap'.'d' / ('vap'.'d' + 'aux'.'x' * ('liq'.'d' - 'vap'.'d'));
+      'aux'.'cv' := 'Modelica.Media.Common.cv2Phase'('liq', 'vap', 'aux'.'x', 'aux'.'T', 'p');
+      'aux'.'cp' := 'liq'.'cp' + 'aux'.'x' * ('vap'.'cp' - 'liq'.'cp');
+      'aux'.'pt' := 'liq'.'pt' + 'aux'.'x' * ('vap'.'pt' - 'liq'.'pt');
+      'aux'.'pd' := 'liq'.'pd' + 'aux'.'x' * ('vap'.'pd' - 'liq'.'pd');
+    elseif 'aux'.'region' == 5 then
+      ('aux'.'T', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.tofph5'('aux'.'p', 'aux'.'h', 1e-7);
+      assert('error' == 0, "Error in inverse iteration of steam tables", AssertionLevel.error);
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g5'('aux'.'p', 'aux'.'T');
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'aux'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'aux'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif true then
+      assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", h = " + String('h') + ")", AssertionLevel.error);
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph';
+
+  function 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif true then
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      elseif true then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif true then
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      elseif true then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p' "Properties on the dew curve"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
+  algorithm
+    'bpro'.'R_s' := 461.526;
+    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
+    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
+    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
+
+    if not 'bpro'.'region3boundary' then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'bpro'.'T', true);
+      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    elseif true then
+      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhov_p_R4b'('plim');
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
+      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hv_p_R4b'('plim');
+      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat' "Region 4 saturation temperature as a function of pressure"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pi';
+    Real[20] 'o';
+  algorithm
+    assert('p' > 611.657, "IF97 medium function tsat called with too low pressure\np = " + String('p') + " Pa <= " + "611.657" + " Pa (triple point pressure)", AssertionLevel.error);
+    'pi' := min('p', 2.2064e7) * 1e-6;
+    'o'[1] := 'pi' ^ 0.25;
+    'o'[2] := -3.2325550322333e6 * 'o'[1];
+    'o'[3] := 'pi' ^ 0.5;
+    'o'[4] := -724213.16703206 * 'o'[3];
+    'o'[5] := 405113.40542057 + 'o'[2] + 'o'[4];
+    'o'[6] := -17.073846940092 * 'o'[1];
+    'o'[7] := 14.91510861353 + 'o'[3] + 'o'[6];
+    'o'[8] := -4.0 * 'o'[5] * 'o'[7];
+    'o'[9] := 12020.82470247 * 'o'[1];
+    'o'[10] := 1167.0521452767 * 'o'[3];
+    'o'[11] := 'o'[10] - 4823.2657361591 + 'o'[9];
+    'o'[12] := 'o'[11] * 'o'[11];
+    'o'[13] := 'o'[12] + 'o'[8];
+    'o'[14] := 'o'[13] ^ 0.5;
+    'o'[15] := -'o'[14];
+    'o'[16] := -12020.82470247 * 'o'[1];
+    'o'[17] := -1167.0521452767 * 'o'[3];
+    'o'[18] := 4823.2657361591 + 'o'[15] + 'o'[16] + 'o'[17];
+    'o'[19] := 1.0 / 'o'[18];
+    'o'[20] := 2.0 * 'o'[19] * 'o'[5];
+    't_sat' := 0.5 * (650.17534844798 + 'o'[20] - ((650.17534844798 + 'o'[20]) ^ 2.0 - 4.0 * (1300.35069689596 * 'o'[19] * 'o'[5] - 0.23855557567849)) ^ 0.5);
+    annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der');
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p' "Properties on the boiling curve"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
+  algorithm
+    'bpro'.'R_s' := 461.526;
+    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
+    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
+    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
+
+    if not 'bpro'.'region3boundary' then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'bpro'.'T');
+      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    elseif true then
+      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhol_p_R4b'('plim');
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
+      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hl_p_R4b'('plim');
+      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p';
+
+  function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT' "Intermediate property record for water (p and T preferred states)"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Integer 'region' = 0;
+    output 'Modelica.Media.Common.IF97BaseTwoPhase' 'aux';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Integer 'error';
+  algorithm
+    'aux'.'phase' := 1;
+    'aux'.'region' := if 'region' == 0 then 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.region_pT'('p', 'T', 0) else 'region';
+    'aux'.'R_s' := 461.526;
+    'aux'.'p' := 'p';
+    'aux'.'T' := 'T';
+    'aux'.'vt' := 0.0 "Initialized in case it is not needed";
+    'aux'.'vp' := 0.0 "Initialized in case it is not needed";
+
+    if 'aux'.'region' == 1 then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'T');
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    elseif 'aux'.'region' == 2 then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'T', true);
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 1.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif 'aux'.'region' == 3 then
+      ('aux'.'rho', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.dofpt3'('p', 'T', 1e-7);
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('aux'.'rho', 'T');
+      'aux'.'h' := 'aux'.'R_s' * 'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta');
+      'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'aux'.'pd' := 'aux'.'R_s' * 'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+      'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'aux'.'cv' := 'aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := 'aux'.'pt';
+    elseif 'aux'.'region' == 5 then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g5'('p', 'T');
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 1.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif true then
+      assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", T = " + String('T') + ")", AssertionLevel.error);
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';
+
+  function 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity' "Compute eta(d,T) in the one-phase region"
+    input Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Integer 'phase' = 0;
+    input Boolean 'checkLimits' = true;
+    output Real 'eta'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    constant Real 'n0' = 1.0;
+    constant Real 'n1' = 0.978197;
+    constant Real 'n2' = 0.579829;
+    constant Real 'n3' = -0.202354;
+    constant Real[42] 'nn' = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
+    constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
+    constant Real 'etastar'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 5.5071e-5;
+    constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;
+    Integer 'i';
+    Integer 'j';
+    Real 'delta';
+    Real 'deltam1';
+    Real 'tau';
+    Real 'taum1';
+    Real 'Psi0';
+    Real 'Psi1';
+    Real 'tfun';
+    Real 'rhofun';
+    Real 'Tc' = 'T' - 273.15;
+  algorithm
+    'delta' := 'd' / 'rhostar';
+
+    if 'checkLimits' then
+      assert('d' > 0.004854575724778614, "IF97 medium function visc_dTp for viscosity called with too low density\nd = " + String('d') + " <= " + "0.00485458" + " (triple point density)", AssertionLevel.error);
+      assert(('p' <= 5e8 and 'Tc' >= 0.0 and 'Tc' <= 150.0 or 'p' <= 3.5e8 and 'Tc' > 150.0 and 'Tc' <= 600.0) or 'p' <= 3e8 and 'Tc' > 600.0 and 'Tc' <= 900.0, "IF97 medium function visc_dTp: viscosity computed outside the range\nof validity of the IF97 formulation: p = " + String('p') + " Pa, Tc = " + String('Tc') + " K", AssertionLevel.error);
+    end if;
+
+    'deltam1' := 'delta' - 1.0;
+    'tau' := 'tstar' / 'T';
+    'taum1' := 'tau' - 1.0;
+    'Psi0' := 1.0 / ('n0' + ('n1' + ('n2' + 'n3' * 'tau') * 'tau') * 'tau') / sqrt('tau');
+    'Psi1' := 0.0;
+    'tfun' := 1.0;
+
+    for 'i' in 1:6 loop
+      if 'i' <> 1 then
+        'tfun' := 'tfun' * 'taum1';
+      end if;
+
+      'rhofun' := 1.0;
+
+      for 'j' in 0:6 loop
+        if 'j' <> 0 then
+          'rhofun' := 'rhofun' * 'deltam1';
+        end if;
+
+        'Psi1' := 'Psi1' + 'nn'['i' + 'j' * 6] * 'tfun' * 'rhofun';
+      end for;
+    end for;
+
+    'eta' := 'etastar' * 'Psi0' * 'Modelica.Math.exp'('delta' * 'Psi1');
+  end 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity';
+
+  function 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der' "Derivative function for tsat"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'der_p'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    output Real 'der_tsat'(unit = "K/s", quantity = "TemperatureSlope");
+    Real 'dtp';
+  algorithm
+    'dtp' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('p');
+    'der_tsat' := 'dtp' * 'der_p';
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der';
+
+  function 'Modelica.Fluid.Utilities.checkBoundary' "Check whether boundary definition is correct"
+    input String 'mediumName';
+    input String[:] 'substanceNames';
+    input Boolean 'singleState';
+    input Boolean 'define_p';
+    input Real[:] 'X_boundary';
+    input String 'modelName' = "??? boundary ???";
+    Integer 'nX' = size('X_boundary', 1);
+    String 'X_str';
+  algorithm
+    assert(not 'singleState' or 'singleState' and 'define_p', "\nWrong value of parameter define_p (= false) in model \"" + 'modelName' + "\":\nThe selected medium \"" + 'mediumName' + "\" has Medium.singleState=true.\nTherefore, an boundary density cannot be defined and\ndefine_p = true is required.\n", AssertionLevel.error);
+
+    for 'i' in 1:'nX' loop
+      assert('X_boundary'['i'] >= 0.0, "\nWrong boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\":\nThe boundary value X_boundary(" + String('i') + ") = " + String('X_boundary'['i']) + "\nis negative. It must be positive.\n", AssertionLevel.error);
+    end for;
+
+    if 'nX' > 0 and abs(sum('X_boundary') - 1.0) > 1e-10 then
+      'X_str' := "";
+
+      for 'i' in 1:'nX' loop
+        'X_str' := 'X_str' + "   X_boundary[" + String('i') + "] = " + String('X_boundary'['i']) + " \"" + 'substanceNames'['i'] + "\"\n";
+      end for;
+
+      'Modelica.Utilities.Streams.error'("The boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\"\n" + "do not sum up to 1. Instead, sum(X_boundary) = " + String(sum('X_boundary')) + ":\n" + 'X_str');
+    end if;
+  end 'Modelica.Fluid.Utilities.checkBoundary';
+
   type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
 
   type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
@@ -40,6 +581,45 @@ package 'NonCircularPipes'
     Real 'x';
     Real 'dpT';
   end 'Modelica.Media.Common.IF97BaseTwoPhase';
+
+  record 'Modelica.Media.Common.GibbsDerivs'
+    Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'pi'(unit = "1");
+    Real 'tau'(unit = "1");
+    Real 'g'(unit = "1");
+    Real 'gpi'(unit = "1");
+    Real 'gpipi'(unit = "1");
+    Real 'gtau'(unit = "1");
+    Real 'gtautau'(unit = "1");
+    Real 'gtaupi'(unit = "1");
+  end 'Modelica.Media.Common.GibbsDerivs';
+
+  record 'Modelica.Media.Common.HelmholtzDerivs'
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'delta'(unit = "1");
+    Real 'tau'(unit = "1");
+    Real 'f'(unit = "1");
+    Real 'fdelta'(unit = "1");
+    Real 'fdeltadelta'(unit = "1");
+    Real 'ftau'(unit = "1");
+    Real 'ftautau'(unit = "1");
+    Real 'fdeltatau'(unit = "1");
+  end 'Modelica.Media.Common.HelmholtzDerivs';
+
+  record 'Modelica.Media.Common.PhaseBoundaryProperties'
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'u'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+  end 'Modelica.Media.Common.PhaseBoundaryProperties';
 
   model 'NonCircularPipes' "Comparing a circular with a non-circular pipe"
     constant Real 'odim' = 0.015;
@@ -909,13 +1489,13 @@ package 'NonCircularPipes'
     'circular_pipe.port_b.h_outflow' = 'circular_pipe.mediums[2].h';
     'circular_pipe.state_a.phase' = if 0 == 0 then 0 else if 0 == 4 then 2 else 1;
     'circular_pipe.state_a.h' = 'boundary.ports[1].h_outflow';
-    'circular_pipe.state_a.d' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.Medium.density_ph'('circular_pipe.port_a.p', 'boundary.ports[1].h_outflow', 0, 0);
-    'circular_pipe.state_a.T' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.Medium.temperature_ph'('circular_pipe.port_a.p', 'boundary.ports[1].h_outflow', 0, 0);
+    'circular_pipe.state_a.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('circular_pipe.port_a.p', 'boundary.ports[1].h_outflow', 0, 0)).rho;
+    'circular_pipe.state_a.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('circular_pipe.port_a.p', 'boundary.ports[1].h_outflow', 0, 0)).T;
     'circular_pipe.state_a.p' = 'circular_pipe.port_a.p';
     'circular_pipe.state_b.phase' = if 0 == 0 then 0 else if 0 == 4 then 2 else 1;
     'circular_pipe.state_b.h' = 'massflowsink1.ports[1].h_outflow';
-    'circular_pipe.state_b.d' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.Medium.density_ph'('circular_pipe.port_b.p', 'massflowsink1.ports[1].h_outflow', 0, 0);
-    'circular_pipe.state_b.T' = 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.Medium.temperature_ph'('circular_pipe.port_b.p', 'massflowsink1.ports[1].h_outflow', 0, 0);
+    'circular_pipe.state_b.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('circular_pipe.port_b.p', 'massflowsink1.ports[1].h_outflow', 0, 0)).rho;
+    'circular_pipe.state_b.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('circular_pipe.port_b.p', 'massflowsink1.ports[1].h_outflow', 0, 0)).T;
     'circular_pipe.state_b.p' = 'circular_pipe.port_b.p';
     'circular_pipe.statesFM[1].phase' = 'circular_pipe.mediums[1].state.phase';
     'circular_pipe.statesFM[1].h' = 'circular_pipe.mediums[1].state.h';
@@ -1042,13 +1622,13 @@ package 'NonCircularPipes'
     'annulus_pipe.port_b.h_outflow' = 'annulus_pipe.mediums[2].h';
     'annulus_pipe.state_a.phase' = if 0 == 0 then 0 else if 0 == 4 then 2 else 1;
     'annulus_pipe.state_a.h' = 'boundary.ports[2].h_outflow';
-    'annulus_pipe.state_a.d' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.Medium.density_ph'('annulus_pipe.port_a.p', 'boundary.ports[2].h_outflow', 0, 0);
-    'annulus_pipe.state_a.T' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.Medium.temperature_ph'('annulus_pipe.port_a.p', 'boundary.ports[2].h_outflow', 0, 0);
+    'annulus_pipe.state_a.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('annulus_pipe.port_a.p', 'boundary.ports[2].h_outflow', 0, 0)).rho;
+    'annulus_pipe.state_a.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('annulus_pipe.port_a.p', 'boundary.ports[2].h_outflow', 0, 0)).T;
     'annulus_pipe.state_a.p' = 'annulus_pipe.port_a.p';
     'annulus_pipe.state_b.phase' = if 0 == 0 then 0 else if 0 == 4 then 2 else 1;
     'annulus_pipe.state_b.h' = 'massflowsink2.ports[1].h_outflow';
-    'annulus_pipe.state_b.d' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.Medium.density_ph'('annulus_pipe.port_b.p', 'massflowsink2.ports[1].h_outflow', 0, 0);
-    'annulus_pipe.state_b.T' = 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.Medium.temperature_ph'('annulus_pipe.port_b.p', 'massflowsink2.ports[1].h_outflow', 0, 0);
+    'annulus_pipe.state_b.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('annulus_pipe.port_b.p', 'massflowsink2.ports[1].h_outflow', 0, 0)).rho;
+    'annulus_pipe.state_b.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('annulus_pipe.port_b.p', 'massflowsink2.ports[1].h_outflow', 0, 0)).T;
     'annulus_pipe.state_b.p' = 'annulus_pipe.port_b.p';
     'annulus_pipe.statesFM[1].phase' = 'annulus_pipe.mediums[1].state.phase';
     'annulus_pipe.statesFM[1].h' = 'annulus_pipe.mediums[1].state.h';

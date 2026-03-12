@@ -1,5 +1,21 @@
 //! base 0.1.0
 package 'ReadRealMatrixFromFile'
+  function 'Modelica.Utilities.Streams.print' "Print string to terminal or file"
+    input String 'string' = "";
+    input String 'fileName' = "";
+  external "C" ModelicaInternal_print('string', 'fileName') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaInternal.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Streams.print';
+
+  function 'Modelica.Utilities.Streams.readRealMatrix' "Read Real matrix from MATLAB MAT file"
+    input String 'fileName';
+    input String 'matrixName';
+    input Integer 'nrow';
+    input Integer 'ncol';
+    input Boolean 'verboseRead' = true;
+    output Real['nrow', 'ncol'] 'matrix';
+  external "C" ModelicaIO_readRealMatrix('fileName', 'matrixName', 'matrix', size('matrix', 1), size('matrix', 2), 'verboseRead') annotation(Library = {"ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaIO.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Streams.readRealMatrix';
+
   model 'ReadRealMatrixFromFile' "Demonstrate usage of function Streams.readRealMatrix"
     parameter String 'file' = "/home/runner/.openmodelica/libraries/Modelica 4.1.0+maint.om/Resources/Data/Utilities/Test_RealMatrix_v4.mat" "File name of matrix";
     parameter String 'matrixName' = "Matrix_A" "Matrix name in file";

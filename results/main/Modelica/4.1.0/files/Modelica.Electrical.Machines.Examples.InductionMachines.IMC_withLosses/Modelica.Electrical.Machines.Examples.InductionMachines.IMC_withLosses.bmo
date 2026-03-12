@@ -1,5 +1,69 @@
 //! base 0.1.0
 package 'IMC_withLosses'
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMax';
+  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
+
+  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
+    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
+    output Real 'p'(unit = "W", quantity = "Power");
+    constant Integer 'm' = 3;
+    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
+    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
+  algorithm
+    'v_' := {0.0, 0.0};
+    'i_' := {0.0, 0.0};
+
+    for 'k' in 1:'m' loop
+      'v_' := {'v_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k'], 'v_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k']};
+      'i_' := {'i_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k'], 'i_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k']};
+    end for;
+
+    'p' := 'm' / 2.0 * ('v_'[1] * 'i_'[1] + 'v_'[2] * 'i_'[2]);
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValue' "Interpolate 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValue');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValue';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMin';
+  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
+
+  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
+    input Real[:] 'x';
+    output Real[2] 'y';
+    output Real 'y0';
+    Integer 'm' = size('x', 1);
+    Real['m'] 'phi'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
+    Real[2, 'm'] 'TransformationMatrix' = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
+  algorithm
+    'y' := 'TransformationMatrix' * 'x';
+    'y0' := 1.0 / 'm' * sum('x');
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValue' "Derivative of interpolated 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 2) = 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue');
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValue';
+
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');

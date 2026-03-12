@@ -1,5 +1,43 @@
 //! base 0.1.0
 package 'GenerateRandomNumbers'
+  function 'Modelica.Math.Random.Utilities.impureRandomInteger' "Impure random number generator for integer values (with hidden state vector)"
+    input Integer 'id';
+    input Integer 'imin' = 1;
+    input Integer 'imax' = 268435456;
+    output Integer 'y';
+    Real 'r';
+  algorithm
+    'r' := 'Modelica.Math.Random.Utilities.impureRandom'('id');
+    'y' := min('imax', integer('r' * ('imax' - 'imin' + 1)) + 'imin');
+  end 'Modelica.Math.Random.Utilities.impureRandomInteger';
+
+  function 'Modelica.Math.Random.Utilities.impureRandom' "Impure random number generator (with hidden state vector)"
+    input Integer 'id';
+    output Real 'y';
+  external "C" 'y' = ModelicaRandom_impureRandom_xorshift1024star('id') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Utilities.impureRandom';
+
+  function 'Modelica.Math.Random.Generators.Xorshift1024star.random' "Returns a uniform random number with the xorshift1024* algorithm"
+    input Integer[33] 'stateIn';
+    output Real 'result';
+    output Integer[33] 'stateOut';
+  external "C" ModelicaRandom_xorshift1024star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift1024star.random';
+
+  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
+    input Integer[4] 'stateIn';
+    output Real 'result';
+    output Integer[4] 'stateOut';
+  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
+
+  function 'Modelica.Math.Random.Generators.Xorshift64star.random' "Returns a uniform random number with the xorshift64* algorithm"
+    input Integer[2] 'stateIn';
+    output Real 'result';
+    output Integer[2] 'stateOut';
+  external "C" ModelicaRandom_xorshift64star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift64star.random';
+
   model 'GenerateRandomNumbers' "Generate random numbers with the various random number generators"
     parameter Real 'samplePeriod'(unit = "s", quantity = "Time") = 0.05 "Sample period for the generation of random numbers";
     parameter Integer 'globalSeed' = 30020 "Global seed to initialize random number generator";

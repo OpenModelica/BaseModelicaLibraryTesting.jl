@@ -1,5 +1,34 @@
 //! base 0.1.0
 package 'SMR_Inverter_Polyphase'
+  function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    input Boolean 'positiveRange' = false;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'y' := mod('u', 6.283185307179586);
+
+    if 'y' > 3.141592653589793 and not 'positiveRange' then
+      'y' := 'y' - 6.283185307179586;
+    end if;
+  end 'Modelica.Math.wrapAngle';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   model 'SMR_Inverter_Polyphase' "Starting of polyphase synchronous reluctance machine with inverter"
     constant Integer 'm3' = 3 "Number of stator phases of three-phase system";
     parameter Integer 'm' = 5 "Number of stator phases" annotation(Evaluate = true);
@@ -3909,8 +3938,8 @@ package 'SMR_Inverter_Polyphase'
     'smrM.airGap.flange_a.tau' = -'smrM.airGap.tauElectrical';
     'smrM.airGap.support.tau' = 'smrM.airGap.tauElectrical';
     'smrM.airGap.gamma' = 2.0 * ('smrM.airGap.flange_a.phi' - 'smrM.airGap.support.phi');
-    'smrM.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('smrM.airGap.gamma');
-    'smrM.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('smrM.airGap.gamma');
+    'smrM.airGap.rotator.re' = exp(0.0) * cos('smrM.airGap.gamma');
+    'smrM.airGap.rotator.im' = exp(0.0) * sin('smrM.airGap.gamma');
     'smrM.groundR.port_p.V_m.re' = 0.0;
     'smrM.groundR.port_p.V_m.im' = 0.0;
     'smrM.strayLoad.v[1]' = 0.0;
@@ -4163,8 +4192,8 @@ package 'SMR_Inverter_Polyphase'
     'smr3.airGap.flange_a.tau' = -'smr3.airGap.tauElectrical';
     'smr3.airGap.support.tau' = 'smr3.airGap.tauElectrical';
     'smr3.airGap.gamma' = 2.0 * ('smr3.airGap.flange_a.phi' - 'smr3.airGap.support.phi');
-    'smr3.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('smr3.airGap.gamma');
-    'smr3.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('smr3.airGap.gamma');
+    'smr3.airGap.rotator.re' = exp(0.0) * cos('smr3.airGap.gamma');
+    'smr3.airGap.rotator.im' = exp(0.0) * sin('smr3.airGap.gamma');
     'smr3.groundR.port_p.V_m.re' = 0.0;
     'smr3.groundR.port_p.V_m.im' = 0.0;
     'smr3.strayLoad.v[1]' = 0.0;

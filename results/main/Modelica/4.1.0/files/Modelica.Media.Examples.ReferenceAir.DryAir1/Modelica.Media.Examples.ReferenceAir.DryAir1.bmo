@@ -1,5 +1,26 @@
 //! base 0.1.0
 package 'DryAir1'
+  function 'Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_pT' "Intermediate property record for air (p and T preferred states)"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    output 'Modelica.Media.Common.AuxiliaryProperties' 'aux';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+  algorithm
+    'aux'.'p' := 'p';
+    'aux'.'T' := 'T';
+    'aux'.'R_s' := 287.117;
+    'aux'.'rho' := 'Modelica.Media.Air.ReferenceAir.Air_Utilities.Inverses.dofpT'('p', 'T', 0.1);
+    'f' := 'Modelica.Media.Air.ReferenceAir.Air_Utilities.Basic.Helmholtz'('aux'.'rho', 'T');
+    'aux'.'h' := 'aux'.'R_s' * 'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta') - 1.58955762320524e6;
+    'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f') - 6610.41237132543;
+    'aux'.'pd' := 'aux'.'R_s' * 'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+    'aux'.'cv' := 'aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+    'aux'.'cp' := 'aux'.'cv' + 'aux'.'T' * 'aux'.'pt' * 'aux'.'pt' / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+    'aux'.'vp' := -1.0 / ('aux'.'rho' * 'aux'.'rho') / 'aux'.'pd';
+    'aux'.'vt' := 'aux'.'pt' / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+  end 'Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_pT';
+
   record 'Modelica.Media.Common.AuxiliaryProperties'
     Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
@@ -14,6 +35,20 @@ package 'DryAir1'
     Real 'vt';
     Real 'vp';
   end 'Modelica.Media.Common.AuxiliaryProperties';
+
+  record 'Modelica.Media.Common.HelmholtzDerivs'
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'delta'(unit = "1");
+    Real 'tau'(unit = "1");
+    Real 'f'(unit = "1");
+    Real 'fdelta'(unit = "1");
+    Real 'fdeltadelta'(unit = "1");
+    Real 'ftau'(unit = "1");
+    Real 'ftautau'(unit = "1");
+    Real 'fdeltatau'(unit = "1");
+  end 'Modelica.Media.Common.HelmholtzDerivs';
 
   model 'DryAir1' "Example 1 for dry air"
     parameter Real 'p_start'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Initial value of pressure";

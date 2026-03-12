@@ -173,8 +173,8 @@ package 'SuperCapDischargeCharge'
     'powerSensor.nc.i' + 'superCap.p.i' = 0.0;
     'powerSensor.voltageSensor.n.i' - 'powerSensor.nv.i' = 0.0;
     'powerSensor.currentSensor.n.i' - 'powerSensor.nc.i' = 0.0;
-    'pulseSeries.on1' = 'Modelica.Math.BooleanVectors.countTrue'({time >= ({10.0, 30.0, 50.0, 70.0, 90.0})['k'] and time < ({10.0, 30.0, 50.0, 70.0, 90.0})['k'] + 10.0 for 'k' in 1:5}) == 1;
-    'pulseSeries.on2' = 'Modelica.Math.BooleanVectors.countTrue'({time >= ({120.0, 140.0, 160.0, 180.0, 200.0})['k'] and time < ({120.0, 140.0, 160.0, 180.0, 200.0})['k'] + 10.0 for 'k' in 1:5}) == 1;
+    'pulseSeries.on1' = sum(if time >= ({10.0, 30.0, 50.0, 70.0, 90.0})[(1:5)['i']] and time < ({10.0, 30.0, 50.0, 70.0, 90.0})[(1:5)['i']] + 10.0 then 1 else 0 for 'i' in 1:size({time >= ({10.0, 30.0, 50.0, 70.0, 90.0})['k'] and time < ({10.0, 30.0, 50.0, 70.0, 90.0})['k'] + 10.0 for 'k' in 1:5}, 1)) == 1;
+    'pulseSeries.on2' = sum(if time >= ({120.0, 140.0, 160.0, 180.0, 200.0})[(1:5)['i']] and time < ({120.0, 140.0, 160.0, 180.0, 200.0})[(1:5)['i']] + 10.0 then 1 else 0 for 'i' in 1:size({time >= ({120.0, 140.0, 160.0, 180.0, 200.0})['k'] and time < ({120.0, 140.0, 160.0, 180.0, 200.0})['k'] + 10.0 for 'k' in 1:5}, 1)) == 1;
     'pulseSeries.y' = if 'pulseSeries.on1' then 1.0 else if 'pulseSeries.on2' then -1.0 else 0.0;
     'superCap.fixedTemperature.port.T' = 293.15;
     'superCap.resistor.R_actual' = 0.002;

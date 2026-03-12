@@ -1,5 +1,125 @@
 //! base 0.1.0
 package 'HBridge_DC_Drive'
+  function 'Modelica.Electrical.PowerConverters.Examples.DCDC.HBridge.HBridge_DC_Drive.torqueTable.getInterpolationCoefficients' "Determine interpolation coefficients and next time event"
+    input Real[:, 2] 'table';
+    input Real 'offset';
+    input Real 'startTimeScaled';
+    input Real 'timeScaled';
+    input Integer 'last';
+    input Real 'TimeEps';
+    input Real 'shiftTimeScaled';
+    output Real 'a';
+    output Real 'b';
+    output Real 'nextEventScaled';
+    output Integer 'next';
+    Integer 'columns' = 2;
+    Integer 'ncol' = 2;
+    Integer 'nrow' = size('table', 1);
+    Integer 'next0';
+    Real 'tp';
+    Real 'dt';
+  algorithm
+    'next' := 'last';
+    'nextEventScaled' := 'timeScaled' - 'TimeEps' * abs('timeScaled');
+    'tp' := 'timeScaled' + 'TimeEps' * abs('timeScaled');
+
+    if 'tp' < 'startTimeScaled' then
+      'nextEventScaled' := 'startTimeScaled';
+      'a' := 0.0;
+      'b' := 'offset';
+    elseif 'nrow' < 2 then
+      'a' := 0.0;
+      'b' := 'offset' + 'table'[1,'columns'];
+    elseif true then
+      'tp' := 'tp' - 'shiftTimeScaled';
+
+      while 'next' < 'nrow' and 'tp' >= 'table'['next',1] loop
+        'next' := 'next' + 1;
+      end while;
+
+      if 'next' < 'nrow' then
+        'nextEventScaled' := 'shiftTimeScaled' + 'table'['next',1];
+      end if;
+
+      if 'next' == 1 then
+        'next' := 2;
+      end if;
+
+      'next0' := 'next' - 1;
+      'dt' := 'table'['next',1] - 'table'['next0',1];
+
+      if 'dt' <= 'TimeEps' * abs('table'['next',1]) then
+        'a' := 0.0;
+        'b' := 'offset' + 'table'['next','columns'];
+      elseif true then
+        'a' := ('table'['next','columns'] - 'table'['next0','columns']) / 'dt';
+        'b' := 'offset' + 'table'['next0','columns'] - 'a' * 'table'['next0',1];
+      end if;
+    end if;
+
+    'b' := 'b' - 'a' * 'shiftTimeScaled';
+  end 'Modelica.Electrical.PowerConverters.Examples.DCDC.HBridge.HBridge_DC_Drive.torqueTable.getInterpolationCoefficients';
+
+  function 'Modelica.Electrical.PowerConverters.Examples.DCDC.HBridge.HBridge_DC_Drive.dutyCycleTable.getInterpolationCoefficients' "Determine interpolation coefficients and next time event"
+    input Real[:, 2] 'table';
+    input Real 'offset';
+    input Real 'startTimeScaled';
+    input Real 'timeScaled';
+    input Integer 'last';
+    input Real 'TimeEps';
+    input Real 'shiftTimeScaled';
+    output Real 'a';
+    output Real 'b';
+    output Real 'nextEventScaled';
+    output Integer 'next';
+    Integer 'columns' = 2;
+    Integer 'ncol' = 2;
+    Integer 'nrow' = size('table', 1);
+    Integer 'next0';
+    Real 'tp';
+    Real 'dt';
+  algorithm
+    'next' := 'last';
+    'nextEventScaled' := 'timeScaled' - 'TimeEps' * abs('timeScaled');
+    'tp' := 'timeScaled' + 'TimeEps' * abs('timeScaled');
+
+    if 'tp' < 'startTimeScaled' then
+      'nextEventScaled' := 'startTimeScaled';
+      'a' := 0.0;
+      'b' := 'offset';
+    elseif 'nrow' < 2 then
+      'a' := 0.0;
+      'b' := 'offset' + 'table'[1,'columns'];
+    elseif true then
+      'tp' := 'tp' - 'shiftTimeScaled';
+
+      while 'next' < 'nrow' and 'tp' >= 'table'['next',1] loop
+        'next' := 'next' + 1;
+      end while;
+
+      if 'next' < 'nrow' then
+        'nextEventScaled' := 'shiftTimeScaled' + 'table'['next',1];
+      end if;
+
+      if 'next' == 1 then
+        'next' := 2;
+      end if;
+
+      'next0' := 'next' - 1;
+      'dt' := 'table'['next',1] - 'table'['next0',1];
+
+      if 'dt' <= 'TimeEps' * abs('table'['next',1]) then
+        'a' := 0.0;
+        'b' := 'offset' + 'table'['next','columns'];
+      elseif true then
+        'a' := ('table'['next','columns'] - 'table'['next0','columns']) / 'dt';
+        'b' := 'offset' + 'table'['next0','columns'] - 'a' * 'table'['next0',1];
+      end if;
+    end if;
+
+    'b' := 'b' - 'a' * 'shiftTimeScaled';
+  end 'Modelica.Electrical.PowerConverters.Examples.DCDC.HBridge.HBridge_DC_Drive.dutyCycleTable.getInterpolationCoefficients';
+
   type 'Modelica.Electrical.PowerConverters.Types.SingleReferenceType' = enumeration('Sawtooth', 'Triangle');
 
   type 'Modelica.Blocks.Types.LimiterHomotopy' = enumeration('NoHomotopy', 'Linear', 'UpperLimit', 'LowerLimit');

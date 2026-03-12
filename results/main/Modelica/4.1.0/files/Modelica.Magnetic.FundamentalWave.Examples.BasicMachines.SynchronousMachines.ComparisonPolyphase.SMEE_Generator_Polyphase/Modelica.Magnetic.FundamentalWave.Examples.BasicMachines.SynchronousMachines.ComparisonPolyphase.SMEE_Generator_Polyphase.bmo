@@ -1,5 +1,47 @@
 //! base 0.1.0
 package 'SMEE_Generator_Polyphase'
+  function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
+    input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    input Boolean 'positiveRange' = false;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'y' := mod('u', 6.283185307179586);
+
+    if 'y' > 3.141592653589793 and not 'positiveRange' then
+      'y' := 'y' - 6.283185307179586;
+    end if;
+  end 'Modelica.Math.wrapAngle';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
+  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
+    input Real[:] 'x';
+    output Real[2] 'y';
+    output Real 'y0';
+    Integer 'm' = size('x', 1);
+    Real['m'] 'phi'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
+    Real[2, 'm'] 'TransformationMatrix' = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
+  algorithm
+    'y' := 'TransformationMatrix' * 'x';
+    'y0' := 1.0 / 'm' * sum('x');
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor';
+
   model 'SMEE_Generator_Polyphase' "Electrical excited polyphase synchronous machine operating as generator"
     constant Integer 'm3' = 3 "Number of stator phases of three-phase system";
     parameter Integer 'm' = 5 "Number of stator phases" annotation(Evaluate = true);
@@ -4938,8 +4980,8 @@ package 'SMEE_Generator_Polyphase'
     'smeeM.airGap.flange_a.tau' = -'smeeM.airGap.tauElectrical';
     'smeeM.airGap.support.tau' = 'smeeM.airGap.tauElectrical';
     'smeeM.airGap.gamma' = 2.0 * ('smeeM.airGap.flange_a.phi' - 'smeeM.airGap.support.phi');
-    'smeeM.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('smeeM.airGap.gamma');
-    'smeeM.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('smeeM.airGap.gamma');
+    'smeeM.airGap.rotator.re' = exp(0.0) * cos('smeeM.airGap.gamma');
+    'smeeM.airGap.rotator.im' = exp(0.0) * sin('smeeM.airGap.gamma');
     'smeeM.groundR.port_p.V_m.re' = 0.0;
     'smeeM.groundR.port_p.V_m.im' = 0.0;
     'smeeM.strayLoad.v[1]' = 0.0;
@@ -5226,8 +5268,8 @@ package 'SMEE_Generator_Polyphase'
     'smee3.airGap.flange_a.tau' = -'smee3.airGap.tauElectrical';
     'smee3.airGap.support.tau' = 'smee3.airGap.tauElectrical';
     'smee3.airGap.gamma' = 2.0 * ('smee3.airGap.flange_a.phi' - 'smee3.airGap.support.phi');
-    'smee3.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('smee3.airGap.gamma');
-    'smee3.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('smee3.airGap.gamma');
+    'smee3.airGap.rotator.re' = exp(0.0) * cos('smee3.airGap.gamma');
+    'smee3.airGap.rotator.im' = exp(0.0) * sin('smee3.airGap.gamma');
     'smee3.groundR.port_p.V_m.re' = 0.0;
     'smee3.groundR.port_p.V_m.im' = 0.0;
     'smee3.strayLoad.v[1]' = 0.0;

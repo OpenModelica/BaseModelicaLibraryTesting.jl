@@ -1,5 +1,22 @@
 //! base 0.1.0
 package 'IMC_DOL_CommonLeakage'
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   model 'IMC_DOL_CommonLeakage' "Direct on line start of polyphase induction machine with squirrel cage"
     parameter Integer 'm' = 5 "Number of stator phases" annotation(Evaluate = true);
     parameter Integer 'mBase' = 1 "Number of symmetric base systems";
@@ -7291,8 +7308,8 @@ package 'IMC_DOL_CommonLeakage'
     'aimc0.airGap.flange_a.tau' = -'aimc0.airGap.tauElectrical';
     'aimc0.airGap.support.tau' = 'aimc0.airGap.tauElectrical';
     'aimc0.airGap.gamma' = 2.0 * ('aimc0.airGap.flange_a.phi' - 'aimc0.airGap.support.phi');
-    'aimc0.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('aimc0.airGap.gamma');
-    'aimc0.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('aimc0.airGap.gamma');
+    'aimc0.airGap.rotator.re' = exp(0.0) * cos('aimc0.airGap.gamma');
+    'aimc0.airGap.rotator.im' = exp(0.0) * sin('aimc0.airGap.gamma');
     'aimc0.groundR.port_p.V_m.re' = 0.0;
     'aimc0.groundR.port_p.V_m.im' = 0.0;
     'aimc0.strayLoad.v[1]' = 0.0;
@@ -7750,8 +7767,8 @@ package 'IMC_DOL_CommonLeakage'
     'aimcH.airGap.flange_a.tau' = -'aimcH.airGap.tauElectrical';
     'aimcH.airGap.support.tau' = 'aimcH.airGap.tauElectrical';
     'aimcH.airGap.gamma' = 2.0 * ('aimcH.airGap.flange_a.phi' - 'aimcH.airGap.support.phi');
-    'aimcH.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('aimcH.airGap.gamma');
-    'aimcH.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('aimcH.airGap.gamma');
+    'aimcH.airGap.rotator.re' = exp(0.0) * cos('aimcH.airGap.gamma');
+    'aimcH.airGap.rotator.im' = exp(0.0) * sin('aimcH.airGap.gamma');
     'aimcH.groundR.port_p.V_m.re' = 0.0;
     'aimcH.groundR.port_p.V_m.im' = 0.0;
     'aimcH.strayLoad.v[1]' = 0.0;
@@ -8179,8 +8196,8 @@ package 'IMC_DOL_CommonLeakage'
     'aimc1.airGap.flange_a.tau' = -'aimc1.airGap.tauElectrical';
     'aimc1.airGap.support.tau' = 'aimc1.airGap.tauElectrical';
     'aimc1.airGap.gamma' = 2.0 * ('aimc1.airGap.flange_a.phi' - 'aimc1.airGap.support.phi');
-    'aimc1.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('aimc1.airGap.gamma');
-    'aimc1.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('aimc1.airGap.gamma');
+    'aimc1.airGap.rotator.re' = exp(0.0) * cos('aimc1.airGap.gamma');
+    'aimc1.airGap.rotator.im' = exp(0.0) * sin('aimc1.airGap.gamma');
     'aimc1.groundR.port_p.V_m.re' = 0.0;
     'aimc1.groundR.port_p.V_m.im' = 0.0;
     'aimc1.strayLoad.v[1]' = 0.0;

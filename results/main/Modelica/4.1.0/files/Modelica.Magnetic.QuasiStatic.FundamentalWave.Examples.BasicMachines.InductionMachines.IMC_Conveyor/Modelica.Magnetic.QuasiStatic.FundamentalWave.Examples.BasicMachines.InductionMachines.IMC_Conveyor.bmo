@@ -1,5 +1,72 @@
 //! base 0.1.0
 package 'IMC_Conveyor'
+  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
+    input 'Complex'[:] 'u';
+    output Real 'y';
+    Integer 'm' = size('u', 1);
+  algorithm
+    'y' := sum(sqrt('u['k']'.'re' ^ 2.0 + 'u['k']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
+    annotation(Inline = true);
+  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMin';
+  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer' "Derivative of interpolated 1-dim. table where first column is time (but do not provide a derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Integer 'icol';
+    input Real 'timeIn';
+    input Real 'nextTimeEvent';
+    input Real 'pre_nextTimeEvent';
+    input Real 'der_timeIn';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTimeTable_getDerValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent', 'der_timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer';
+
+  function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Real 'timeIn';
+    output Real 'nextTimeEvent';
+  external "C" 'nextTimeEvent' = ModelicaStandardTables_CombiTimeTable_nextTimeEvent('tableID', 'timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getNextTimeEvent';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2' "Interpolate 1-dim. table where first column is time (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Integer 'icol';
+    input Real 'timeIn';
+    input Real 'nextTimeEvent';
+    input Real 'pre_nextTimeEvent';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTimeTable_getValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1, noDerivative = 'nextTimeEvent', noDerivative = 'pre_nextTimeEvent') = 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMax';
+  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
+
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
@@ -45,15 +112,15 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'im';
   end 'Modelica.Units.SI.ComplexCurrent';
 
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
   record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
     Real 're';
     Real 'im';
   end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
 
   model 'IMC_Conveyor' "Induction machine with squirrel cage and inverter driving a conveyor"
     parameter Integer 'm' = 3 "Number of phases" annotation(Evaluate = true);
@@ -3878,7 +3945,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'imcQS.wMechanical' = der('imcQS.phiMechanical');
     'imcQS.tauElectrical' = 'imcQS.inertiaRotor.flange_a.tau';
     'imcQS.tauShaft' = -'imcQS.flange.tau';
-    'imcQS.powerBalance.powerStator' = sum('Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('imcQS.vs[(1:size('imcQS.vs', 1))['$i1241']]', 'Modelica.ComplexMath.conj'('imcQS.is[(1:size('imcQS.vs', 1))['$i1241']]'))) for '$i1241' in 1:size('imcQS.vs', 1));
+    'imcQS.powerBalance.powerStator' = sum('imcQS.vs[(1:size('imcQS.vs', 1))['$i1241']].re' * 'imcQS.is[(1:size('imcQS.vs', 1))['$i1241']].re' - 'imcQS.vs[(1:size('imcQS.vs', 1))['$i1241']].im' * (-'imcQS.is[(1:size('imcQS.vs', 1))['$i1241']].im') for '$i1241' in 1:size('imcQS.vs', 1));
     'imcQS.powerBalance.powerMechanical' = 'imcQS.wMechanical' * 'imcQS.tauShaft';
     'imcQS.powerBalance.powerInertiaStator' = 0.29 * 'imcQS.inertiaStator.a' * 'imcQS.inertiaStator.w';
     'imcQS.powerBalance.powerInertiaRotor' = 0.29 * 'imcQS.inertiaRotor.a' * 'imcQS.inertiaRotor.w';
@@ -5971,14 +6038,14 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'imcQS.thermalAmbient.constTr.y' = 293.15;
     'imcQS.groundS.port_p.V_m.re' = 0.0;
     'imcQS.groundS.port_p.V_m.im' = 0.0;
-    'imcQS.airGap.V_msr.re' = 'imcQS.airGap.V_ms.re' * (1.0 * 'Modelica.Math.cos'('imcQS.airGap.gammar')) - 'imcQS.airGap.V_ms.im' * (1.0 * 'Modelica.Math.sin'('imcQS.airGap.gammar'));
-    'imcQS.airGap.V_msr.im' = 'imcQS.airGap.V_ms.re' * (1.0 * 'Modelica.Math.sin'('imcQS.airGap.gammar')) + 'imcQS.airGap.V_ms.im' * (1.0 * 'Modelica.Math.cos'('imcQS.airGap.gammar'));
-    'imcQS.airGap.V_mrr.re' = 'imcQS.airGap.V_mr.re' * (1.0 * 'Modelica.Math.cos'('imcQS.airGap.gammar')) - 'imcQS.airGap.V_mr.im' * (1.0 * 'Modelica.Math.sin'('imcQS.airGap.gammar'));
-    'imcQS.airGap.V_mrr.im' = 'imcQS.airGap.V_mr.re' * (1.0 * 'Modelica.Math.sin'('imcQS.airGap.gammar')) + 'imcQS.airGap.V_mr.im' * (1.0 * 'Modelica.Math.cos'('imcQS.airGap.gammar'));
-    'imcQS.airGap.Phi_sr.re' = 'imcQS.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.cos'('imcQS.airGap.gammar')) - 'imcQS.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.sin'('imcQS.airGap.gammar'));
-    'imcQS.airGap.Phi_sr.im' = 'imcQS.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.sin'('imcQS.airGap.gammar')) + 'imcQS.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.cos'('imcQS.airGap.gammar'));
-    'imcQS.airGap.Phi_rr.re' = 'imcQS.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.cos'('imcQS.airGap.gammar')) - 'imcQS.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.sin'('imcQS.airGap.gammar'));
-    'imcQS.airGap.Phi_rr.im' = 'imcQS.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.sin'('imcQS.airGap.gammar')) + 'imcQS.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.cos'('imcQS.airGap.gammar'));
+    'imcQS.airGap.V_msr.re' = 'imcQS.airGap.V_ms.re' * (1.0 * cos('imcQS.airGap.gammar')) - 'imcQS.airGap.V_ms.im' * (1.0 * sin('imcQS.airGap.gammar'));
+    'imcQS.airGap.V_msr.im' = 'imcQS.airGap.V_ms.re' * (1.0 * sin('imcQS.airGap.gammar')) + 'imcQS.airGap.V_ms.im' * (1.0 * cos('imcQS.airGap.gammar'));
+    'imcQS.airGap.V_mrr.re' = 'imcQS.airGap.V_mr.re' * (1.0 * cos('imcQS.airGap.gammar')) - 'imcQS.airGap.V_mr.im' * (1.0 * sin('imcQS.airGap.gammar'));
+    'imcQS.airGap.V_mrr.im' = 'imcQS.airGap.V_mr.re' * (1.0 * sin('imcQS.airGap.gammar')) + 'imcQS.airGap.V_mr.im' * (1.0 * cos('imcQS.airGap.gammar'));
+    'imcQS.airGap.Phi_sr.re' = 'imcQS.airGap.Phi_s.re' * (1.0 * cos('imcQS.airGap.gammar')) - 'imcQS.airGap.Phi_s.im' * (1.0 * sin('imcQS.airGap.gammar'));
+    'imcQS.airGap.Phi_sr.im' = 'imcQS.airGap.Phi_s.re' * (1.0 * sin('imcQS.airGap.gammar')) + 'imcQS.airGap.Phi_s.im' * (1.0 * cos('imcQS.airGap.gammar'));
+    'imcQS.airGap.Phi_rr.re' = 'imcQS.airGap.Phi_r.re' * (1.0 * cos('imcQS.airGap.gammar')) - 'imcQS.airGap.Phi_r.im' * (1.0 * sin('imcQS.airGap.gammar'));
+    'imcQS.airGap.Phi_rr.im' = 'imcQS.airGap.Phi_r.re' * (1.0 * sin('imcQS.airGap.gammar')) + 'imcQS.airGap.Phi_r.im' * (1.0 * cos('imcQS.airGap.gammar'));
     'imcQS.airGap.port_sp.Phi.re' = 'imcQS.airGap.Phi_s.re' "Stator flux into positive stator port";
     'imcQS.airGap.port_sp.Phi.im' = 'imcQS.airGap.Phi_s.im' "Stator flux into positive stator port";
     'imcQS.airGap.port_sp.Phi.re' + 'imcQS.airGap.port_sn.Phi.re' = 0.0 "Balance of stator flux";
@@ -6725,8 +6792,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'imc.airGap.flange_a.tau' = -'imc.airGap.tauElectrical';
     'imc.airGap.support.tau' = 'imc.airGap.tauElectrical';
     'imc.airGap.gamma' = 2.0 * ('imc.airGap.flange_a.phi' - 'imc.airGap.support.phi');
-    'imc.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('imc.airGap.gamma');
-    'imc.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('imc.airGap.gamma');
+    'imc.airGap.rotator.re' = exp(0.0) * cos('imc.airGap.gamma');
+    'imc.airGap.rotator.im' = exp(0.0) * sin('imc.airGap.gamma');
     'imc.groundR.port_p.V_m.re' = 0.0;
     'imc.groundR.port_p.V_m.im' = 0.0;
     'imc.strayLoad.v[1]' = 0.0;

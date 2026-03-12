@@ -1,5 +1,18 @@
 //! base 0.1.0
 package 'TestSensors'
+  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
+    input Real[:] 'x';
+    output Real[2] 'y';
+    output Real 'y0';
+    Integer 'm' = size('x', 1);
+    Real['m'] 'phi'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
+    Real[2, 'm'] 'TransformationMatrix' = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
+  algorithm
+    'y' := 'TransformationMatrix' * 'x';
+    'y0' := 1.0 / 'm' * sum('x');
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor';
+
   model 'TestSensors'
     constant Integer 'm' = 3 "Number of phases";
     parameter Real 'VRMS'(unit = "V", quantity = "ElectricPotential") = 100.0 "Nominal RMS voltage per phase";

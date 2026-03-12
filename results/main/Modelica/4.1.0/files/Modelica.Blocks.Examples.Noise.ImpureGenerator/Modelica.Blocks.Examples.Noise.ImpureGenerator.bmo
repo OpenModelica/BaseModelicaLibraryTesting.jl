@@ -1,5 +1,22 @@
 //! base 0.1.0
 package 'ImpureGenerator'
+  function 'Modelica.Math.Random.Utilities.impureRandom' "Impure random number generator (with hidden state vector)"
+    input Integer 'id';
+    output Real 'y';
+  external "C" 'y' = ModelicaRandom_impureRandom_xorshift1024star('id') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Utilities.impureRandom';
+
+  function 'Modelica.Math.Random.Utilities.initializeImpureRandom' "Initializes the internal state of the impure random number generator"
+    input Integer 'seed';
+    output Integer 'id';
+    constant Integer 'localSeed' = 715827883;
+    Integer[33] 'rngState';
+  algorithm
+    'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
+    'id' := 'localSeed';
+    'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
+  end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
+
   model 'ImpureGenerator' "Demonstrates the usage of the impure random number generator"
     output Real 'impureRandom_y';
     parameter Boolean 'globalSeed.enableNoise' = true "= true, if noise blocks generate noise as output; = false, if they generate a constant output";

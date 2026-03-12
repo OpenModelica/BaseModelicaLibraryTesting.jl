@@ -1,5 +1,22 @@
 //! base 0.1.0
 package 'SMEE_LoadDump'
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   type 'Modelica.Blocks.Types.SimpleController' = enumeration('P', 'PI', 'PD', 'PID');
 
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
@@ -2439,8 +2456,8 @@ package 'SMEE_LoadDump'
     'smee.airGap.flange_a.tau' = -'smee.airGap.tauElectrical';
     'smee.airGap.support.tau' = 'smee.airGap.tauElectrical';
     'smee.airGap.gamma' = 2.0 * ('smee.airGap.flange_a.phi' - 'smee.airGap.support.phi');
-    'smee.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('smee.airGap.gamma');
-    'smee.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('smee.airGap.gamma');
+    'smee.airGap.rotator.re' = exp(0.0) * cos('smee.airGap.gamma');
+    'smee.airGap.rotator.im' = exp(0.0) * sin('smee.airGap.gamma');
     'smee.groundR.port_p.V_m.re' = 0.0;
     'smee.groundR.port_p.V_m.im' = 0.0;
     'smee.strayLoad.v[1]' = 0.0;

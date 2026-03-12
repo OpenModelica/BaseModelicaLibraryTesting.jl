@@ -1,5 +1,44 @@
 //! base 0.1.0
 package 'AmplifierWithOpAmpDetailed'
+  function 'Modelica.Electrical.Analog.Examples.AmplifierWithOpAmpDetailed.opAmp.FCNq_sum_limit' "Internal limitation function"
+    input Real 'q_sum'(unit = "V", quantity = "ElectricPotential");
+    input Real 'q_sum_ltf'(unit = "V", quantity = "ElectricPotential");
+    input Real 'v_pos'(unit = "V", quantity = "ElectricPotential");
+    input Real 'v_neg'(unit = "V", quantity = "ElectricPotential");
+    input Real 'vcp'(unit = "V", quantity = "ElectricPotential");
+    input Real 'vcm'(unit = "V", quantity = "ElectricPotential");
+    output Real 'result'(unit = "V", quantity = "ElectricPotential");
+  algorithm
+    if 'q_sum' > 'v_pos' - 'vcp' and 'q_sum_ltf' >= 'v_pos' - 'vcp' then
+      'result' := 'v_pos' - 'vcp';
+    elseif 'q_sum' < 'v_neg' + 'vcm' and 'q_sum_ltf' <= 'v_neg' + 'vcm' then
+      'result' := 'v_neg' + 'vcm';
+    elseif true then
+      'result' := 'q_sum';
+    end if;
+
+    return;
+  end 'Modelica.Electrical.Analog.Examples.AmplifierWithOpAmpDetailed.opAmp.FCNq_sum_limit';
+
+  function 'Modelica.Electrical.Analog.Examples.AmplifierWithOpAmpDetailed.opAmp.FCNiout_limit' "Internal limitation function"
+    input Real 'v_source'(unit = "V", quantity = "ElectricPotential");
+    input Real 'v_out'(unit = "V", quantity = "ElectricPotential");
+    input Real 'Rout'(unit = "Ohm", quantity = "Resistance");
+    input Real 'Imaxsi_val'(unit = "A", quantity = "ElectricCurrent");
+    input Real 'Imaxso_val'(unit = "A", quantity = "ElectricCurrent");
+    output Real 'result'(unit = "A", quantity = "ElectricCurrent");
+  algorithm
+    if 'v_out' > 'v_source' + 'Rout' * 'Imaxsi_val' then
+      'result' := 'Imaxsi_val';
+    elseif 'v_out' < 'v_source' - 'Rout' * 'Imaxso_val' then
+      'result' := -'Imaxso_val';
+    elseif true then
+      'result' := ('v_out' - 'v_source') / 'Rout';
+    end if;
+
+    return;
+  end 'Modelica.Electrical.Analog.Examples.AmplifierWithOpAmpDetailed.opAmp.FCNiout_limit';
+
   model 'AmplifierWithOpAmpDetailed' "Simple Amplifier circuit which uses OpAmpDetailed"
     parameter Real 'opAmp.Rdm'(unit = "Ohm", quantity = "Resistance") = 2e6 "Input resistance (differential input mode)";
     parameter Real 'opAmp.Rcm'(unit = "Ohm", quantity = "Resistance") = 2e9 "Input resistance (common mode)";

@@ -1,5 +1,31 @@
 //! base 0.1.0
 package 'SMPM_FieldWeakening'
+  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
+    input 'Complex'[:] 'u';
+    output Real 'y';
+    Integer 'm' = size('u', 1);
+  algorithm
+    'y' := sum(sqrt('u['k']'.'re' ^ 2.0 + 'u['k']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
+    annotation(Inline = true);
+  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   type 'Modelica.Blocks.Types.SimpleController' = enumeration('P', 'PI', 'PD', 'PID');
 
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
@@ -16,15 +42,15 @@ package 'SMPM_FieldWeakening'
     Real 'im';
   end 'Modelica.Units.SI.ComplexCurrent';
 
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
   record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
     Real 're';
     Real 'im';
   end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
 
   model 'SMPM_FieldWeakening' "Test example: Investigate field weakening of a PermanentMagnetSynchronousMachine"
     constant Integer 'm' = 3 "Number of phases";
@@ -2401,7 +2427,7 @@ package 'SMPM_FieldWeakening'
     'smpm.wMechanical' = der('smpm.phiMechanical');
     'smpm.tauElectrical' = 'smpm.inertiaRotor.flange_a.tau';
     'smpm.tauShaft' = -'smpm.flange.tau';
-    'smpm.powerBalance.powerStator' = sum('Modelica.ComplexMath.real'('Modelica.Units.SI.ComplexVoltage.\'*\'.multiply'('smpm.vs[(1:size('smpm.vs', 1))['$i1896']]', 'Modelica.ComplexMath.conj'('smpm.is[(1:size('smpm.vs', 1))['$i1896']]'))) for '$i1896' in 1:size('smpm.vs', 1));
+    'smpm.powerBalance.powerStator' = sum('smpm.vs[(1:size('smpm.vs', 1))['$i1896']].re' * 'smpm.is[(1:size('smpm.vs', 1))['$i1896']].re' - 'smpm.vs[(1:size('smpm.vs', 1))['$i1896']].im' * (-'smpm.is[(1:size('smpm.vs', 1))['$i1896']].im') for '$i1896' in 1:size('smpm.vs', 1));
     'smpm.powerBalance.powerMechanical' = 'smpm.wMechanical' * 'smpm.tauShaft';
     'smpm.powerBalance.powerInertiaStator' = 0.29 * 'smpm.inertiaStator.a' * 'smpm.inertiaStator.w';
     'smpm.powerBalance.powerInertiaRotor' = 0.0;
@@ -3813,14 +3839,14 @@ package 'SMPM_FieldWeakening'
     'smpm.thermalAmbient.constTpm.y' = 293.15;
     'smpm.groundS.port_p.V_m.re' = 0.0;
     'smpm.groundS.port_p.V_m.im' = 0.0;
-    'smpm.airGap.V_msr.re' = 'smpm.airGap.V_ms.re' * (1.0 * 'Modelica.Math.cos'('smpm.airGap.gammar')) - 'smpm.airGap.V_ms.im' * (1.0 * 'Modelica.Math.sin'('smpm.airGap.gammar'));
-    'smpm.airGap.V_msr.im' = 'smpm.airGap.V_ms.re' * (1.0 * 'Modelica.Math.sin'('smpm.airGap.gammar')) + 'smpm.airGap.V_ms.im' * (1.0 * 'Modelica.Math.cos'('smpm.airGap.gammar'));
-    'smpm.airGap.V_mrr.re' = 'smpm.airGap.V_mr.re' * (1.0 * 'Modelica.Math.cos'('smpm.airGap.gammar')) - 'smpm.airGap.V_mr.im' * (1.0 * 'Modelica.Math.sin'('smpm.airGap.gammar'));
-    'smpm.airGap.V_mrr.im' = 'smpm.airGap.V_mr.re' * (1.0 * 'Modelica.Math.sin'('smpm.airGap.gammar')) + 'smpm.airGap.V_mr.im' * (1.0 * 'Modelica.Math.cos'('smpm.airGap.gammar'));
-    'smpm.airGap.Phi_sr.re' = 'smpm.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.cos'('smpm.airGap.gammar')) - 'smpm.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.sin'('smpm.airGap.gammar'));
-    'smpm.airGap.Phi_sr.im' = 'smpm.airGap.Phi_s.re' * (1.0 * 'Modelica.Math.sin'('smpm.airGap.gammar')) + 'smpm.airGap.Phi_s.im' * (1.0 * 'Modelica.Math.cos'('smpm.airGap.gammar'));
-    'smpm.airGap.Phi_rr.re' = 'smpm.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.cos'('smpm.airGap.gammar')) - 'smpm.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.sin'('smpm.airGap.gammar'));
-    'smpm.airGap.Phi_rr.im' = 'smpm.airGap.Phi_r.re' * (1.0 * 'Modelica.Math.sin'('smpm.airGap.gammar')) + 'smpm.airGap.Phi_r.im' * (1.0 * 'Modelica.Math.cos'('smpm.airGap.gammar'));
+    'smpm.airGap.V_msr.re' = 'smpm.airGap.V_ms.re' * (1.0 * cos('smpm.airGap.gammar')) - 'smpm.airGap.V_ms.im' * (1.0 * sin('smpm.airGap.gammar'));
+    'smpm.airGap.V_msr.im' = 'smpm.airGap.V_ms.re' * (1.0 * sin('smpm.airGap.gammar')) + 'smpm.airGap.V_ms.im' * (1.0 * cos('smpm.airGap.gammar'));
+    'smpm.airGap.V_mrr.re' = 'smpm.airGap.V_mr.re' * (1.0 * cos('smpm.airGap.gammar')) - 'smpm.airGap.V_mr.im' * (1.0 * sin('smpm.airGap.gammar'));
+    'smpm.airGap.V_mrr.im' = 'smpm.airGap.V_mr.re' * (1.0 * sin('smpm.airGap.gammar')) + 'smpm.airGap.V_mr.im' * (1.0 * cos('smpm.airGap.gammar'));
+    'smpm.airGap.Phi_sr.re' = 'smpm.airGap.Phi_s.re' * (1.0 * cos('smpm.airGap.gammar')) - 'smpm.airGap.Phi_s.im' * (1.0 * sin('smpm.airGap.gammar'));
+    'smpm.airGap.Phi_sr.im' = 'smpm.airGap.Phi_s.re' * (1.0 * sin('smpm.airGap.gammar')) + 'smpm.airGap.Phi_s.im' * (1.0 * cos('smpm.airGap.gammar'));
+    'smpm.airGap.Phi_rr.re' = 'smpm.airGap.Phi_r.re' * (1.0 * cos('smpm.airGap.gammar')) - 'smpm.airGap.Phi_r.im' * (1.0 * sin('smpm.airGap.gammar'));
+    'smpm.airGap.Phi_rr.im' = 'smpm.airGap.Phi_r.re' * (1.0 * sin('smpm.airGap.gammar')) + 'smpm.airGap.Phi_r.im' * (1.0 * cos('smpm.airGap.gammar'));
     'smpm.airGap.port_sp.Phi.re' = 'smpm.airGap.Phi_s.re' "Stator flux into positive stator port";
     'smpm.airGap.port_sp.Phi.im' = 'smpm.airGap.Phi_s.im' "Stator flux into positive stator port";
     'smpm.airGap.port_sp.Phi.re' + 'smpm.airGap.port_sn.Phi.re' = 0.0 "Balance of stator flux";
@@ -3908,8 +3934,8 @@ package 'SMPM_FieldWeakening'
     'smpm.friction.tau' = -'smpm.friction.flange.tau';
     'smpm.friction.tau' = 'smpm.friction.support.tau';
     'smpm.short.port_p.reference.gamma' = 'smpm.short.port_n.reference.gamma';
-    'smpm.permanentMagnet.V_mGamma.re' = 360.1265264628425 * (1.0 * 'Modelica.Math.cos'(-'smpm.permanentMagnet.gamma')) - 0.0 * (1.0 * 'Modelica.Math.sin'(-'smpm.permanentMagnet.gamma'));
-    'smpm.permanentMagnet.V_mGamma.im' = 360.1265264628425 * (1.0 * 'Modelica.Math.sin'(-'smpm.permanentMagnet.gamma')) + 0.0 * (1.0 * 'Modelica.Math.cos'(-'smpm.permanentMagnet.gamma'));
+    'smpm.permanentMagnet.V_mGamma.re' = 360.1265264628425 * (1.0 * cos(-'smpm.permanentMagnet.gamma')) - 0.0 * (1.0 * sin(-'smpm.permanentMagnet.gamma'));
+    'smpm.permanentMagnet.V_mGamma.im' = 360.1265264628425 * (1.0 * sin(-'smpm.permanentMagnet.gamma')) + 0.0 * (1.0 * cos(-'smpm.permanentMagnet.gamma'));
     'smpm.permanentMagnet.port_p.V_m.re' - 'smpm.permanentMagnet.port_n.V_m.re' = 'smpm.permanentMagnet.V_mGamma.re';
     'smpm.permanentMagnet.port_p.V_m.im' - 'smpm.permanentMagnet.port_n.V_m.im' = 'smpm.permanentMagnet.V_mGamma.im';
     'smpm.permanentMagnet.port_p.Phi.re' = 'smpm.permanentMagnet.Phi.re';

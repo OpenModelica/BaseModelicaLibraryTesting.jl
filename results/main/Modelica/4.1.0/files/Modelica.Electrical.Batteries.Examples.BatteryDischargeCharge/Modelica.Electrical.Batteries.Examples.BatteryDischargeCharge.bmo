@@ -1,5 +1,62 @@
 //! base 0.1.0
 package 'BatteryDischargeCharge'
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer' "Interpolate 1-dim. table defined by matrix (but do not provide a derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMax';
+  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValue' "Interpolate 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValue');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValue';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMin';
+  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValue' "Derivative of interpolated 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 2) = 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue');
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValue';
+
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
@@ -878,8 +935,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'powerSensor2.nc.i' + 'battery2.p.i' = 0.0;
     'powerSensor2.voltageSensor.n.i' - 'powerSensor2.nv.i' = 0.0;
     'powerSensor2.currentSensor.n.i' - 'powerSensor2.nc.i' = 0.0;
-    'pulseSeries.on1' = 'Modelica.Math.BooleanVectors.countTrue'({time >= ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})['k'] and time < ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})['k'] + 60.0 for 'k' in 1:7}) == 1;
-    'pulseSeries.on2' = 'Modelica.Math.BooleanVectors.countTrue'({time >= ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})['k'] and time < ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})['k'] + 60.0 for 'k' in 1:7}) == 1;
+    'pulseSeries.on1' = sum(if time >= ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})[(1:7)['i']] and time < ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})[(1:7)['i']] + 60.0 then 1 else 0 for 'i' in 1:size({time >= ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})['k'] and time < ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})['k'] + 60.0 for 'k' in 1:7}, 1)) == 1;
+    'pulseSeries.on2' = sum(if time >= ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})[(1:7)['i']] and time < ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})[(1:7)['i']] + 60.0 then 1 else 0 for 'i' in 1:size({time >= ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})['k'] and time < ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})['k'] + 60.0 for 'k' in 1:7}, 1)) == 1;
     'pulseSeries.y' = if 'pulseSeries.on1' then 1.0 else if 'pulseSeries.on2' then -1.0 else 0.0;
     'battery1.currentSensor.p.v' = 'battery1.currentSensor.n.v';
     'battery1.currentSensor.p.i' = 'battery1.currentSensor.i';

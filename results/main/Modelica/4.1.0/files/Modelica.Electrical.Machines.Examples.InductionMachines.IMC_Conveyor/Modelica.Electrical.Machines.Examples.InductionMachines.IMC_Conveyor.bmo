@@ -1,5 +1,66 @@
 //! base 0.1.0
 package 'IMC_Conveyor'
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMin';
+  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer' "Derivative of interpolated 1-dim. table where first column is time (but do not provide a derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Integer 'icol';
+    input Real 'timeIn';
+    input Real 'nextTimeEvent';
+    input Real 'pre_nextTimeEvent';
+    input Real 'der_timeIn';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTimeTable_getDerValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent', 'der_timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer';
+
+  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
+    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
+    output Real 'p'(unit = "W", quantity = "Power");
+    constant Integer 'm' = 3;
+    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
+    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
+  algorithm
+    'v_' := {0.0, 0.0};
+    'i_' := {0.0, 0.0};
+
+    for 'k' in 1:'m' loop
+      'v_' := {'v_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k'], 'v_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k']};
+      'i_' := {'i_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k'], 'i_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k']};
+    end for;
+
+    'p' := 'm' / 2.0 * ('v_'[1] * 'i_'[1] + 'v_'[2] * 'i_'[2]);
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
+
+  function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Real 'timeIn';
+    output Real 'nextTimeEvent';
+  external "C" 'nextTimeEvent' = ModelicaStandardTables_CombiTimeTable_nextTimeEvent('tableID', 'timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getNextTimeEvent';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2' "Interpolate 1-dim. table where first column is time (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Integer 'icol';
+    input Real 'timeIn';
+    input Real 'nextTimeEvent';
+    input Real 'pre_nextTimeEvent';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTimeTable_getValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1, noDerivative = 'nextTimeEvent', noDerivative = 'pre_nextTimeEvent') = 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMax';
+  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
+
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');

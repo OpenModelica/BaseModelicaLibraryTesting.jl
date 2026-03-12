@@ -79,8 +79,8 @@ package 'SimpleLiquidWater'
     'medium2.p' = 1e4 * time;
     'medium2.T' = 330.0;
     'm_flow_ext2' = time - 30.0;
-    'state.p' = 'Modelica.Media.Common.smoothStep'('m_flow_ext2', 'medium.state.p', 'medium2.state.p', 10.0);
-    'state.T' = 'Modelica.Media.Common.smoothStep'('m_flow_ext2', 'medium.state.T', 'medium2.state.T', 10.0);
+    'state.p' = smooth(1, if 'm_flow_ext2' > 10.0 then 'medium.state.p' else if 'm_flow_ext2' < (-10.0) then 'medium2.state.p' else if abs(10.0) > 0.0 then 'm_flow_ext2' / 10.0 * (('m_flow_ext2' / 10.0) ^ 2.0 - 3.0) * ('medium2.state.p' - 'medium.state.p') / 4.0 + ('medium.state.p' + 'medium2.state.p') / 2.0 else ('medium.state.p' + 'medium2.state.p') / 2.0);
+    'state.T' = smooth(1, if 'm_flow_ext2' > 10.0 then 'medium.state.T' else if 'm_flow_ext2' < (-10.0) then 'medium2.state.T' else if abs(10.0) > 0.0 then 'm_flow_ext2' / 10.0 * (('m_flow_ext2' / 10.0) ^ 2.0 - 3.0) * ('medium2.state.T' - 'medium.state.T') / 4.0 + ('medium.state.T' + 'medium2.state.T') / 2.0 else ('medium.state.T' + 'medium2.state.T') / 2.0);
     'der_p' = der('state.p');
     'der_T' = der('state.T');
     annotation(experiment(StopTime = 100));

@@ -1,5 +1,42 @@
 //! base 0.1.0
 package 'IMC_Transformer'
+  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
+    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
+    output Real 'p'(unit = "W", quantity = "Power");
+    constant Integer 'm' = 3;
+    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
+    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
+  algorithm
+    'v_' := {0.0, 0.0};
+    'i_' := {0.0, 0.0};
+
+    for 'k' in 1:'m' loop
+      'v_' := {'v_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k'], 'v_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'v'['k']};
+      'i_' := {'i_'[1] + 2.0 / 'm' * cos(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k'], 'i_'[2] + 2.0 / 'm' * sin(('k' - 1) / 'm' * 2.0 * 3.141592653589793) * 'i'['k']};
+    end for;
+
+    'p' := 'm' / 2.0 * ('v_'[1] * 'i_'[1] + 'v_'[2] * 'i_'[2]);
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
+
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    elseif true then
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   model 'IMC_Transformer' "Induction machine with squirrel cage starting with transformer"
     constant Integer 'm' = 3 "Number of phases";
     parameter Real 'VNominal'(unit = "V", quantity = "ElectricPotential") = 100.0 "Nominal RMS voltage per phase";
@@ -2818,8 +2855,8 @@ package 'IMC_Transformer'
     'aimc.airGap.flange_a.tau' = -'aimc.airGap.tauElectrical';
     'aimc.airGap.support.tau' = 'aimc.airGap.tauElectrical';
     'aimc.airGap.gamma' = 2.0 * ('aimc.airGap.flange_a.phi' - 'aimc.airGap.support.phi');
-    'aimc.airGap.rotator.re' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.cos'('aimc.airGap.gamma');
-    'aimc.airGap.rotator.im' = 'Modelica.Math.exp'(0.0) * 'Modelica.Math.sin'('aimc.airGap.gamma');
+    'aimc.airGap.rotator.re' = exp(0.0) * cos('aimc.airGap.gamma');
+    'aimc.airGap.rotator.im' = exp(0.0) * sin('aimc.airGap.gamma');
     'aimc.groundR.port_p.V_m.re' = 0.0;
     'aimc.groundR.port_p.V_m.im' = 0.0;
     'aimc.strayLoad.v[1]' = 0.0;

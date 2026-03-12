@@ -1,5 +1,99 @@
 //! base 0.1.0
 package 'TestGlycol'
+  function 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.specificHeatCapacityCv' "Specific heat capacity at constant volume (or pressure) of medium"
+    input 'Medium.ThermodynamicState' 'state';
+    output Real 'cv'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+  algorithm
+    assert(true, "Specific Heat Capacity, Cv, is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
+    'cv' := 'Modelica.Math.Polynomials.evaluate'({-7.666493085690878e-4, 3.406312561476593, 3555.6027310073478}, 'state'.'T' - 273.15);
+    annotation(smoothOrder = 2);
+  end 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.specificHeatCapacityCv';
+
+  function 'Modelica.Math.Polynomials.integralValue' "Integral of polynomial p(u) from u_low to u_high"
+    input Real[:] 'p';
+    input Real 'u_high';
+    input Real 'u_low' = 0.0;
+    output Real 'integral' = 0.0;
+    Integer 'n' = size('p', 1);
+    Real 'y_low' = 0.0;
+  algorithm
+    for 'j' in 1:'n' loop
+      'integral' := 'u_high' * ('p'['j'] / ('n' - 'j' + 1) + 'integral');
+      'y_low' := 'u_low' * ('p'['j'] / ('n' - 'j' + 1) + 'y_low');
+    end for;
+
+    'integral' := 'integral' - 'y_low';
+    annotation(derivative(order = 1, zeroDerivative = 'p') = 'Modelica.Math.Polynomials.integralValue_der');
+  end 'Modelica.Math.Polynomials.integralValue';
+
+  function 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.thermalConductivity' "Return thermal conductivity as a function of the thermodynamic state record"
+    input 'Medium.ThermodynamicState' 'state';
+    output Real 'lambda'(nominal = 1.0, start = 1.0, max = 500.0, min = 0.0, unit = "W/(m.K)", quantity = "ThermalConductivity");
+  algorithm
+    assert(true, "ThermalConductivity, lambda, is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
+    'lambda' := 'Modelica.Math.Polynomials.evaluate'({5.2652895909286485e-8, -5.411907654921006e-5, 0.3949729445119481}, 'Modelica.Units.Conversions.to_degC'('state'.'T'));
+    annotation(smoothOrder = 2);
+  end 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.thermalConductivity';
+
+  function 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.dynamicViscosity' "Return dynamic viscosity as a function of the thermodynamic state record"
+    input 'Medium.ThermodynamicState' 'state';
+    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+  algorithm
+    assert(true, "DynamicViscosity, eta, is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
+    'eta' := 'Modelica.Math.exp'('Modelica.Math.Polynomials.evaluate'({1.2494070905497295e6, -4756.243495674506, -3.3660095663583767}, 1.0 / 'state'.'T'));
+    annotation(smoothOrder = 2);
+  end 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.dynamicViscosity';
+
+  function 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.specificEntropy' "Return specific entropy as a function of the thermodynamic state record"
+    input 'Medium.ThermodynamicState' 'state';
+    output Real 's'(nominal = 1000.0, max = 1e7, min = -1e7, unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Integer 'npol' = 2;
+  algorithm
+    assert(true, "Specific Entropy, s(T), is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
+    's' := 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.s_T'('state'.'T');
+    annotation(smoothOrder = 2);
+  end 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.specificEntropy';
+
+  function 'Modelica.Math.Polynomials.evaluate_der' "Evaluate derivative of polynomial at a given abscissa value"
+    input Real[:] 'p';
+    input Real 'u';
+    input Real 'du';
+    output Real 'dy';
+    Integer 'n' = size('p', 1);
+  algorithm
+    'dy' := 'p'[1] * ('n' - 1);
+
+    for 'j' in 2:size('p', 1) - 1 loop
+      'dy' := 'p'['j'] * ('n' - 'j') + 'u' * 'dy';
+    end for;
+
+    'dy' := 'dy' * 'du';
+  end 'Modelica.Math.Polynomials.evaluate_der';
+
+  function 'Modelica.Math.Polynomials.evaluate' "Evaluate polynomial at a given abscissa value"
+    input Real[:] 'p';
+    input Real 'u';
+    output Real 'y';
+  algorithm
+    'y' := 'p'[1];
+
+    for 'j' in 2:size('p', 1) loop
+      'y' := 'p'['j'] + 'u' * 'y';
+    end for;
+    annotation(derivative(order = 1, zeroDerivative = 'p') = 'Modelica.Math.Polynomials.evaluate_der');
+  end 'Modelica.Math.Polynomials.evaluate';
+
+  function 'Modelica.Math.Polynomials.integralValue_der' "Time derivative of integral of polynomial p(u) from u_low to u_high, assuming only u_high as time-dependent (Leibniz rule)"
+    input Real[:] 'p';
+    input Real 'u_high';
+    input Real 'u_low' = 0.0;
+    input Real 'du_high';
+    input Real 'du_low' = 0.0;
+    output Real 'dintegral' = 0.0;
+  algorithm
+    'dintegral' := 'Modelica.Math.Polynomials.evaluate'('p', 'u_high') * 'du_high';
+  end 'Modelica.Math.Polynomials.integralValue_der';
+
   record 'Medium.ThermodynamicState'
     Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -38,13 +132,13 @@ package 'TestGlycol'
     'lambda' = 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.thermalConductivity'('medium.state');
     's' = 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.specificEntropy'('medium.state');
     'cv' = 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.specificHeatCapacityCv'('medium.state');
-    'u' = 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.specificEnthalpyOfT'('medium.state.p', 'medium.state.T', false) - 101300.0 / 'Modelica.Media.Incompressible.Examples.TestGlycol.Medium.density'('medium.state');
-    'h' = 'Modelica.Math.Polynomials.integralValue'({-7.666493085690878e-4, 3.406312561476593, 3555.6027310073478}, 'Modelica.Units.Conversions.to_degC'('medium.state.T'), 0.0);
-    'd' = 'Modelica.Math.Polynomials.evaluate'({-0.002086443325811417, -0.49655615344558274, 1053.3329167389916}, 'Modelica.Units.Conversions.to_degC'('medium.state.T'));
+    'u' = 'Modelica.Math.Polynomials.integralValue'({-7.666493085690878e-4, 3.406312561476593, 3555.6027310073478}, 'medium.state.T' - 273.15, 0.0) - 101300.0 / 'Modelica.Math.Polynomials.evaluate'({-0.002086443325811417, -0.49655615344558274, 1053.3329167389916}, 'medium.state.T' - 273.15);
+    'h' = 'Modelica.Math.Polynomials.integralValue'({-7.666493085690878e-4, 3.406312561476593, 3555.6027310073478}, 'medium.state.T' - 273.15, 0.0);
+    'd' = 'Modelica.Math.Polynomials.evaluate'({-0.002086443325811417, -0.49655615344558274, 1053.3329167389916}, 'medium.state.T' - 273.15);
     assert('medium.T' >= 243.14999999999998 and 'medium.T' <= 373.15, "Temperature T (= " + String('medium.T') + " K) is not in the allowed range (" + String(243.14999999999998) + " K <= T <= " + String(373.15) + " K) required from medium model \"" + "Glycol-Water 47%" + "\".", AssertionLevel.error);
     'medium.R_s' = 83.14462618153239;
     'medium.cp' = 'Modelica.Math.Polynomials.evaluate'({-7.666493085690878e-4, 3.406312561476593, 3555.6027310073478}, 'medium.T_degC');
-    'medium.h' = 'Modelica.Math.Polynomials.integralValue'({-7.666493085690878e-4, 3.406312561476593, 3555.6027310073478}, 'Modelica.Units.Conversions.to_degC'('medium.T'), 0.0);
+    'medium.h' = 'Modelica.Math.Polynomials.integralValue'({-7.666493085690878e-4, 3.406312561476593, 3555.6027310073478}, 'medium.T' - 273.15, 0.0);
     'medium.u' = 'medium.h' - 101300.0 / 'medium.d';
     'medium.d' = 'Modelica.Math.Polynomials.evaluate'({-0.002086443325811417, -0.49655615344558274, 1053.3329167389916}, 'medium.T_degC');
     'medium.state.T' = 'medium.T';

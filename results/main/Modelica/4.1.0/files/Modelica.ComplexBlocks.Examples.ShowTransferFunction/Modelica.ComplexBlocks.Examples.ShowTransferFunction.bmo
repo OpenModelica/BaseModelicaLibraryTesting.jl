@@ -1,5 +1,19 @@
 //! base 0.1.0
 package 'ShowTransferFunction'
+  function 'Modelica.ComplexBlocks.Examples.ShowTransferFunction.transferFunction.powerOfJ' "Internal function to compute j^k for any integer"
+    input Integer 'k';
+    output 'Complex' 'x';
+    Integer 'm' = mod('k', 4);
+  algorithm
+    'x' := if 'm' == 0 then 'Complex'(1.0, 0.0) else if 'm' == 1 then 'Complex'(0.0, 1.0) else if 'm' == 2 then 'Complex'(-1.0, 0.0) else 'Complex'(0.0, -1.0);
+    annotation(Inline = true);
+  end 'Modelica.ComplexBlocks.Examples.ShowTransferFunction.transferFunction.powerOfJ';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
+
   model 'ShowTransferFunction' "Test complex transfer function block"
     parameter Real 'm'(min = 0.0, unit = "kg", quantity = "Mass") = 0.2 "Mass";
     parameter Real 'd'(unit = "N.s/m", quantity = "TranslationalDampingConstant") = 0.01 "Damping coefficient (not the damping ratio)";

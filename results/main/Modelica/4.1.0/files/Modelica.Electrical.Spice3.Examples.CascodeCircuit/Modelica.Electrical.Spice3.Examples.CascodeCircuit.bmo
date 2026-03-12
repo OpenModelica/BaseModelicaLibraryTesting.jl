@@ -1,5 +1,43 @@
 //! base 0.1.0
 package 'CascodeCircuit'
+  function 'Modelica.Electrical.Spice3.Internal.Jfet.jfetNoBypassCode' "Calculations of currents and capacities"
+    input 'Modelica.Electrical.Spice3.Internal.Fet.Fet' 'in_f';
+    input 'Modelica.Electrical.Spice3.Internal.Jfet.JfetModelLine' 'in_fm';
+    input Integer 'in_m_type';
+    input Boolean 'in_m_bInit';
+    input Real[3] 'in_m_pVoltageValues'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    output 'Modelica.Electrical.Spice3.Internal.Fet.CurrrentsCapacitances' 'out_cc';
+    'Modelica.Electrical.Spice3.Internal.Fet.Fet' 'int_f';
+  algorithm
+    'int_f' := 'in_f';
+    'int_f'.'m_vgd' := 'in_m_type' * ('in_m_pVoltageValues'[1] - 'in_m_pVoltageValues'[2]);
+    'int_f'.'m_vgs' := 'in_m_type' * ('in_m_pVoltageValues'[1] - 'in_m_pVoltageValues'[3]);
+
+    if 'in_f'.'m_uic' and 'int_f'.'m_bICVGSIsGiven' > 0.5 then
+      'int_f'.'m_vgs' := 'in_m_type' * 'int_f'.'m_dICVGS';
+    end if;
+
+    if 'in_f'.'m_uic' and 'int_f'.'m_bICVDSIsGiven' > 0.5 then
+      'int_f'.'m_vgd' := 'in_m_type' * 'int_f'.'m_dICVDS' + 'int_f'.'m_vgs';
+    end if;
+
+    'int_f'.'m_vgs' := 'Modelica.Electrical.Spice3.Internal.SpiceRoot.limitJunctionVoltageRevised'('int_f'.'m_vgs');
+    'int_f'.'m_vgd' := 'Modelica.Electrical.Spice3.Internal.SpiceRoot.limitJunctionVoltageRevised'('int_f'.'m_vgd');
+    'int_f'.'m_vds' := 'int_f'.'m_vgs' - 'int_f'.'m_vgd';
+    ('int_f'.'m_cgd', 'int_f'.'m_ggd') := 'Modelica.Electrical.Spice3.Internal.Functions.junction2'('int_f'.'m_vgd', 'int_f'.'m_dTemp', 1.0, 'int_f'.'m_tSatCur');
+    'out_cc'.'iGD' := 'in_m_type' * 'int_f'.'m_cgd';
+    ('int_f'.'m_cgs', 'int_f'.'m_ggs') := 'Modelica.Electrical.Spice3.Internal.Functions.junction2'('int_f'.'m_vgs', 'int_f'.'m_dTemp', 1.0, 'int_f'.'m_tSatCur');
+    'out_cc'.'iGS' := 'in_m_type' * 'int_f'.'m_cgs';
+    'int_f' := 'Modelica.Electrical.Spice3.Internal.Jfet.drainCur'('int_f'.'m_vds', 'int_f'.'m_vgs', 'int_f'.'m_vgd', 'int_f', 'in_fm');
+    'out_cc'.'idrain' := 'in_m_type' * 'int_f'.'m_cdrain';
+
+    if not 'in_m_bInit' then
+      ('int_f'.'m_capgs', 'int_f'.'m_chargegs', 'int_f'.'m_capgd', 'int_f'.'m_chargegd') := 'Modelica.Electrical.Spice3.Internal.Jfet.calculateGateCap'('int_f', 'int_f'.'m_vgs', 'int_f'.'m_vgd');
+      'out_cc'.'cGD' := if 'in_m_bInit' then -1e40 else 'int_f'.'m_capgd';
+      'out_cc'.'cGS' := if 'in_m_bInit' then -1e40 else 'int_f'.'m_capgs';
+    end if;
+  end 'Modelica.Electrical.Spice3.Internal.Jfet.jfetNoBypassCode';
+
   record 'Modelica.Electrical.Spice3.Internal.Fet.Fet'
     Real 'm_dTemp'(nominal = 300.0, start = 300.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     Real 'm_area'(start = 1.0);

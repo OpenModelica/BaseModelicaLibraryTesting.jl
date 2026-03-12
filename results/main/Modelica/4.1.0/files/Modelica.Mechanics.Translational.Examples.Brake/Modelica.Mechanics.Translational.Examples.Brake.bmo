@@ -1,5 +1,23 @@
 //! base 0.1.0
 package 'Brake'
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
+
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   class 'Modelica.Blocks.Types.ExternalCombiTable1D'

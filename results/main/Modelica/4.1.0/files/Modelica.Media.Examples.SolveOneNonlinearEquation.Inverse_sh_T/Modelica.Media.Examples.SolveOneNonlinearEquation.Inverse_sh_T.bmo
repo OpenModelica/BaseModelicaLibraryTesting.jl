@@ -1,19 +1,112 @@
 //! base 0.1.0
 package 'Inverse_sh_T'
+  function 'Modelica.Math.Nonlinear.solveOneNonlinearEquation' "Solve f(u) = 0 in a very reliable and efficient way (f(u_min) and f(u_max) must have different signs)"
+    input 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' 'f';
+    input Real 'u_min';
+    input Real 'u_max';
+    input Real 'tolerance' = 2.220446049250313e-14;
+    output Real 'u';
+    constant Real 'eps' = 2.220446049250313e-16;
+    Real 'a' = 'u_min';
+    Real 'b' = 'u_max';
+    Real 'c';
+    Real 'd';
+    Real 'e';
+    Real 'm';
+    Real 's';
+    Real 'p';
+    Real 'q';
+    Real 'r';
+    Real 'tol';
+    Real 'fa';
+    Real 'fb';
+    Real 'fc';
+    Boolean 'found' = false;
+  algorithm
+    'fa' := 'f'('u_min');
+    'fb' := 'f'('u_max');
+    'fc' := 'fb';
+
+    if 'fa' > 0.0 and 'fb' > 0.0 or 'fa' < 0.0 and 'fb' < 0.0 then
+      'Modelica.Utilities.Streams.error'("The arguments u_min and u_max provided in the function call\n    solveOneNonlinearEquation(f,u_min,u_max)\ndo not bracket the root of the single non-linear equation 0=f(u):\n  u_min  = " + String('u_min') + "\n" + "  u_max  = " + String('u_max') + "\n" + "  fa = f(u_min) = " + String('fa') + "\n" + "  fb = f(u_max) = " + String('fb') + "\n" + "fa and fb must have opposite sign which is not the case");
+    end if;
+
+    'c' := 'a';
+    'fc' := 'fa';
+    'e' := 'b' - 'a';
+    'd' := 'e';
+
+    while not 'found' loop
+      if abs('fc') < abs('fb') then
+        'a' := 'b';
+        'b' := 'c';
+        'c' := 'a';
+        'fa' := 'fb';
+        'fb' := 'fc';
+        'fc' := 'fa';
+      end if;
+
+      'tol' := 2.0 * 'eps' * abs('b') + 'tolerance';
+      'm' := ('c' - 'b') / 2.0;
+
+      if abs('m') <= 'tol' or 'fb' == 0.0 then
+        'found' := true;
+        'u' := 'b';
+      elseif true then
+        if abs('e') < 'tol' or abs('fa') <= abs('fb') then
+          'e' := 'm';
+          'd' := 'e';
+        elseif true then
+          's' := 'fb' / 'fa';
+
+          if 'a' == 'c' then
+            'p' := 2.0 * 'm' * 's';
+            'q' := 1.0 - 's';
+          elseif true then
+            'q' := 'fa' / 'fc';
+            'r' := 'fb' / 'fc';
+            'p' := 's' * (2.0 * 'm' * 'q' * ('q' - 'r') - ('b' - 'a') * ('r' - 1.0));
+            'q' := ('q' - 1.0) * ('r' - 1.0) * ('s' - 1.0);
+          end if;
+
+          if 'p' > 0.0 then
+            'q' := -'q';
+          elseif true then
+            'p' := -'p';
+          end if;
+
+          's' := 'e';
+          'e' := 'd';
+
+          if 2.0 * 'p' < 3.0 * 'm' * 'q' - abs('tol' * 'q') and 'p' < abs(0.5 * 's' * 'q') then
+            'd' := 'p' / 'q';
+          elseif true then
+            'e' := 'm';
+            'd' := 'e';
+          end if;
+        end if;
+
+        'a' := 'b';
+        'fa' := 'fb';
+        'b' := 'b' + (if abs('d') > 'tol' then 'd' else if 'm' > 0.0 then 'tol' else -'tol');
+        'fb' := 'f'('b');
+
+        if 'fb' > 0.0 and 'fc' > 0.0 or 'fb' < 0.0 and 'fc' < 0.0 then
+          'c' := 'a';
+          'fc' := 'fa';
+          'e' := 'b' - 'a';
+          'd' := 'e';
+        end if;
+      end if;
+    end while;
+  end 'Modelica.Math.Nonlinear.solveOneNonlinearEquation';
+
   type 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' = enumeration('ZeroAt0K', 'ZeroAt25C', 'UserDefined');
 
-  record 'Modelica.Media.IdealGases.Common.DataRecord'
-    String 'name';
-    Real 'MM'(min = 0.0, unit = "kg/mol", quantity = "MolarMass");
-    Real 'Hf'(unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'H0'(unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'Tlimit'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[7] 'alow';
-    Real[2] 'blow';
-    Real[7] 'ahigh';
-    Real[2] 'bhigh';
-    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
-  end 'Modelica.Media.IdealGases.Common.DataRecord';
+  partial function 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' "Interface for a function with one input and one output Real signal"
+    input Real 'u';
+    output Real 'y';
+  end 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction';
 
   model 'Inverse_sh_T' "Solve h = h_T(T), s = s_T(T) for T, if h or s is given for ideal gas NASA"
     parameter Real 'T_min'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.0 "Vary temperature linearly from T_min (time=0) up to T_max (time=1)";
@@ -35,8 +128,8 @@ package 'Inverse_sh_T'
     der('s1') = if time < 1.0 then 517.813686500821 else 0.0;
     'Th' = 'Modelica.Math.Nonlinear.solveOneNonlinearEquation'(function 'Modelica.Media.Examples.SolveOneNonlinearEquation.Inverse_sh_T.Medium.T_h.f_nonlinear'(data = 'Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), h = 'h1'), 200.0, 6000.0, 2.220446049250313e-14);
     'Ts' = 'Modelica.Math.Nonlinear.solveOneNonlinearEquation'(function 'Modelica.Media.Examples.SolveOneNonlinearEquation.Inverse_sh_T.Medium.T_ps.f_nonlinear'(data = 'Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), p = 1e5, s = 's1'), 200.0, 6000.0, 2.220446049250313e-14);
-    'h2' = smooth(0, (if 'Th' < 1000.0 then 287.0525368759184 * (('Th' * ((-176.796731) + (-196.827561) * 'Modelica.Math.log'('Th') + 'Th' * (5.00915511 + 'Th' * (0.5 * (-0.00576101373) + 'Th' * (0.3333333333333333 * 1.06685993e-5 + 'Th' * (0.25 * (-7.94029797e-9) + 0.2 * 2.18523191e-12 * 'Th'))))) - 10099.5016) / 'Th') else 287.0525368759184 * (('Th' * (6462.26319 + (-1257.8746) * 'Modelica.Math.log'('Th') + 'Th' * (5.14455867 + 'Th' * (0.5 * (-2.13854179e-4) + 'Th' * (0.3333333333333333 * 7.06522784e-8 + 'Th' * (0.25 * (-1.07148349e-11) + 0.2 * 6.57780015e-16 * 'Th'))))) - 241521.443) / 'Th')) + (if true then -(-4333.833858403446) else 0.0) + (if 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K' then 298609.6803431054 else 0.0) + (if 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined' then 0.0 else 0.0));
-    's2' = 'Modelica.Media.IdealGases.Common.Functions.s0_T'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'Ts') - 287.0525368759184 * 'Modelica.Math.log'(1e5 / 101325.0);
+    'h2' = smooth(0, (if 'Th' < 1000.0 then 287.0525368759184 * (('Th' * ((-176.796731) + (-196.827561) * log('Th') + 'Th' * (5.00915511 + 'Th' * (0.5 * (-0.00576101373) + 'Th' * (0.3333333333333333 * 1.06685993e-5 + 'Th' * (0.25 * (-7.94029797e-9) + 0.2 * 2.18523191e-12 * 'Th'))))) - 10099.5016) / 'Th') else 287.0525368759184 * (('Th' * (6462.26319 + (-1257.8746) * log('Th') + 'Th' * (5.14455867 + 'Th' * (0.5 * (-2.13854179e-4) + 'Th' * (0.3333333333333333 * 7.06522784e-8 + 'Th' * (0.25 * (-1.07148349e-11) + 0.2 * 6.57780015e-16 * 'Th'))))) - 241521.443) / 'Th')) + (if true then -(-4333.833858403446) else 0.0) + (if 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K' then 298609.6803431054 else 0.0) + (if 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'ZeroAt0K' == 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined' then 0.0 else 0.0));
+    's2' = (if 'Ts' < 1000.0 then 287.0525368759184 * ((-3.921504225) - 0.5 * 10099.5016 / ('Ts' * 'Ts') - (-196.827561) / 'Ts' + 5.00915511 * log('Ts') + 'Ts' * ((-0.00576101373) + 'Ts' * (0.5 * 1.06685993e-5 + 'Ts' * (0.3333333333333333 * (-7.94029797e-9) + 0.25 * 2.18523191e-12 * 'Ts')))) else 287.0525368759184 * ((-8.147411905) - 0.5 * 241521.443 / ('Ts' * 'Ts') - (-1257.8746) / 'Ts' + 5.14455867 * log('Ts') + 'Ts' * ((-2.13854179e-4) + 'Ts' * (0.5 * 7.06522784e-8 + 'Ts' * (0.3333333333333333 * (-1.07148349e-11) + 0.25 * 6.57780015e-16 * 'Ts'))))) - 287.0525368759184 * log(1e5 / 101325.0);
     annotation(experiment(StopTime = 1));
   end 'Inverse_sh_T';
 end 'Inverse_sh_T';
