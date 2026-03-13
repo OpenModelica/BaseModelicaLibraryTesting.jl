@@ -8,6 +8,10 @@ const LIBRARY_VERSION = "4.1.0"
 const CMP_REL_TOL = 0.02
 const CMP_ABS_TOL = 1e-6
 
+# CSV files larger than this limit are not committed to gh-pages (GitHub
+# enforces a 100 MB hard cap; we use a conservative 20 MB soft limit).
+const CSV_MAX_SIZE_MB = 20
+
 # ── Comparison settings ────────────────────────────────────────────────────────
 
 """

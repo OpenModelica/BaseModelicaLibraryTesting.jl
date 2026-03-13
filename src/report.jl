@@ -14,7 +14,7 @@ function _status_cell(ok::Bool, t::Float64, logFile::Union{String,Nothing})
 end
 
 """
-    _cmp_cell(r, results_root) → HTML string
+    _cmp_cell(r, results_root, csv_max_size_mb) → HTML string
 
 Build the "Ref Cmp" table cell for one model row.
 
@@ -25,20 +25,20 @@ Cell colour:
 - grey    (`na`)      — no reference data at all
 
 The sim CSV is always linked when the file exists (or shows "(CSV N/A)" when it
-exceeded `CSV_MAX_SIZE_MB` and was replaced by a `.toobig` marker).  When there
+exceeded `csv_max_size_mb` MB and was replaced by a `.toobig` marker).  When there
 are failures or skipped signals the detail page `<short>_diff.html` — which holds
 zoomable charts and the variable-coverage table — is also linked.
 """
-function _cmp_cell(r::ModelResult, results_root::String)
+function _cmp_cell(r::ModelResult, results_root::String, csv_max_size_mb::Int)
     short = split(r.name, ".")[end]
 
     # ── Sim CSV link ────────────────────────────────────────────────────────────
     sim_csv     = joinpath("files", r.name, "$(short)_sim.csv")
     abs_sim_csv = joinpath(results_root, sim_csv)
-    csv_link = if isfile(abs_sim_csv)
+    csv_link = if isfile(abs_sim_csv * ".toobig")
+        """ <span title="Result file exceeds $(csv_max_size_mb) MB and was not uploaded">(CSV N/A)</span>"""
+    elseif isfile(abs_sim_csv)
         """ <a href="$sim_csv">(CSV)</a>"""
-    elseif isfile(abs_sim_csv * ".toobig")
-        """ <span title="Result file exceeds $(CSV_MAX_SIZE_MB) MB and was not uploaded">(CSV N/A)</span>"""
     else
         ""
     end
@@ -87,12 +87,12 @@ function _format_duration(t::Float64)::String
 end
 
 """
-    generate_report(results, results_root, info) → report_path
+    generate_report(results, results_root, info; csv_max_size_mb) → report_path
 
 Write an `index.html` overview report to `results_root` and return its path.
 """
 function generate_report(results::Vector{ModelResult}, results_root::String,
-                         info::RunInfo)
+                         info::RunInfo; csv_max_size_mb::Int = CSV_MAX_SIZE_MB)
     n     = length(results)
     n_exp = count(r -> r.export_success, results)
     n_par = count(r -> r.parse_success,  results)
@@ -113,7 +113,7 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
       $(_status_cell(r.export_success, r.export_time, rel_log_file_or_nothing(results_root, r.name, "export")))
       $(_status_cell(r.parse_success,  r.parse_time,  rel_log_file_or_nothing(results_root, r.name, "parsing")))
       $(_status_cell(r.sim_success,    r.sim_time,    rel_log_file_or_nothing(results_root, r.name, "sim")))
-      $(_cmp_cell(r, results_root))
+      $(_cmp_cell(r, results_root, csv_max_size_mb))
     </tr>""" for r in results], "\n")
 
     bm_sha_link = isempty(info.bm_sha) ? "" :
