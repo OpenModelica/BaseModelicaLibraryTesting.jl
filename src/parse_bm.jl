@@ -18,17 +18,22 @@ function run_parse(bm_path::String, model_dir::String,
     parse_error   = ""
     ode_prob      = nothing
 
-    log_file = open(joinpath(model_dir, "$(model)_parsing.log"), "w")
+    log_file    = open(joinpath(model_dir, "$(model)_parsing.log"), "w")
+    stdout_pipe = Pipe()
     println(log_file, "Model:   $model")
     logger = Logging.SimpleLogger(log_file, Logging.Debug)
     t0 = time()
     try
         # create_odeproblem returns an ODEProblem using the Experiment
         # annotation for StartTime/StopTime/Tolerance/Interval.
-        # Redirect all library log output (including Symbolics warnings)
-        # to the log file so they don't clutter stdout.
-        ode_prob      = Logging.with_logger(logger) do
-            BaseModelica.create_odeproblem(bm_path)
+        # Redirect Julia log output to the log file and stdout/stderr to a
+        # buffer so they can be appended after the summary lines.
+        ode_prob      = redirect_stdout(stdout_pipe) do
+            redirect_stderr(stdout_pipe) do
+                Logging.with_logger(logger) do
+                    BaseModelica.create_odeproblem(bm_path)
+                end
+            end
         end
         parse_time    = time() - t0
         parse_success = true
@@ -36,8 +41,11 @@ function run_parse(bm_path::String, model_dir::String,
         parse_time  = time() - t0
         parse_error = sprint(showerror, e, catch_backtrace())
     end
+    close(stdout_pipe.in)
+    captured = read(stdout_pipe.out, String)
     println(log_file, "Time:    $(round(parse_time; digits=3)) s")
     println(log_file, "Success: $parse_success")
+    isempty(captured) || print(log_file, "\n--- Parser output ---\n", captured)
     isempty(parse_error) || println(log_file, "\n--- Error ---\n$parse_error")
     close(log_file)
 
