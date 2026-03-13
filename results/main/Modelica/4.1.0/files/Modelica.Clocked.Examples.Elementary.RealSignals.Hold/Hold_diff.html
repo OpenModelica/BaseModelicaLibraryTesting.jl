@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Diff &#x2014; Hold</title>
+  <link rel="stylesheet" href="../../assets/dygraph.min.css"/>
+  <script src="../../assets/dygraph.min.js"></script>
+  <style>
+    body  { font-family: sans-serif; margin: 2em; font-size: 14px; }
+    h1    { font-size: 1.3em; }
+    h3    { font-size: 1.1em; margin-top: 2.5em; border-bottom: 1px solid #ddd;
+            padding-bottom: 4px; }
+    .graph { width: 100%; height: 320px; margin-bottom: 0.5em; }
+    .meta  { color: #555; font-size: 12px; margin: 0.4em 0 2em; }
+    a { color: #0366d6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .dygraph-legend { font-size: 12px !important; }
+  </style>
+</head>
+<body>
+<h1>Diff &#x2014; Modelica.Clocked.Examples.Elementary.RealSignals.Hold</h1>
+<p class="meta">0 signal(s) outside tolerance (rel &#x2264; 2%, abs &#x2264; 1.0e-6) &nbsp;&middot;&nbsp; 3 signal(s) not found in simulation</p>
+<h2 style="font-size:1.1em;margin-top:2em;">Variable Coverage &#x2014; 0 of 3 reference signal(s) found</h2><table style="border-collapse:collapse;font-size:13px;"><thead><tr><th style="border:1px solid #ccc;padding:3px 10px;background:#eee;text-align:left;">Signal</th><th style="border:1px solid #ccc;padding:3px 10px;background:#eee;text-align:left;">Status</th></tr></thead><tbody><tr style="background:#fff3cd"><td style="border:1px solid #ccc;padding:3px 10px;">sample1.y</td><td style="border:1px solid #ccc;padding:3px 10px;">not found in simulation</td></tr><tr style="background:#fff3cd"><td style="border:1px solid #ccc;padding:3px 10px;">shiftSample1.y</td><td style="border:1px solid #ccc;padding:3px 10px;">not found in simulation</td></tr><tr style="background:#fff3cd"><td style="border:1px solid #ccc;padding:3px 10px;">hold1.y</td><td style="border:1px solid #ccc;padding:3px 10px;">not found in simulation</td></tr></tbody></table>
+<div id="charts"></div>
+<script>
+var csvRaw = ``;
+
+(function () {
+  var lines = csvRaw.trim().split('\n');
+  if (lines.length < 2) return;
+  var headers = lines[0].split(',').map(function (s) { return s.trim(); });
+  var rows    = lines.slice(1).filter(function (l) { return l.trim() !== ''; })
+                             .map(function (l) { return l.split(',').map(Number); });
+
+  // Collect unique signal names from columns ending with "_ref"
+  var sigs = [], seen = {};
+  headers.forEach(function (h) {
+    if (h.slice(-4) === '_ref') {
+      var sig = h.slice(0, h.length - 4);
+      if (!seen[sig]) { sigs.push(sig); seen[sig] = true; }
+    }
+  });
+
+  var container = document.getElementById('charts');
+
+  sigs.forEach(function (sig, si) {
+    var refIdx = headers.indexOf(sig + '_ref');
+    var simIdx = headers.indexOf(sig + '_sim');
+    var errIdx = headers.indexOf(sig + '_relerr');
+
+    var data = rows.map(function (r) {
+      return [r[0], r[refIdx], r[simIdx], r[errIdx]];
+    });
+
+    var h3  = document.createElement('h3');
+    h3.textContent = sig;
+    var div = document.createElement('div');
+    div.id  = 'g' + si;
+    div.className = 'graph';
+    container.appendChild(h3);
+    container.appendChild(div);
+
+    new Dygraph(div, data, {
+      labels:     ['time', sig + ' (ref)', sig + ' (sim)', 'rel. err'],
+      colors:     ['#1a73e8', '#e8700a', '#b0b0b0'],
+      series: {
+        'rel. err': { axis: 'y2', strokeWidth: 1 }
+      },
+      axes: {
+        y:  { axisLabelWidth: 70 },
+        y2: {
+          independentTicks: true,
+          axisLabelFormatter: function (v) {
+            return (v * 100).toPrecision(3) + '%';
+          },
+          valueFormatter: function (v) {
+            return (v * 100).toPrecision(4) + '%';
+          }
+        }
+      },
+      y2label:           'Relative Error',
+      xlabel:            'time',
+      legend:            'always',
+      showRangeSelector: true,
+      highlightCircleSize: 3,
+      strokeWidth:       2
+    });
+  });
+}());
+</script>
+</body>
+</html>
