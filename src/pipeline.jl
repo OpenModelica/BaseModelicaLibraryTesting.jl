@@ -21,7 +21,6 @@ function _bm_sha()::String
             if git_source !== nothing
                 for depot in Base.DEPOT_PATH
                     clones_dir = joinpath(depot, "clones")
-                    @show clones_dir
                     isdir(clones_dir) || continue
                     for clone in readdir(clones_dir; join=true)
                         isdir(clone) || continue
@@ -54,12 +53,12 @@ end
 # ── Per-model orchestrator ─────────────────────────────────────────────────────
 
 """
-    test_model(omc, model, results_root, ref_root) → ModelResult
+    test_model(omc, model, results_root, ref_root; csv_max_size_mb) → ModelResult
 
 Run the four-phase pipeline for a single model and return its result.
 """
 function test_model(omc::OMJulia.OMCSession, model::String, results_root::String,
-                    ref_root::String)::ModelResult
+                    ref_root::String; csv_max_size_mb::Int = CSV_MAX_SIZE_MB)::ModelResult
     model_dir = joinpath(results_root, "files", model)
     mkpath(model_dir)
 
@@ -78,7 +77,7 @@ function test_model(omc::OMJulia.OMCSession, model::String, results_root::String
         model, true, exp_t, exp_err, false, par_t, par_err, false, 0.0, "", 0, 0, 0, "")
 
     # Phase 3 ──────────────────────────────────────────────────────────────────
-    sim_ok, sim_t, sim_err, sol = run_simulate(ode_prob, model_dir, model)
+    sim_ok, sim_t, sim_err, sol = run_simulate(ode_prob, model_dir, model; csv_max_size_mb)
 
     # Phase 4 (optional) ───────────────────────────────────────────────────────
     cmp_total, cmp_pass, cmp_skip, cmp_csv = 0, 0, 0, ""
@@ -112,13 +111,14 @@ Discovers models via OMC, runs `test_model` for each, then writes the HTML
 report.  Returns a `Vector{ModelResult}`.
 """
 function main(;
-    library      :: String                = LIBRARY,
-    version      :: String                = LIBRARY_VERSION,
-    filter       :: Union{String,Nothing} = nothing,
-    omc_exe      :: String                = get(ENV, "OMC_EXE", "omc"),
-    results_root :: String                = "",
-    ref_root     :: String                = get(ENV, "MAPLIB_REF", ""),
-    bm_options   :: String                = get(ENV, "BM_OPTIONS", "scalarize,moveBindings,inlineFunctions"),
+    library          :: String                = LIBRARY,
+    version          :: String                = LIBRARY_VERSION,
+    filter           :: Union{String,Nothing} = nothing,
+    omc_exe          :: String                = get(ENV, "OMC_EXE", "omc"),
+    results_root     :: String                = "",
+    ref_root         :: String                = get(ENV, "MAPLIB_REF", ""),
+    bm_options       :: String                = get(ENV, "BM_OPTIONS", "scalarize,moveBindings,inlineFunctions"),
+    csv_max_size_mb  :: Int                   = CSV_MAX_SIZE_MB,
 )
     t0 = time()
 
@@ -186,7 +186,7 @@ function main(;
 
         for (i, model) in enumerate(models)
             @info "[$i/$(length(models))] $model"
-            result = test_model(omc, model, results_root, ref_root)
+            result = test_model(omc, model, results_root, ref_root; csv_max_size_mb)
             push!(results, result)
 
             phase = result.sim_success    ? "SIM OK"     :
@@ -221,7 +221,7 @@ function main(;
         time() - t0,
     )
 
-    generate_report(results, results_root, info)
+    generate_report(results, results_root, info; csv_max_size_mb)
     write_summary(results, results_root, info)
     return results
 end

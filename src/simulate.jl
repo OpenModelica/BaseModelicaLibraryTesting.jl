@@ -6,15 +6,18 @@ import ModelingToolkit
 import Printf: @sprintf
 
 """
-    run_simulate(ode_prob, model_dir, model) → (success, time, error, sol)
+    run_simulate(ode_prob, model_dir, model; csv_max_size_mb) → (success, time, error, sol)
 
 Solve `ode_prob` with Rodas5P (stiff solver).  On success, also writes the
 full solution as a CSV file `<Short>_sim.csv` in `model_dir`.
 Writes a `<model>_sim.log` file in `model_dir`.
 Returns `nothing` as the fourth element on failure.
+
+CSV files larger than `csv_max_size_mb` MiB are deleted and replaced with a
+`<Short>_sim.csv.toobig` marker so that the report can note the omission.
 """
-function run_simulate(ode_prob, model_dir::String,
-                      model::String)::Tuple{Bool,Float64,String,Any}
+function run_simulate(ode_prob, model_dir::String, model::String;
+                      csv_max_size_mb::Int = CSV_MAX_SIZE_MB)::Tuple{Bool,Float64,String,Any}
     sim_success = false
     sim_time    = 0.0
     sim_error   = ""
@@ -63,6 +66,13 @@ function run_simulate(ode_prob, model_dir::String,
                     end
                     println(f, join(row, ","))
                 end
+            end
+            csv_bytes = filesize(sim_csv)
+            if csv_bytes > csv_max_size_mb * 1024^2
+                csv_mb = round(csv_bytes / 1024^2; digits=1)
+                @warn "Simulation CSV for $model is $(csv_mb) MB (> $(csv_max_size_mb) MB limit); skipping."
+                rm(sim_csv)
+                write(sim_csv * ".toobig", string(csv_bytes))
             end
         catch e
             @warn "Failed to write simulation CSV for $model: $(sprint(showerror, e))"
