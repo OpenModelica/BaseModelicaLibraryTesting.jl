@@ -19,18 +19,15 @@
 </head>
 <body>
 <h1>Diff &#x2014; {{MODEL}}</h1>
-<p class="meta">
-  {{N_FAIL}} signal(s) outside tolerance
-  (rel &#x2264; {{REL_TOL_PCT}}%,&nbsp; abs &#x2264; {{ABS_TOL}})
-  &nbsp;&middot;&nbsp;
-  <a href="{{CSV_NAME}}">Download CSV</a>
-</p>
+{{META_BLOCK}}
+{{VAR_TABLE}}
 <div id="charts"></div>
 <script>
 var csvRaw = `{{CSV_DATA}}`;
 
 (function () {
-  var lines   = csvRaw.trim().split('\n');
+  var lines = csvRaw.trim().split('\n');
+  if (lines.length < 2) return;
   var headers = lines[0].split(',').map(function (s) { return s.trim(); });
   var rows    = lines.slice(1).filter(function (l) { return l.trim() !== ''; })
                              .map(function (l) { return l.split(',').map(Number); });

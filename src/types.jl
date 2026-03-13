@@ -87,7 +87,8 @@ struct ModelResult
     sim_success    :: Bool
     sim_time       :: Float64
     sim_error      :: String
-    cmp_total      :: Int     # 0 = no reference data available
+    cmp_total      :: Int     # signals actually compared (found in simulation)
     cmp_pass       :: Int
+    cmp_skip       :: Int     # reference signals not found in simulation
     cmp_csv        :: String  # absolute path to diff CSV; "" if all pass or no comparison
 end
