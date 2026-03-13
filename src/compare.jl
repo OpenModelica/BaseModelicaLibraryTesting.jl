@@ -75,7 +75,8 @@ function _read_ref_csv(path::String)::Tuple{Vector{Float64}, Dict{String,Vector{
         end
     end
 
-    times = get(data, "time", Float64[])
+    time_key = something(findfirst(h -> lowercase(h) == "time", headers), nothing)
+    times = time_key === nothing ? Float64[] : data[headers[time_key]]
     return times, data
 end
 
@@ -218,74 +219,138 @@ compare_settings() = _CMP_SETTINGS
 # ── Interactive diff HTML ──────────────────────────────────────────────────────
 
 """
-    write_diff_html(diff_csv_path, model)
+    write_diff_html(model_dir, model; diff_csv_path, pass_sigs, skip_sigs)
 
-Generate an interactive HTML page for a `_diff.csv` file using the bundled
-Dygraphs library.  One zoomable chart is created per failing signal, showing
-the reference trace, the simulation trace, and the relative error on a second
-y-axis.  The HTML file is written next to the CSV with a `.html` extension.
+Generate an interactive HTML page for a comparison result using the bundled
+Dygraphs library.  The page always includes a variable-coverage table listing
+every reference signal and whether it was found in the simulation.  When there
+are failing signals a zoomable chart is added per signal showing the reference
+trace, the simulation trace, and the relative error on a second y-axis.
 
-The page references `../../assets/dygraph.min.*` relative to its location
-(`<results_root>/files/<model>/`).  `_install_assets` is called automatically
-to copy the library files to `<results_root>/assets/` if not already present.
+`model_dir` is `<results_root>/files/<model>`.  The HTML is written to
+`<model_dir>/<short>_diff.html`.  `diff_csv_path` is the absolute path to the
+diff CSV (empty string when all comparable signals pass).
+
+The page references `../../assets/dygraph.min.*` relative to its location.
+`_install_assets` is called automatically.
 """
-function write_diff_html(diff_csv_path::String, model::String)
-    lines = readlines(diff_csv_path)
-    isempty(lines) && return
-
-    headers = [replace(strip(h), "\"" => "") for h in split(lines[1], ",")]
-
-    # Extract unique signal names from headers like "C1.v_ref", "C1.v_sim", …
-    fail_sigs = String[]
-    for h in headers
-        if length(h) > 4 && h[end-3:end] == "_ref"
-            push!(fail_sigs, h[1:end-4])
-        end
-    end
-    isempty(fail_sigs) && return
-
-    short_name = split(model, ".")[end]
-
-    # Escape CSV content for embedding as a JS template literal.
-    # The only characters that would break a template literal are \ and `.
-    csv_text = read(diff_csv_path, String)
-    csv_js   = replace(replace(csv_text, "\\" => "\\\\"), "`" => "\\`")
-
-    # Derive results_root from diff_csv_path: <results_root>/files/<model>/<file>
-    results_root = dirname(dirname(dirname(abspath(diff_csv_path))))
+function write_diff_html(model_dir::String, model::String;
+                         diff_csv_path::String  = "",
+                         pass_sigs::Vector{String} = String[],
+                         skip_sigs::Vector{String} = String[])
+    short_name   = split(model, ".")[end]
+    html_path    = joinpath(model_dir, "$(short_name)_diff.html")
+    results_root = dirname(dirname(abspath(model_dir)))   # …/files/<model> → …
     _install_assets(results_root)
 
-    # Fill template placeholders
+    # Read fail_sigs and CSV content from the diff CSV (may not exist).
+    fail_sigs = String[]
+    csv_js    = ""
+    if !isempty(diff_csv_path) && isfile(diff_csv_path)
+        lines = readlines(diff_csv_path)
+        if length(lines) >= 1
+            headers = [replace(strip(h), "\"" => "") for h in split(lines[1], ",")]
+            for h in headers
+                length(h) > 4 && h[end-3:end] == "_ref" && push!(fail_sigs, h[1:end-4])
+            end
+            csv_text = read(diff_csv_path, String)
+            csv_js   = replace(replace(csv_text, "\\" => "\\\\"), "`" => "\\`")
+        end
+    end
+
+    # ── Meta block ──────────────────────────────────────────────────────────────
+    tol_str  = "(rel &#x2264; $(round(Int, _CMP_SETTINGS.rel_tol * 100))%," *
+               " abs &#x2264; $(_CMP_SETTINGS.abs_tol))"
+    csv_link = isempty(fail_sigs) ? "" :
+        """ &nbsp;&middot;&nbsp; <a href="$(short_name)_diff.csv">Download diff CSV</a>"""
+    skip_note = isempty(skip_sigs) ? "" :
+        """ &nbsp;&middot;&nbsp; $(length(skip_sigs)) signal(s) not found in simulation"""
+    meta_block = """<p class="meta">$(length(fail_sigs)) signal(s) outside tolerance """ *
+                 """$tol_str$(skip_note)$(csv_link)</p>"""
+
+    # ── Variable-coverage table ──────────────────────────────────────────────────
+    all_sigs = vcat(pass_sigs, fail_sigs, skip_sigs)
+    var_table = if isempty(all_sigs)
+        ""
+    else
+        n_found = length(pass_sigs) + length(fail_sigs)
+        n_total = n_found + length(skip_sigs)
+        th = "border:1px solid #ccc;padding:3px 10px;background:#eee;text-align:left;"
+        td = "border:1px solid #ccc;padding:3px 10px;"
+        rows = String[]
+        for sig in pass_sigs
+            push!(rows, "<tr style=\"background:#d4edda\"><td style=\"$td\">$sig</td>" *
+                        "<td style=\"$td\">&#10003; pass</td></tr>")
+        end
+        for sig in fail_sigs
+            push!(rows, "<tr style=\"background:#f8d7da\"><td style=\"$td\">$sig</td>" *
+                        "<td style=\"$td\">&#10007; fail</td></tr>")
+        end
+        for sig in skip_sigs
+            push!(rows, "<tr style=\"background:#fff3cd\"><td style=\"$td\">$sig</td>" *
+                        "<td style=\"$td\">not found in simulation</td></tr>")
+        end
+        """<h2 style="font-size:1.1em;margin-top:2em;">Variable Coverage """ *
+        """&#x2014; $n_found of $n_total reference signal(s) found</h2>""" *
+        """<table style="border-collapse:collapse;font-size:13px;">""" *
+        """<thead><tr><th style="$th">Signal</th><th style="$th">Status</th></tr></thead>""" *
+        """<tbody>$(join(rows))</tbody></table>"""
+    end
+
+    # ── Fill template ────────────────────────────────────────────────────────────
     template = read(joinpath(_ASSETS_DIR, "diff_template.html"), String)
     html = replace(
         template,
         "{{TITLE}}"       => short_name,
         "{{MODEL}}"       => model,
-        "{{N_FAIL}}"      => string(length(fail_sigs)),
-        "{{REL_TOL_PCT}}" => string(round(Int, _CMP_SETTINGS.rel_tol * 100)),
-        "{{ABS_TOL}}"     => string(_CMP_SETTINGS.abs_tol),
-        "{{CSV_NAME}}"    => "$(short_name)_diff.csv",
+        "{{META_BLOCK}}"  => meta_block,
         "{{CSV_DATA}}"    => csv_js,
+        "{{VAR_TABLE}}"   => var_table,
     )
-
-    html_path = replace(diff_csv_path, r"\.csv$" => ".html")
     write(html_path, html)
 end
 
 # ── Reference comparison ───────────────────────────────────────────────────────
 
 """
-    compare_with_reference(sol, ref_csv_path, model_dir, model;
-                           settings) → (total, pass, diff_csv)
+    _eval_sim(sol, accessor, t) → Float64
 
-Compare a DifferentialEquations solution against the MAP-LIB reference CSV.
+Evaluate the simulation solution at time `t` for a single signal.  `accessor`
+is either an `Int` (index into the state vector, for unknowns) or an MTK
+symbolic variable (for observed variables, evaluated via `sol(t; idxs=sym)`).
+Returns `NaN` if the observed-variable evaluation fails.
+"""
+function _eval_sim(sol, accessor, t::Float64)::Float64
+    if accessor isa Integer
+        return Float64(sol(t)[accessor])
+    else
+        try
+            return Float64(sol(t; idxs = accessor))
+        catch
+            return NaN
+        end
+    end
+end
+
+"""
+    compare_with_reference(sol, ref_csv_path, model_dir, model;
+                           settings) → (total, pass, skip, diff_csv)
+
+Compare a DifferentialEquations / MTK solution against the MAP-LIB reference CSV.
 
 Returns:
-  total    — number of signals successfully compared
-  pass     — number of signals within tolerance
+  total    — number of reference signals successfully compared
+  pass     — number of compared signals within tolerance
+  skip     — number of reference signals not found in the simulation
   diff_csv — absolute path to the written diff CSV (empty string if all pass)
 
-Signals that cannot be matched to an MTK state variable are skipped.
+The lookup covers both MTK state variables (`ModelingToolkit.unknowns`) and
+observed (algebraically eliminated) variables (`ModelingToolkit.observed`),
+so signals that MTK removed during structural simplification are still matched
+and compared via continuous interpolation of the observed function.
+
+A `_diff.html` detail page with zoomable charts and a variable-coverage table
+is written whenever there are failures or skipped signals.
 
 # Keyword arguments
 - `settings` — a `CompareSettings` instance controlling tolerances and the
@@ -299,50 +364,79 @@ function compare_with_reference(
     model_dir::String,
     model::String;
     settings::CompareSettings = _CMP_SETTINGS,
-)::Tuple{Int,Int,String}
+)::Tuple{Int,Int,Int,String}
 
     times, ref_data = _read_ref_csv(ref_csv_path)
-    isempty(times) && return 0, 0, ""
+    isempty(times) && return 0, 0, 0, ""
 
     # Determine which signals to compare: prefer comparisonSignals.txt
     sig_file = joinpath(dirname(ref_csv_path), "comparisonSignals.txt")
     signals  = if isfile(sig_file)
-        filter(s -> s != "time" && !isempty(s), strip.(readlines(sig_file)))
+        filter(s -> lowercase(s) != "time" && !isempty(s), strip.(readlines(sig_file)))
     else
-        filter(k -> k != "time", collect(keys(ref_data)))
+        filter(k -> lowercase(k) != "time", collect(keys(ref_data)))
     end
 
-    # Build normalized-name → state-variable-index map from the MTK system
-    sys      = sol.prob.f.sys
-    vars     = ModelingToolkit.unknowns(sys)
-    var_norm = Dict(_normalize_var(string(v)) => i for (i, v) in enumerate(vars))
+    # ── Build variable accessor map ──────────────────────────────────────────────
+    # var_access: normalized name → Int (state index) or MTK symbolic (observed).
+    # State variables come first so they take priority over any observed alias.
+    sys = sol.prob.f.sys
+    var_access = Dict{String,Any}()
+    for (i, v) in enumerate(ModelingToolkit.unknowns(sys))
+        var_access[_normalize_var(string(v))] = i
+    end
+    # Observed variables: algebraically eliminated by structural_simplify.
+    # MTK solution objects support sol(t; idxs=sym) for these via SciML's
+    # SymbolicIndexingInterface, so they can be interpolated like state vars.
+    try
+        for eq in ModelingToolkit.observed(sys)
+            name = _normalize_var(string(eq.lhs))
+            haskey(var_access, name) || (var_access[name] = eq.lhs)
+        end
+    catch e
+        @warn "Could not enumerate observed variables: $(sprint(showerror, e))"
+    end
 
-    # Clip reference time points to the simulation interval
+    # Clip reference time to the simulation interval
     t_start    = sol.t[1]
     t_end      = sol.t[end]
     valid_mask = (times .>= t_start) .& (times .<= t_end)
     t_ref      = times[valid_mask]
-    isempty(t_ref) && return 0, 0, ""
+    isempty(t_ref) && return 0, 0, 0, ""
 
-    n_total    = 0
-    n_pass     = 0
-    fail_sigs  = String[]
-    fail_scales = Dict{String,Float64}()   # peak |ref| per failing signal
+    n_total     = 0
+    n_pass      = 0
+    pass_sigs   = String[]
+    fail_sigs   = String[]
+    skip_sigs   = String[]
+    fail_scales = Dict{String,Float64}()
 
     for sig in signals
-        haskey(ref_data, sig)                 || continue
-        haskey(var_norm, _normalize_var(sig)) || continue  # skip non-state signals
+        haskey(ref_data, sig) || continue   # signal absent from ref CSV entirely
 
+        norm = _normalize_var(sig)
+        if !haskey(var_access, norm)
+            push!(skip_sigs, sig)
+            continue
+        end
+
+        accessor  = var_access[norm]
         ref_vals  = ref_data[sig][valid_mask]
-        idx       = var_norm[_normalize_var(sig)]
         n_total  += 1
 
-        # Peak magnitude of the reference signal — used as the absolute-error scale
-        # near zero crossings so that relative error does not blow up.
+        # Peak |ref| — used as amplitude floor so relative error stays finite
+        # near zero crossings.
         ref_scale = isempty(ref_vals) ? 0.0 : maximum(abs, ref_vals)
 
-        # Interpolate simulation at reference time points
-        sim_vals = [sol(t)[idx] for t in t_ref]
+        # Interpolate simulation at reference time points.
+        sim_vals = [_eval_sim(sol, accessor, t) for t in t_ref]
+
+        # If evaluation returned NaN (observed-var access failed), treat as skip.
+        if any(isnan, sim_vals)
+            n_total -= 1
+            push!(skip_sigs, sig)
+            continue
+        end
 
         pass = all(zip(sim_vals, ref_vals)) do (s, r)
             _check_point(s, r, ref_scale, settings)
@@ -350,32 +444,31 @@ function compare_with_reference(
 
         if pass
             n_pass += 1
+            push!(pass_sigs, sig)
         else
             push!(fail_sigs, sig)
             fail_scales[sig] = ref_scale
         end
     end
 
-    # Write diff CSV for failing signals (wide format: ref + sim + relerr per signal)
-    diff_csv = ""
+    # ── Write diff CSV for failing signals ──────────────────────────────────────
+    # Wide format: time, <sig>_ref, <sig>_sim, <sig>_relerr per failing signal.
+    short_name = split(model, ".")[end]
+    diff_csv   = ""
     if !isempty(fail_sigs)
-        short_name = split(model, ".")[end]
-        diff_csv   = joinpath(model_dir, "$(short_name)_diff.csv")
-
+        diff_csv = joinpath(model_dir, "$(short_name)_diff.csv")
         open(diff_csv, "w") do f
             cols = ["time"]
             for sig in fail_sigs
                 push!(cols, "$(sig)_ref", "$(sig)_sim", "$(sig)_relerr")
             end
             println(f, join(cols, ","))
-
             for (ti, t) in enumerate(t_ref)
                 row = [@sprintf("%.10g", t)]
                 for sig in fail_sigs
                     ref_vals  = ref_data[sig][valid_mask]
                     r         = ref_vals[ti]
-                    idx       = var_norm[_normalize_var(sig)]
-                    s         = sol(t)[idx]
+                    s         = _eval_sim(sol, var_access[_normalize_var(sig)], t)
                     ref_scale = get(fail_scales, sig, 0.0)
                     relerr    = abs(s - r) / max(abs(r), ref_scale, settings.abs_tol)
                     push!(row, @sprintf("%.10g", r),
@@ -385,9 +478,15 @@ function compare_with_reference(
                 println(f, join(row, ","))
             end
         end
-
-        write_diff_html(diff_csv, model)
     end
 
-    return n_total, n_pass, diff_csv
+    # ── Write detail HTML whenever there is anything worth showing ───────────────
+    if !isempty(fail_sigs) || !isempty(skip_sigs)
+        write_diff_html(model_dir, model;
+                        diff_csv_path = diff_csv,
+                        pass_sigs     = pass_sigs,
+                        skip_sigs     = skip_sigs)
+    end
+
+    return n_total, n_pass, length(skip_sigs), diff_csv
 end

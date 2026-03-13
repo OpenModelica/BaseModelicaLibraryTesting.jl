@@ -13,23 +13,61 @@ function _status_cell(ok::Bool, t::Float64, logFile::Union{String,Nothing})
     end
 end
 
+"""
+    _cmp_cell(r, results_root) → HTML string
+
+Build the "Ref Cmp" table cell for one model row.
+
+Cell colour:
+- green   (`ok`)      — all comparable signals pass, full coverage
+- orange  (`partial`) — all comparable signals pass but some not found in simulation
+- red     (`fail`)    — at least one signal outside tolerance
+- grey    (`na`)      — no reference data at all
+
+The sim CSV is always linked when the file exists (or shows "(CSV N/A)" when it
+exceeded `CSV_MAX_SIZE_MB` and was replaced by a `.toobig` marker).  When there
+are failures or skipped signals the detail page `<short>_diff.html` — which holds
+zoomable charts and the variable-coverage table — is also linked.
+"""
 function _cmp_cell(r::ModelResult, results_root::String)
-    if r.cmp_total == 0
-        return """<td class="na">—</td>"""
-    end
-    n, p = r.cmp_total, r.cmp_pass
-    if p == n
-        # No diff CSV when all signals pass — link the sim CSV instead
-        short = split(r.name, ".")[end]
-        sim_csv = joinpath("files", r.name, "$(short)_sim.csv")
-        csv_link = isfile(joinpath(results_root, sim_csv)) ? """ <a href="$sim_csv">(CSV)</a>""" : ""
-        return """<td class="ok">&#10003; $p/$n$(csv_link)</td>"""
+    short = split(r.name, ".")[end]
+
+    # ── Sim CSV link ────────────────────────────────────────────────────────────
+    sim_csv     = joinpath("files", r.name, "$(short)_sim.csv")
+    abs_sim_csv = joinpath(results_root, sim_csv)
+    csv_link = if isfile(abs_sim_csv)
+        """ <a href="$sim_csv">(CSV)</a>"""
+    elseif isfile(abs_sim_csv * ".toobig")
+        """ <span title="Result file exceeds $(CSV_MAX_SIZE_MB) MB and was not uploaded">(CSV N/A)</span>"""
     else
-        # Link to the interactive diff HTML (next to the CSV, same name, .html extension)
-        diff_html = replace(r.cmp_csv, r"\.csv$" => ".html")
-        rel = relpath(isfile(diff_html) ? diff_html : r.cmp_csv, results_root)
-        csv_link = isempty(r.cmp_csv) ? "" : """ <a href="$(relpath(r.cmp_csv, results_root))">(CSV)</a>"""
-        return """<td class="fail"><a href="$rel">$p/$n</a>$(csv_link)</td>"""
+        ""
+    end
+
+    # ── Detail-page link (diff HTML with charts + coverage table) ───────────────
+    diff_html_rel = joinpath("files", r.name, "$(short)_diff.html")
+    has_details   = isfile(joinpath(results_root, diff_html_rel))
+
+    # ── No comparison data at all ───────────────────────────────────────────────
+    if r.cmp_total == 0 && r.cmp_skip == 0
+        return isempty(csv_link) ? """<td class="na">—</td>""" :
+                                   """<td class="na">$(csv_link)</td>"""
+    end
+
+    skip_note    = r.cmp_skip > 0 ? ", $(r.cmp_skip) not found" : ""
+    details_link = has_details ? """ <a href="$diff_html_rel">(details)</a>""" : ""
+
+    n, p = r.cmp_total, r.cmp_pass
+    if p == n && r.cmp_skip == 0
+        # Full coverage, all pass — green.
+        return """<td class="ok">&#10003; $p/$n$(csv_link)</td>"""
+    elseif p == n
+        # Partial coverage, all comparable signals pass — orange.
+        return """<td class="partial">&#10003; $p/$n$(skip_note)$(details_link)$(csv_link)</td>"""
+    else
+        # At least one failure — red; score links to the detail page.
+        score = has_details ? """<a href="$diff_html_rel">$p/$n$(skip_note)</a>""" :
+                              "$p/$n$(skip_note)"
+        return """<td class="fail">$(score)$(csv_link)</td>"""
     end
 end
 
@@ -97,9 +135,10 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
     table { border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #ccc; padding: 4px 10px; text-align: left; white-space: nowrap; }
     th { background: #eee; }
-    td.ok   { background: #d4edda; color: #155724; }
-    td.fail { background: #f8d7da; color: #721c24; }
-    td.na   { color: #888; }
+    td.ok      { background: #d4edda; color: #155724; }
+    td.partial { background: #fff3cd; color: #856404; }
+    td.fail    { background: #f8d7da; color: #721c24; }
+    td.na      { color: #888; }
     a { color: #0366d6; text-decoration: none; }
     a:hover { text-decoration: underline; }
   </style>

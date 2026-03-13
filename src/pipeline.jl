@@ -70,23 +70,23 @@ function test_model(omc::OMJulia.OMCSession, model::String, results_root::String
     # Phase 1 ──────────────────────────────────────────────────────────────────
     exp_ok, exp_t, exp_err = run_export(omc, model, model_dir, bm_path)
     exp_ok || return ModelResult(
-        model, false, exp_t, exp_err, false, 0.0, "", false, 0.0, "", 0, 0, "")
+        model, false, exp_t, exp_err, false, 0.0, "", false, 0.0, "", 0, 0, 0, "")
 
     # Phase 2 ──────────────────────────────────────────────────────────────────
     par_ok, par_t, par_err, ode_prob = run_parse(bm_path, model_dir, model)
     par_ok || return ModelResult(
-        model, true, exp_t, exp_err, false, par_t, par_err, false, 0.0, "", 0, 0, "")
+        model, true, exp_t, exp_err, false, par_t, par_err, false, 0.0, "", 0, 0, 0, "")
 
     # Phase 3 ──────────────────────────────────────────────────────────────────
     sim_ok, sim_t, sim_err, sol = run_simulate(ode_prob, model_dir, model)
 
     # Phase 4 (optional) ───────────────────────────────────────────────────────
-    cmp_total, cmp_pass, cmp_csv = 0, 0, ""
+    cmp_total, cmp_pass, cmp_skip, cmp_csv = 0, 0, 0, ""
     if sim_ok && !isempty(ref_root)
         ref_csv = _ref_csv_path(ref_root, model)
         if ref_csv !== nothing
             try
-                cmp_total, cmp_pass, cmp_csv =
+                cmp_total, cmp_pass, cmp_skip, cmp_csv =
                     compare_with_reference(sol, ref_csv, model_dir, model)
             catch e
                 @warn "Reference comparison failed for $model: $(sprint(showerror, e))"
@@ -99,7 +99,7 @@ function test_model(omc::OMJulia.OMCSession, model::String, results_root::String
         true,   exp_t, exp_err,
         true,   par_t, par_err,
         sim_ok, sim_t, sim_err,
-        cmp_total, cmp_pass, cmp_csv)
+        cmp_total, cmp_pass, cmp_skip, cmp_csv)
 end
 
 # ── Main ───────────────────────────────────────────────────────────────────────
