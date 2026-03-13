@@ -1,6 +1,7 @@
 # ── Phase 3: ODE simulation with DifferentialEquations / MTK ──────────────────
 
 import DifferentialEquations: solve, Rodas5P, ReturnCode
+import Logging
 import ModelingToolkit
 import Printf: @sprintf
 
@@ -19,10 +20,17 @@ function run_simulate(ode_prob, model_dir::String,
     sim_error   = ""
     sol         = nothing
 
+    log_file = open(joinpath(model_dir, "$(model)_sim.log"), "w")
+    println(log_file, "Model:   $model")
+    logger = Logging.SimpleLogger(log_file, Logging.Debug)
     t0 = time()
     try
         # Rodas5P handles stiff DAE-like systems well.
-        sol      = solve(ode_prob, Rodas5P())
+        # Redirect all library log output (including Symbolics/MTK warnings)
+        # to the log file so they don't clutter stdout.
+        sol = Logging.with_logger(logger) do
+            solve(ode_prob, Rodas5P())
+        end
         sim_time = time() - t0
         if sol.retcode == ReturnCode.Success
             sim_success = true
@@ -33,13 +41,10 @@ function run_simulate(ode_prob, model_dir::String,
         sim_time  = time() - t0
         sim_error = sprint(showerror, e, catch_backtrace())
     end
-
-    open(joinpath(model_dir, "$(model)_sim.log"), "w") do f
-        println(f, "Model:   $model")
-        println(f, "Time:    $(round(sim_time; digits=3)) s")
-        println(f, "Success: $sim_success")
-        isempty(sim_error) || println(f, "\n--- Error ---\n$sim_error")
-    end
+    println(log_file, "Time:    $(round(sim_time; digits=3)) s")
+    println(log_file, "Success: $sim_success")
+    isempty(sim_error) || println(log_file, "\n--- Error ---\n$sim_error")
+    close(log_file)
 
     # Write simulation results CSV (time + all state variables)
     if sim_success && sol !== nothing
