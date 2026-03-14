@@ -66,14 +66,14 @@ package 'BatchPlant_StandardWater'
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -160,7 +160,7 @@ package 'BatchPlant_StandardWater'
         'liq' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gl');
         'vap' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gv');
         'aux'.'T' := 't1' + 'aux'.'x' * ('t2' - 't1');
-      elseif true then
+      else
         'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('aux'.'p');
         'd_liq' := 'Modelica.Media.Water.IF97_Utilities.rhol_T'('aux'.'T');
         'd_vap' := 'Modelica.Media.Water.IF97_Utilities.rhov_T'('aux'.'T');
@@ -190,7 +190,7 @@ package 'BatchPlant_StandardWater'
       'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
       'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
       'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    elseif true then
+    else
       assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", h = " + String('h') + ")", AssertionLevel.error);
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph';
@@ -246,7 +246,7 @@ package 'BatchPlant_StandardWater'
       'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
       'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
       'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-    elseif true then
+    else
       'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhol_p_R4b'('plim');
       'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
       'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hl_p_R4b'('plim');
@@ -305,7 +305,7 @@ package 'BatchPlant_StandardWater'
       'head' := max('head_nominal') + ('V_flow' - 'V_flow_min') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_min');
     elseif 'V_flow' > 'V_flow_max' then
       'head' := min('head_nominal') + ('V_flow' - 'V_flow_max') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_max');
-    elseif true then
+    else
       'head' := 'c'[1] + 'V_flow' * ('c'[2] + 'V_flow' * 'c'[3]);
     end if;
   end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P1.flowCharacteristic';
@@ -423,7 +423,7 @@ package 'BatchPlant_StandardWater'
       'head' := max('head_nominal') + ('V_flow' - 'V_flow_min') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_min');
     elseif 'V_flow' > 'V_flow_max' then
       'head' := min('head_nominal') + ('V_flow' - 'V_flow_max') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_max');
-    elseif true then
+    else
       'head' := 'c'[1] + 'V_flow' * ('c'[2] + 'V_flow' * 'c'[3]);
     end if;
   end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P2.flowCharacteristic';
@@ -465,14 +465,14 @@ package 'BatchPlant_StandardWater'
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -603,14 +603,14 @@ package 'BatchPlant_StandardWater'
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB2B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB2B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB2B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB2B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -654,14 +654,14 @@ package 'BatchPlant_StandardWater'
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -705,14 +705,14 @@ package 'BatchPlant_StandardWater'
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -751,7 +751,7 @@ package 'BatchPlant_StandardWater'
       'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
       'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
       'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-    elseif true then
+    else
       'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhov_p_R4b'('plim');
       'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
       'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hv_p_R4b'('plim');
@@ -888,14 +888,14 @@ package 'BatchPlant_StandardWater'
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -939,14 +939,14 @@ package 'BatchPlant_StandardWater'
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -1019,7 +1019,7 @@ package 'BatchPlant_StandardWater'
       'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
       'aux'.'x' := 1.0;
       'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    elseif true then
+    else
       assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", T = " + String('T') + ")", AssertionLevel.error);
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';
@@ -1061,14 +1061,14 @@ package 'BatchPlant_StandardWater'
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -5612,10 +5612,10 @@ package 'BatchPlant_StandardWater'
 
     if noEvent('B5.InnerTankTop[1].aboveLevel' > 0.0) then
       'B5.InnerTankTop[1].port.p' = 'B5.InnerTankTop[1].aboveLevel' * 9.80665 * 'B5.InnerTankTop[1].d' + 'B5.InnerTankTop[1].p_ambient' - smooth(2, noEvent(if noEvent('B5.InnerTankTop[1].m_flow' < 0.0) then 'B5.InnerTankTop[1].m_flow' ^ 2.0 / (2.0 * 'B5.InnerTankTop[1].d' * 'B5.InnerTankTop[1].pipeArea' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B5.InnerTankTop[1].m_flow_negative') then
         'B5.InnerTankTop[1].port.m_flow' = 0.0;
-      elseif true then
+      else
         'B5.InnerTankTop[1].port.p' = 'B5.InnerTankTop[1].p_ambient';
       end if;
     end if;
@@ -5627,10 +5627,10 @@ package 'BatchPlant_StandardWater'
 
     if noEvent('B5.InnerTankSide[1].aboveLevel' > 0.0) then
       'B5.InnerTankSide[1].port.p' = 'B5.InnerTankSide[1].aboveLevel' * 9.80665 * 'B5.InnerTankSide[1].d' + 'B5.InnerTankSide[1].p_ambient' - smooth(2, noEvent(if noEvent('B5.InnerTankSide[1].m_flow' < 0.0) then 'B5.InnerTankSide[1].m_flow' ^ 2.0 / (2.0 * 'B5.InnerTankSide[1].d' * 'B5.InnerTankSide[1].pipeArea' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B5.InnerTankSide[1].m_flow_negative') then
         'B5.InnerTankSide[1].port.m_flow' = 0.0;
-      elseif true then
+      else
         'B5.InnerTankSide[1].port.p' = 'B5.InnerTankSide[1].p_ambient';
       end if;
     end if;
@@ -5642,10 +5642,10 @@ package 'BatchPlant_StandardWater'
 
     if noEvent('B5.InnerTankBottom[1].aboveLevel' > 0.0) then
       'B5.InnerTankBottom[1].port.p' = 'B5.InnerTankBottom[1].aboveLevel' * 9.80665 * 'B5.InnerTankBottom[1].d' + 'B5.InnerTankBottom[1].p_ambient' - smooth(2, noEvent(if noEvent('B5.InnerTankBottom[1].m_flow' < 0.0) then 'B5.InnerTankBottom[1].m_flow' ^ 2.0 / (2.0 * 'B5.InnerTankBottom[1].d' * 'B5.InnerTankBottom[1].pipeArea' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B5.InnerTankBottom[1].m_flow_negative') then
         'B5.InnerTankBottom[1].port.m_flow' = 0.0;
-      elseif true then
+      else
         'B5.InnerTankBottom[1].port.p' = 'B5.InnerTankBottom[1].p_ambient';
       end if;
     end if;
@@ -5680,7 +5680,7 @@ package 'BatchPlant_StandardWater'
       'B5.Condensed.m_flow' = 0.0;
       'B5.rho' = 'B5.medium.d';
       'B5.h' = 'B5.medium.h';
-    elseif true then
+    else
       der('B5.U') = 'B5.H_flow_BottomPorts[1]' + 'B5.H_flow_SidePorts[1]' + 'B5.H_flow_TopPorts[1]' + smooth(0, 'B5.Condensed.m_flow' * 'B5.Condensed.h_outflow') - 101325.0 * der('B5.V');
       'B5.Condensed.h_outflow' = 'B5.h';
       'B5.Condensed.m_flow' = -'B5.heatTransfer.Q_flows[1]' / ('B5.h_v' - 'B5.h_l');
@@ -6745,10 +6745,10 @@ package 'BatchPlant_StandardWater'
 
     if 'B1.aboveLevel[1]' then
       'B1.ports[1].p' = 101325.0 + 'B1.levelAbovePort[1]' * 9.80665 * 'B1.medium.d' - smooth(2, noEvent(if 'B1.ports[1].m_flow' < 0.0 then 'B1.ports[1].m_flow' ^ 2.0 / (2.0 * 'B1.medium.d' * 'B1.bottomArea[1]' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B1.ports_m_flow_out[1]') then
         'B1.ports[1].m_flow' = 0.0;
-      elseif true then
+      else
         'B1.ports[1].p' = 101325.0;
       end if;
     end if;
@@ -6817,10 +6817,10 @@ package 'BatchPlant_StandardWater'
 
     if 'B2.aboveLevel[1]' then
       'B2.ports[1].p' = 101325.0 + 'B2.levelAbovePort[1]' * 9.80665 * 'B2.medium.d' - smooth(2, noEvent(if 'B2.ports[1].m_flow' < 0.0 then 'B2.ports[1].m_flow' ^ 2.0 / (2.0 * 'B2.medium.d' * 'B2.bottomArea[1]' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B2.ports_m_flow_out[1]') then
         'B2.ports[1].m_flow' = 0.0;
-      elseif true then
+      else
         'B2.ports[1].p' = 101325.0;
       end if;
     end if;
@@ -6880,10 +6880,10 @@ package 'BatchPlant_StandardWater'
 
     if 'B3.aboveLevel[1]' then
       'B3.ports[1].p' = 101325.0 + 'B3.levelAbovePort[1]' * 9.80665 * 'B3.medium.d' - smooth(2, noEvent(if 'B3.ports[1].m_flow' < 0.0 then 'B3.ports[1].m_flow' ^ 2.0 / (2.0 * 'B3.medium.d' * 'B3.bottomArea[1]' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B3.ports_m_flow_out[1]') then
         'B3.ports[1].m_flow' = 0.0;
-      elseif true then
+      else
         'B3.ports[1].p' = 101325.0;
       end if;
     end if;
@@ -6897,10 +6897,10 @@ package 'BatchPlant_StandardWater'
 
     if 'B3.aboveLevel[2]' then
       'B3.ports[2].p' = 101325.0 + 'B3.levelAbovePort[2]' * 9.80665 * 'B3.medium.d' - smooth(2, noEvent(if 'B3.ports[2].m_flow' < 0.0 then 'B3.ports[2].m_flow' ^ 2.0 / (2.0 * 'B3.medium.d' * 'B3.bottomArea[2]' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B3.ports_m_flow_out[2]') then
         'B3.ports[2].m_flow' = 0.0;
-      elseif true then
+      else
         'B3.ports[2].p' = 101325.0;
       end if;
     end if;
@@ -6953,10 +6953,10 @@ package 'BatchPlant_StandardWater'
 
     if 'B4.aboveLevel[1]' then
       'B4.ports[1].p' = 101325.0 + 'B4.levelAbovePort[1]' * 9.80665 * 'B4.medium.d' - smooth(2, noEvent(if 'B4.ports[1].m_flow' < 0.0 then 'B4.ports[1].m_flow' ^ 2.0 / (2.0 * 'B4.medium.d' * 'B4.bottomArea[1]' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B4.ports_m_flow_out[1]') then
         'B4.ports[1].m_flow' = 0.0;
-      elseif true then
+      else
         'B4.ports[1].p' = 101325.0;
       end if;
     end if;
@@ -7009,10 +7009,10 @@ package 'BatchPlant_StandardWater'
 
     if 'B7.aboveLevel[1]' then
       'B7.ports[1].p' = 101325.0 + 'B7.levelAbovePort[1]' * 9.80665 * 'B7.medium.d' - smooth(2, noEvent(if 'B7.ports[1].m_flow' < 0.0 then 'B7.ports[1].m_flow' ^ 2.0 / (2.0 * 'B7.medium.d' * 'B7.bottomArea[1]' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B7.ports_m_flow_out[1]') then
         'B7.ports[1].m_flow' = 0.0;
-      elseif true then
+      else
         'B7.ports[1].p' = 101325.0;
       end if;
     end if;
@@ -7659,10 +7659,10 @@ package 'BatchPlant_StandardWater'
 
     if 'B6.aboveLevel[1]' then
       'B6.ports[1].p' = 101325.0 + 'B6.levelAbovePort[1]' * 9.80665 * 'B6.medium.d' - smooth(2, noEvent(if 'B6.ports[1].m_flow' < 0.0 then 'B6.ports[1].m_flow' ^ 2.0 / (2.0 * 'B6.medium.d' * 'B6.bottomArea[1]' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('B6.ports_m_flow_out[1]') then
         'B6.ports[1].m_flow' = 0.0;
-      elseif true then
+      else
         'B6.ports[1].p' = 101325.0;
       end if;
     end if;

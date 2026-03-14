@@ -70,7 +70,7 @@ package 'ActuatorWithNoise'
 
     if 'nState' >= 2 then
       'state'[1:2] := 'aux';
-    elseif true then
+    else
       'state'[1] := 'aux'[1];
     end if;
 
@@ -2189,7 +2189,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
       'gearbox.lossyGear.eta_mf2' = 1.0;
       'gearbox.lossyGear.tau_bf1' = 0.0;
       'gearbox.lossyGear.tau_bf2' = 0.0;
-    elseif true then
+    else
       'gearbox.lossyGear.interpolation_result[1,1]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 1, noEvent(abs('gearbox.lossyGear.w_a')));
       'gearbox.lossyGear.interpolation_result[1,2]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 2, noEvent(abs('gearbox.lossyGear.w_a')));
       'gearbox.lossyGear.interpolation_result[1,3]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 3, noEvent(abs('gearbox.lossyGear.w_a')));
@@ -2202,7 +2202,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
 
     if abs('gearbox.lossyGear.eta_mf1' - 1.0) <= 2.220446049250313e-16 and abs('gearbox.lossyGear.eta_mf2' - 1.0) <= 2.220446049250313e-16 then
       'gearbox.lossyGear.tau_bf_a' = 'gearbox.lossyGear.tau_bf1' / 2.0;
-    elseif true then
+    else
       'gearbox.lossyGear.tau_bf_a' = ('gearbox.lossyGear.tau_bf1' - 'gearbox.lossyGear.tau_bf2') / ('gearbox.lossyGear.eta_mf1' - 1.0 / 'gearbox.lossyGear.eta_mf2');
     end if;
 
@@ -2242,7 +2242,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
       'gearbox.elastoBacklash.tau_d' = 1e4 * 'gearbox.elastoBacklash.w_rel';
       'gearbox.elastoBacklash.tau' = 'gearbox.elastoBacklash.tau_c' + 'gearbox.elastoBacklash.tau_d';
       'gearbox.elastoBacklash.lossPower' = 'gearbox.elastoBacklash.tau_d' * 'gearbox.elastoBacklash.w_rel';
-    elseif true then
+    else
       'gearbox.elastoBacklash.tau_c' = if 'gearbox.elastoBacklash.phi_diff' > 8.7266462599715e-4 then 1e6 * ('gearbox.elastoBacklash.phi_diff' - 8.7266462599715e-4) else if 'gearbox.elastoBacklash.phi_diff' < (-8.7266462599715e-4) then 1e6 * ('gearbox.elastoBacklash.phi_diff' + 8.7266462599715e-4) else 0.0;
       'gearbox.elastoBacklash.tau_d' = 1e4 * 'gearbox.elastoBacklash.w_rel';
       'gearbox.elastoBacklash.tau' = if 'gearbox.elastoBacklash.phi_diff' > 8.7266462599715e-4 then smooth(0, noEvent(if 'gearbox.elastoBacklash.tau_c' + 'gearbox.elastoBacklash.tau_d' <= 0.0 then 0.0 else 'gearbox.elastoBacklash.tau_c' + min('gearbox.elastoBacklash.tau_c', 'gearbox.elastoBacklash.tau_d'))) else if 'gearbox.elastoBacklash.phi_diff' < (-8.7266462599715e-4) then smooth(0, noEvent(if 'gearbox.elastoBacklash.tau_c' + 'gearbox.elastoBacklash.tau_d' >= 0.0 then 0.0 else 'gearbox.elastoBacklash.tau_c' + max('gearbox.elastoBacklash.tau_c', 'gearbox.elastoBacklash.tau_d'))) else 0.0;

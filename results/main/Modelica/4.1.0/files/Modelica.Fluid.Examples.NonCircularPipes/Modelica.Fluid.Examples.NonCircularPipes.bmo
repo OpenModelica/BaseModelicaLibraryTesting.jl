@@ -109,7 +109,7 @@ package 'NonCircularPipes'
         'liq' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gl');
         'vap' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gv');
         'aux'.'T' := 't1' + 'aux'.'x' * ('t2' - 't1');
-      elseif true then
+      else
         'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('aux'.'p');
         'd_liq' := 'Modelica.Media.Water.IF97_Utilities.rhol_T'('aux'.'T');
         'd_vap' := 'Modelica.Media.Water.IF97_Utilities.rhov_T'('aux'.'T');
@@ -139,7 +139,7 @@ package 'NonCircularPipes'
       'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
       'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
       'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    elseif true then
+    else
       assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", h = " + String('h') + ")", AssertionLevel.error);
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph';
@@ -181,14 +181,14 @@ package 'NonCircularPipes'
       'm_flow' := 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.NonCircularPipes.annulus_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -232,14 +232,14 @@ package 'NonCircularPipes'
       'm_flow' := 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.NonCircularPipes.circular_pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -268,7 +268,7 @@ package 'NonCircularPipes'
       'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
       'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
       'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-    elseif true then
+    else
       'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhov_p_R4b'('plim');
       'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
       'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hv_p_R4b'('plim');
@@ -333,7 +333,7 @@ package 'NonCircularPipes'
       'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
       'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
       'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-    elseif true then
+    else
       'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhol_p_R4b'('plim');
       'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
       'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hl_p_R4b'('plim');
@@ -410,7 +410,7 @@ package 'NonCircularPipes'
       'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
       'aux'.'x' := 1.0;
       'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    elseif true then
+    else
       assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", T = " + String('T') + ")", AssertionLevel.error);
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';

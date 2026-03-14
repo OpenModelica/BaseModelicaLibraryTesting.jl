@@ -30,7 +30,7 @@ package 'OneTank'
     elseif 'nrow' < 2 then
       'a' := 0.0;
       'b' := 'offset' + 'table'[1,'columns'];
-    elseif true then
+    else
       'tp' := 'tp' - 'shiftTimeScaled';
 
       while 'next' < 'nrow' and 'tp' >= 'table'['next',1] loop
@@ -51,7 +51,7 @@ package 'OneTank'
       if 'dt' <= 'TimeEps' * abs('table'['next',1]) then
         'a' := 0.0;
         'b' := 'offset' + 'table'['next','columns'];
-      elseif true then
+      else
         'a' := ('table'['next','columns'] - 'table'['next0','columns']) / 'dt';
         'b' := 'offset' + 'table'['next0','columns'] - 'a' * 'table'['next0',1];
       end if;
@@ -153,14 +153,14 @@ package 'OneTank'
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -504,10 +504,10 @@ package 'OneTank'
 
     if 'tank.aboveLevel[1]' then
       'tank.ports[1].p' = 101325.0 + 'tank.levelAbovePort[1]' * 9.80665 * 'tank.medium.d' - smooth(2, noEvent(if 'tank.ports[1].m_flow' < 0.0 then 'tank.ports[1].m_flow' ^ 2.0 / (2.0 * 'tank.medium.d' * 'tank.bottomArea[1]' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('tank.ports_m_flow_out[1]') then
         'tank.ports[1].m_flow' = 0.0;
-      elseif true then
+      else
         'tank.ports[1].p' = 101325.0;
       end if;
     end if;

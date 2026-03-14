@@ -66,7 +66,7 @@ package 'HeatExchangerSimulation'
 
       if 'TREL' >= 1.0 then
         'S' := 1.0 / 'deltaTREL';
-      elseif true then
+      else
         'S' := 'C'[6] / 'deltaTREL' ^ 0.6;
       end if;
 
@@ -75,14 +75,14 @@ package 'HeatExchangerSimulation'
       'lambdaREL0' := 'TREL' ^ 0.5 * ('a'[1] + 'a'[2] * 'TREL' + 'a'[3] * 'TREL' ^ 2.0 + 'a'[4] * 'TREL' ^ 3.0);
       'lambdaREL' := 'lambdaREL0' + 'lambdaREL1' + 'lambdaREL2';
       'lambda' := 'lambdaREL' * 'lambdastar';
-    elseif true then
+    else
       if 'p' < 1.65292e7 then
         if 'd' > 322.0 then
           'region' := 1;
-        elseif true then
+        else
           'region' := 2;
         end if;
-      elseif true then
+      else
         assert(false, "The scientific method works only for temperature up to 623.15 K", AssertionLevel.error);
       end if;
 
@@ -120,7 +120,7 @@ package 'HeatExchangerSimulation'
         'dpitau' := -'tstar' / 'pstar' * (1e6 * ('g'.'gpi' - 540.0 / 'T' * 'g'.'gtaupi') / 'g'.'gpipi' / 'T');
         'ddelpi' := -'pstar' / 'rhostar' * 461.526 / 1e6 / 1e6 * 'T' * 'd' * 'd' * 'g'.'gpipi';
         'Chi' := 'delta' * 'ddelpi';
-      elseif true then
+      else
         assert(false, "Thermal conductivity can only be called in the one-phase regions below 623.15 K\n(p = " + String('p') + " Pa, T = " + String('T') + " K, region = " + String('region') + ")", AssertionLevel.error);
       end if;
 
@@ -178,7 +178,7 @@ package 'HeatExchangerSimulation'
       'y' := 0.0;
     elseif 'scaledX1' >= 'lim' then
       'y' := 1.0;
-    elseif true then
+    else
       'scaledXp' := 'scaledX1' * 0.5 * 3.141592653589793;
       'scaledXt' := 'Modelica.Math.tan'('scaledXp');
       'y' := 0.5 * 'Modelica.Math.tanh'('scaledXt') + 0.5;
@@ -211,7 +211,7 @@ package 'HeatExchangerSimulation'
       'y' := 0.0;
     elseif 'scaledX1' >= 'lim' then
       'y' := 1.0;
-    elseif true then
+    else
       'scaledXp' := 'scaledX1' * 0.5 * 3.141592653589793;
       'scaledXt' := 'Modelica.Math.tan'('scaledXp');
       'y' := 0.5 * 'Modelica.Math.tanh'('scaledXt') + 0.5;
@@ -305,7 +305,7 @@ package 'HeatExchangerSimulation'
         'liq' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gl');
         'vap' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gv');
         'aux'.'T' := 't1' + 'aux'.'x' * ('t2' - 't1');
-      elseif true then
+      else
         'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('aux'.'p');
         'd_liq' := 'Modelica.Media.Water.IF97_Utilities.rhol_T'('aux'.'T');
         'd_vap' := 'Modelica.Media.Water.IF97_Utilities.rhov_T'('aux'.'T');
@@ -335,7 +335,7 @@ package 'HeatExchangerSimulation'
       'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
       'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
       'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    elseif true then
+    else
       assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", h = " + String('h') + ")", AssertionLevel.error);
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph';
@@ -467,7 +467,7 @@ package 'HeatExchangerSimulation'
       'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
       'aux'.'x' := 1.0;
       'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    elseif true then
+    else
       assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", T = " + String('T') + ")", AssertionLevel.error);
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';
@@ -579,14 +579,14 @@ package 'HeatExchangerSimulation'
       'm_flow' := 'Modelica.Fluid.Examples.HeatExchanger.HeatExchangerSimulation.HEX.pipe_1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.HeatExchanger.HeatExchangerSimulation.HEX.pipe_1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.HeatExchanger.HeatExchangerSimulation.HEX.pipe_1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.HeatExchanger.HeatExchangerSimulation.HEX.pipe_1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -630,14 +630,14 @@ package 'HeatExchangerSimulation'
       'm_flow' := 'Modelica.Fluid.Examples.HeatExchanger.HeatExchangerSimulation.HEX.pipe_2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.HeatExchanger.HeatExchangerSimulation.HEX.pipe_2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.HeatExchanger.HeatExchangerSimulation.HEX.pipe_2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.HeatExchanger.HeatExchangerSimulation.HEX.pipe_2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;

@@ -109,7 +109,7 @@ package 'PumpingSystem'
         'liq' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gl');
         'vap' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gv');
         'aux'.'T' := 't1' + 'aux'.'x' * ('t2' - 't1');
-      elseif true then
+      else
         'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('aux'.'p');
         'd_liq' := 'Modelica.Media.Water.IF97_Utilities.rhol_T'('aux'.'T');
         'd_vap' := 'Modelica.Media.Water.IF97_Utilities.rhov_T'('aux'.'T');
@@ -139,7 +139,7 @@ package 'PumpingSystem'
       'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
       'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
       'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    elseif true then
+    else
       assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", h = " + String('h') + ")", AssertionLevel.error);
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph';
@@ -160,7 +160,7 @@ package 'PumpingSystem'
       'head' := max('head_nominal') + ('V_flow' - 'V_flow_min') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_min');
     elseif 'V_flow' > 'V_flow_max' then
       'head' := min('head_nominal') + ('V_flow' - 'V_flow_max') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_max');
-    elseif true then
+    else
       'head' := 'c'[1] + 'V_flow' * ('c'[2] + 'V_flow' * 'c'[3]);
     end if;
   end 'Modelica.Fluid.Examples.PumpingSystem.pumps.flowCharacteristic';
@@ -234,14 +234,14 @@ package 'PumpingSystem'
       'm_flow' := 'Modelica.Fluid.Examples.PumpingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.PumpingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.PumpingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.PumpingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
@@ -271,7 +271,7 @@ package 'PumpingSystem'
 
     if 'x' <= 'x2' then
       'y' := -'k2' * 'x' ^ 2.0;
-    elseif true then
+    else
       'y1' := 'k1' * 'x1' ^ 2.0;
       'y2' := -'k2' * 'x2' ^ 2.0;
       'y1d' := 'k1' * 2.0 * 'x1';
@@ -279,7 +279,7 @@ package 'PumpingSystem'
 
       if 'use_yd0' then
         'y0d' := 'yd0';
-      elseif true then
+      else
         'w' := 'x2' / 'x1';
         'y0d' := ((3.0 * 'y2' - 'x2' * 'y2d') / 'w' - (3.0 * 'y1' - 'x1' * 'y1d') * 'w') / (2.0 * 'x1' * (1.0 - 'w'));
       end if;
@@ -363,7 +363,7 @@ package 'PumpingSystem'
       'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
       'aux'.'x' := 1.0;
       'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    elseif true then
+    else
       assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", T = " + String('T') + ")", AssertionLevel.error);
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';
@@ -1246,7 +1246,7 @@ package 'PumpingSystem'
     elseif 'reservoir.inFlow[1]' then
       'reservoir.ports[1].p' = 'reservoir.vessel_ps_static[1]';
       'reservoir.s[1]' = 'reservoir.ports[1].m_flow';
-    elseif true then
+    else
       'reservoir.ports[1].m_flow' = 0.0;
       'reservoir.s[1]' = ('reservoir.ports[1].p' - 'reservoir.vessel_ps_static[1]') / 101325.0 * ('reservoir.portsData_height[1]' - 'reservoir.fluidLevel');
     end if;
@@ -1267,7 +1267,7 @@ package 'PumpingSystem'
     elseif 'reservoir.inFlow[2]' then
       'reservoir.ports[2].p' = 'reservoir.vessel_ps_static[2]';
       'reservoir.s[2]' = 'reservoir.ports[2].m_flow';
-    elseif true then
+    else
       'reservoir.ports[2].m_flow' = 0.0;
       'reservoir.s[2]' = ('reservoir.ports[2].p' - 'reservoir.vessel_ps_static[2]') / 101325.0 * ('reservoir.portsData_height[2]' - 'reservoir.fluidLevel');
     end if;
@@ -1288,7 +1288,7 @@ package 'PumpingSystem'
     elseif 'reservoir.inFlow[3]' then
       'reservoir.ports[3].p' = 'reservoir.vessel_ps_static[3]';
       'reservoir.s[3]' = 'reservoir.ports[3].m_flow';
-    elseif true then
+    else
       'reservoir.ports[3].m_flow' = 0.0;
       'reservoir.s[3]' = ('reservoir.ports[3].p' - 'reservoir.vessel_ps_static[3]') / 101325.0 * ('reservoir.portsData_height[3]' - 'reservoir.fluidLevel');
     end if;
