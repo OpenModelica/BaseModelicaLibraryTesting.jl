@@ -31,6 +31,11 @@ on:
         required: false
         default: 'scalarize,moveBindings,inlineFunctions'
         type: string
+      filter:
+        description: 'Julia regex string to filter model names (empty string means no filter)'
+        required: false
+        default: '^(?!Modelica\.Clocked)'
+        type: string
 
 concurrency:
   group: pages-${{ inputs.library || 'Modelica' }}-${{ inputs.lib_version || '4.1.0' }}-${{ inputs.bm_version || 'main' }}
@@ -52,6 +57,7 @@ jobs:
       LIB_VERSION: ${{ inputs.lib_version || '4.1.0' }}
       BM_VERSION_INPUT: ${{ inputs.bm_version || 'main' }}
       BM_OPTIONS:  ${{ inputs.bm_options || 'scalarize,moveBindings,inlineFunctions' }}
+      FILTER:      ${{ inputs.filter || '^(?!Modelica\.Clocked)' }}
 
     steps:
       - name: Checkout source
@@ -117,9 +123,11 @@ jobs:
         run: |
           julia --project=. -e '
             using BaseModelicaLibraryTesting
+            filter_str = get(ENV, "FILTER", "")
             main(
               library      = ENV["LIB_NAME"],
               version      = ENV["LIB_VERSION"],
+              filter       = isempty(filter_str) ? nothing : filter_str,
               results_root = "results/$(ENV["BM_VERSION"])/$(ENV["LIB_NAME"])/$(ENV["LIB_VERSION"])",
               ref_root     = "MAP-LIB_ReferenceResults",
             )
