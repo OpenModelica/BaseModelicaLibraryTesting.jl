@@ -1,12 +1,9 @@
 # ── Shared constants ───────────────────────────────────────────────────────────
 
-const LIBRARY         = "Modelica"
-const LIBRARY_VERSION = "4.1.0"
-
-# Comparison tolerances (2 % relative, 1e-6 absolute — matches Modelica
+# Comparison tolerances (2 % relative, 1e-4 absolute — matches Modelica
 # Association compliance tooling defaults).
 const CMP_REL_TOL = 0.02
-const CMP_ABS_TOL = 1e-6
+const CMP_ABS_TOL = 1e-4
 
 # CSV files larger than this limit are not committed to gh-pages (GitHub
 # enforces a 100 MB hard cap; we use a conservative 20 MB soft limit).
@@ -20,21 +17,12 @@ const CSV_MAX_SIZE_MB = 20
 Mutable configuration struct for signal comparison.
 
 # Fields
-- `rel_tol`  — maximum allowed relative error (default: `$(CMP_REL_TOL)`, i.e. 2 %).
-- `abs_tol`  — hard absolute-error floor used when signals are near zero
-               (default: `$(CMP_ABS_TOL)`).
-- `error_fn` — selects the point-wise pass/fail function.  One of:
-  - `:mixed`    — scale-aware relative error (default, recommended);
-  - `:relative` — classic relative error (may reject valid zero-crossing signals);
-  - `:absolute` — pure absolute error.
-
-Use `configure_comparison!` to update the module-level defaults, or construct a
-local instance to pass to `compare_with_reference` for a single run.
+- `abs_tol`  — hard absolute-error (default: `nothing`)
+- `rel_tol`  — maximum allowed globally scaled relative error (default: `$(CMP_REL_TOL)`, i.e. 2 %).
 """
 Base.@kwdef mutable struct CompareSettings
+    abs_tol  :: Union{Float64,Nothing} = nothing
     rel_tol  :: Float64 = CMP_REL_TOL
-    abs_tol  :: Float64 = CMP_ABS_TOL
-    error_fn :: Symbol  = :mixed
 end
 
 # ── Run metadata ───────────────────────────────────────────────────────────────

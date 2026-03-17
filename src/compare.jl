@@ -1,5 +1,7 @@
 # ── Variable name utilities ────────────────────────────────────────────────────
 
+import CSV
+import DataFrames
 import ModelingToolkit
 import Printf: @sprintf
 
@@ -102,120 +104,6 @@ function _install_assets(results_root::String)
     end
 end
 
-# ── Comparison settings and error functions ────────────────────────────────────
-
-"""Module-level default comparison settings.  Modify via `configure_comparison!`."""
-const _CMP_SETTINGS = CompareSettings()
-
-"""
-    _check_relative(s, r, ref_scale, cfg) → Bool
-
-Classic relative-error check.  Passes when
-
-    |s − r| ≤ max(rel_tol · |r|, abs_tol)
-
-This is the traditional approach used by many validation tools.  It works well
-when the signal stays well away from zero, but may produce false failures at
-zero crossings because the per-point tolerance shrinks to `abs_tol ≈ 0` when
-`r ≈ 0`.
-"""
-function _check_relative(s::Real, r::Real, ::Real, cfg::CompareSettings)::Bool
-    abs(s - r) <= max(cfg.rel_tol * abs(r), cfg.abs_tol)
-end
-
-"""
-    _check_mixed(s, r, ref_scale, cfg) → Bool
-
-Scale-aware relative-error check (default).  Passes when
-
-    |s − r| ≤ max(rel_tol · |r|,  rel_tol · ref_scale,  abs_tol)
-
-The middle term (`rel_tol · ref_scale`) provides an amplitude-proportional
-absolute floor.  Near zero crossings the tolerance is set by the peak magnitude
-of the reference signal rather than the near-zero instantaneous value, so
-physically correct simulations are not falsely rejected.
-"""
-function _check_mixed(s::Real, r::Real, ref_scale::Real, cfg::CompareSettings)::Bool
-    abs(s - r) <= max(cfg.rel_tol * abs(r), cfg.rel_tol * ref_scale, cfg.abs_tol)
-end
-
-"""
-    _check_absolute(s, r, ref_scale, cfg) → Bool
-
-Pure absolute check.  Passes when
-
-    |s − r| ≤ abs_tol
-
-Useful when all compared signals have known, small magnitudes or when a
-signal-independent tolerance threshold is required.
-"""
-function _check_absolute(s::Real, r::Real, ::Real, cfg::CompareSettings)::Bool
-    abs(s - r) <= cfg.abs_tol
-end
-
-"""
-    _check_point(s, r, ref_scale, cfg) → Bool
-
-Dispatch to the error function selected by `cfg.error_fn`.
-
-| `error_fn`    | Description                                         |
-|:--------------|:----------------------------------------------------|
-| `:mixed`      | Scale-aware relative error (default, recommended)   |
-| `:relative`   | Classic relative error (may fail at zero crossings) |
-| `:absolute`   | Pure absolute error                                 |
-"""
-function _check_point(s::Real, r::Real, ref_scale::Real, cfg::CompareSettings)::Bool
-    fn = cfg.error_fn
-    fn === :mixed    && return _check_mixed(s, r, ref_scale, cfg)
-    fn === :relative && return _check_relative(s, r, ref_scale, cfg)
-    fn === :absolute && return _check_absolute(s, r, ref_scale, cfg)
-    throw(ArgumentError(
-        "Unknown error_fn $(repr(fn)); choose :mixed, :relative, or :absolute"))
-end
-
-"""
-    configure_comparison!(; rel_tol, abs_tol, error_fn) → CompareSettings
-
-Update the module-level comparison settings in-place and return them.
-
-# Keyword arguments
-
-- `rel_tol`  — maximum allowed relative error.  Default: `$(CMP_REL_TOL)` (2 %).
-- `abs_tol`  — hard absolute-error floor applied when signals are near zero.
-               Default: `$(CMP_ABS_TOL)`.
-- `error_fn` — selects the point-wise check function.  One of:
-  - `:mixed`    — scale-aware relative error (default, recommended);
-  - `:relative` — classic relative error (may reject valid zero-crossing signals);
-  - `:absolute` — pure absolute error.
-
-# Example
-
-```julia
-configure_comparison!(rel_tol = 0.01, error_fn = :relative)
-```
-"""
-function configure_comparison!(;
-    rel_tol  :: Union{Float64,Nothing} = nothing,
-    abs_tol  :: Union{Float64,Nothing} = nothing,
-    error_fn :: Union{Symbol,Nothing}  = nothing,
-)
-    isnothing(rel_tol)  || (_CMP_SETTINGS.rel_tol  = rel_tol)
-    isnothing(abs_tol)  || (_CMP_SETTINGS.abs_tol  = abs_tol)
-    isnothing(error_fn) || (_CMP_SETTINGS.error_fn = error_fn)
-    return _CMP_SETTINGS
-end
-
-"""
-    compare_settings() → CompareSettings
-
-Return the current module-level comparison settings.
-
-Pass the returned object (or a freshly constructed `CompareSettings(...)`) to
-`compare_with_reference` via the `settings` keyword to override the defaults
-for a single call without changing the global state.
-"""
-compare_settings() = _CMP_SETTINGS
-
 # ── Interactive diff HTML ──────────────────────────────────────────────────────
 
 """
@@ -235,32 +123,42 @@ The page references `../../assets/dygraph.min.*` relative to its location.
 `_install_assets` is called automatically.
 """
 function write_diff_html(model_dir::String, model::String;
-                         diff_csv_path::String  = "",
-                         pass_sigs::Vector{String} = String[],
-                         skip_sigs::Vector{String} = String[])
+                         diff_csv_path::String          = "",
+                         pass_sigs::Vector{String}      = String[],
+                         skip_sigs::Vector{String}      = String[],
+                         pass_max_abs_error::Dict{String,Float64} = Dict{String,Float64}(),
+                         pass_max_rel_error::Dict{String,Float64} = Dict{String,Float64}(),
+                         settings::CompareSettings      = CompareSettings())
     short_name   = split(model, ".")[end]
     html_path    = joinpath(model_dir, "$(short_name)_diff.html")
     results_root = dirname(dirname(abspath(model_dir)))   # …/files/<model> → …
     _install_assets(results_root)
 
-    # Read fail_sigs and CSV content from the diff CSV (may not exist).
-    fail_sigs = String[]
-    csv_js    = ""
+    # Read fail_sigs, per-signal max errors, and CSV content from the diff CSV.
+    fail_sigs     = String[]
+    max_abs_error = Dict{String,Float64}()
+    max_rel_error = Dict{String,Float64}()
+    csv_js        = ""
     if !isempty(diff_csv_path) && isfile(diff_csv_path)
-        lines = readlines(diff_csv_path)
-        if length(lines) >= 1
-            headers = [replace(strip(h), "\"" => "") for h in split(lines[1], ",")]
-            for h in headers
-                length(h) > 4 && h[end-3:end] == "_ref" && push!(fail_sigs, h[1:end-4])
-            end
-            csv_text = read(diff_csv_path, String)
-            csv_js   = replace(replace(csv_text, "\\" => "\\\\"), "`" => "\\`")
+        df = CSV.read(diff_csv_path, DataFrames.DataFrame)
+        for col in names(df)
+            endswith(col, "_ref") && push!(fail_sigs, col[1:end-4])
         end
+        for sig in fail_sigs
+            max_abs_error[sig] = maximum(df[!, "$(sig)_abserr"])
+            max_rel_error[sig] = maximum(df[!, "$(sig)_relerr"])
+        end
+        csv_text = read(diff_csv_path, String)
+        csv_js   = replace(replace(csv_text, "\\" => "\\\\"), "`" => "\\`")
     end
 
     # ── Meta block ──────────────────────────────────────────────────────────────
-    tol_str  = "(rel &#x2264; $(round(Int, _CMP_SETTINGS.rel_tol * 100))%," *
-               " abs &#x2264; $(_CMP_SETTINGS.abs_tol))"
+    tol_str  = if settings.abs_tol === nothing
+        "(rel &#x2264; $(round(Int, settings.rel_tol * 100))%)"
+    else
+        "(rel &#x2264; $(round(Int, settings.rel_tol * 100))%," *
+        " abs &#x2264; $(settings.abs_tol))"
+    end
     csv_link = isempty(fail_sigs) ? "" :
         """ &nbsp;&middot;&nbsp; <a href="$(short_name)_diff.csv">Download diff CSV</a>"""
     skip_note = isempty(skip_sigs) ? "" :
@@ -277,23 +175,30 @@ function write_diff_html(model_dir::String, model::String;
         n_total = n_found + length(skip_sigs)
         th = "border:1px solid #ccc;padding:3px 10px;background:#eee;text-align:left;"
         td = "border:1px solid #ccc;padding:3px 10px;"
+        tdr = td * "text-align:right;"
         rows = String[]
         for sig in pass_sigs
             push!(rows, "<tr style=\"background:#d4edda\"><td style=\"$td\">$sig</td>" *
-                        "<td style=\"$td\">&#10003; pass</td></tr>")
+                        "<td style=\"$td\">&#10003; pass</td>" *
+                        "<td style=\"$tdr\">$(@sprintf("%.4e", pass_max_abs_error[sig]))</td>" *
+                        "<td style=\"$tdr\">$(@sprintf("%.2f%%", pass_max_rel_error[sig] * 100))</td></tr>")
         end
         for sig in fail_sigs
             push!(rows, "<tr style=\"background:#f8d7da\"><td style=\"$td\">$sig</td>" *
-                        "<td style=\"$td\">&#10007; fail</td></tr>")
+                        "<td style=\"$td\">&#10007; fail</td>" *
+                        "<td style=\"$tdr\">$(@sprintf("%.4e", max_abs_error[sig]))</td>" *
+                        "<td style=\"$tdr\">$(@sprintf("%.2f%%", max_rel_error[sig] * 100))</td></tr>")
         end
         for sig in skip_sigs
             push!(rows, "<tr style=\"background:#fff3cd\"><td style=\"$td\">$sig</td>" *
-                        "<td style=\"$td\">not found in simulation</td></tr>")
+                        "<td style=\"$td\">not found in simulation</td>" *
+                        "<td style=\"$tdr\">&#x2014;</td><td style=\"$tdr\">&#x2014;</td></tr>")
         end
         """<h2 style="font-size:1.1em;margin-top:2em;">Variable Coverage """ *
         """&#x2014; $n_found of $n_total reference signal(s) found</h2>""" *
         """<table style="border-collapse:collapse;font-size:13px;">""" *
-        """<thead><tr><th style="$th">Signal</th><th style="$th">Status</th></tr></thead>""" *
+        """<thead><tr><th style="$th">Signal</th><th style="$th">Status</th>""" *
+        """<th style="$th">Max Abs Error</th><th style="$th">Max Rel Error</th></tr></thead>""" *
         """<tbody>$(join(rows))</tbody></table>"""
     end
 
@@ -311,6 +216,27 @@ function write_diff_html(model_dir::String, model::String;
 end
 
 # ── Reference comparison ───────────────────────────────────────────────────────
+
+"""
+    _absolute_error(actual, reference) -> Vector{Real}
+
+Return the element-wise absolute error between `actual` and `reference`.
+"""
+function _absolute_error(actual::AbstractVector{<:Real}, reference::AbstractVector{<:Real})
+    return abs.(actual .- reference)
+end
+
+"""
+    _scaled_relative_error(actual, reference) -> Vector{Real}
+
+Return the element-wise absolute error between `actual` and `reference`, scaled by the
+maximum absolute value of `reference` (or `eps()` if that maximum is smaller, to avoid
+division by zero).
+"""
+function _scaled_relative_error(actual::AbstractVector{<:Real}, reference::AbstractVector{<:Real})
+    reference_scale = max( maximum(abs.(reference)), eps() )
+    return abs.(actual .- reference) ./ reference_scale
+end
 
 """
     _eval_sim(sol, accessor, t) → Float64
@@ -354,16 +280,14 @@ is written whenever there are failures or skipped signals.
 
 # Keyword arguments
 - `settings` — a `CompareSettings` instance controlling tolerances and the
-               error function.  Defaults to the module-level settings returned
-               by `compare_settings()`.  Use `configure_comparison!` to change
-               the defaults, or pass a local `CompareSettings(...)` here.
+               error function.
 """
 function compare_with_reference(
     sol,
     ref_csv_path::String,
     model_dir::String,
     model::String;
-    settings::CompareSettings = _CMP_SETTINGS,
+    settings::CompareSettings = CompareSettings(),
 )::Tuple{Int,Int,Int,String}
 
     times, ref_data = _read_ref_csv(ref_csv_path)
@@ -409,7 +333,12 @@ function compare_with_reference(
     pass_sigs   = String[]
     fail_sigs   = String[]
     skip_sigs   = String[]
-    fail_scales = Dict{String,Float64}()
+    pass_max_abs_error    = Dict{String, Float64}()
+    pass_max_rel_error    = Dict{String, Float64}()
+    fail_ref_vals         = Dict{String, Vector{Float64}}()
+    fail_sim_vals         = Dict{String, Vector{Float64}}()
+    fail_abs_error        = Dict{String, Vector{Float64}}()
+    fail_scaled_rel_error = Dict{String, Vector{Float64}}()
 
     for sig in signals
         haskey(ref_data, sig) || continue   # signal absent from ref CSV entirely
@@ -424,10 +353,6 @@ function compare_with_reference(
         ref_vals  = ref_data[sig][valid_mask]
         n_total  += 1
 
-        # Peak |ref| — used as amplitude floor so relative error stays finite
-        # near zero crossings.
-        ref_scale = isempty(ref_vals) ? 0.0 : maximum(abs, ref_vals)
-
         # Interpolate simulation at reference time points.
         sim_vals = [_eval_sim(sol, accessor, t) for t in t_ref]
 
@@ -438,16 +363,24 @@ function compare_with_reference(
             continue
         end
 
-        pass = all(zip(sim_vals, ref_vals)) do (s, r)
-            _check_point(s, r, ref_scale, settings)
-        end
+        # Check absolute error and globally scaled relative error
+        abs_error = _absolute_error(sim_vals, ref_vals)
+        scaled_rel_error = _scaled_relative_error(sim_vals, ref_vals)
+
+        pass = (settings.abs_tol === nothing || maximum(abs_error) < settings.abs_tol) &&
+               maximum(scaled_rel_error) < settings.rel_tol
 
         if pass
             n_pass += 1
             push!(pass_sigs, sig)
+            pass_max_abs_error[sig] = maximum(abs_error)
+            pass_max_rel_error[sig] = maximum(scaled_rel_error)
         else
             push!(fail_sigs, sig)
-            fail_scales[sig] = ref_scale
+            fail_ref_vals[sig]         = ref_vals
+            fail_sim_vals[sig]         = sim_vals
+            fail_abs_error[sig]        = abs_error
+            fail_scaled_rel_error[sig] = scaled_rel_error
         end
     end
 
@@ -457,35 +390,25 @@ function compare_with_reference(
     diff_csv   = ""
     if !isempty(fail_sigs)
         diff_csv = joinpath(model_dir, "$(short_name)_diff.csv")
-        open(diff_csv, "w") do f
-            cols = ["time"]
-            for sig in fail_sigs
-                push!(cols, "$(sig)_ref", "$(sig)_sim", "$(sig)_relerr")
-            end
-            println(f, join(cols, ","))
-            for (ti, t) in enumerate(t_ref)
-                row = [@sprintf("%.10g", t)]
-                for sig in fail_sigs
-                    ref_vals  = ref_data[sig][valid_mask]
-                    r         = ref_vals[ti]
-                    s         = _eval_sim(sol, var_access[_normalize_var(sig)], t)
-                    ref_scale = get(fail_scales, sig, 0.0)
-                    relerr    = abs(s - r) / max(abs(r), ref_scale, settings.abs_tol)
-                    push!(row, @sprintf("%.10g", r),
-                               @sprintf("%.10g", s),
-                               @sprintf("%.6g",  relerr))
-                end
-                println(f, join(row, ","))
-            end
+        df = DataFrames.DataFrame("time" => t_ref)
+        for sig in fail_sigs
+            df[!, "$(sig)_ref"]    = fail_ref_vals[sig]
+            df[!, "$(sig)_sim"]    = fail_sim_vals[sig]
+            df[!, "$(sig)_abserr"] = fail_abs_error[sig]
+            df[!, "$(sig)_relerr"] = fail_scaled_rel_error[sig]
         end
+        CSV.write(diff_csv, df)
     end
 
     # ── Write detail HTML whenever there is anything worth showing ───────────────
     if !isempty(fail_sigs) || !isempty(skip_sigs)
         write_diff_html(model_dir, model;
-                        diff_csv_path = diff_csv,
-                        pass_sigs     = pass_sigs,
-                        skip_sigs     = skip_sigs)
+                        diff_csv_path      = diff_csv,
+                        pass_sigs          = pass_sigs,
+                        skip_sigs          = skip_sigs,
+                        pass_max_abs_error = pass_max_abs_error,
+                        pass_max_rel_error = pass_max_rel_error,
+                        settings           = settings)
     end
 
     return n_total, n_pass, length(skip_sigs), diff_csv

@@ -57,8 +57,12 @@ end
 
 Run the four-phase pipeline for a single model and return its result.
 """
-function test_model(omc::OMJulia.OMCSession, model::String, results_root::String,
-                    ref_root::String; csv_max_size_mb::Int = CSV_MAX_SIZE_MB)::ModelResult
+function test_model(omc::OMJulia.OMCSession,
+                    model::String,
+                    results_root::String,
+                    ref_root::String;
+                    csv_max_size_mb::Int          = CSV_MAX_SIZE_MB,
+                    settings::CompareSettings     = CompareSettings())::ModelResult
     model_dir = joinpath(results_root, "files", model)
     mkpath(model_dir)
 
@@ -86,7 +90,7 @@ function test_model(omc::OMJulia.OMCSession, model::String, results_root::String
         if ref_csv !== nothing
             try
                 cmp_total, cmp_pass, cmp_skip, cmp_csv =
-                    compare_with_reference(sol, ref_csv, model_dir, model)
+                    compare_with_reference(sol, ref_csv, model_dir, model; settings)
             catch e
                 @warn "Reference comparison failed for $model: $(sprint(showerror, e))"
             end
@@ -111,14 +115,15 @@ Discovers models via OMC, runs `test_model` for each, then writes the HTML
 report.  Returns a `Vector{ModelResult}`.
 """
 function main(;
-    library          :: String                = LIBRARY,
-    version          :: String                = LIBRARY_VERSION,
+    library          :: String,
+    version          :: String,
     filter           :: Union{String,Nothing} = nothing,
     omc_exe          :: String                = get(ENV, "OMC_EXE", "omc"),
     results_root     :: String                = "",
     ref_root         :: String                = get(ENV, "MAPLIB_REF", ""),
     bm_options       :: String                = get(ENV, "BM_OPTIONS", "scalarize,moveBindings,inlineFunctions"),
     csv_max_size_mb  :: Int                   = CSV_MAX_SIZE_MB,
+    settings         :: CompareSettings       = CompareSettings(),
 )
     t0 = time()
 
@@ -186,7 +191,7 @@ function main(;
 
         for (i, model) in enumerate(models)
             @info "[$i/$(length(models))] $model"
-            result = test_model(omc, model, results_root, ref_root; csv_max_size_mb)
+            result = test_model(omc, model, results_root, ref_root; csv_max_size_mb, settings)
             push!(results, result)
 
             phase = result.sim_success    ? "SIM OK"     :

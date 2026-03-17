@@ -22,10 +22,7 @@ include("pipeline.jl")
 
 # Shared types and constants
 export ModelResult, CompareSettings, RunInfo
-export LIBRARY, LIBRARY_VERSION, CMP_REL_TOL, CMP_ABS_TOL
-
-# Comparison configuration
-export configure_comparison!, compare_settings
+export CMP_REL_TOL, CMP_ABS_TOL
 
 # Pipeline phases
 export run_export       # Phase 1: Base Modelica export via OMC
