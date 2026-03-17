@@ -32,7 +32,8 @@ function run_simulate(ode_prob, model_dir::String, model::String;
         # Redirect all library log output (including Symbolics/MTK warnings)
         # to the log file so they don't clutter stdout.
         sol = Logging.with_logger(logger) do
-            solve(ode_prob, Rodas5P())
+            # Overwrite saveat, always use dense output.
+            solve(ode_prob, Rodas5P(); saveat = Float64[], dense = true)
         end
         sim_time = time() - t0
         if sol.retcode == ReturnCode.Success
