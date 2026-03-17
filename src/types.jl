@@ -3,7 +3,7 @@
 # Comparison tolerances (2 % relative, 1e-4 absolute — matches Modelica
 # Association compliance tooling defaults).
 const CMP_REL_TOL = 0.02
-const CMP_ABS_TOL = 1e-4
+const CMP_ABS_TOL = 1e-6
 
 # CSV files larger than this limit are not committed to gh-pages (GitHub
 # enforces a 100 MB hard cap; we use a conservative 20 MB soft limit).
