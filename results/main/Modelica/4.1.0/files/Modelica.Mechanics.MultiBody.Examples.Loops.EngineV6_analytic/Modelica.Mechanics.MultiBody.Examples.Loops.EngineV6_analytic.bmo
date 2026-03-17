@@ -175,16 +175,6 @@ package 'EngineV6_analytic'
     end if;
   end 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder6.jointRRP.jointUSP.prismatic.selectBranch';
 
-  function 'Modelica.Mechanics.MultiBody.Frames.planarRotation' "Return orientation object of a planar rotation"
-    input Real[3] 'e'(each unit = "1");
-    input Real 'angle'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real 'der_angle'(unit = "rad/s", quantity = "AngularVelocity");
-    output 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-  algorithm
-    'R' := 'Modelica.Mechanics.MultiBody.Frames.Orientation'(promote('e', 2) * transpose(promote('e', 2)) + ({{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}} - promote('e', 2) * transpose(promote('e', 2))) .* 'Modelica.Math.cos'('angle') - {{0.0, (-'e'[3]) * 'Modelica.Math.sin'('angle'), 'e'[2] * 'Modelica.Math.sin'('angle')}, {'e'[3] * 'Modelica.Math.sin'('angle'), 0.0, (-'e'[1]) * 'Modelica.Math.sin'('angle')}, {(-'e'[2]) * 'Modelica.Math.sin'('angle'), 'e'[1] * 'Modelica.Math.sin'('angle'), 0.0}}, {'e'[1] * 'der_angle', 'e'[2] * 'der_angle', 'e'[3] * 'der_angle'});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.planarRotation';
-
   function 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder5.jointRRP.jointUSP.prismatic.selectBranch' "Determine branch which is closest to initial angle=0"
     input Real 'L'(unit = "m", quantity = "Length");
     input Real[3] 'e'(each unit = "1");
@@ -227,11 +217,6 @@ package 'EngineV6_analytic'
   type 'Modelica.Mechanics.MultiBody.Types.ResolveInFrameAB' = enumeration('world', 'frame_a', 'frame_b', 'frame_resolve');
 
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
-
-  record 'Modelica.Mechanics.MultiBody.Frames.Orientation'
-    Real[3, 3] 'T';
-    Real[3] 'w'(unit = fill("rad/s", 3), quantity = fill("AngularVelocity", 3));
-  end 'Modelica.Mechanics.MultiBody.Frames.Orientation';
 
   model 'EngineV6_analytic' "V6 engine with 6 cylinders, 6 planar loops, 1 degree-of-freedom and analytic handling of kinematic loops"
     parameter Boolean 'animation' = true "= true, if animation shall be enabled";
@@ -21954,18 +21939,18 @@ package 'EngineV6_analytic'
     'engine.bearing.frame_b.r_0[1]' = 'engine.bearing.frame_a.r_0[1]';
     'engine.bearing.frame_b.r_0[2]' = 'engine.bearing.frame_a.r_0[2]';
     'engine.bearing.frame_b.r_0[3]' = 'engine.bearing.frame_a.r_0[3]';
-    'engine.bearing.R_rel.T[1,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).T)[1,1];
-    'engine.bearing.R_rel.T[1,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).T)[1,2];
-    'engine.bearing.R_rel.T[1,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).T)[1,3];
-    'engine.bearing.R_rel.T[2,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).T)[2,1];
-    'engine.bearing.R_rel.T[2,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).T)[2,2];
-    'engine.bearing.R_rel.T[2,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).T)[2,3];
-    'engine.bearing.R_rel.T[3,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).T)[3,1];
-    'engine.bearing.R_rel.T[3,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).T)[3,2];
-    'engine.bearing.R_rel.T[3,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).T)[3,3];
-    'engine.bearing.R_rel.w[1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).w)[1];
-    'engine.bearing.R_rel.w[2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).w)[2];
-    'engine.bearing.R_rel.w[3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'engine.bearing.phi', 'engine.bearing.w')).w)[3];
+    'engine.bearing.R_rel.T[1,1]' = 1.0;
+    'engine.bearing.R_rel.T[1,2]' = -(-0.0) * sin('engine.bearing.phi');
+    'engine.bearing.R_rel.T[1,3]' = -0.0 * sin('engine.bearing.phi');
+    'engine.bearing.R_rel.T[2,1]' = -0.0 * sin('engine.bearing.phi');
+    'engine.bearing.R_rel.T[2,2]' = cos('engine.bearing.phi');
+    'engine.bearing.R_rel.T[2,3]' = -(-1.0) * sin('engine.bearing.phi');
+    'engine.bearing.R_rel.T[3,1]' = -(-0.0) * sin('engine.bearing.phi');
+    'engine.bearing.R_rel.T[3,2]' = -1.0 * sin('engine.bearing.phi');
+    'engine.bearing.R_rel.T[3,3]' = cos('engine.bearing.phi');
+    'engine.bearing.R_rel.w[1]' = 1.0 * 'engine.bearing.w';
+    'engine.bearing.R_rel.w[2]' = 0.0 * 'engine.bearing.w';
+    'engine.bearing.R_rel.w[3]' = 0.0 * 'engine.bearing.w';
     'engine.bearing.frame_b.R.T[1,1]' = 'engine.bearing.R_rel.T[1,1]' * 'engine.bearing.frame_a.R.T[1,1]' + 'engine.bearing.R_rel.T[1,2]' * 'engine.bearing.frame_a.R.T[2,1]' + 'engine.bearing.R_rel.T[1,3]' * 'engine.bearing.frame_a.R.T[3,1]';
     'engine.bearing.frame_b.R.T[1,2]' = 'engine.bearing.R_rel.T[1,1]' * 'engine.bearing.frame_a.R.T[1,2]' + 'engine.bearing.R_rel.T[1,2]' * 'engine.bearing.frame_a.R.T[2,2]' + 'engine.bearing.R_rel.T[1,3]' * 'engine.bearing.frame_a.R.T[3,2]';
     'engine.bearing.frame_b.R.T[1,3]' = 'engine.bearing.R_rel.T[1,1]' * 'engine.bearing.frame_a.R.T[1,3]' + 'engine.bearing.R_rel.T[1,2]' * 'engine.bearing.frame_a.R.T[2,3]' + 'engine.bearing.R_rel.T[1,3]' * 'engine.bearing.frame_a.R.T[3,3]';

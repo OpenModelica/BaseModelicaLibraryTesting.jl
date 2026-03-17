@@ -35,16 +35,6 @@ package 'RollingWheelSetPulling'
     annotation(derivative(order = 1, noDerivative = 'nextTimeEvent', noDerivative = 'pre_nextTimeEvent') = 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer');
   end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2';
 
-  function 'Modelica.Mechanics.MultiBody.Frames.planarRotation' "Return orientation object of a planar rotation"
-    input Real[3] 'e'(each unit = "1");
-    input Real 'angle'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real 'der_angle'(unit = "rad/s", quantity = "AngularVelocity");
-    output 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-  algorithm
-    'R' := 'Modelica.Mechanics.MultiBody.Frames.Orientation'(promote('e', 2) * transpose(promote('e', 2)) + ({{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}} - promote('e', 2) * transpose(promote('e', 2))) .* 'Modelica.Math.cos'('angle') - {{0.0, (-'e'[3]) * 'Modelica.Math.sin'('angle'), 'e'[2] * 'Modelica.Math.sin'('angle')}, {'e'[3] * 'Modelica.Math.sin'('angle'), 0.0, (-'e'[1]) * 'Modelica.Math.sin'('angle')}, {(-'e'[2]) * 'Modelica.Math.sin'('angle'), 'e'[1] * 'Modelica.Math.sin'('angle'), 0.0}}, {'e'[1] * 'der_angle', 'e'[2] * 'der_angle', 'e'[3] * 'der_angle'});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.planarRotation';
-
   function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
     input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
     output Real 'timeMax';
@@ -101,11 +91,6 @@ package 'RollingWheelSetPulling'
     end destructor;
 
 end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
-
-  record 'Modelica.Mechanics.MultiBody.Frames.Orientation'
-    Real[3, 3] 'T';
-    Real[3] 'w'(unit = fill("rad/s", 3), quantity = fill("AngularVelocity", 3));
-  end 'Modelica.Mechanics.MultiBody.Frames.Orientation';
 
   model 'RollingWheelSetPulling' "Rolling wheel set that is pulled by a force"
     Real 'force.frame_b.r_0[1]'(unit = "m", quantity = "Length") "Position vector from world frame to the connector frame origin, resolved in world frame";
@@ -4292,18 +4277,18 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'wheelSet.wheelSetJoint.revolute.frame_b.r_0[1]' = 'wheelSet.wheelSetJoint.revolute.frame_a.r_0[1]';
     'wheelSet.wheelSetJoint.revolute.frame_b.r_0[2]' = 'wheelSet.wheelSetJoint.revolute.frame_a.r_0[2]';
     'wheelSet.wheelSetJoint.revolute.frame_b.r_0[3]' = 'wheelSet.wheelSetJoint.revolute.frame_a.r_0[3]';
-    'wheelSet.wheelSetJoint.revolute.R_rel.T[1,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).T)[1,1];
-    'wheelSet.wheelSetJoint.revolute.R_rel.T[1,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).T)[1,2];
-    'wheelSet.wheelSetJoint.revolute.R_rel.T[1,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).T)[1,3];
-    'wheelSet.wheelSetJoint.revolute.R_rel.T[2,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).T)[2,1];
-    'wheelSet.wheelSetJoint.revolute.R_rel.T[2,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).T)[2,2];
-    'wheelSet.wheelSetJoint.revolute.R_rel.T[2,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).T)[2,3];
-    'wheelSet.wheelSetJoint.revolute.R_rel.T[3,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).T)[3,1];
-    'wheelSet.wheelSetJoint.revolute.R_rel.T[3,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).T)[3,2];
-    'wheelSet.wheelSetJoint.revolute.R_rel.T[3,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).T)[3,3];
-    'wheelSet.wheelSetJoint.revolute.R_rel.w[1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).w)[1];
-    'wheelSet.wheelSetJoint.revolute.R_rel.w[2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).w)[2];
-    'wheelSet.wheelSetJoint.revolute.R_rel.w[3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'wheelSet.wheelSetJoint.revolute.phi', 'wheelSet.wheelSetJoint.revolute.w')).w)[3];
+    'wheelSet.wheelSetJoint.revolute.R_rel.T[1,1]' = cos('wheelSet.wheelSetJoint.revolute.phi');
+    'wheelSet.wheelSetJoint.revolute.R_rel.T[1,2]' = -(-1.0) * sin('wheelSet.wheelSetJoint.revolute.phi');
+    'wheelSet.wheelSetJoint.revolute.R_rel.T[1,3]' = -0.0 * sin('wheelSet.wheelSetJoint.revolute.phi');
+    'wheelSet.wheelSetJoint.revolute.R_rel.T[2,1]' = -1.0 * sin('wheelSet.wheelSetJoint.revolute.phi');
+    'wheelSet.wheelSetJoint.revolute.R_rel.T[2,2]' = cos('wheelSet.wheelSetJoint.revolute.phi');
+    'wheelSet.wheelSetJoint.revolute.R_rel.T[2,3]' = -(-0.0) * sin('wheelSet.wheelSetJoint.revolute.phi');
+    'wheelSet.wheelSetJoint.revolute.R_rel.T[3,1]' = -(-0.0) * sin('wheelSet.wheelSetJoint.revolute.phi');
+    'wheelSet.wheelSetJoint.revolute.R_rel.T[3,2]' = -0.0 * sin('wheelSet.wheelSetJoint.revolute.phi');
+    'wheelSet.wheelSetJoint.revolute.R_rel.T[3,3]' = 1.0;
+    'wheelSet.wheelSetJoint.revolute.R_rel.w[1]' = 0.0 * 'wheelSet.wheelSetJoint.revolute.w';
+    'wheelSet.wheelSetJoint.revolute.R_rel.w[2]' = 0.0 * 'wheelSet.wheelSetJoint.revolute.w';
+    'wheelSet.wheelSetJoint.revolute.R_rel.w[3]' = 1.0 * 'wheelSet.wheelSetJoint.revolute.w';
     'wheelSet.wheelSetJoint.revolute.frame_b.R.T[1,1]' = 'wheelSet.wheelSetJoint.revolute.R_rel.T[1,1]' * 'wheelSet.wheelSetJoint.revolute.frame_a.R.T[1,1]' + 'wheelSet.wheelSetJoint.revolute.R_rel.T[1,2]' * 'wheelSet.wheelSetJoint.revolute.frame_a.R.T[2,1]' + 'wheelSet.wheelSetJoint.revolute.R_rel.T[1,3]' * 'wheelSet.wheelSetJoint.revolute.frame_a.R.T[3,1]';
     'wheelSet.wheelSetJoint.revolute.frame_b.R.T[1,2]' = 'wheelSet.wheelSetJoint.revolute.R_rel.T[1,1]' * 'wheelSet.wheelSetJoint.revolute.frame_a.R.T[1,2]' + 'wheelSet.wheelSetJoint.revolute.R_rel.T[1,2]' * 'wheelSet.wheelSetJoint.revolute.frame_a.R.T[2,2]' + 'wheelSet.wheelSetJoint.revolute.R_rel.T[1,3]' * 'wheelSet.wheelSetJoint.revolute.frame_a.R.T[3,2]';
     'wheelSet.wheelSetJoint.revolute.frame_b.R.T[1,3]' = 'wheelSet.wheelSetJoint.revolute.R_rel.T[1,1]' * 'wheelSet.wheelSetJoint.revolute.frame_a.R.T[1,3]' + 'wheelSet.wheelSetJoint.revolute.R_rel.T[1,2]' * 'wheelSet.wheelSetJoint.revolute.frame_a.R.T[2,3]' + 'wheelSet.wheelSetJoint.revolute.R_rel.T[1,3]' * 'wheelSet.wheelSetJoint.revolute.frame_a.R.T[3,3]';
@@ -4360,18 +4345,18 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'wheelSet.wheelSetJoint.revolute1.frame_b.r_0[1]' = 'wheelSet.wheelSetJoint.revolute1.frame_a.r_0[1]';
     'wheelSet.wheelSetJoint.revolute1.frame_b.r_0[2]' = 'wheelSet.wheelSetJoint.revolute1.frame_a.r_0[2]';
     'wheelSet.wheelSetJoint.revolute1.frame_b.r_0[3]' = 'wheelSet.wheelSetJoint.revolute1.frame_a.r_0[3]';
-    'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).T)[1,1];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).T)[1,2];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).T)[1,3];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.T[2,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).T)[2,1];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.T[2,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).T)[2,2];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.T[2,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).T)[2,3];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.T[3,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).T)[3,1];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.T[3,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).T)[3,2];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.T[3,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).T)[3,3];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.w[1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).w)[1];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.w[2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).w)[2];
-    'wheelSet.wheelSetJoint.revolute1.R_rel.w[3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute1.phi', 'wheelSet.wheelSetJoint.revolute1.w')).w)[3];
+    'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,1]' = cos('wheelSet.wheelSetJoint.revolute1.phi');
+    'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,2]' = -(-0.0) * sin('wheelSet.wheelSetJoint.revolute1.phi');
+    'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,3]' = -1.0 * sin('wheelSet.wheelSetJoint.revolute1.phi');
+    'wheelSet.wheelSetJoint.revolute1.R_rel.T[2,1]' = -0.0 * sin('wheelSet.wheelSetJoint.revolute1.phi');
+    'wheelSet.wheelSetJoint.revolute1.R_rel.T[2,2]' = 1.0;
+    'wheelSet.wheelSetJoint.revolute1.R_rel.T[2,3]' = -(-0.0) * sin('wheelSet.wheelSetJoint.revolute1.phi');
+    'wheelSet.wheelSetJoint.revolute1.R_rel.T[3,1]' = -(-1.0) * sin('wheelSet.wheelSetJoint.revolute1.phi');
+    'wheelSet.wheelSetJoint.revolute1.R_rel.T[3,2]' = -0.0 * sin('wheelSet.wheelSetJoint.revolute1.phi');
+    'wheelSet.wheelSetJoint.revolute1.R_rel.T[3,3]' = cos('wheelSet.wheelSetJoint.revolute1.phi');
+    'wheelSet.wheelSetJoint.revolute1.R_rel.w[1]' = 0.0 * 'wheelSet.wheelSetJoint.revolute1.w';
+    'wheelSet.wheelSetJoint.revolute1.R_rel.w[2]' = 1.0 * 'wheelSet.wheelSetJoint.revolute1.w';
+    'wheelSet.wheelSetJoint.revolute1.R_rel.w[3]' = 0.0 * 'wheelSet.wheelSetJoint.revolute1.w';
     'wheelSet.wheelSetJoint.revolute1.frame_b.R.T[1,1]' = 'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,1]' * 'wheelSet.wheelSetJoint.revolute1.frame_a.R.T[1,1]' + 'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,2]' * 'wheelSet.wheelSetJoint.revolute1.frame_a.R.T[2,1]' + 'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,3]' * 'wheelSet.wheelSetJoint.revolute1.frame_a.R.T[3,1]';
     'wheelSet.wheelSetJoint.revolute1.frame_b.R.T[1,2]' = 'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,1]' * 'wheelSet.wheelSetJoint.revolute1.frame_a.R.T[1,2]' + 'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,2]' * 'wheelSet.wheelSetJoint.revolute1.frame_a.R.T[2,2]' + 'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,3]' * 'wheelSet.wheelSetJoint.revolute1.frame_a.R.T[3,2]';
     'wheelSet.wheelSetJoint.revolute1.frame_b.R.T[1,3]' = 'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,1]' * 'wheelSet.wheelSetJoint.revolute1.frame_a.R.T[1,3]' + 'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,2]' * 'wheelSet.wheelSetJoint.revolute1.frame_a.R.T[2,3]' + 'wheelSet.wheelSetJoint.revolute1.R_rel.T[1,3]' * 'wheelSet.wheelSetJoint.revolute1.frame_a.R.T[3,3]';
@@ -4404,18 +4389,18 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'wheelSet.wheelSetJoint.revolute2.frame_b.r_0[1]' = 'wheelSet.wheelSetJoint.revolute2.frame_a.r_0[1]';
     'wheelSet.wheelSetJoint.revolute2.frame_b.r_0[2]' = 'wheelSet.wheelSetJoint.revolute2.frame_a.r_0[2]';
     'wheelSet.wheelSetJoint.revolute2.frame_b.r_0[3]' = 'wheelSet.wheelSetJoint.revolute2.frame_a.r_0[3]';
-    'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).T)[1,1];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).T)[1,2];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).T)[1,3];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.T[2,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).T)[2,1];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.T[2,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).T)[2,2];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.T[2,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).T)[2,3];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.T[3,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).T)[3,1];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.T[3,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).T)[3,2];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.T[3,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).T)[3,3];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.w[1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).w)[1];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.w[2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).w)[2];
-    'wheelSet.wheelSetJoint.revolute2.R_rel.w[3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'wheelSet.wheelSetJoint.revolute2.phi', 'wheelSet.wheelSetJoint.revolute2.w')).w)[3];
+    'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,1]' = cos('wheelSet.wheelSetJoint.revolute2.phi');
+    'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,2]' = -(-0.0) * sin('wheelSet.wheelSetJoint.revolute2.phi');
+    'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,3]' = -1.0 * sin('wheelSet.wheelSetJoint.revolute2.phi');
+    'wheelSet.wheelSetJoint.revolute2.R_rel.T[2,1]' = -0.0 * sin('wheelSet.wheelSetJoint.revolute2.phi');
+    'wheelSet.wheelSetJoint.revolute2.R_rel.T[2,2]' = 1.0;
+    'wheelSet.wheelSetJoint.revolute2.R_rel.T[2,3]' = -(-0.0) * sin('wheelSet.wheelSetJoint.revolute2.phi');
+    'wheelSet.wheelSetJoint.revolute2.R_rel.T[3,1]' = -(-1.0) * sin('wheelSet.wheelSetJoint.revolute2.phi');
+    'wheelSet.wheelSetJoint.revolute2.R_rel.T[3,2]' = -0.0 * sin('wheelSet.wheelSetJoint.revolute2.phi');
+    'wheelSet.wheelSetJoint.revolute2.R_rel.T[3,3]' = cos('wheelSet.wheelSetJoint.revolute2.phi');
+    'wheelSet.wheelSetJoint.revolute2.R_rel.w[1]' = 0.0 * 'wheelSet.wheelSetJoint.revolute2.w';
+    'wheelSet.wheelSetJoint.revolute2.R_rel.w[2]' = 1.0 * 'wheelSet.wheelSetJoint.revolute2.w';
+    'wheelSet.wheelSetJoint.revolute2.R_rel.w[3]' = 0.0 * 'wheelSet.wheelSetJoint.revolute2.w';
     'wheelSet.wheelSetJoint.revolute2.frame_b.R.T[1,1]' = 'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,1]' * 'wheelSet.wheelSetJoint.revolute2.frame_a.R.T[1,1]' + 'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,2]' * 'wheelSet.wheelSetJoint.revolute2.frame_a.R.T[2,1]' + 'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,3]' * 'wheelSet.wheelSetJoint.revolute2.frame_a.R.T[3,1]';
     'wheelSet.wheelSetJoint.revolute2.frame_b.R.T[1,2]' = 'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,1]' * 'wheelSet.wheelSetJoint.revolute2.frame_a.R.T[1,2]' + 'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,2]' * 'wheelSet.wheelSetJoint.revolute2.frame_a.R.T[2,2]' + 'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,3]' * 'wheelSet.wheelSetJoint.revolute2.frame_a.R.T[3,2]';
     'wheelSet.wheelSetJoint.revolute2.frame_b.R.T[1,3]' = 'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,1]' * 'wheelSet.wheelSetJoint.revolute2.frame_a.R.T[1,3]' + 'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,2]' * 'wheelSet.wheelSetJoint.revolute2.frame_a.R.T[2,3]' + 'wheelSet.wheelSetJoint.revolute2.R_rel.T[1,3]' * 'wheelSet.wheelSetJoint.revolute2.frame_a.R.T[3,3]';

@@ -146,15 +146,6 @@ package 'MoistAir'
     annotation(derivative(order = 1) = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.pds_pT_der', Inline = false, LateInline = true);
   end 'Modelica.Media.Air.ReferenceMoistAir.Utilities.pds_pT';
 
-  function 'Modelica.Media.Examples.ReferenceAir.MoistAir.Medium.setState_pTX' "Return thermodynamic state as function of pressure p, temperature T and composition X"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
-    output 'Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := if size('X', 1) == 2 then 'Medium.ThermodynamicState'('p', 'T', 'X') else 'Medium.ThermodynamicState'('p', 'T', cat(1, 'X', {1.0 - sum('X')}));
-  end 'Modelica.Media.Examples.ReferenceAir.MoistAir.Medium.setState_pTX';
-
   function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.rho_pTX' "Return density as a function of pressure p, temperature T and composition X"
     input Real 'p'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
@@ -401,7 +392,7 @@ package 'MoistAir'
     'medium.X_liquid' = max('medium.Xi[1]' - 'medium.X_sat', 0.0);
     'medium.X_steam' = 'medium.Xi[1]' - 'medium.X_liquid';
     'medium.X_air' = 1.0 - 'medium.Xi[1]';
-    'medium.h' = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX'(('Modelica.Media.Examples.ReferenceAir.MoistAir.Medium.setState_pTX'('medium.p', 'medium.T', 'medium.Xi')).p, ('Modelica.Media.Examples.ReferenceAir.MoistAir.Medium.setState_pTX'('medium.p', 'medium.T', 'medium.Xi')).T, {(('Modelica.Media.Examples.ReferenceAir.MoistAir.Medium.setState_pTX'('medium.p', 'medium.T', 'medium.Xi')).X)[1], (('Modelica.Media.Examples.ReferenceAir.MoistAir.Medium.setState_pTX'('medium.p', 'medium.T', 'medium.Xi')).X)[2]});
+    'medium.h' = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX'((if size('medium.Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium.p', 'medium.T', 'medium.Xi') else 'Medium.ThermodynamicState'('medium.p', 'medium.T', cat(1, 'medium.Xi', {1.0 - sum('medium.Xi')}))).p, (if size('medium.Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium.p', 'medium.T', 'medium.Xi') else 'Medium.ThermodynamicState'('medium.p', 'medium.T', cat(1, 'medium.Xi', {1.0 - sum('medium.Xi')}))).T, {((if size('medium.Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium.p', 'medium.T', 'medium.Xi') else 'Medium.ThermodynamicState'('medium.p', 'medium.T', cat(1, 'medium.Xi', {1.0 - sum('medium.Xi')}))).X)[1], ((if size('medium.Xi', 1) == 2 then 'Medium.ThermodynamicState'('medium.p', 'medium.T', 'medium.Xi') else 'Medium.ThermodynamicState'('medium.p', 'medium.T', cat(1, 'medium.Xi', {1.0 - sum('medium.Xi')}))).X)[2]});
     'medium.R_s' = 287.117 * ('medium.X_air' / (1.0 - 'medium.X_liquid')) + 461.51805 * 'medium.X_steam' / (1.0 - 'medium.X_liquid');
     'medium.u' = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX'('medium.p', 'medium.T', 'medium.Xi') - 'medium.p' / 'Modelica.Media.Air.ReferenceMoistAir.Utilities.rho_pTX'('medium.p', 'medium.T', 'medium.Xi');
     'medium.d' = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.rho_pTX'('medium.p', 'medium.T', {'medium.Xi[1]'});

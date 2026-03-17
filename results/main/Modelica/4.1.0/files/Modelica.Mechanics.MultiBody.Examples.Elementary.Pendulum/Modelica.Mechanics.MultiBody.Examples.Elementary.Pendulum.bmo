@@ -1,15 +1,5 @@
 //! base 0.1.0
 package 'Pendulum'
-  function 'Modelica.Mechanics.MultiBody.Frames.planarRotation' "Return orientation object of a planar rotation"
-    input Real[3] 'e'(each unit = "1");
-    input Real 'angle'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real 'der_angle'(unit = "rad/s", quantity = "AngularVelocity");
-    output 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-  algorithm
-    'R' := 'Modelica.Mechanics.MultiBody.Frames.Orientation'(promote('e', 2) * transpose(promote('e', 2)) + ({{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}} - promote('e', 2) * transpose(promote('e', 2))) .* 'Modelica.Math.cos'('angle') - {{0.0, (-'e'[3]) * 'Modelica.Math.sin'('angle'), 'e'[2] * 'Modelica.Math.sin'('angle')}, {'e'[3] * 'Modelica.Math.sin'('angle'), 0.0, (-'e'[1]) * 'Modelica.Math.sin'('angle')}, {(-'e'[2]) * 'Modelica.Math.sin'('angle'), 'e'[1] * 'Modelica.Math.sin'('angle'), 0.0}}, {'e'[1] * 'der_angle', 'e'[2] * 'der_angle', 'e'[3] * 'der_angle'});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.planarRotation';
-
   function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
     input Real[3] 'n_x';
     input Real[3] 'n_y';
@@ -25,11 +15,6 @@ package 'Pendulum'
   end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
 
   type 'Modelica.Mechanics.MultiBody.Types.GravityTypes' = enumeration('NoGravity', 'UniformGravity', 'PointGravity');
-
-  record 'Modelica.Mechanics.MultiBody.Frames.Orientation'
-    Real[3, 3] 'T';
-    Real[3] 'w'(unit = fill("rad/s", 3), quantity = fill("AngularVelocity", 3));
-  end 'Modelica.Mechanics.MultiBody.Frames.Orientation';
 
   model 'Pendulum' "Simple pendulum with one revolute joint and one body"
     Real 'world.frame_b.r_0[1]'(unit = "m", quantity = "Length") "Position vector from world frame to the connector frame origin, resolved in world frame";
@@ -1912,18 +1897,18 @@ package 'Pendulum'
     'rev.frame_b.r_0[1]' = 'rev.frame_a.r_0[1]';
     'rev.frame_b.r_0[2]' = 'rev.frame_a.r_0[2]';
     'rev.frame_b.r_0[3]' = 'rev.frame_a.r_0[3]';
-    'rev.R_rel.T[1,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[1,1];
-    'rev.R_rel.T[1,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[1,2];
-    'rev.R_rel.T[1,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[1,3];
-    'rev.R_rel.T[2,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[2,1];
-    'rev.R_rel.T[2,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[2,2];
-    'rev.R_rel.T[2,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[2,3];
-    'rev.R_rel.T[3,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[3,1];
-    'rev.R_rel.T[3,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[3,2];
-    'rev.R_rel.T[3,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).T)[3,3];
-    'rev.R_rel.w[1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).w)[1];
-    'rev.R_rel.w[2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).w)[2];
-    'rev.R_rel.w[3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'rev.phi', 'rev.w')).w)[3];
+    'rev.R_rel.T[1,1]' = cos('rev.phi');
+    'rev.R_rel.T[1,2]' = -(-1.0) * sin('rev.phi');
+    'rev.R_rel.T[1,3]' = -0.0 * sin('rev.phi');
+    'rev.R_rel.T[2,1]' = -1.0 * sin('rev.phi');
+    'rev.R_rel.T[2,2]' = cos('rev.phi');
+    'rev.R_rel.T[2,3]' = -(-0.0) * sin('rev.phi');
+    'rev.R_rel.T[3,1]' = -(-0.0) * sin('rev.phi');
+    'rev.R_rel.T[3,2]' = -0.0 * sin('rev.phi');
+    'rev.R_rel.T[3,3]' = 1.0;
+    'rev.R_rel.w[1]' = 0.0 * 'rev.w';
+    'rev.R_rel.w[2]' = 0.0 * 'rev.w';
+    'rev.R_rel.w[3]' = 1.0 * 'rev.w';
     'rev.frame_b.R.T[1,1]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.T[1,1]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.T[2,1]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.T[3,1]';
     'rev.frame_b.R.T[1,2]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.T[1,2]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.T[2,2]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.T[3,2]';
     'rev.frame_b.R.T[1,3]' = 'rev.R_rel.T[1,1]' * 'rev.frame_a.R.T[1,3]' + 'rev.R_rel.T[1,2]' * 'rev.frame_a.R.T[2,3]' + 'rev.R_rel.T[1,3]' * 'rev.frame_a.R.T[3,3]';

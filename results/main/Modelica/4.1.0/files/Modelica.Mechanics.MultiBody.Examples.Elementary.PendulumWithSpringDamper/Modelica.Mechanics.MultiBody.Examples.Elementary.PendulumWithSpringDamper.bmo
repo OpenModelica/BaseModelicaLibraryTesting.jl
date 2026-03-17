@@ -1,15 +1,5 @@
 //! base 0.1.0
 package 'PendulumWithSpringDamper'
-  function 'Modelica.Mechanics.MultiBody.Frames.planarRotation' "Return orientation object of a planar rotation"
-    input Real[3] 'e'(each unit = "1");
-    input Real 'angle'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real 'der_angle'(unit = "rad/s", quantity = "AngularVelocity");
-    output 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-  algorithm
-    'R' := 'Modelica.Mechanics.MultiBody.Frames.Orientation'(promote('e', 2) * transpose(promote('e', 2)) + ({{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}} - promote('e', 2) * transpose(promote('e', 2))) .* 'Modelica.Math.cos'('angle') - {{0.0, (-'e'[3]) * 'Modelica.Math.sin'('angle'), 'e'[2] * 'Modelica.Math.sin'('angle')}, {'e'[3] * 'Modelica.Math.sin'('angle'), 0.0, (-'e'[1]) * 'Modelica.Math.sin'('angle')}, {(-'e'[2]) * 'Modelica.Math.sin'('angle'), 'e'[1] * 'Modelica.Math.sin'('angle'), 0.0}}, {'e'[1] * 'der_angle', 'e'[2] * 'der_angle', 'e'[3] * 'der_angle'});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.planarRotation';
-
   function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
     input Real[3] 'n_x';
     input Real[3] 'n_y';
@@ -25,11 +15,6 @@ package 'PendulumWithSpringDamper'
   end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
 
   type 'Modelica.Mechanics.MultiBody.Types.GravityTypes' = enumeration('NoGravity', 'UniformGravity', 'PointGravity');
-
-  record 'Modelica.Mechanics.MultiBody.Frames.Orientation'
-    Real[3, 3] 'T';
-    Real[3] 'w'(unit = fill("rad/s", 3), quantity = fill("AngularVelocity", 3));
-  end 'Modelica.Mechanics.MultiBody.Frames.Orientation';
 
   model 'PendulumWithSpringDamper' "Simple spring/damper/mass system"
     parameter Boolean 'animation' = true "= true, if animation shall be enabled";
@@ -2852,18 +2837,18 @@ package 'PendulumWithSpringDamper'
     'revolute.frame_b.r_0[1]' = 'revolute.frame_a.r_0[1]';
     'revolute.frame_b.r_0[2]' = 'revolute.frame_a.r_0[2]';
     'revolute.frame_b.r_0[3]' = 'revolute.frame_a.r_0[3]';
-    'revolute.R_rel.T[1,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).T)[1,1];
-    'revolute.R_rel.T[1,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).T)[1,2];
-    'revolute.R_rel.T[1,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).T)[1,3];
-    'revolute.R_rel.T[2,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).T)[2,1];
-    'revolute.R_rel.T[2,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).T)[2,2];
-    'revolute.R_rel.T[2,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).T)[2,3];
-    'revolute.R_rel.T[3,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).T)[3,1];
-    'revolute.R_rel.T[3,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).T)[3,2];
-    'revolute.R_rel.T[3,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).T)[3,3];
-    'revolute.R_rel.w[1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).w)[1];
-    'revolute.R_rel.w[2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).w)[2];
-    'revolute.R_rel.w[3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 0.0, 1.0}, 'revolute.phi', 'revolute.w')).w)[3];
+    'revolute.R_rel.T[1,1]' = cos('revolute.phi');
+    'revolute.R_rel.T[1,2]' = -(-1.0) * sin('revolute.phi');
+    'revolute.R_rel.T[1,3]' = -0.0 * sin('revolute.phi');
+    'revolute.R_rel.T[2,1]' = -1.0 * sin('revolute.phi');
+    'revolute.R_rel.T[2,2]' = cos('revolute.phi');
+    'revolute.R_rel.T[2,3]' = -(-0.0) * sin('revolute.phi');
+    'revolute.R_rel.T[3,1]' = -(-0.0) * sin('revolute.phi');
+    'revolute.R_rel.T[3,2]' = -0.0 * sin('revolute.phi');
+    'revolute.R_rel.T[3,3]' = 1.0;
+    'revolute.R_rel.w[1]' = 0.0 * 'revolute.w';
+    'revolute.R_rel.w[2]' = 0.0 * 'revolute.w';
+    'revolute.R_rel.w[3]' = 1.0 * 'revolute.w';
     'revolute.frame_b.R.T[1,1]' = 'revolute.R_rel.T[1,1]' * 'revolute.frame_a.R.T[1,1]' + 'revolute.R_rel.T[1,2]' * 'revolute.frame_a.R.T[2,1]' + 'revolute.R_rel.T[1,3]' * 'revolute.frame_a.R.T[3,1]';
     'revolute.frame_b.R.T[1,2]' = 'revolute.R_rel.T[1,1]' * 'revolute.frame_a.R.T[1,2]' + 'revolute.R_rel.T[1,2]' * 'revolute.frame_a.R.T[2,2]' + 'revolute.R_rel.T[1,3]' * 'revolute.frame_a.R.T[3,2]';
     'revolute.frame_b.R.T[1,3]' = 'revolute.R_rel.T[1,1]' * 'revolute.frame_a.R.T[1,3]' + 'revolute.R_rel.T[1,2]' * 'revolute.frame_a.R.T[2,3]' + 'revolute.R_rel.T[1,3]' * 'revolute.frame_a.R.T[3,3]';

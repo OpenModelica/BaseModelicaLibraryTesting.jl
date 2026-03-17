@@ -36,16 +36,6 @@ package 'RevoluteConstraint'
     'angles'[3] := 'Modelica.Mechanics.MultiBody.Frames.planarRotationAngle'('e3_2', 'e2_1a', 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve2'('R'.'T', 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.resolve1'('T_1a', 'e2_1a')));
   end 'Modelica.Mechanics.MultiBody.Frames.axesRotationsAngles';
 
-  function 'Modelica.Mechanics.MultiBody.Frames.planarRotation' "Return orientation object of a planar rotation"
-    input Real[3] 'e'(each unit = "1");
-    input Real 'angle'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real 'der_angle'(unit = "rad/s", quantity = "AngularVelocity");
-    output 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-  algorithm
-    'R' := 'Modelica.Mechanics.MultiBody.Frames.Orientation'(promote('e', 2) * transpose(promote('e', 2)) + ({{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}} - promote('e', 2) * transpose(promote('e', 2))) .* 'Modelica.Math.cos'('angle') - {{0.0, (-'e'[3]) * 'Modelica.Math.sin'('angle'), 'e'[2] * 'Modelica.Math.sin'('angle')}, {'e'[3] * 'Modelica.Math.sin'('angle'), 0.0, (-'e'[1]) * 'Modelica.Math.sin'('angle')}, {(-'e'[2]) * 'Modelica.Math.sin'('angle'), 'e'[1] * 'Modelica.Math.sin'('angle'), 0.0}}, {'e'[1] * 'der_angle', 'e'[2] * 'der_angle', 'e'[3] * 'der_angle'});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.planarRotation';
-
   function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
     input Real[3] 'n_x';
     input Real[3] 'n_y';
@@ -3843,18 +3833,18 @@ package 'RevoluteConstraint'
     'joint.frame_b.r_0[1]' = 'joint.frame_a.r_0[1]';
     'joint.frame_b.r_0[2]' = 'joint.frame_a.r_0[2]';
     'joint.frame_b.r_0[3]' = 'joint.frame_a.r_0[3]';
-    'joint.R_rel.T[1,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).T)[1,1];
-    'joint.R_rel.T[1,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).T)[1,2];
-    'joint.R_rel.T[1,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).T)[1,3];
-    'joint.R_rel.T[2,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).T)[2,1];
-    'joint.R_rel.T[2,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).T)[2,2];
-    'joint.R_rel.T[2,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).T)[2,3];
-    'joint.R_rel.T[3,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).T)[3,1];
-    'joint.R_rel.T[3,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).T)[3,2];
-    'joint.R_rel.T[3,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).T)[3,3];
-    'joint.R_rel.w[1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).w)[1];
-    'joint.R_rel.w[2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).w)[2];
-    'joint.R_rel.w[3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({0.0, 1.0, 0.0}, 'joint.phi', 'joint.w')).w)[3];
+    'joint.R_rel.T[1,1]' = cos('joint.phi');
+    'joint.R_rel.T[1,2]' = -(-0.0) * sin('joint.phi');
+    'joint.R_rel.T[1,3]' = -1.0 * sin('joint.phi');
+    'joint.R_rel.T[2,1]' = -0.0 * sin('joint.phi');
+    'joint.R_rel.T[2,2]' = 1.0;
+    'joint.R_rel.T[2,3]' = -(-0.0) * sin('joint.phi');
+    'joint.R_rel.T[3,1]' = -(-1.0) * sin('joint.phi');
+    'joint.R_rel.T[3,2]' = -0.0 * sin('joint.phi');
+    'joint.R_rel.T[3,3]' = cos('joint.phi');
+    'joint.R_rel.w[1]' = 0.0 * 'joint.w';
+    'joint.R_rel.w[2]' = 1.0 * 'joint.w';
+    'joint.R_rel.w[3]' = 0.0 * 'joint.w';
     'joint.frame_b.R.T[1,1]' = 'joint.R_rel.T[1,1]' * 'joint.frame_a.R.T[1,1]' + 'joint.R_rel.T[1,2]' * 'joint.frame_a.R.T[2,1]' + 'joint.R_rel.T[1,3]' * 'joint.frame_a.R.T[3,1]';
     'joint.frame_b.R.T[1,2]' = 'joint.R_rel.T[1,1]' * 'joint.frame_a.R.T[1,2]' + 'joint.R_rel.T[1,2]' * 'joint.frame_a.R.T[2,2]' + 'joint.R_rel.T[1,3]' * 'joint.frame_a.R.T[3,2]';
     'joint.frame_b.R.T[1,3]' = 'joint.R_rel.T[1,1]' * 'joint.frame_a.R.T[1,3]' + 'joint.R_rel.T[1,2]' * 'joint.frame_a.R.T[2,3]' + 'joint.R_rel.T[1,3]' * 'joint.frame_a.R.T[3,3]';

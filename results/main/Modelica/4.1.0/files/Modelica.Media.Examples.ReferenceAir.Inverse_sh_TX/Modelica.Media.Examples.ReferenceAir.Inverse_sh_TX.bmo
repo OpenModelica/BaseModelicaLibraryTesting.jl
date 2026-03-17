@@ -37,14 +37,27 @@ package 'Inverse_sh_TX'
     annotation(derivative(order = 1) = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX_der', Inline = false, LateInline = true);
   end 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX';
 
-  function 'Modelica.Media.Air.ReferenceMoistAir.setState_pTX' "Return thermodynamic state as function of pressure p, temperature T and composition X"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
-    output 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState' 'state';
+  function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_phX' "Return temperature as a function of pressure, specific enthalpy and mass fractions"
+    input Real 'p'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
+    output Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real[2] 'Xfull'(nominal = {0.1, 0.1}, max = {1.0, 1.0}, min = {0.0, 0.0}, unit = {"kg/kg", "kg/kg"}, quantity = {"MassFraction", "MassFraction"}) = if size('X', 1) == 2 then 'X' else cat(1, 'X', {1.0 - sum('X')});
   algorithm
-    'state' := if size('X', 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'('p', 'T', 'X') else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'('p', 'T', cat(1, 'X', {1.0 - sum('X')}));
-  end 'Modelica.Media.Air.ReferenceMoistAir.setState_pTX';
+    'T' := 'Modelica.Math.Nonlinear.solveOneNonlinearEquation'(function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_phX.T_phX_res'(p = 'p', h = 'h', X = 'Xfull'), 173.15, 2000.0, 1e-9);
+    annotation(inverse(h = Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX('p', 'T', 'X')));
+  end 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_phX';
+
+  function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_psX' "Return temperature as function of pressure, specific entropy and mass fractions"
+    input Real 'p'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
+    output Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real[2] 'Xfull'(nominal = {0.1, 0.1}, max = {1.0, 1.0}, min = {0.0, 0.0}, unit = {"kg/kg", "kg/kg"}, quantity = {"MassFraction", "MassFraction"}) = if size('X', 1) == 2 then 'X' else cat(1, 'X', {1.0 - sum('X')});
+  algorithm
+    'T' := 'Modelica.Math.Nonlinear.solveOneNonlinearEquation'(function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_psX.T_psX_res'(p = 'p', s = 's', X = 'Xfull'), 173.15, 2000.0, 1e-9);
+    annotation(inverse(s = Modelica.Media.Air.ReferenceMoistAir.Utilities.s_pTX('p', 'T', 'X')));
+  end 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_psX';
 
   function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.s_pTX' "Specific entropy of moist air"
     input Real 'p'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -145,24 +158,6 @@ package 'Inverse_sh_TX'
     end if;
   end 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX_der';
 
-  function 'Modelica.Media.Air.ReferenceMoistAir.setState_phX' "Return thermodynamic state as function of pressure p, specific enthalpy h and composition X"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
-    output 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState' 'state';
-  algorithm
-    'state' := if size('X', 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'('p', 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_phX'('p', 'h', 'X'), 'X') else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'('p', 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_phX'('p', 'h', 'X'), cat(1, 'X', {1.0 - sum('X')}));
-  end 'Modelica.Media.Air.ReferenceMoistAir.setState_phX';
-
-  function 'Modelica.Media.Air.ReferenceMoistAir.setState_psX' "Return thermodynamic state as function of pressure p, specific enthalpy h and composition X"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 's'(nominal = 1000.0, max = 1e7, min = -1e7, unit = "J/(kg.K)", quantity = "SpecificEntropy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
-    output 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState' 'state';
-  algorithm
-    'state' := if size('X', 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'('p', 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_psX'('p', 's', 'X'), 'X') else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'('p', 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_psX'('p', 's', 'X'), cat(1, 'X', {1.0 - sum('X')}));
-  end 'Modelica.Media.Air.ReferenceMoistAir.setState_psX';
-
   record 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'
     Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
@@ -223,10 +218,10 @@ package 'Inverse_sh_TX'
   equation
     'h1' = if time < 0.0 then 52261.144481212395 else if time >= 1.0 then 257184.95627511968 else 52261.144481212395 + time * 204923.81179390728;
     's1' = if time < 0.0 then 350.79196547721216 else if time >= 1.0 then 873.679734248472 else 350.79196547721216 + time * 522.8877687712597;
-    'Th' = ('Modelica.Media.Air.ReferenceMoistAir.setState_phX'(1e5, 'h1', {0.01, 0.99})).T;
-    'Ts' = ('Modelica.Media.Air.ReferenceMoistAir.setState_psX'(1e5, 's1', {0.01, 0.99})).T;
-    'h2' = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX'(('Modelica.Media.Air.ReferenceMoistAir.setState_pTX'(1e5, 'Th', {0.01, 0.99})).p, ('Modelica.Media.Air.ReferenceMoistAir.setState_pTX'(1e5, 'Th', {0.01, 0.99})).T, {(('Modelica.Media.Air.ReferenceMoistAir.setState_pTX'(1e5, 'Th', {0.01, 0.99})).X)[1], (('Modelica.Media.Air.ReferenceMoistAir.setState_pTX'(1e5, 'Th', {0.01, 0.99})).X)[2]});
-    's2' = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.s_pTX'(('Modelica.Media.Air.ReferenceMoistAir.setState_pTX'(1e5, 'Ts', {0.01, 0.99})).p, ('Modelica.Media.Air.ReferenceMoistAir.setState_pTX'(1e5, 'Ts', {0.01, 0.99})).T, {(('Modelica.Media.Air.ReferenceMoistAir.setState_pTX'(1e5, 'Ts', {0.01, 0.99})).X)[1], (('Modelica.Media.Air.ReferenceMoistAir.setState_pTX'(1e5, 'Ts', {0.01, 0.99})).X)[2]});
+    'Th' = (if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_phX'(1e5, 'h1', {0.01, 0.99}), {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_phX'(1e5, 'h1', {0.01, 0.99}), cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).T;
+    'Ts' = (if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_psX'(1e5, 's1', {0.01, 0.99}), {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Modelica.Media.Air.ReferenceMoistAir.Utilities.Inverses.T_psX'(1e5, 's1', {0.01, 0.99}), cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).T;
+    'h2' = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX'((if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Th', {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Th', cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).p, (if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Th', {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Th', cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).T, {((if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Th', {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Th', cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).X)[1], ((if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Th', {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Th', cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).X)[2]});
+    's2' = 'Modelica.Media.Air.ReferenceMoistAir.Utilities.s_pTX'((if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Ts', {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Ts', cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).p, (if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Ts', {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Ts', cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).T, {((if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Ts', {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Ts', cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).X)[1], ((if size({0.01, 0.99}, 1) == 2 then 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Ts', {0.01, 0.99}) else 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'(1e5, 'Ts', cat(1, {0.01, 0.99}, {1.0 - sum({0.01, 0.99})}))).X)[2]});
     assert(abs('h1' - 'h2') < 0.001, "Inverse for h not correctly computed", AssertionLevel.error);
     assert(abs('s1' - 's2') < 0.001, "Inverse for s not correctly computed", AssertionLevel.error);
     annotation(experiment(StopTime = 1));

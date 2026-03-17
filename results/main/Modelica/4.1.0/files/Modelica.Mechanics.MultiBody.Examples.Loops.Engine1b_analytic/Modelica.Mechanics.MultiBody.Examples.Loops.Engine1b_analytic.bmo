@@ -35,16 +35,6 @@ package 'Engine1b_analytic'
     end if;
   end 'Modelica.Mechanics.MultiBody.Examples.Loops.Engine1b_analytic.jointRRP.jointUSP.prismatic.selectBranch';
 
-  function 'Modelica.Mechanics.MultiBody.Frames.planarRotation' "Return orientation object of a planar rotation"
-    input Real[3] 'e'(each unit = "1");
-    input Real 'angle'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real 'der_angle'(unit = "rad/s", quantity = "AngularVelocity");
-    output 'Modelica.Mechanics.MultiBody.Frames.Orientation' 'R';
-  algorithm
-    'R' := 'Modelica.Mechanics.MultiBody.Frames.Orientation'(promote('e', 2) * transpose(promote('e', 2)) + ({{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}} - promote('e', 2) * transpose(promote('e', 2))) .* 'Modelica.Math.cos'('angle') - {{0.0, (-'e'[3]) * 'Modelica.Math.sin'('angle'), 'e'[2] * 'Modelica.Math.sin'('angle')}, {'e'[3] * 'Modelica.Math.sin'('angle'), 0.0, (-'e'[1]) * 'Modelica.Math.sin'('angle')}, {(-'e'[2]) * 'Modelica.Math.sin'('angle'), 'e'[1] * 'Modelica.Math.sin'('angle'), 0.0}}, {'e'[1] * 'der_angle', 'e'[2] * 'der_angle', 'e'[3] * 'der_angle'});
-    annotation(Inline = true);
-  end 'Modelica.Mechanics.MultiBody.Frames.planarRotation';
-
   function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
     input Real[3] 'n_x';
     input Real[3] 'n_y';
@@ -62,11 +52,6 @@ package 'Engine1b_analytic'
   type 'Modelica.Mechanics.MultiBody.Types.GravityTypes' = enumeration('NoGravity', 'UniformGravity', 'PointGravity');
 
   type 'Modelica.Mechanics.MultiBody.Types.ResolveInFrameAB' = enumeration('world', 'frame_a', 'frame_b', 'frame_resolve');
-
-  record 'Modelica.Mechanics.MultiBody.Frames.Orientation'
-    Real[3, 3] 'T';
-    Real[3] 'w'(unit = fill("rad/s", 3), quantity = fill("AngularVelocity", 3));
-  end 'Modelica.Mechanics.MultiBody.Frames.Orientation';
 
   model 'Engine1b_analytic' "Model of one cylinder engine with gas force and analytic loop handling"
     Real 'world.frame_b.r_0[1]'(unit = "m", quantity = "Length") "Position vector from world frame to the connector frame origin, resolved in world frame";
@@ -5917,18 +5902,18 @@ package 'Engine1b_analytic'
     'bearing.frame_b.r_0[1]' = 'bearing.frame_a.r_0[1]';
     'bearing.frame_b.r_0[2]' = 'bearing.frame_a.r_0[2]';
     'bearing.frame_b.r_0[3]' = 'bearing.frame_a.r_0[3]';
-    'bearing.R_rel.T[1,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).T)[1,1];
-    'bearing.R_rel.T[1,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).T)[1,2];
-    'bearing.R_rel.T[1,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).T)[1,3];
-    'bearing.R_rel.T[2,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).T)[2,1];
-    'bearing.R_rel.T[2,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).T)[2,2];
-    'bearing.R_rel.T[2,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).T)[2,3];
-    'bearing.R_rel.T[3,1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).T)[3,1];
-    'bearing.R_rel.T[3,2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).T)[3,2];
-    'bearing.R_rel.T[3,3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).T)[3,3];
-    'bearing.R_rel.w[1]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).w)[1];
-    'bearing.R_rel.w[2]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).w)[2];
-    'bearing.R_rel.w[3]' = (('Modelica.Mechanics.MultiBody.Frames.planarRotation'({1.0, 0.0, 0.0}, 'bearing.phi', 'bearing.w')).w)[3];
+    'bearing.R_rel.T[1,1]' = 1.0;
+    'bearing.R_rel.T[1,2]' = -(-0.0) * sin('bearing.phi');
+    'bearing.R_rel.T[1,3]' = -0.0 * sin('bearing.phi');
+    'bearing.R_rel.T[2,1]' = -0.0 * sin('bearing.phi');
+    'bearing.R_rel.T[2,2]' = cos('bearing.phi');
+    'bearing.R_rel.T[2,3]' = -(-1.0) * sin('bearing.phi');
+    'bearing.R_rel.T[3,1]' = -(-0.0) * sin('bearing.phi');
+    'bearing.R_rel.T[3,2]' = -1.0 * sin('bearing.phi');
+    'bearing.R_rel.T[3,3]' = cos('bearing.phi');
+    'bearing.R_rel.w[1]' = 1.0 * 'bearing.w';
+    'bearing.R_rel.w[2]' = 0.0 * 'bearing.w';
+    'bearing.R_rel.w[3]' = 0.0 * 'bearing.w';
     'bearing.frame_b.R.T[1,1]' = 'bearing.R_rel.T[1,1]' * 'bearing.frame_a.R.T[1,1]' + 'bearing.R_rel.T[1,2]' * 'bearing.frame_a.R.T[2,1]' + 'bearing.R_rel.T[1,3]' * 'bearing.frame_a.R.T[3,1]';
     'bearing.frame_b.R.T[1,2]' = 'bearing.R_rel.T[1,1]' * 'bearing.frame_a.R.T[1,2]' + 'bearing.R_rel.T[1,2]' * 'bearing.frame_a.R.T[2,2]' + 'bearing.R_rel.T[1,3]' * 'bearing.frame_a.R.T[3,2]';
     'bearing.frame_b.R.T[1,3]' = 'bearing.R_rel.T[1,1]' * 'bearing.frame_a.R.T[1,3]' + 'bearing.R_rel.T[1,2]' * 'bearing.frame_a.R.T[2,3]' + 'bearing.R_rel.T[1,3]' * 'bearing.frame_a.R.T[3,3]';
