@@ -6,18 +6,24 @@ import ModelingToolkit
 import Printf: @sprintf
 
 """
-    run_simulate(ode_prob, model_dir, model; csv_max_size_mb) → (success, time, error, sol)
+    run_simulate(ode_prob, model_dir, model; cmp_signals, csv_max_size_mb) → (success, time, error, sol)
 
 Solve `ode_prob` with Rodas5P (stiff solver).  On success, also writes the
-full solution as a CSV file `<Short>_sim.csv` in `model_dir`.
+solution as a CSV file `<Short>_sim.csv` in `model_dir`.
 Writes a `<model>_sim.log` file in `model_dir`.
 Returns `nothing` as the fourth element on failure.
 
-CSV files larger than `csv_max_size_mb` MiB are deleted and replaced with a
+When `cmp_signals` is non-empty, only observed variables whose names appear in
+that list are written to the CSV, keeping file sizes small when only a subset
+of signals will be compared.
+
+CSV files larger than `csv_max_size_mb` MiB are replaced with a
 `<Short>_sim.csv.toobig` marker so that the report can note the omission.
 """
-function run_simulate(ode_prob, model_dir::String, model::String;
-                      csv_max_size_mb::Int = CSV_MAX_SIZE_MB)::Tuple{Bool,Float64,String,Any}
+function run_simulate(ode_prob, model_dir::String,
+                      model::String;
+                      cmp_signals    ::Vector{String} = String[],
+                      csv_max_size_mb::Int            = CSV_MAX_SIZE_MB)::Tuple{Bool,Float64,String,Any}
     sim_success = false
     sim_time    = 0.0
     sim_error   = ""
@@ -67,7 +73,13 @@ function run_simulate(ode_prob, model_dir::String, model::String;
             sys      = sol.prob.f.sys
             vars     = ModelingToolkit.unknowns(sys)
             obs_eqs  = ModelingToolkit.observed(sys)
-            obs_syms = [eq.lhs for eq in obs_eqs]
+            # Only save observed variables that appear in cmp_signals.
+            # This avoids writing thousands of algebraic variables to disk when
+            # only a handful are actually verified during comparison.
+            norm_cmp = Set(_normalize_var(s) for s in cmp_signals)
+            obs_eqs_filtered = isempty(norm_cmp) ? obs_eqs :
+                filter(eq -> _normalize_var(string(eq.lhs)) in norm_cmp, obs_eqs)
+            obs_syms = [eq.lhs for eq in obs_eqs_filtered]
             col_names = vcat(
                 [_clean_var_name(string(v)) for v in vars],
                 [_clean_var_name(string(s)) for s in obs_syms],

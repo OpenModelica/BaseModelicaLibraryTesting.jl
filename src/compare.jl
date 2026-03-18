@@ -334,7 +334,7 @@ end
 
 """
     compare_with_reference(sol, ref_csv_path, model_dir, model;
-                           settings) → (total, pass, skip, diff_csv)
+                           settings, signals) → (total, pass, skip, diff_csv)
 
 Compare a DifferentialEquations / MTK solution against the MAP-LIB reference CSV.
 
@@ -354,9 +354,10 @@ is written whenever there are failures or skipped signals.
 
 # Keyword arguments
 - `settings` — a `CompareSettings` instance controlling tolerances and the
-               error function.  Defaults to the module-level settings returned
-               by `compare_settings()`.  Use `configure_comparison!` to change
-               the defaults, or pass a local `CompareSettings(...)` here.
+               error function.
+- `signals`  — explicit list of signal names to compare.  When non-empty,
+               overrides `comparisonSignals.txt` and the full reference CSV
+               column list.
 """
 function compare_with_reference(
     sol,
@@ -364,23 +365,31 @@ function compare_with_reference(
     model_dir::String,
     model::String;
     settings::CompareSettings = _CMP_SETTINGS,
+    signals::Vector{String}   = String[],
 )::Tuple{Int,Int,Int,String}
 
     times, ref_data = _read_ref_csv(ref_csv_path)
     isempty(times) && return 0, 0, 0, ""
 
-    # Determine which signals to compare: prefer comparisonSignals.txt
-    sig_file           = joinpath(dirname(ref_csv_path), "comparisonSignals.txt")
-    using_sig_file     = isfile(sig_file)
-    signals = if using_sig_file
-        sigs = filter(s -> lowercase(s) != "time" && !isempty(s), strip.(readlines(sig_file)))
-        sigs_missing = filter(s -> !haskey(ref_data, s), sigs)
-        isempty(sigs_missing) || error("Signal(s) listed in comparisonSignals.txt not present in reference CSV: $(join(sigs_missing, ", "))")
-        sigs
+    # Determine which signals to compare.
+    # Prefer the caller-supplied list; fall back to comparisonSignals.txt, then
+    # all columns in the reference CSV.
+    signals = if !isempty(signals)
+        sigs_missing = filter(s -> !haskey(ref_data, s), signals)
+        isempty(sigs_missing) || error("Signal(s) not present in reference CSV: $(join(sigs_missing, ", "))")
+        signals
     else
-        filter(k -> lowercase(k) != "time", collect(keys(ref_data)))
+        sig_file = joinpath(dirname(ref_csv_path), "comparisonSignals.txt")
+        if isfile(sig_file)
+            sigs = filter(s -> lowercase(s) != "time" && !isempty(s), strip.(readlines(sig_file)))
+            sigs_missing = filter(s -> !haskey(ref_data, s), sigs)
+            isempty(sigs_missing) || error("Signal(s) listed in comparisonSignals.txt not present in reference CSV: $(join(sigs_missing, ", "))")
+            sigs
+        else
+            filter(k -> lowercase(k) != "time", collect(keys(ref_data)))
+        end
     end
-    n_total     = length(signals)
+    n_total = length(signals)
 
     # ── Build variable accessor map ──────────────────────────────────────────────
     # var_access: normalized name → Int (state index) or MTK symbolic (observed).
