@@ -370,12 +370,17 @@ function compare_with_reference(
     isempty(times) && return 0, 0, 0, ""
 
     # Determine which signals to compare: prefer comparisonSignals.txt
-    sig_file = joinpath(dirname(ref_csv_path), "comparisonSignals.txt")
-    signals  = if isfile(sig_file)
-        filter(s -> lowercase(s) != "time" && !isempty(s), strip.(readlines(sig_file)))
+    sig_file           = joinpath(dirname(ref_csv_path), "comparisonSignals.txt")
+    using_sig_file     = isfile(sig_file)
+    signals = if using_sig_file
+        sigs = filter(s -> lowercase(s) != "time" && !isempty(s), strip.(readlines(sig_file)))
+        sigs_missing = filter(s -> !haskey(ref_data, s), sigs)
+        isempty(sigs_missing) || error("Signal(s) listed in comparisonSignals.txt not present in reference CSV: $(join(sigs_missing, ", "))")
+        sigs
     else
         filter(k -> lowercase(k) != "time", collect(keys(ref_data)))
     end
+    n_total     = length(signals)
 
     # ── Build variable accessor map ──────────────────────────────────────────────
     # var_access: normalized name → Int (state index) or MTK symbolic (observed).
@@ -397,32 +402,40 @@ function compare_with_reference(
         @warn "Could not enumerate observed variables: $(sprint(showerror, e))"
     end
 
-    # Clip reference time to the simulation interval
+    # Verify the simulation covers the expected reference time interval.
+    # A large gap means the solver stopped early or started late.
+    isempty(sol.t) && return n_total, 0, 0, ""
     t_start    = sol.t[1]
     t_end      = sol.t[end]
+    ref_t_start = times[1]
+    ref_t_end   = times[end]
+    if t_start > ref_t_start || t_end < ref_t_end
+        @error "Simulation interval [$(t_start), $(t_end)] does not cover " *
+               "reference interval [$(ref_t_start), $(ref_t_end)]"
+        return n_total, 0, 0, ""
+    end
+
+    # Clip reference time to the simulation interval
     valid_mask = (times .>= t_start) .& (times .<= t_end)
     t_ref      = times[valid_mask]
-    isempty(t_ref) && return 0, 0, 0, ""
+    isempty(t_ref) && return n_total, 0, 0, ""
 
-    n_total     = 0
     n_pass      = 0
     pass_sigs   = String[]
     fail_sigs   = String[]
-    skip_sigs   = String[]
     fail_scales = Dict{String,Float64}()
 
     for sig in signals
-        haskey(ref_data, sig) || continue   # signal absent from ref CSV entirely
+        signal_name = _normalize_var(sig)
+        ref_vals    = ref_data[sig][valid_mask]
 
-        norm = _normalize_var(sig)
-        if !haskey(var_access, norm)
-            push!(skip_sigs, sig)
+        if !haskey(var_access, signal_name)
+            push!(fail_sigs, sig)
+            fail_scales[sig] = isempty(ref_vals) ? 0.0 : maximum(abs, ref_vals)
             continue
         end
 
-        accessor  = var_access[norm]
-        ref_vals  = ref_data[sig][valid_mask]
-        n_total  += 1
+        accessor = var_access[signal_name]
 
         # Peak |ref| — used as amplitude floor so relative error stays finite
         # near zero crossings.
@@ -431,10 +444,10 @@ function compare_with_reference(
         # Interpolate simulation at reference time points.
         sim_vals = [_eval_sim(sol, accessor, t) for t in t_ref]
 
-        # If evaluation returned NaN (observed-var access failed), treat as skip.
+        # If evaluation returned NaN (observed-var access failed), treat as fail.
         if any(isnan, sim_vals)
-            n_total -= 1
-            push!(skip_sigs, sig)
+            push!(fail_sigs, sig)
+            fail_scales[sig] = ref_scale
             continue
         end
 
@@ -468,9 +481,10 @@ function compare_with_reference(
                 for sig in fail_sigs
                     ref_vals  = ref_data[sig][valid_mask]
                     r         = ref_vals[ti]
-                    s         = _eval_sim(sol, var_access[_normalize_var(sig)], t)
+                    acc       = get(var_access, _normalize_var(sig), nothing)
+                    s         = acc === nothing ? NaN : _eval_sim(sol, acc, t)
                     ref_scale = get(fail_scales, sig, 0.0)
-                    relerr    = abs(s - r) / max(abs(r), ref_scale, settings.abs_tol)
+                    relerr    = isnan(s) ? NaN : abs(s - r) / max(abs(r), ref_scale, settings.abs_tol)
                     push!(row, @sprintf("%.10g", r),
                                @sprintf("%.10g", s),
                                @sprintf("%.6g",  relerr))
@@ -481,12 +495,11 @@ function compare_with_reference(
     end
 
     # ── Write detail HTML whenever there is anything worth showing ───────────────
-    if !isempty(fail_sigs) || !isempty(skip_sigs)
+    if !isempty(fail_sigs)
         write_diff_html(model_dir, model;
                         diff_csv_path = diff_csv,
-                        pass_sigs     = pass_sigs,
-                        skip_sigs     = skip_sigs)
+                        pass_sigs     = pass_sigs)
     end
 
-    return n_total, n_pass, length(skip_sigs), diff_csv
+    return n_total, n_pass, 0, diff_csv
 end
