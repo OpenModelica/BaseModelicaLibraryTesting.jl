@@ -76,20 +76,34 @@ function test_model(omc::OMJulia.OMCSession, model::String, results_root::String
     par_ok || return ModelResult(
         model, true, exp_t, exp_err, false, par_t, par_err, false, 0.0, "", 0, 0, 0, "")
 
+    # Resolve reference CSV and comparison signals early so phase 3 can filter
+    # the CSV output to only the signals that will actually be verified.
+    ref_csv     = isempty(ref_root) ? nothing : _ref_csv_path(ref_root, model)
+    cmp_signals = if ref_csv !== nothing
+        sig_file = joinpath(dirname(ref_csv), "comparisonSignals.txt")
+        if isfile(sig_file)
+            String.(filter(s -> lowercase(s) != "time" && !isempty(s), strip.(readlines(sig_file))))
+        else
+            _, ref_data = _read_ref_csv(ref_csv)
+            filter(k -> lowercase(k) != "time", collect(keys(ref_data)))
+        end
+    else
+        String[]
+    end
+
     # Phase 3 ──────────────────────────────────────────────────────────────────
-    sim_ok, sim_t, sim_err, sol = run_simulate(ode_prob, model_dir, model; csv_max_size_mb)
+    sim_ok, sim_t, sim_err, sol = run_simulate(ode_prob, model_dir, model;
+                                               csv_max_size_mb, cmp_signals)
 
     # Phase 4 (optional) ───────────────────────────────────────────────────────
     cmp_total, cmp_pass, cmp_skip, cmp_csv = 0, 0, 0, ""
-    if sim_ok && !isempty(ref_root)
-        ref_csv = _ref_csv_path(ref_root, model)
-        if ref_csv !== nothing
-            try
-                cmp_total, cmp_pass, cmp_skip, cmp_csv =
-                    compare_with_reference(sol, ref_csv, model_dir, model)
-            catch e
-                @warn "Reference comparison failed for $model: $(sprint(showerror, e))"
-            end
+    if sim_ok && ref_csv !== nothing
+        try
+            cmp_total, cmp_pass, cmp_skip, cmp_csv =
+                compare_with_reference(sol, ref_csv, model_dir, model;
+                                       signals = cmp_signals)
+        catch e
+            @warn "Reference comparison failed for $model: $(sprint(showerror, e))"
         end
     end
 
