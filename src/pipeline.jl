@@ -73,27 +73,45 @@ function test_model(omc::OMJulia.OMCSession,
     # Phase 1 ──────────────────────────────────────────────────────────────────
     exp_ok, exp_t, exp_err = run_export(omc, model, model_dir, bm_path)
     exp_ok || return ModelResult(
-        model, false, exp_t, exp_err, false, 0.0, "", false, 0.0, "", 0, 0, 0, "")
+        model, false, exp_t, exp_err, false, 0.0, "", false, 0.0, "", 0, 0, 0, 0.0, "")
 
     # Phase 2 ──────────────────────────────────────────────────────────────────
     par_ok, par_t, par_err, ode_prob = run_parse(bm_path, model_dir, model)
     par_ok || return ModelResult(
-        model, true, exp_t, exp_err, false, par_t, par_err, false, 0.0, "", 0, 0, 0, "")
+        model, true, exp_t, exp_err, false, par_t, par_err, false, 0.0, "", 0, 0, 0, 0.0, "")
+
+    # Resolve reference CSV and comparison signals early so phase 3 can filter
+    # the CSV output to only the signals that will actually be verified.
+    ref_csv     = isempty(ref_root) ? nothing : _ref_csv_path(ref_root, model)
+    cmp_signals = if ref_csv !== nothing
+        sig_file = joinpath(dirname(ref_csv), "comparisonSignals.txt")
+        if isfile(sig_file)
+            String.(filter(s -> lowercase(s) != "time" && !isempty(s), strip.(readlines(sig_file))))
+        else
+            _, ref_data = _read_ref_csv(ref_csv)
+            filter(k -> lowercase(k) != "time", collect(keys(ref_data)))
+        end
+    else
+        String[]
+    end
 
     # Phase 3 ──────────────────────────────────────────────────────────────────
-    sim_ok, sim_t, sim_err, sol = run_simulate(ode_prob, model_dir, model; csv_max_size_mb)
+    sim_ok, sim_t, sim_err, sol = run_simulate(ode_prob, model_dir, model;
+                                               csv_max_size_mb, cmp_signals)
 
     # Phase 4 (optional) ───────────────────────────────────────────────────────
     cmp_total, cmp_pass, cmp_skip, cmp_csv = 0, 0, 0, ""
-    if sim_ok && !isempty(ref_root)
-        ref_csv = _ref_csv_path(ref_root, model)
-        if ref_csv !== nothing
-            try
-                cmp_total, cmp_pass, cmp_skip, cmp_csv =
-                    compare_with_reference(sol, ref_csv, model_dir, model; settings)
-            catch e
-                @warn "Reference comparison failed for $model: $(sprint(showerror, e))"
-            end
+    cmp_t = 0.0
+    if sim_ok && ref_csv !== nothing
+        try
+            t0_cmp = time()
+            cmp_total, cmp_pass, cmp_skip, cmp_csv =
+                compare_with_reference(sol, ref_csv, model_dir, model;
+                                       settings, signals = cmp_signals)
+            cmp_t = time() - t0_cmp
+        catch e
+            cmp_t = time() - t0_cmp
+            @warn "Reference comparison failed for $model: $(sprint(showerror, e))"
         end
     end
 
@@ -102,7 +120,7 @@ function test_model(omc::OMJulia.OMCSession,
         true,   exp_t, exp_err,
         true,   par_t, par_err,
         sim_ok, sim_t, sim_err,
-        cmp_total, cmp_pass, cmp_skip, cmp_csv)
+        cmp_total, cmp_pass, cmp_skip, cmp_t, cmp_csv)
 end
 
 # ── Main ───────────────────────────────────────────────────────────────────────
@@ -207,7 +225,9 @@ function main(;
             end
             cmp_info = if result.cmp_total > 0
                 skip_note = result.cmp_skip > 0 ? " skip=$(result.cmp_skip)" : ""
-                "  cmp=$(result.cmp_pass)/$(result.cmp_total)$skip_note"
+                "  cmp=$(result.cmp_pass)/$(result.cmp_total)$skip_note ($(round(result.cmp_time;digits=2))s)"
+            elseif result.cmp_time > 0
+                "  cmp=n/a ($(round(result.cmp_time;digits=2))s)"
             else
                 ""
             end

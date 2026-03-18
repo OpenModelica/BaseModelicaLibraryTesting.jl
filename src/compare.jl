@@ -287,24 +287,32 @@ function compare_with_reference(
     ref_csv_path::String,
     model_dir::String,
     model::String;
-    settings::CompareSettings = CompareSettings(),
+    settings::CompareSettings  = CompareSettings(),
+    signals::Vector{String}    = String[],
 )::Tuple{Int,Int,Int,String}
 
     times, ref_data = _read_ref_csv(ref_csv_path)
     isempty(times) && return 0, 0, 0, ""
 
-    # Determine which signals to compare: prefer comparisonSignals.txt
-    sig_file           = joinpath(dirname(ref_csv_path), "comparisonSignals.txt")
-    using_sig_file     = isfile(sig_file)
-    signals = if using_sig_file
-        sigs = filter(s -> lowercase(s) != "time" && !isempty(s), strip.(readlines(sig_file)))
-        sigs_missing = filter(s -> !haskey(ref_data, s), sigs)
-        isempty(sigs_missing) || error("Signal(s) listed in comparisonSignals.txt not present in reference CSV: $(join(sigs_missing, ", "))")
-        sigs
+    # Determine which signals to compare.
+    # Prefer the caller-supplied list; fall back to comparisonSignals.txt, then
+    # all columns in the reference CSV.
+    signals = if !isempty(signals)
+        sigs_missing = filter(s -> !haskey(ref_data, s), signals)
+        isempty(sigs_missing) || error("Signal(s) not present in reference CSV: $(join(sigs_missing, ", "))")
+        signals
     else
-        filter(k -> lowercase(k) != "time", collect(keys(ref_data)))
+        sig_file = joinpath(dirname(ref_csv_path), "comparisonSignals.txt")
+        if isfile(sig_file)
+            sigs = String.(filter(s -> lowercase(s) != "time" && !isempty(s), strip.(readlines(sig_file))))
+            sigs_missing = filter(s -> !haskey(ref_data, s), sigs)
+            isempty(sigs_missing) || error("Signal(s) listed in comparisonSignals.txt not present in reference CSV: $(join(sigs_missing, ", "))")
+            sigs
+        else
+            filter(k -> lowercase(k) != "time", collect(keys(ref_data)))
+        end
     end
-    n_total     = length(signals)
+    n_total = length(signals)
 
     # ── Build variable accessor map ──────────────────────────────────────────────
     # var_access: normalized name → Int (state index) or MTK symbolic (observed).

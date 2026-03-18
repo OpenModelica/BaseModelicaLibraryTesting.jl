@@ -82,5 +82,6 @@ struct ModelResult
     cmp_total      :: Int     # signals actually compared (found in simulation)
     cmp_pass       :: Int
     cmp_skip       :: Int     # reference signals not found in simulation
+    cmp_time       :: Float64 # wall time for comparison phase (0.0 if skipped)
     cmp_csv        :: String  # absolute path to diff CSV; "" if all pass or no comparison
 end
