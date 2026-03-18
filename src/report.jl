@@ -1,6 +1,6 @@
 # ── HTML report generation ─────────────────────────────────────────────────────
 
-import Dates: now
+import Dates
 import Printf: @sprintf
 
 function _status_cell(ok::Bool, t::Float64, logFile::Union{String,Nothing})
@@ -145,7 +145,7 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
 </head>
 <body>
 <h1>$(info.library) $(info.lib_version) — Base Modelica / MTK Pipeline Test Results</h1>
-<p>Generated: $(now())<br>
+<p>Generated: $(Dates.now())<br>
 OpenModelica: $(info.omc_version)<br>
 OMC options: <code>$(info.omc_options)</code><br>
 BaseModelica.jl: $(basemodelica_jl_version)<br>

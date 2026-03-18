@@ -145,7 +145,11 @@ jobs:
           fi
 
       - name: Copy new results into gh-pages tree
-        run: rsync -a results/ site/results/
+        env:
+          BM_VERSION: ${{ steps.versions.outputs.bm_version }}
+        run: |
+          rm -rf "site/results/${BM_VERSION}/${LIB_NAME}/${LIB_VERSION}"
+          rsync -a results/ site/results/
 
       - name: Generate landing page
         run: python3 .github/scripts/gen_landing_page.py site
