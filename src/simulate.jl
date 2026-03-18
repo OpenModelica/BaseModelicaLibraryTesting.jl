@@ -37,7 +37,16 @@ function run_simulate(ode_prob, model_dir::String, model::String;
         end
         sim_time = time() - t0
         if sol.retcode == ReturnCode.Success
-            sim_success = true
+            sys    = sol.prob.f.sys
+            n_vars = length(ModelingToolkit.unknowns(sys))
+            n_obs  = length(ModelingToolkit.observed(sys))
+            if isempty(sol.t)
+                sim_error = "Simulation produced no time points"
+            elseif n_vars == 0 && n_obs == 0
+                sim_error = "Simulation produced no output variables (no states or observed)"
+            else
+                sim_success = true
+            end
         else
             sim_error = "Solver returned: $(sol.retcode)"
         end
@@ -50,20 +59,29 @@ function run_simulate(ode_prob, model_dir::String, model::String;
     isempty(sim_error) || println(log_file, "\n--- Error ---\n$sim_error")
     close(log_file)
 
-    # Write simulation results CSV (time + all state variables)
+    # Write simulation results CSV (time + state variables + observed variables)
     if sim_success && sol !== nothing
         short_name = split(model, ".")[end]
         sim_csv    = joinpath(model_dir, "$(short_name)_sim.csv")
         try
-            sys       = sol.prob.f.sys
-            vars      = ModelingToolkit.unknowns(sys)
-            col_names = [_clean_var_name(string(v)) for v in vars]
+            sys      = sol.prob.f.sys
+            vars     = ModelingToolkit.unknowns(sys)
+            obs_eqs  = ModelingToolkit.observed(sys)
+            obs_syms = [eq.lhs for eq in obs_eqs]
+            col_names = vcat(
+                [_clean_var_name(string(v)) for v in vars],
+                [_clean_var_name(string(s)) for s in obs_syms],
+            )
             open(sim_csv, "w") do f
                 println(f, join(["time"; col_names], ","))
                 for (ti, t) in enumerate(sol.t)
                     row = [@sprintf("%.10g", t)]
                     for vi in eachindex(vars)
                         push!(row, @sprintf("%.10g", sol[vi, ti]))
+                    end
+                    for sym in obs_syms
+                        val = try Float64(sol(t; idxs = sym)) catch; NaN end
+                        push!(row, @sprintf("%.10g", val))
                     end
                     println(f, join(row, ","))
                 end
