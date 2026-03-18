@@ -194,11 +194,23 @@ function main(;
             result = test_model(omc, model, results_root, ref_root; csv_max_size_mb, settings)
             push!(results, result)
 
-            phase = result.sim_success    ? "SIM OK"     :
-                    result.parse_success  ? "SIM FAIL"   :
-                    result.export_success ? "PARSE FAIL" : "EXPORT FAIL"
-            cmp_info = result.cmp_total > 0 ?
-                "  cmp=$(result.cmp_pass)/$(result.cmp_total)" : ""
+            phase = if result.sim_success && result.cmp_total > 0
+                result.cmp_pass == result.cmp_total ? "CMP OK" : "CMP FAIL"
+            elseif result.sim_success
+                "SIM OK"
+            elseif result.parse_success
+                "SIM FAIL"
+            elseif result.export_success
+                "PARSE FAIL"
+            else
+                "EXPORT FAIL"
+            end
+            cmp_info = if result.cmp_total > 0
+                skip_note = result.cmp_skip > 0 ? " skip=$(result.cmp_skip)" : ""
+                "  cmp=$(result.cmp_pass)/$(result.cmp_total)$skip_note"
+            else
+                ""
+            end
             @info "  → $phase  export=$(round(result.export_time;digits=2))s" *
                   "  parse=$(round(result.parse_time;digits=2))s" *
                   "  sim=$(round(result.sim_time;digits=2))s$cmp_info"
