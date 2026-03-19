@@ -1,6 +1,7 @@
 # ── Phase 3: ODE simulation with DifferentialEquations / MTK ──────────────────
 
-import DifferentialEquations: solve, Rodas5P, ReturnCode
+import DifferentialEquations: init, solve, ReturnCode
+import OrdinaryDiffEqBDF
 import Logging
 import ModelingToolkit
 import Printf: @sprintf
@@ -8,7 +9,7 @@ import Printf: @sprintf
 """
     run_simulate(ode_prob, model_dir, model; cmp_signals, csv_max_size_mb) → (success, time, error, sol)
 
-Solve `ode_prob` with Rodas5P (stiff solver).  On success, also writes the
+Solve `ode_prob` with FBDF (stiff solver).  On success, also writes the
 solution as a CSV file `<Short>_sim.csv` in `model_dir`.
 Writes a `<model>_sim.log` file in `model_dir`.
 Returns `nothing` as the fourth element on failure.
@@ -24,17 +25,18 @@ function run_simulate(ode_prob, model_dir::String,
                       model::String;
                       cmp_signals    ::Vector{String} = String[],
                       csv_max_size_mb::Int            = CSV_MAX_SIZE_MB)::Tuple{Bool,Float64,String,Any}
-    sim_success = false
-    sim_time    = 0.0
-    sim_error   = ""
-    sol         = nothing
+    sim_success           = false
+    sim_time              = 0.0
+    sim_error             = ""
+    sol                   = nothing
+    solver_settings_string = ""
 
     log_file = open(joinpath(model_dir, "$(model)_sim.log"), "w")
     println(log_file, "Model:   $model")
     logger = Logging.SimpleLogger(log_file, Logging.Debug)
     t0 = time()
     try
-        # Rodas5P handles stiff DAE-like systems well.
+        # FBDF handles stiff DAE-like systems and purely algebraic systems well.
         # Redirect all library log output (including Symbolics/MTK warnings)
         # to the log file so they don't clutter stdout.
         sol = Logging.with_logger(logger) do
@@ -46,7 +48,22 @@ function run_simulate(ode_prob, model_dir::String,
             saveat = isempty(ModelingToolkit.unknowns(sys)) ?
                          collect(range(ode_prob.tspan[1], ode_prob.tspan[end]; length = 500)) :
                          Float64[]
-            solve(ode_prob, Rodas5P(); saveat = saveat, dense = true)
+            kwargs = (saveat = saveat, dense = true)
+
+            # Log solver settings
+            initializedSolver = init(ode_prob, OrdinaryDiffEqBDF.FBDF(); kwargs...)
+            solver_settings_string =
+            """
+            OrdinaryDiffEqBDF.FBDF()
+                saveat:   $(let sv = initializedSolver.opts.saveat; isempty(sv) ? "[]" : "$(length(sv)) points in [$(first(sv)), $(last(sv))]" end)
+                abstol:   $(@sprintf("%.2e", initializedSolver.opts.abstol))
+                reltol:   $(@sprintf("%.2e", initializedSolver.opts.reltol))
+                adaptive: $(initializedSolver.opts.adaptive)
+                dense:    $(initializedSolver.opts.dense)
+            """
+
+            # Solve
+            solve(ode_prob, OrdinaryDiffEqBDF.FBDF(); kwargs...)
         end
         sim_time = time() - t0
         if sol.retcode == ReturnCode.Success
@@ -67,7 +84,8 @@ function run_simulate(ode_prob, model_dir::String,
         sim_time  = time() - t0
         sim_error = sprint(showerror, e, catch_backtrace())
     end
-    println(log_file, "Time:    $(round(sim_time; digits=3)) s")
+    println(log_file, "Solver settings: $solver_settings_string")
+    println(log_file, "Time: $(round(sim_time; digits=3)) s")
     println(log_file, "Success: $sim_success")
     isempty(sim_error) || println(log_file, "\n--- Error ---\n$sim_error")
     close(log_file)

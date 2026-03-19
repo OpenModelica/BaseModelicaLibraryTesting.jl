@@ -4,7 +4,8 @@ import Pkg
 import OMJulia
 import OMJulia: sendExpression
 import BaseModelica
-import DifferentialEquations: solve, Rodas5P, ReturnCode
+import DifferentialEquations: init, solve, ReturnCode
+import OrdinaryDiffEqBDF
 import ModelingToolkit
 import Dates: now
 import Printf: @sprintf
