@@ -39,7 +39,14 @@ function run_simulate(ode_prob, model_dir::String,
         # to the log file so they don't clutter stdout.
         sol = Logging.with_logger(logger) do
             # Overwrite saveat, always use dense output.
-            solve(ode_prob, Rodas5P(); saveat = Float64[], dense = true)
+            # For stateless models (no unknowns) the adaptive solver takes no
+            # internal steps and sol.t would be empty with saveat=[].
+            # Supply explicit time points so observed variables can be evaluated.
+            sys    = ode_prob.f.sys
+            saveat = isempty(ModelingToolkit.unknowns(sys)) ?
+                         collect(range(ode_prob.tspan[1], ode_prob.tspan[end]; length = 500)) :
+                         Float64[]
+            solve(ode_prob, Rodas5P(); saveat = saveat, dense = true)
         end
         sim_time = time() - t0
         if sol.retcode == ReturnCode.Success
