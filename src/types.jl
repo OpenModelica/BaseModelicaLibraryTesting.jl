@@ -37,6 +37,25 @@ Base.@kwdef mutable struct CompareSettings
     error_fn :: Symbol  = :mixed
 end
 
+# ── Simulation settings ────────────────────────────────────────────────────────
+
+"""
+    SimulateSettings
+
+Mutable configuration struct for ODE simulation.
+
+# Fields
+- `solver`   — any SciML ODE/DAE algorithm instance.  Default: `nothing`,
+               resolved to `Rodas5Pr()` when the module-level singleton is
+               constructed in `simulate.jl`.
+- `saveat_n` — number of evenly-spaced time points used for purely algebraic
+               systems (all mass-matrix rows zero).  Default: `500`.
+"""
+Base.@kwdef mutable struct SimulateSettings
+    solver   :: Any = nothing
+    saveat_n :: Int = 500
+end
+
 # ── Run metadata ───────────────────────────────────────────────────────────────
 
 """

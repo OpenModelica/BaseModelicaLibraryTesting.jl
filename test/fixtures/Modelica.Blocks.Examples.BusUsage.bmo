@@ -1,0 +1,47 @@
+//! base 0.1.0
+package 'BusUsage'
+  model 'BusUsage' "Demonstrates the usage of a signal bus"
+    parameter Integer 'integerStep.height' = 1 "Height of step";
+    Integer 'integerStep.y' "Connector of Integer output signal";
+    parameter Integer 'integerStep.offset' = 2 "Offset of output signal y";
+    parameter Real 'integerStep.startTime'(unit = "s", quantity = "Time") = 0.5 "Output y = offset for time < startTime";
+    parameter Real 'booleanStep.startTime'(unit = "s", quantity = "Time") = 0.5 "Time instant of step start";
+    parameter Boolean 'booleanStep.startValue' = false "Output before startTime";
+    Boolean 'booleanStep.y' "Connector of Boolean output signal";
+    parameter Real 'sine.amplitude' = 1.0 "Amplitude of sine wave";
+    parameter Real 'sine.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 1.0 "Frequency of sine wave";
+    parameter Real 'sine.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of sine wave";
+    parameter Boolean 'sine.continuous' = false "Make output continuous by starting at offset + amplitude*sin(phase)" annotation(Evaluate = true);
+    Real 'sine.y' "Connector of Real output signal";
+    parameter Real 'sine.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'sine.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    Real 'part.subControlBus.myRealSignal';
+    Boolean 'part.subControlBus.myBooleanSignal';
+    Real 'part.realExpression.y' "Value of Real output";
+    Boolean 'part.booleanExpression.y' "Value of Boolean output";
+    parameter Real 'gain.k'(start = 1.0) = 1.0 "Gain value multiplied with input signal";
+    Real 'gain.u' "Input signal connector";
+    Real 'gain.y' "Output signal connector";
+    Real 'controlBus.realSignal1'(unit = "rad/s", quantity = "AngularVelocity") "First Real signal (angular velocity)";
+    Integer 'controlBus.integerSignal' "Integer signal";
+    Boolean 'controlBus.booleanSignal' "Boolean signal";
+    Real 'controlBus.subControlBus.myRealSignal';
+    Boolean 'controlBus.subControlBus.myBooleanSignal';
+  equation
+    'part.realExpression.y' = time;
+    'part.booleanExpression.y' = time >= 0.5;
+    'part.realExpression.y' = 'part.subControlBus.myRealSignal';
+    'part.booleanExpression.y' = 'part.subControlBus.myBooleanSignal';
+    'gain.u' = 'controlBus.realSignal1';
+    'gain.u' = 'sine.y';
+    'booleanStep.y' = 'controlBus.booleanSignal';
+    'integerStep.y' = 'controlBus.integerSignal';
+    'part.subControlBus.myBooleanSignal' = 'controlBus.subControlBus.myBooleanSignal';
+    'part.subControlBus.myRealSignal' = 'controlBus.subControlBus.myRealSignal';
+    'integerStep.y' = 2 + (if time < 0.5 then 0 else 1);
+    'booleanStep.y' = time >= 0.5;
+    'sine.y' = if time < 0.0 then 0.0 else sin(6.283185307179586 * time);
+    'gain.y' = 'gain.u';
+    annotation(experiment(StopTime = 2));
+  end 'BusUsage';
+end 'BusUsage';
