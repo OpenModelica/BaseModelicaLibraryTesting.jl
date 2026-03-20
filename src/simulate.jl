@@ -8,7 +8,7 @@ import ModelingToolkit
 import Printf: @sprintf
 
 """Module-level default simulation settings.  Modify via `configure_simulate!`."""
-const _SIM_SETTINGS = SimulateSettings(solver = DifferentialEquations.Rodas5P())
+const _SIM_SETTINGS = SimulateSettings(solver = DifferentialEquations.Rodas5Pr())
 
 """
     configure_simulate!(; solver, saveat_n) → SimulateSettings
@@ -16,7 +16,7 @@ const _SIM_SETTINGS = SimulateSettings(solver = DifferentialEquations.Rodas5P())
 Update the module-level simulation settings in-place and return them.
 
 # Keyword arguments
-- `solver`   — any SciML ODE/DAE algorithm instance (e.g. `FBDF()`, `Rodas5P()`).
+- `solver`   — any SciML ODE/DAE algorithm instance (e.g. `FBDF()`, `Rodas5Pr()`).
 - `saveat_n` — number of uniform time points for purely algebraic systems.
 
 # Example
@@ -92,8 +92,6 @@ function run_simulate(ode_prob,
             else
                 count(!iszero, LinearAlgebra.diag(M))
             end
-
-            @show n_diff
 
             kwargs = if n_unknowns == 0
                 # No unknowns at all (e.g. BusUsage): the solver takes no
