@@ -71,6 +71,12 @@ function _cmp_cell(r::ModelResult, results_root::String, csv_max_size_mb::Int)
     end
 end
 
+function _cmp_status(r::ModelResult)::String
+    r.cmp_total == 0 && r.cmp_skip == 0 && return "na"
+    r.cmp_pass == r.cmp_total && return "pass"
+    return "fail"
+end
+
 function rel_log_file_or_nothing(results_root::String, model::String,
                                   phase::String)::Union{String,Nothing}
     path = joinpath(results_root, "files", model, "$(model)_$(phase).log")
@@ -108,7 +114,7 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
     cmp_summary_row = n_cmp_models > 0 ? """
   <tr><td>Reference Comparison (MAP-LIB)</td><td>$n_cmp_pass</td><td>$n_cmp_models</td><td>$(pct(n_cmp_pass,n_cmp_models))</td></tr>""" : ""
 
-    rows = join(["""    <tr>
+    rows = join(["""    <tr data-exp="$(r.export_success ? "pass" : "fail")" data-par="$(r.parse_success ? "pass" : "fail")" data-sim="$(r.sim_success ? "pass" : "fail")" data-cmp="$(_cmp_status(r))">
       <td><a href="files/$(r.name)/$(r.name).bmo">$(r.name).bmo</a></td>
       $(_status_cell(r.export_success, r.export_time, rel_log_file_or_nothing(results_root, r.name, "export")))
       $(_status_cell(r.parse_success,  r.parse_time,  rel_log_file_or_nothing(results_root, r.name, "parsing")))
@@ -141,6 +147,8 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
     td.na      { color: #888; }
     a { color: #0366d6; text-decoration: none; }
     a:hover { text-decoration: underline; }
+    .filter-row th { background: #f5f5f5; }
+    .filter-row select { font-size: 12px; padding: 1px 4px; }
   </style>
 </head>
 <body>
@@ -162,16 +170,42 @@ Total run time: $(time_str)</p>
   <tr><td>Simulation (MTK.jl)</td>                <td>$n_sim</td><td>$n_par</td><td>$(pct(n_sim,n_par))</td></tr>$cmp_summary_row
 </table>
 
-<table>
-  <tr>
-    <th>Model</th>
-    <th>BM Export</th>
-    <th>BM Parse</th>
-    <th>MTK Sim</th>
-    <th>Ref Cmp</th>
-  </tr>
+<table id="model-table">
+  <thead>
+    <tr>
+      <th>Model</th>
+      <th>BM Export</th>
+      <th>BM Parse</th>
+      <th>MTK Sim</th>
+      <th>Ref Cmp</th>
+    </tr>
+    <tr class="filter-row">
+      <th></th>
+      <th><select id="f-exp" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+      <th><select id="f-par" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+      <th><select id="f-sim" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+      <th><select id="f-cmp" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+    </tr>
+  </thead>
+  <tbody id="model-rows">
 $rows
+  </tbody>
 </table>
+<script>
+function applyFilters() {
+  var exp = document.getElementById('f-exp').value;
+  var par = document.getElementById('f-par').value;
+  var sim = document.getElementById('f-sim').value;
+  var cmp = document.getElementById('f-cmp').value;
+  document.querySelectorAll('#model-rows tr').forEach(function(row) {
+    var show = (exp === 'all' || row.dataset.exp === exp) &&
+               (par === 'all' || row.dataset.par === par) &&
+               (sim === 'all' || row.dataset.sim === sim) &&
+               (cmp === 'all' || row.dataset.cmp === cmp);
+    row.style.display = show ? '' : 'none';
+  });
+}
+</script>
 </body>
 </html>"""
 
