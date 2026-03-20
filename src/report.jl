@@ -149,6 +149,8 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
     a:hover { text-decoration: underline; }
     .filter-row th { background: #f5f5f5; }
     .filter-row select { font-size: 12px; padding: 1px 4px; }
+    .filter-row input { font-size: 12px; padding: 1px 4px; width: 16em; box-sizing: border-box; }
+    .filter-row input.invalid { outline: 2px solid #c00; }
   </style>
 </head>
 <body>
@@ -180,7 +182,7 @@ Total run time: $(time_str)</p>
       <th>Ref Cmp</th>
     </tr>
     <tr class="filter-row">
-      <th></th>
+      <th><input id="f-name" type="text" placeholder="regex…" oninput="applyFilters()"/></th>
       <th><select id="f-exp" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
       <th><select id="f-par" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
       <th><select id="f-sim" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
@@ -193,12 +195,24 @@ $rows
 </table>
 <script>
 function applyFilters() {
+  var nameInput = document.getElementById('f-name');
+  var nameVal   = nameInput.value;
+  var nameRe    = null;
+  try {
+    nameRe = nameVal ? new RegExp(nameVal, 'i') : null;
+    nameInput.classList.remove('invalid');
+  } catch(e) {
+    nameInput.classList.add('invalid');
+    return;
+  }
   var exp = document.getElementById('f-exp').value;
   var par = document.getElementById('f-par').value;
   var sim = document.getElementById('f-sim').value;
   var cmp = document.getElementById('f-cmp').value;
   document.querySelectorAll('#model-rows tr').forEach(function(row) {
-    var show = (exp === 'all' || row.dataset.exp === exp) &&
+    var name = row.cells[0] ? row.cells[0].textContent : '';
+    var show = (!nameRe || nameRe.test(name)) &&
+               (exp === 'all' || row.dataset.exp === exp) &&
                (par === 'all' || row.dataset.par === par) &&
                (sim === 'all' || row.dataset.sim === sim) &&
                (cmp === 'all' || row.dataset.cmp === cmp);
