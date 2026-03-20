@@ -1,13 +1,14 @@
 # ── Phase 3: ODE simulation with DifferentialEquations / MTK ──────────────────
 
 import DifferentialEquations
+import LinearAlgebra
 import OrdinaryDiffEqBDF
 import Logging
 import ModelingToolkit
 import Printf: @sprintf
 
 """Module-level default simulation settings.  Modify via `configure_simulate!`."""
-const _SIM_SETTINGS = SimulateSettings(solver = DifferentialEquations.Rodas5Pr())
+const _SIM_SETTINGS = SimulateSettings(solver = DifferentialEquations.Rodas5P())
 
 """
     configure_simulate!(; solver, saveat_n) → SimulateSettings
@@ -82,21 +83,50 @@ function run_simulate(ode_prob,
             # For stateless models (no unknowns) the adaptive solver takes no
             # internal steps and sol.t would be empty with saveat=[].
             # Supply explicit time points so observed variables can be evaluated.
-            sys    = ode_prob.f.sys
-            saveat = isempty(ModelingToolkit.unknowns(sys)) ?
-                         collect(range(ode_prob.tspan[1], ode_prob.tspan[end]; length = settings.saveat_n)) :
-                         Float64[]
-            kwargs = (saveat = saveat, dense = true)
+            sys        = ode_prob.f.sys
+            M          = ode_prob.f.mass_matrix
+            unknowns   = ModelingToolkit.unknowns(sys)
+            n_unknowns = length(unknowns)
+            n_diff     = if M isa LinearAlgebra.UniformScaling
+                n_unknowns
+            else
+                count(!iszero, LinearAlgebra.diag(M))
+            end
+
+            @show n_diff
+
+            kwargs = if n_unknowns == 0
+                # No unknowns at all (e.g. BusUsage): the solver takes no
+                # internal steps with saveat=[], leaving sol.t empty.
+                # Use a fixed grid + adaptive=false so observed variables
+                # can be evaluated.
+                t0_s, t1_s = ode_prob.tspan
+                saveat_s   = collect(range(t0_s, t1_s; length = settings.saveat_n))
+                dt_s       = saveat_s[2] - saveat_s[1]
+                (saveat = saveat_s, adaptive = false, dt = dt_s, dense = false)
+            elseif n_diff == 0
+                # Algebraic unknowns only (e.g. CharacteristicIdealDiodes):
+                # the solver must take adaptive steps to track discontinuities.
+                # Keep saveat=[] + dense=true so the solver drives its own
+                # step selection; dense output is unreliable but the solution
+                # values at each step are correct.
+                (saveat = Float64[], dense = true)
+            else
+                (saveat = Float64[], dense = true)
+            end
 
             # Log solver settings — init returns NullODEIntegrator (no .opts)
             # when the problem has no unknowns (u::Nothing), so only inspect
             # opts when a real integrator is returned.
+            # Use our own `saveat` vector for the log: integ.opts.saveat is a
+            # BinaryHeap which does not support iterate/minimum/maximum.
             integ = DifferentialEquations.init(ode_prob, solver; kwargs...)
+            saveat = kwargs.saveat
             solver_settings_string = if hasproperty(integ, :opts)
-                sv = integ.opts.saveat
+                sv_str = isempty(saveat) ? "[]" : "$(length(saveat)) points in [$(first(saveat)), $(last(saveat))]"
                 """
                 Solver $(parentmodule(typeof(solver))).$(nameof(typeof(solver)))
-                    saveat:   $(isempty(sv) ? "[]" : "$(length(sv)) points in [$(first(sv)), $(last(sv))]")
+                    saveat:   $sv_str
                     abstol:   $(@sprintf("%.2e", integ.opts.abstol))
                     reltol:   $(@sprintf("%.2e", integ.opts.reltol))
                     adaptive: $(integ.opts.adaptive)

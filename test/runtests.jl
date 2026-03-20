@@ -31,4 +31,5 @@ const TEST_MODEL_CHUA = "Modelica.Electrical.Analog.Examples.ChuaCircuit"
 include("unit_helpers.jl")
 include("chua_circuit.jl")
 include("bus_usage.jl")
+include("characteristic_ideal_diodes.jl")
 include("amplifier_with_op_amp.jl")
