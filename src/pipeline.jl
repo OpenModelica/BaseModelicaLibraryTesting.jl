@@ -57,7 +57,9 @@ end
 
 Run the four-phase pipeline for a single model and return its result.
 """
-function test_model(omc::OMJulia.OMCSession, model::String, results_root::String,
+function test_model(omc::OMJulia.OMCSession,
+                    model::String,
+                    results_root::String,
                     ref_root::String;
                     sim_settings   ::SimulateSettings = _SIM_SETTINGS,
                     csv_max_size_mb::Int              = CSV_MAX_SIZE_MB)::ModelResult

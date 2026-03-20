@@ -5,7 +5,6 @@ import OMJulia
 import OMJulia: sendExpression
 import BaseModelica
 import DifferentialEquations
-import OrdinaryDiffEqBDF
 import ModelingToolkit
 import Dates: now
 import Printf: @sprintf

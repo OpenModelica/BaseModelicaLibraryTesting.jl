@@ -1,8 +1,8 @@
-@testset "AmplifierWithOpAmpDetailed verification" begin
-    model    = "Modelica.Electrical.Analog.Examples.AmplifierWithOpAmpDetailed"
+@testset "OpAmps.Subtracter verification" begin
+    model    = "Modelica.Electrical.Analog.Examples.OpAmps.Subtracter"
     bmo_path = joinpath(FIXTURES, "$model.bmo")
-    ref_dir  = joinpath(FIXTURES, "AmplifierWithOpAmpDetailed")
-    ref_csv  = joinpath(ref_dir, "AmplifierWithOpAmpDetailed.csv")
+    ref_dir  = joinpath(FIXTURES, "Subtracter")
+    ref_csv  = joinpath(ref_dir, "Subtracter.csv")
     sig_file = joinpath(ref_dir, "comparisonSignals.txt")
     signals  = String.(filter(s -> lowercase(s) != "time" && !isempty(s),
                               strip.(readlines(sig_file))))
@@ -21,7 +21,7 @@
                 total, pass, skip, _ = compare_with_reference(
                     sol, ref_csv, tmpdir, model; signals)
                 @test pass == total
-                @info "AmplifierWithOpAmpDetailed: $pass/$total signals pass (skip=$skip)"
+                @info "OpAmps.Subtracter: $pass/$total signals pass (skip=$skip)"
             end
         end
     end

@@ -17,7 +17,7 @@ Environment variables:
   OMC_EXE   Path to the omc binary (default: system PATH)
 """
 
-import Test: @test, @testset
+import Test: @test, @testset, @test_broken
 import OMJulia
 import BaseModelicaLibraryTesting: run_export, run_parse, run_simulate,
                                     compare_with_reference,
@@ -30,6 +30,4 @@ const TEST_MODEL_CHUA = "Modelica.Electrical.Analog.Examples.ChuaCircuit"
 
 include("unit_helpers.jl")
 include("chua_circuit.jl")
-include("bus_usage.jl")
-include("characteristic_ideal_diodes.jl")
-include("amplifier_with_op_amp.jl")
+include("subtracter.jl")

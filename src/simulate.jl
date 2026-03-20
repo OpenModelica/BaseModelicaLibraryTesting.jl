@@ -1,8 +1,6 @@
 # ── Phase 3: ODE simulation with DifferentialEquations / MTK ──────────────────
 
 import DifferentialEquations
-import LinearAlgebra
-import OrdinaryDiffEqBDF
 import Logging
 import ModelingToolkit
 import Printf: @sprintf
@@ -16,7 +14,7 @@ const _SIM_SETTINGS = SimulateSettings(solver = DifferentialEquations.Rodas5Pr()
 Update the module-level simulation settings in-place and return them.
 
 # Keyword arguments
-- `solver`   — any SciML ODE/DAE algorithm instance (e.g. `FBDF()`, `Rodas5Pr()`).
+- `solver`   — any SciML ODE/DAE algorithm instance (e.g. `Rodas5Pr`, `FBDF()`).
 - `saveat_n` — number of uniform time points for purely algebraic systems.
 
 # Example
@@ -63,6 +61,7 @@ function run_simulate(ode_prob,
                       settings       ::SimulateSettings = _SIM_SETTINGS,
                       cmp_signals    ::Vector{String}   = String[],
                       csv_max_size_mb::Int              = CSV_MAX_SIZE_MB)::Tuple{Bool,Float64,String,Any}
+
     sim_success           = false
     sim_time              = 0.0
     sim_error             = ""
@@ -84,31 +83,13 @@ function run_simulate(ode_prob,
             # internal steps and sol.t would be empty with saveat=[].
             # Supply explicit time points so observed variables can be evaluated.
             sys        = ode_prob.f.sys
-            M          = ode_prob.f.mass_matrix
-            unknowns   = ModelingToolkit.unknowns(sys)
-            n_unknowns = length(unknowns)
-            n_diff     = if M isa LinearAlgebra.UniformScaling
-                n_unknowns
-            else
-                count(!iszero, LinearAlgebra.diag(M))
-            end
+            n_unknowns = length(ModelingToolkit.unknowns(sys))
 
             kwargs = if n_unknowns == 0
-                # No unknowns at all (e.g. BusUsage): the solver takes no
-                # internal steps with saveat=[], leaving sol.t empty.
-                # Use a fixed grid + adaptive=false so observed variables
-                # can be evaluated.
-                t0_s, t1_s = ode_prob.tspan
-                saveat_s   = collect(range(t0_s, t1_s; length = settings.saveat_n))
-                dt_s       = saveat_s[2] - saveat_s[1]
-                (saveat = saveat_s, adaptive = false, dt = dt_s, dense = false)
-            elseif n_diff == 0
-                # Algebraic unknowns only (e.g. CharacteristicIdealDiodes):
-                # the solver must take adaptive steps to track discontinuities.
-                # Keep saveat=[] + dense=true so the solver drives its own
-                # step selection; dense output is unreliable but the solution
-                # values at each step are correct.
-                (saveat = Float64[], dense = true)
+                # No unknowns at all (e.g. BusUsage):
+                # Supply explicit time points so observed variables can be evaluated.
+                saveat_s = collect(range(ode_prob.tspan[1], ode_prob.tspan[end]; length = settings.saveat_n))
+                (saveat = saveat_s, dense = true)
             else
                 (saveat = Float64[], dense = true)
             end
@@ -119,9 +100,9 @@ function run_simulate(ode_prob,
             # Use our own `saveat` vector for the log: integ.opts.saveat is a
             # BinaryHeap which does not support iterate/minimum/maximum.
             integ = DifferentialEquations.init(ode_prob, solver; kwargs...)
-            saveat = kwargs.saveat
+            saveat_s = kwargs.saveat
             solver_settings_string = if hasproperty(integ, :opts)
-                sv_str = isempty(saveat) ? "[]" : "$(length(saveat)) points in [$(first(saveat)), $(last(saveat))]"
+                sv_str = isempty(saveat_s) ? "[]" : "$(length(saveat_s)) points in [$(first(saveat_s)), $(last(saveat_s))]"
                 """
                 Solver $(parentmodule(typeof(solver))).$(nameof(typeof(solver)))
                     saveat:   $sv_str
@@ -131,14 +112,14 @@ function run_simulate(ode_prob,
                     dense:    $(integ.opts.dense)
                 """
             else
-                sv_str = isempty(saveat) ? "[]" : "$(length(saveat)) points in [$(first(saveat)), $(last(saveat))]"
+                sv_str = isempty(saveat_s) ? "[]" : "$(length(saveat_s)) points in [$(first(saveat_s)), $(last(saveat_s))]"
                 "Solver (NullODEIntegrator — no unknowns)
                     saveat: $sv_str
                     dense:  true"
             end
 
             # Solve
-            DifferentialEquations.solve(ode_prob, OrdinaryDiffEqBDF.FBDF(); kwargs...)
+            DifferentialEquations.solve(ode_prob, solver; kwargs...)
         end
         sim_time = time() - t0
         if sol.retcode == DifferentialEquations.ReturnCode.Success
