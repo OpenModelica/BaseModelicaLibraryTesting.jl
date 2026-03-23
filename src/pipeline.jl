@@ -251,6 +251,9 @@ function main(;
         length(cpu_info),
         Sys.total_memory() / 1024^3,
         time() - t0,
+        let s = _SIM_SETTINGS.solver
+            "$(parentmodule(typeof(s))).$(nameof(typeof(s)))"
+        end,
     )
 
     generate_report(results, results_root, info; csv_max_size_mb)

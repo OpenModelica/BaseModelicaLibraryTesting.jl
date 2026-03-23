@@ -36,6 +36,11 @@ on:
         required: false
         default: '^(?!Modelica\.Clocked)'
         type: string
+      solver:
+        description: 'ODE solver algorithm (any DifferentialEquations.jl algorithm name, e.g. Rodas5P, FBDF)'
+        required: false
+        default: 'Rodas5P'
+        type: string
 
 concurrency:
   group: pages-${{ inputs.library || 'Modelica' }}-${{ inputs.lib_version || '4.1.0' }}-${{ inputs.bm_version || 'main' }}
@@ -58,6 +63,7 @@ jobs:
       BM_VERSION_INPUT: ${{ inputs.bm_version || 'main' }}
       BM_OPTIONS:  ${{ inputs.bm_options || 'scalarize,moveBindings,inlineFunctions' }}
       FILTER:      ${{ inputs.filter || '^(?!Modelica\.Clocked)' }}
+      SOLVER:      ${{ inputs.solver || 'Rodas5P' }}
 
     steps:
       - name: Checkout source
@@ -123,6 +129,9 @@ jobs:
         run: |
           julia --project=. -e '
             using BaseModelicaLibraryTesting
+            using DifferentialEquations
+            solver_name = get(ENV, "SOLVER", "Rodas5P")
+            configure_simulate!(solver = getproperty(DifferentialEquations, Symbol(solver_name))())
             filter_str = get(ENV, "FILTER", "")
             main(
               library      = ENV["LIB_NAME"],

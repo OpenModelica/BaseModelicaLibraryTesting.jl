@@ -46,7 +46,7 @@ Mutable configuration struct for ODE simulation.
 
 # Fields
 - `solver`   — any SciML ODE/DAE algorithm instance.  Default: `nothing`,
-               resolved to `Rodas5Pr()` when the module-level singleton is
+               resolved to `Rodas5P()` when the module-level singleton is
                constructed in `simulate.jl`.
 - `saveat_n` — number of evenly-spaced time points used for purely algebraic
                systems (all mass-matrix rows zero).  Default: `500`.
@@ -79,6 +79,7 @@ Metadata about a single test run, collected by `main()` and written into both
 - `cpu_threads`  — number of logical CPU threads
 - `ram_gb`       — total system RAM in GiB
 - `total_time_s` — wall-clock duration of the full test run in seconds
+- `solver`       — fully-qualified solver name, e.g. `"DifferentialEquations.Rodas5P"`
 """
 struct RunInfo
     library      :: String
@@ -95,6 +96,7 @@ struct RunInfo
     cpu_threads  :: Int
     ram_gb       :: Float64
     total_time_s :: Float64
+    solver       :: String
 end
 
 # ── Result type ────────────────────────────────────────────────────────────────
