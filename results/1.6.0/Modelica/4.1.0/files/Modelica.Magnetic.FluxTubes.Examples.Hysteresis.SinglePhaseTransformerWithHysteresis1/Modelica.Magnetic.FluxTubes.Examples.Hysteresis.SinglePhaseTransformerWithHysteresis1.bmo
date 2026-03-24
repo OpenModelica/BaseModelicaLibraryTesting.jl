@@ -1,14 +1,25 @@
 //! base 0.1.0
 package 'SinglePhaseTransformerWithHysteresis1'
-  function 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue' "Second derivative of interpolated 1-dim. table defined by matrix"
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMax';
+  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValue' "Interpolate 1-dim. table defined by matrix"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
     input Real 'u';
-    input Real 'der_u';
-    input Real 'der2_u';
-    output Real 'der2_y';
-  external "C" 'der2_y' = ModelicaStandardTables_CombiTable1D_getDer2Value('tableID', 'icol', 'u', 'der_u', 'der2_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValue');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValue';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMin';
+  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
 
   function 'Modelica.Blocks.Tables.Internal.getDerTable1DValue' "Derivative of interpolated 1-dim. table defined by matrix"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
@@ -20,27 +31,6 @@ package 'SinglePhaseTransformerWithHysteresis1'
     annotation(derivative(order = 2) = 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue');
   end 'Modelica.Blocks.Tables.Internal.getDerTable1DValue';
 
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMax';
-  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMin';
-  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValue' "Interpolate 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValue');
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValue';
-
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
@@ -51,8 +41,8 @@ package 'SinglePhaseTransformerWithHysteresis1'
     function constructor "Initialize 1-dim. table defined by matrix"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
-      input Integer[:] 'columns';
+      input Real 'table'[:, :];
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
       input Boolean 'verboseRead' = true;
@@ -595,7 +585,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'core.MagRel'(fixed = true, start = 0.5, max = 1.0, min = -1.0, unit = "1", quantity = "Relative magnetization") "Relative magnetization at initialization (-1..1)";
     Real 'core.LossPowerStat'(unit = "W", quantity = "Power") "Ferromagnetic (static) hysteresis losses";
     Real 'core.LossPowerEddy'(unit = "W", quantity = "Power") "Eddy current losses (dynamic hysteresis losses)";
-    Real 'core.derHstat'(start = 0.0, unit = "A/(m.s)") = der('core.Hstat');
+    Real 'core.derHstat'(start = 0.0, unit = "A/(m.s)");
     parameter Real 'core.eddyCurrentFactor'(unit = "S.m") = 0.04583333333333333;
     Boolean 'core.asc'(fixed = false, start = true) "True when der(Hstat)>0";
     Real 'core.hystR'(unit = "T", quantity = "MagneticFluxDensity") "Rising branch of limiting hysteresis loop";
@@ -1048,6 +1038,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'core.B' = ('core.hystR' + 'core.hystF') / 2.0 + 'core.MagRel' * 'core.diffHyst' / 2.0;
     'core.derHstat' = 0.0;
   equation
+    'core.derHstat' = der('core.Hstat');
     'winding2.port_n.V_m' = 'mag_ground.port.V_m';
     'winding2.port_n.V_m' = 'winding1.port_n.V_m';
     'vSource.p.v' = 'resistor1.p.v';
@@ -1129,7 +1120,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     elseif 'core.asc' then
       'core.dHyst' = der('core.hystR' - 1.25663706212e-6 * 'core.Hstat');
       'core.k' = max(0.01, ('core.hystF' - 'core.B') / 'core.diffHyst');
-    elseif true then
+    else
       'core.dHyst' = der('core.hystF' - 1.25663706212e-6 * 'core.Hstat');
       'core.k' = max(0.01, ('core.B' - 'core.hystR') / 'core.diffHyst');
     end if;

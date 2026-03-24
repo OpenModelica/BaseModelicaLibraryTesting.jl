@@ -1,254 +1,17 @@
 //! base 0.1.0
 package 'ControlledTanks'
-  function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    input Real 'timeIn';
-    output Real 'nextTimeEvent';
-  external "C" 'nextTimeEvent' = ModelicaStandardTables_CombiTimeTable_nextTimeEvent('tableID', 'timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getNextTimeEvent';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    output Real 'timeMax';
-  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
-
   function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
     input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
     output Real 'timeMin';
   external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
 
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer' "Interpolate 1-dim. table where first column is time (but do not provide a derivative function)"
+  function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
     input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    input Integer 'icol';
     input Real 'timeIn';
-    input Real 'nextTimeEvent';
-    input Real 'pre_nextTimeEvent';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTimeTable_getValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.ambient1.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 4184.0 * ('T' - 273.15);
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.ambient1.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.source.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 4184.0 * ('T' - 273.15);
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.source.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.density' "Return density"
-    input 'tank1.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := 995.586;
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.density';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.setState_phX' "Return thermodynamic state from p, h, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'tank1.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'tank1.Medium.ThermodynamicState'('p', 273.15 + 'h' / 4184.0);
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 4184.0 * ('T' - 273.15);
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.heatTransfer.Medium.temperature' "Return temperature"
-    input 'tank1.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.heatTransfer.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.density' "Return density"
-    input 'tank2.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := 995.586;
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.density';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.setState_phX' "Return thermodynamic state from p, h, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'tank2.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'tank2.Medium.ThermodynamicState'('p', 273.15 + 'h' / 4184.0);
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 4184.0 * ('T' - 273.15);
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.heatTransfer.Medium.temperature' "Return temperature"
-    input 'tank2.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.heatTransfer.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.density' "Return density"
-    input 'valve1.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := 995.586;
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.density';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.setState_phX' "Return thermodynamic state from p, h, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'valve1.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'valve1.Medium.ThermodynamicState'('p', 273.15 + 'h' / 4184.0);
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.temperature' "Return temperature"
-    input 'valve1.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.density' "Return density"
-    input 'valve2.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := 995.586;
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.density';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.setState_phX' "Return thermodynamic state from p, h, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'valve2.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'valve2.Medium.ThermodynamicState'('p', 273.15 + 'h' / 4184.0);
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.temperature' "Return temperature"
-    input 'valve2.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.density' "Return density"
-    input 'valve3.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := 995.586;
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.density';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.setState_phX' "Return thermodynamic state from p, h, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'valve3.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'valve3.Medium.ThermodynamicState'('p', 273.15 + 'h' / 4184.0);
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.temperature' "Return temperature"
-    input 'valve3.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.temperature';
-
-  function 'Modelica.Fluid.Utilities.checkBoundary' "Check whether boundary definition is correct"
-    input String 'mediumName';
-    input String[:] 'substanceNames';
-    input Boolean 'singleState';
-    input Boolean 'define_p';
-    input Real[:] 'X_boundary';
-    input String 'modelName' = "??? boundary ???";
-    Integer 'nX' = size('X_boundary', 1);
-    String 'X_str';
-  algorithm
-    assert(not 'singleState' or 'singleState' and 'define_p', "\nWrong value of parameter define_p (= false) in model \"" + 'modelName' + "\":\nThe selected medium \"" + 'mediumName' + "\" has Medium.singleState=true.\nTherefore, an boundary density cannot be defined and\ndefine_p = true is required.\n", AssertionLevel.error);
-
-    for 'i' in 1:'nX' loop
-      assert('X_boundary'['i'] >= 0.0, "\nWrong boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\":\nThe boundary value X_boundary(" + String('i') + ") = " + String('X_boundary'['i']) + "\nis negative. It must be positive.\n", AssertionLevel.error);
-    end for;
-
-    if 'nX' > 0 and abs(sum('X_boundary') - 1.0) > 1e-10 then
-      'X_str' := "";
-
-      for 'i' in 1:'nX' loop
-        'X_str' := 'X_str' + "   X_boundary[" + String('i') + "] = " + String('X_boundary'['i']) + " \"" + 'substanceNames'['i'] + "\"\n";
-      end for;
-
-      'Modelica.Utilities.Streams.error'("The boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\"\n" + "do not sum up to 1. Instead, sum(X_boundary) = " + String(sum('X_boundary')) + ":\n" + 'X_str');
-    end if;
-  end 'Modelica.Fluid.Utilities.checkBoundary';
-
-  function 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero' "Evaluate polynomial of order 3 that passes the origin with a predefined derivative"
-    input Real 'x';
-    input Real 'x1';
-    input Real 'y1';
-    input Real 'y1d';
-    input Real 'y0d';
-    output Real 'y';
-    Real 'a1';
-    Real 'a2';
-    Real 'a3';
-    Real 'xx';
-  algorithm
-    'a1' := 'x1' * 'y0d';
-    'a2' := 3.0 * 'y1' - 'x1' * 'y1d' - 2.0 * 'a1';
-    'a3' := 'y1' - 'a2' - 'a1';
-    'xx' := 'x' / 'x1';
-    'y' := 'xx' * ('a1' + 'xx' * ('a2' + 'xx' * 'a3'));
-    annotation(smoothOrder = 3);
-  end 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero';
-
-  function 'Modelica.Fluid.Utilities.regSquare2' "Anti-symmetric approximation of square with discontinuous factor so that the first derivative is non-zero and is continuous"
-    input Real 'x';
-    input Real 'x_small'(min = 0.0) = 0.01;
-    input Real 'k1'(min = 0.0) = 1.0;
-    input Real 'k2'(min = 0.0) = 1.0;
-    input Boolean 'use_yd0' = false;
-    input Real 'yd0'(min = 0.0) = 1.0;
-    output Real 'y';
-  algorithm
-    'y' := smooth(2, if 'x' >= 'x_small' then 'k1' * 'x' ^ 2.0 else if 'x' <= (-'x_small') then -'k2' * 'x' ^ 2.0 else if 'k1' >= 'k2' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('x', 'x_small', 'k1', 'k2', 'use_yd0', 'yd0') else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'x', 'x_small', 'k2', 'k1', 'use_yd0', 'yd0'));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Fluid.Utilities.regSquare2';
-
-  function 'Modelica.Fluid.Utilities.regStep' "Approximation of a general step, such that the characteristic is continuous and differentiable"
-    input Real 'x';
-    input Real 'y1';
-    input Real 'y2';
-    input Real 'x_small'(min = 0.0) = 1e-5;
-    output Real 'y';
-  algorithm
-    'y' := smooth(1, if 'x' > 'x_small' then 'y1' else if 'x' < (-'x_small') then 'y2' else if 'x_small' > 0.0 then 'x' / 'x_small' * (('x' / 'x_small') ^ 2.0 - 3.0) * ('y2' - 'y1') / 4.0 + ('y1' + 'y2') / 2.0 else ('y1' + 'y2') / 2.0);
-  end 'Modelica.Fluid.Utilities.regStep';
+    output Real 'nextTimeEvent';
+  external "C" 'nextTimeEvent' = ModelicaStandardTables_CombiTimeTable_nextTimeEvent('tableID', 'timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getNextTimeEvent';
 
   function 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility' "Interpolating with two 3-order polynomials with a prescribed derivative at x=0"
     input Real 'x';
@@ -273,7 +36,7 @@ package 'ControlledTanks'
 
     if 'x' <= 'x2' then
       'y' := -'k2' * 'x' ^ 2.0;
-    elseif true then
+    else
       'y1' := 'k1' * 'x1' ^ 2.0;
       'y2' := -'k2' * 'x2' ^ 2.0;
       'y1d' := 'k1' * 2.0 * 'x1';
@@ -281,7 +44,7 @@ package 'ControlledTanks'
 
       if 'use_yd0' then
         'y0d' := 'yd0';
-      elseif true then
+      else
         'w' := 'x2' / 'x1';
         'y0d' := ((3.0 * 'y2' - 'x2' * 'y2d') / 'w' - (3.0 * 'y1' - 'x1' * 'y1d') * 'w') / (2.0 * 'x1' * (1.0 - 'w'));
       end if;
@@ -299,11 +62,48 @@ package 'ControlledTanks'
     annotation(smoothOrder = 2);
   end 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility';
 
-  function 'Modelica.Utilities.Streams.error' "Print error message and cancel all actions - in case of an unrecoverable error"
-    input String 'string';
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMax';
+  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer' "Interpolate 1-dim. table where first column is time (but do not provide a derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Integer 'icol';
+    input Real 'timeIn';
+    input Real 'nextTimeEvent';
+    input Real 'pre_nextTimeEvent';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTimeTable_getValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer';
+
+  function 'Modelica.Fluid.Utilities.checkBoundary' "Check whether boundary definition is correct"
+    input String 'mediumName';
+    input String 'substanceNames'[:];
+    input Boolean 'singleState';
+    input Boolean 'define_p';
+    input Real 'X_boundary'[:];
+    input String 'modelName' = "??? boundary ???";
+    Integer 'nX' = size('X_boundary', 1);
+    String 'X_str';
   algorithm
-    assert(false, 'string', AssertionLevel.error);
-  end 'Modelica.Utilities.Streams.error';
+    assert(not 'singleState' or 'singleState' and 'define_p', "\nWrong value of parameter define_p (= false) in model \"" + 'modelName' + "\":\nThe selected medium \"" + 'mediumName' + "\" has Medium.singleState=true.\nTherefore, an boundary density cannot be defined and\ndefine_p = true is required.\n", AssertionLevel.error);
+
+    for 'i' in 1:'nX' loop
+      assert('X_boundary'['i'] >= 0.0, "\nWrong boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\":\nThe boundary value X_boundary(" + String('i') + ") = " + String('X_boundary'['i']) + "\nis negative. It must be positive.\n", AssertionLevel.error);
+    end for;
+
+    if 'nX' > 0 and abs(sum('X_boundary') - 1.0) > 1e-10 then
+      'X_str' := "";
+
+      for 'i' in 1:'nX' loop
+        'X_str' := 'X_str' + "   X_boundary[" + String('i') + "] = " + String('X_boundary'['i']) + " \"" + 'substanceNames'['i'] + "\"\n";
+      end for;
+
+      'Modelica.Utilities.Streams.error'("The boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\"\n" + "do not sum up to 1. Instead, sum(X_boundary) = " + String(sum('X_boundary')) + ":\n" + 'X_str');
+    end if;
+  end 'Modelica.Fluid.Utilities.checkBoundary';
 
   type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
 
@@ -317,9 +117,9 @@ package 'ControlledTanks'
     function constructor "Initialize 1-dim. table where first column is time"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
+      input Real 'table'[:, :];
       input Real 'startTime';
-      input Integer[:] 'columns';
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation';
       input Real 'shiftTime' = 0.0;
@@ -338,44 +138,9 @@ package 'ControlledTanks'
 
 end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
 
-  record 'valve1.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'valve1.Medium.ThermodynamicState';
-
   type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
 
-  record 'valve2.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'valve2.Medium.ThermodynamicState';
-
-  record 'valve3.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'valve3.Medium.ThermodynamicState';
-
   type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
-
-  record 'tank1.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'tank1.heatTransfer.Medium.ThermodynamicState';
-
-  record 'tank1.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'tank1.Medium.ThermodynamicState';
-
-  record 'tank2.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'tank2.heatTransfer.Medium.ThermodynamicState';
-
-  record 'tank2.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'tank2.Medium.ThermodynamicState';
 
   model 'ControlledTanks' "Demonstrating the controller of a tank filling/emptying system"
     parameter Real 'tankController.maxLevel'(min = 0.0, unit = "m", quantity = "Length") = 3.6 "Fill level of tank 1";
@@ -395,13 +160,13 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.s1.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.s1.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'tankController.s1.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'tankController.s1.outerStatePort.localActive' = 'tankController.s1.localActive';
+    Boolean 'tankController.s1.outerStatePort.localActive';
     Boolean 'tankController.s1.newActive' "Value of active in the next iteration";
     Boolean 'tankController.s1.oldActive' "Value of active when CompositeStep was aborted";
     parameter Integer 'tankController.normal.nSuspend' = 1 "Number of suspend ports";
     parameter Integer 'tankController.normal.nResume' = 1 "Number of resume ports";
-    Boolean 'tankController.normal.stateGraphRoot.suspend' = max({'tankController.normal.suspend[1].reset'}) or 'tankController.normal.outerState.subgraphStatePort.suspend' "= true, if suspend transition of CompositeStep fires";
-    Boolean 'tankController.normal.stateGraphRoot.resume' = max({'tankController.normal.resume[1].set'}) or 'tankController.normal.outerState.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
+    Boolean 'tankController.normal.stateGraphRoot.suspend' "= true, if suspend transition of CompositeStep fires";
+    Boolean 'tankController.normal.stateGraphRoot.resume' "= true, if resume transition of CompositeStep fires";
     Boolean 'tankController.normal.stateGraphRoot.subgraphStatePort.suspend' "= true, if suspend transition of CompositeStep fires";
     Boolean 'tankController.normal.stateGraphRoot.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.normal.stateGraphRoot.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
@@ -419,7 +184,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.normal.outerState.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.normal.outerState.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'tankController.normal.outerState.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'tankController.normal.outerState.active' = 'tankController.normal.active';
+    Boolean 'tankController.normal.outerState.active';
     Boolean 'tankController.normal.newActive' "Value of active in the next iteration";
     Integer 'tankController.normal.activeSteps' "Number of active steps within the CompositeStep";
     parameter Real 'tankController.normal.maxLevel'(min = 0.0, unit = "m", quantity = "Length") = 3.6 "Fill level of tank 1";
@@ -438,11 +203,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.normal.fillTank1.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.normal.fillTank1.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'tankController.normal.fillTank1.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'tankController.normal.fillTank1.outerStatePort.localActive' = 'tankController.normal.fillTank1.localActive';
+    Boolean 'tankController.normal.fillTank1.outerStatePort.localActive';
     Boolean 'tankController.normal.fillTank1.newActive' "Value of active in the next iteration";
     Boolean 'tankController.normal.fillTank1.oldActive' "Value of active when CompositeStep was aborted";
-    Boolean 'tankController.normal.T1.condition' = 'tankController.normal.level1' > 3.6 "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.normal.T1.localCondition' = 'tankController.normal.T1.condition' "= true, if transition may fire";
+    Boolean 'tankController.normal.T1.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.normal.T1.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.normal.T1.enableTimer' = false "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.normal.T1.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 0.0 "Wait time before transition fires";
     Real 'tankController.normal.T1.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -466,11 +231,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.normal.fillTank2.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.normal.fillTank2.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'tankController.normal.fillTank2.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'tankController.normal.fillTank2.outerStatePort.localActive' = 'tankController.normal.fillTank2.localActive';
+    Boolean 'tankController.normal.fillTank2.outerStatePort.localActive';
     Boolean 'tankController.normal.fillTank2.newActive' "Value of active in the next iteration";
     Boolean 'tankController.normal.fillTank2.oldActive' "Value of active when CompositeStep was aborted";
-    Boolean 'tankController.normal.T3.condition' = 'tankController.normal.level1' < 0.01 "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.normal.T3.localCondition' = 'tankController.normal.T3.condition' "= true, if transition may fire";
+    Boolean 'tankController.normal.T3.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.normal.T3.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.normal.T3.enableTimer' = false "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.normal.T3.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 0.0 "Wait time before transition fires";
     Real 'tankController.normal.T3.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -494,7 +259,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.normal.emptyTank2.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.normal.emptyTank2.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'tankController.normal.emptyTank2.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'tankController.normal.emptyTank2.outerStatePort.localActive' = 'tankController.normal.emptyTank2.localActive';
+    Boolean 'tankController.normal.emptyTank2.outerStatePort.localActive';
     Boolean 'tankController.normal.emptyTank2.newActive' "Value of active in the next iteration";
     Boolean 'tankController.normal.emptyTank2.oldActive' "Value of active when CompositeStep was aborted";
     Boolean 'tankController.normal.wait1.active' "= true, if step is active, otherwise the step is not active";
@@ -509,11 +274,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.normal.wait1.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.normal.wait1.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'tankController.normal.wait1.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'tankController.normal.wait1.outerStatePort.localActive' = 'tankController.normal.wait1.localActive';
+    Boolean 'tankController.normal.wait1.outerStatePort.localActive';
     Boolean 'tankController.normal.wait1.newActive' "Value of active in the next iteration";
     Boolean 'tankController.normal.wait1.oldActive' "Value of active when CompositeStep was aborted";
-    Boolean 'tankController.normal.T2.condition' = true "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.normal.T2.localCondition' = 'tankController.normal.T2.condition' "= true, if transition may fire";
+    Boolean 'tankController.normal.T2.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.normal.T2.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.normal.T2.enableTimer' = true "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.normal.T2.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 50.0 "Wait time before transition fires";
     Real 'tankController.normal.T2.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -537,11 +302,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.normal.wait2.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.normal.wait2.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'tankController.normal.wait2.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'tankController.normal.wait2.outerStatePort.localActive' = 'tankController.normal.wait2.localActive';
+    Boolean 'tankController.normal.wait2.outerStatePort.localActive';
     Boolean 'tankController.normal.wait2.newActive' "Value of active in the next iteration";
     Boolean 'tankController.normal.wait2.oldActive' "Value of active when CompositeStep was aborted";
-    Boolean 'tankController.normal.T4.condition' = true "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.normal.T4.localCondition' = 'tankController.normal.T4.condition' "= true, if transition may fire";
+    Boolean 'tankController.normal.T4.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.normal.T4.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.normal.T4.enableTimer' = true "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.normal.T4.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 50.0 "Wait time before transition fires";
     Real 'tankController.normal.T4.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -553,8 +318,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.normal.T4.outPort.set' "= true, if transition fires and step connected to the transition output becomes active";
     discrete Real 'tankController.normal.T4.t_start'(unit = "s", quantity = "Time") "Time instant at which the transition would fire, if waitTime would be zero";
     Real 'tankController.normal.T4.t_dummy';
-    Boolean 'tankController.T1.condition' = 'tankController.start' "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.T1.localCondition' = 'tankController.T1.condition' "= true, if transition may fire";
+    Boolean 'tankController.T1.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.T1.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.T1.enableTimer' = false "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.T1.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 0.0 "Wait time before transition fires";
     Real 'tankController.T1.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -566,8 +331,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.T1.outPort.set' "= true, if transition fires and step connected to the transition output becomes active";
     discrete Real 'tankController.T1.t_start'(unit = "s", quantity = "Time") "Time instant at which the transition would fire, if waitTime would be zero";
     Real 'tankController.T1.t_dummy';
-    Boolean 'tankController.T2.condition' = 'tankController.level2' < 0.01 "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.T2.localCondition' = 'tankController.T2.condition' "= true, if transition may fire";
+    Boolean 'tankController.T2.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.T2.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.T2.enableTimer' = false "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.T2.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 0.0 "Wait time before transition fires";
     Real 'tankController.T2.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -579,8 +344,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.T2.outPort.set' "= true, if transition fires and step connected to the transition output becomes active";
     discrete Real 'tankController.T2.t_start'(unit = "s", quantity = "Time") "Time instant at which the transition would fire, if waitTime would be zero";
     Real 'tankController.T2.t_dummy';
-    Boolean 'tankController.T3.condition' = 'tankController.stop' "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.T3.localCondition' = 'tankController.T3.condition' "= true, if transition may fire";
+    Boolean 'tankController.T3.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.T3.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.T3.enableTimer' = false "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.T3.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 0.0 "Wait time before transition fires";
     Real 'tankController.T3.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -606,11 +371,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.s2.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.s2.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'tankController.s2.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'tankController.s2.outerStatePort.localActive' = 'tankController.s2.localActive';
+    Boolean 'tankController.s2.outerStatePort.localActive';
     Boolean 'tankController.s2.newActive' "Value of active in the next iteration";
     Boolean 'tankController.s2.oldActive' "Value of active when CompositeStep was aborted";
-    Boolean 'tankController.T4.condition' = 'tankController.start' "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.T4.localCondition' = 'tankController.T4.condition' "= true, if transition may fire";
+    Boolean 'tankController.T4.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.T4.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.T4.enableTimer' = false "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.T4.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 0.0 "Wait time before transition fires";
     Real 'tankController.T4.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -622,8 +387,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.T4.outPort.set' "= true, if transition fires and step connected to the transition output becomes active";
     discrete Real 'tankController.T4.t_start'(unit = "s", quantity = "Time") "Time instant at which the transition would fire, if waitTime would be zero";
     Real 'tankController.T4.t_dummy';
-    Boolean 'tankController.T5.condition' = 'tankController.shut' "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.T5.localCondition' = 'tankController.T5.condition' "= true, if transition may fire";
+    Boolean 'tankController.T5.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.T5.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.T5.enableTimer' = false "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.T5.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 0.0 "Wait time before transition fires";
     Real 'tankController.T5.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -647,11 +412,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.emptyTanks.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.emptyTanks.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'tankController.emptyTanks.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'tankController.emptyTanks.outerStatePort.localActive' = 'tankController.emptyTanks.localActive';
+    Boolean 'tankController.emptyTanks.outerStatePort.localActive';
     Boolean 'tankController.emptyTanks.newActive' "Value of active in the next iteration";
     Boolean 'tankController.emptyTanks.oldActive' "Value of active when CompositeStep was aborted";
-    Boolean 'tankController.T6.condition' = 'tankController.level1' < 0.01 and 'tankController.level2' < 0.01 "= true, if transition may fire (time varying expression)";
-    Boolean 'tankController.T6.localCondition' = 'tankController.T6.condition' "= true, if transition may fire";
+    Boolean 'tankController.T6.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'tankController.T6.localCondition' "= true, if transition may fire";
     parameter Boolean 'tankController.T6.enableTimer' = false "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'tankController.T6.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 0.0 "Wait time before transition fires";
     Real 'tankController.T6.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -671,11 +436,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tankController.valve1';
     Boolean 'tankController.valve2';
     Boolean 'tankController.valve3';
-    Boolean 'tankController.setValve1.y' = 'tankController.normal.fillTank1.active' "Value of Boolean output";
-    Boolean 'tankController.setValve2.y' = 'tankController.normal.fillTank2.active' or 'tankController.emptyTanks.active' and 'tankController.level1' > 0.01 "Value of Boolean output";
-    Boolean 'tankController.setValve3.y' = 'tankController.normal.emptyTank2.active' or 'tankController.emptyTanks.active' and 'tankController.level2' > 0.01 "Value of Boolean output";
-    Boolean 'tankController.stateGraphRoot.suspend' = false "= true, if suspend transition of CompositeStep fires";
-    Boolean 'tankController.stateGraphRoot.resume' = false "= true, if resume transition of CompositeStep fires";
+    Boolean 'tankController.setValve1.y' "Value of Boolean output";
+    Boolean 'tankController.setValve2.y' "Value of Boolean output";
+    Boolean 'tankController.setValve3.y' "Value of Boolean output";
+    Boolean 'tankController.stateGraphRoot.suspend' "= true, if suspend transition of CompositeStep fires";
+    Boolean 'tankController.stateGraphRoot.resume' "= true, if resume transition of CompositeStep fires";
     Boolean 'tankController.stateGraphRoot.subgraphStatePort.suspend' "= true, if suspend transition of CompositeStep fires";
     Boolean 'tankController.stateGraphRoot.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'tankController.stateGraphRoot.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
@@ -850,9 +615,9 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     parameter Boolean 'valve1.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'valve1.m_flow'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate in design flow direction";
     Real 'valve1.dp'(start = 1013.25, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'valve1.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'valve1.m_flow' / 'Modelica.Fluid.Utilities.regStep'('valve1.m_flow', 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.density'('valve1.state_a'), 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.density'('valve1.state_b'), 0.01) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'valve1.port_a_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('valve1.port_a.m_flow', 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.temperature'('valve1.state_a'), 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.temperature'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.setState_phX'('valve1.port_a.p', 'valve1.port_a.h_outflow', fill(0.0, 0))), 0.01) "Temperature close to port_a, if show_T = true";
-    Real 'valve1.port_b_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('valve1.port_b.m_flow', 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.temperature'('valve1.state_b'), 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.temperature'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.setState_phX'('valve1.port_b.p', 'valve1.port_b.h_outflow', fill(0.0, 0))), 0.01) "Temperature close to port_b, if show_T = true";
+    Real 'valve1.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'valve1.port_a_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'valve1.port_b_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Real 'valve1.state_a.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'valve1.state_a.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'valve1.state_b.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
@@ -869,7 +634,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     parameter Real 'tank1.p_ambient'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'tank1.T_ambient'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'tank1.level_start'(min = 0.0, unit = "m", quantity = "Length") = 0.05 "Start value of tank level";
-    Real 'tank1.fluidVolume'(unit = "m3", quantity = "Volume") = 'tank1.V' "Volume";
+    Real 'tank1.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank1.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank1.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank1.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -877,7 +642,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     parameter Real 'tank1.p_start'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Start value of pressure";
     parameter Boolean 'tank1.use_T_start' = true "= true, use T_start, otherwise h_start" annotation(Evaluate = true);
     parameter Real 'tank1.T_start'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Start value of temperature";
-    parameter Real 'tank1.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.specificEnthalpy_pTX'(101325.0, 'tank1.T_start', {1.0}) "Start value of specific enthalpy";
+    parameter Real 'tank1.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 4184.0 * ('tank1.T_start' - 273.15) "Start value of specific enthalpy";
     parameter Real 'tank1.X_start[1]'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") = 1.0 "Start value of mass fractions m_i/m";
     Real 'tank1.medium.p'(stateSelect = StateSelect.prefer, nominal = 1e5, start = 101325.0, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'tank1.medium.h'(start = 'tank1.h_start', unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
@@ -891,8 +656,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'tank1.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'tank1.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'tank1.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'tank1.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'tank1.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'tank1.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'tank1.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'tank1.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'tank1.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'tank1.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'tank1.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'tank1.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -923,8 +688,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'tank1.ports_H_flow[2]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'tank1.use_HeatTransfer' = false "= true to use the HeatTransfer model";
     parameter Integer 'tank1.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'tank1.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'tank1.medium.state.p' "Absolute pressure of medium";
-    Real 'tank1.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'tank1.medium.state.T' "Temperature of medium";
+    Real 'tank1.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'tank1.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'tank1.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'tank1.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'tank1.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -950,7 +715,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     constant Real 'tank1.Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 100.0 "cf. suddenExpansion";
     Real 'tank1.m_flow_turbulent[1]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'tank1.m_flow_turbulent[2]'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'tank1.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") = 'tank1.level' "Level of fluid in the vessel for treating heights of ports";
+    Real 'tank1.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") "Level of fluid in the vessel for treating heights of ports";
     parameter Real 'tank1.fluidLevel_max'(min = 0.0, unit = "m", quantity = "Length") = 4.0 "Maximum level of fluid in the vessel";
     parameter Real 'tank1.vesselArea'(unit = "m2", quantity = "Area") = 6.0 "Area of the vessel used to relate to cross flow area of ports";
     Real 'tank1.portsData_diameter_internal[1]';
@@ -974,7 +739,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Boolean 'tank1.inFlow[1]'(start = false);
     Boolean 'tank1.inFlow[2]'(start = false);
     parameter Real 'tank1.level_start_eps'(min = 0.0, unit = "m", quantity = "Length") = 0.05;
-    Real 'level1.y' = 'tank1.level' "Value of Real output";
+    Real 'level1.y' "Value of Real output";
     parameter Boolean 'valve2.allowFlowReversal' = true "= true to allow flow reversal, false restricts to design direction (port_a -> port_b)" annotation(Evaluate = true);
     Real 'valve2.port_a.m_flow'(max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate from the connection point into the component";
     Real 'valve2.port_a.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
@@ -992,9 +757,9 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     parameter Boolean 'valve2.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'valve2.m_flow'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate in design flow direction";
     Real 'valve2.dp'(start = 1013.25, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'valve2.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'valve2.m_flow' / 'Modelica.Fluid.Utilities.regStep'('valve2.m_flow', 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.density'('valve2.state_a'), 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.density'('valve2.state_b'), 0.01) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'valve2.port_a_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('valve2.port_a.m_flow', 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.temperature'('valve2.state_a'), 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.temperature'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.setState_phX'('valve2.port_a.p', 'valve2.port_a.h_outflow', fill(0.0, 0))), 0.01) "Temperature close to port_a, if show_T = true";
-    Real 'valve2.port_b_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('valve2.port_b.m_flow', 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.temperature'('valve2.state_b'), 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.temperature'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.setState_phX'('valve2.port_b.p', 'valve2.port_b.h_outflow', fill(0.0, 0))), 0.01) "Temperature close to port_b, if show_T = true";
+    Real 'valve2.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'valve2.port_a_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'valve2.port_b_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Real 'valve2.state_a.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'valve2.state_a.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'valve2.state_b.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
@@ -1021,9 +786,9 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     parameter Boolean 'valve3.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'valve3.m_flow'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate in design flow direction";
     Real 'valve3.dp'(start = 1013.25, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'valve3.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'valve3.m_flow' / 'Modelica.Fluid.Utilities.regStep'('valve3.m_flow', 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.density'('valve3.state_a'), 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.density'('valve3.state_b'), 0.01) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'valve3.port_a_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('valve3.port_a.m_flow', 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.temperature'('valve3.state_a'), 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.temperature'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.setState_phX'('valve3.port_a.p', 'valve3.port_a.h_outflow', fill(0.0, 0))), 0.01) "Temperature close to port_a, if show_T = true";
-    Real 'valve3.port_b_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('valve3.port_b.m_flow', 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.temperature'('valve3.state_b'), 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.temperature'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.setState_phX'('valve3.port_b.p', 'valve3.port_b.h_outflow', fill(0.0, 0))), 0.01) "Temperature close to port_b, if show_T = true";
+    Real 'valve3.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'valve3.port_a_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'valve3.port_b_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Real 'valve3.state_a.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'valve3.state_a.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'valve3.state_b.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
@@ -1040,7 +805,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     parameter Real 'tank2.p_ambient'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'tank2.T_ambient'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'tank2.level_start'(min = 0.0, unit = "m", quantity = "Length") = 0.05 "Start value of tank level";
-    Real 'tank2.fluidVolume'(unit = "m3", quantity = "Volume") = 'tank2.V' "Volume";
+    Real 'tank2.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank2.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank2.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank2.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -1048,7 +813,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     parameter Real 'tank2.p_start'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Start value of pressure";
     parameter Boolean 'tank2.use_T_start' = true "= true, use T_start, otherwise h_start" annotation(Evaluate = true);
     parameter Real 'tank2.T_start'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Start value of temperature";
-    parameter Real 'tank2.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.specificEnthalpy_pTX'(101325.0, 'tank2.T_start', {1.0}) "Start value of specific enthalpy";
+    parameter Real 'tank2.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 4184.0 * ('tank2.T_start' - 273.15) "Start value of specific enthalpy";
     parameter Real 'tank2.X_start[1]'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") = 1.0 "Start value of mass fractions m_i/m";
     Real 'tank2.medium.p'(stateSelect = StateSelect.prefer, nominal = 1e5, start = 101325.0, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'tank2.medium.h'(start = 'tank2.h_start', unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
@@ -1062,8 +827,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'tank2.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'tank2.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'tank2.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'tank2.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'tank2.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'tank2.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'tank2.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'tank2.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'tank2.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'tank2.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'tank2.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'tank2.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -1094,8 +859,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'tank2.ports_H_flow[2]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'tank2.use_HeatTransfer' = false "= true to use the HeatTransfer model";
     parameter Integer 'tank2.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'tank2.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'tank2.medium.state.p' "Absolute pressure of medium";
-    Real 'tank2.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'tank2.medium.state.T' "Temperature of medium";
+    Real 'tank2.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'tank2.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'tank2.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'tank2.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'tank2.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -1121,7 +886,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     constant Real 'tank2.Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 100.0 "cf. suddenExpansion";
     Real 'tank2.m_flow_turbulent[1]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'tank2.m_flow_turbulent[2]'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'tank2.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") = 'tank2.level' "Level of fluid in the vessel for treating heights of ports";
+    Real 'tank2.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") "Level of fluid in the vessel for treating heights of ports";
     parameter Real 'tank2.fluidLevel_max'(min = 0.0, unit = "m", quantity = "Length") = 5.0 "Maximum level of fluid in the vessel";
     parameter Real 'tank2.vesselArea'(unit = "m2", quantity = "Area") = 6.0 "Area of the vessel used to relate to cross flow area of ports";
     Real 'tank2.portsData_diameter_internal[1]';
@@ -1158,8 +923,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'ambient1.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'ambient1.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'ambient1.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'ambient1.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'ambient1.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'ambient1.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'ambient1.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'ambient1.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'ambient1.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'ambient1.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate from the connection point into the component";
     Real 'ambient1.ports[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
     Real 'ambient1.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
@@ -1174,7 +939,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'ambient1.p_in_internal'(unit = "Pa") "Needed to connect to conditional connector";
     Real 'ambient1.T_in_internal'(unit = "K") "Needed to connect to conditional connector";
     Real 'ambient1.X_in_internal[1]'(unit = "1") "Needed to connect to conditional connector";
-    Real 'level2.y' = 'tank2.level' "Value of Real output";
+    Real 'level2.y' "Value of Real output";
     parameter Integer 'source.nPorts' = 1 "Number of ports";
     Real 'source.medium.p'(stateSelect = StateSelect.default, nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'source.medium.h'(unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
@@ -1188,8 +953,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'source.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'source.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'source.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'source.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'source.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'source.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'source.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'source.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'source.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'source.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate from the connection point into the component";
     Real 'source.ports[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
     Real 'source.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
@@ -1284,6 +1049,69 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tank2.level' = 0.05;
     'tank2.medium.T' = 'tank2.T_start';
   equation
+    'tankController.s1.outerStatePort.localActive' = 'tankController.s1.localActive';
+    'tankController.normal.stateGraphRoot.suspend' = size({'tankController.normal.suspend[1].reset'}, 1) > 0 and max({'tankController.normal.suspend[1].reset'}) or 'tankController.normal.outerState.subgraphStatePort.suspend';
+    'tankController.normal.stateGraphRoot.resume' = size({'tankController.normal.resume[1].set'}, 1) > 0 and max({'tankController.normal.resume[1].set'}) or 'tankController.normal.outerState.subgraphStatePort.resume';
+    'tankController.normal.outerState.active' = 'tankController.normal.active';
+    'tankController.normal.fillTank1.outerStatePort.localActive' = 'tankController.normal.fillTank1.localActive';
+    'tankController.normal.T1.condition' = 'tankController.normal.level1' > 3.6;
+    'tankController.normal.T1.localCondition' = 'tankController.normal.T1.condition';
+    'tankController.normal.fillTank2.outerStatePort.localActive' = 'tankController.normal.fillTank2.localActive';
+    'tankController.normal.T3.condition' = 'tankController.normal.level1' < 0.01;
+    'tankController.normal.T3.localCondition' = 'tankController.normal.T3.condition';
+    'tankController.normal.emptyTank2.outerStatePort.localActive' = 'tankController.normal.emptyTank2.localActive';
+    'tankController.normal.wait1.outerStatePort.localActive' = 'tankController.normal.wait1.localActive';
+    'tankController.normal.T2.condition' = true;
+    'tankController.normal.T2.localCondition' = 'tankController.normal.T2.condition';
+    'tankController.normal.wait2.outerStatePort.localActive' = 'tankController.normal.wait2.localActive';
+    'tankController.normal.T4.condition' = true;
+    'tankController.normal.T4.localCondition' = 'tankController.normal.T4.condition';
+    'tankController.T1.condition' = 'tankController.start';
+    'tankController.T1.localCondition' = 'tankController.T1.condition';
+    'tankController.T2.condition' = 'tankController.level2' < 0.01;
+    'tankController.T2.localCondition' = 'tankController.T2.condition';
+    'tankController.T3.condition' = 'tankController.stop';
+    'tankController.T3.localCondition' = 'tankController.T3.condition';
+    'tankController.s2.outerStatePort.localActive' = 'tankController.s2.localActive';
+    'tankController.T4.condition' = 'tankController.start';
+    'tankController.T4.localCondition' = 'tankController.T4.condition';
+    'tankController.T5.condition' = 'tankController.shut';
+    'tankController.T5.localCondition' = 'tankController.T5.condition';
+    'tankController.emptyTanks.outerStatePort.localActive' = 'tankController.emptyTanks.localActive';
+    'tankController.T6.condition' = 'tankController.level1' < 0.01 and 'tankController.level2' < 0.01;
+    'tankController.T6.localCondition' = 'tankController.T6.condition';
+    'tankController.setValve1.y' = 'tankController.normal.fillTank1.active';
+    'tankController.setValve2.y' = 'tankController.normal.fillTank2.active' or 'tankController.emptyTanks.active' and 'tankController.level1' > 0.01;
+    'tankController.setValve3.y' = 'tankController.normal.emptyTank2.active' or 'tankController.emptyTanks.active' and 'tankController.level2' > 0.01;
+    'tankController.stateGraphRoot.suspend' = false;
+    'tankController.stateGraphRoot.resume' = false;
+    'valve1.V_flow' = 'valve1.m_flow' / smooth(1, if 'valve1.m_flow' > 0.01 then 995.586 else if 'valve1.m_flow' < (-0.01) then 995.586 else if 0.01 > 0.0 then 'valve1.m_flow' / 0.01 * (('valve1.m_flow' / 0.01) ^ 2.0 - 3.0) * (995.586 - 995.586) / 4.0 + (995.586 + 995.586) / 2.0 else (995.586 + 995.586) / 2.0);
+    'valve1.port_a_T' = smooth(1, if 'valve1.port_a.m_flow' > 0.01 then 'valve1.state_a.T' else if 'valve1.port_a.m_flow' < (-0.01) then 273.15 + 'valve1.port_a.h_outflow' / 4184.0 else if 0.01 > 0.0 then 'valve1.port_a.m_flow' / 0.01 * (('valve1.port_a.m_flow' / 0.01) ^ 2.0 - 3.0) * (273.15 + 'valve1.port_a.h_outflow' / 4184.0 - 'valve1.state_a.T') / 4.0 + ('valve1.state_a.T' + 273.15 + 'valve1.port_a.h_outflow' / 4184.0) / 2.0 else ('valve1.state_a.T' + 273.15 + 'valve1.port_a.h_outflow' / 4184.0) / 2.0);
+    'valve1.port_b_T' = smooth(1, if 'valve1.port_b.m_flow' > 0.01 then 'valve1.state_b.T' else if 'valve1.port_b.m_flow' < (-0.01) then 273.15 + 'valve1.port_b.h_outflow' / 4184.0 else if 0.01 > 0.0 then 'valve1.port_b.m_flow' / 0.01 * (('valve1.port_b.m_flow' / 0.01) ^ 2.0 - 3.0) * (273.15 + 'valve1.port_b.h_outflow' / 4184.0 - 'valve1.state_b.T') / 4.0 + ('valve1.state_b.T' + 273.15 + 'valve1.port_b.h_outflow' / 4184.0) / 2.0 else ('valve1.state_b.T' + 273.15 + 'valve1.port_b.h_outflow' / 4184.0) / 2.0);
+    'tank1.fluidVolume' = 'tank1.V';
+    'tank1.medium.T_degC' = 'tank1.medium.T' - 273.15;
+    'tank1.medium.p_bar' = 'tank1.medium.p' / 1e5;
+    'tank1.heatTransfer.states[1].p' = 'tank1.medium.state.p';
+    'tank1.heatTransfer.states[1].T' = 'tank1.medium.state.T';
+    'tank1.fluidLevel' = 'tank1.level';
+    'level1.y' = 'tank1.level';
+    'valve2.V_flow' = 'valve2.m_flow' / smooth(1, if 'valve2.m_flow' > 0.01 then 995.586 else if 'valve2.m_flow' < (-0.01) then 995.586 else if 0.01 > 0.0 then 'valve2.m_flow' / 0.01 * (('valve2.m_flow' / 0.01) ^ 2.0 - 3.0) * (995.586 - 995.586) / 4.0 + (995.586 + 995.586) / 2.0 else (995.586 + 995.586) / 2.0);
+    'valve2.port_a_T' = smooth(1, if 'valve2.port_a.m_flow' > 0.01 then 'valve2.state_a.T' else if 'valve2.port_a.m_flow' < (-0.01) then 273.15 + 'valve2.port_a.h_outflow' / 4184.0 else if 0.01 > 0.0 then 'valve2.port_a.m_flow' / 0.01 * (('valve2.port_a.m_flow' / 0.01) ^ 2.0 - 3.0) * (273.15 + 'valve2.port_a.h_outflow' / 4184.0 - 'valve2.state_a.T') / 4.0 + ('valve2.state_a.T' + 273.15 + 'valve2.port_a.h_outflow' / 4184.0) / 2.0 else ('valve2.state_a.T' + 273.15 + 'valve2.port_a.h_outflow' / 4184.0) / 2.0);
+    'valve2.port_b_T' = smooth(1, if 'valve2.port_b.m_flow' > 0.01 then 'valve2.state_b.T' else if 'valve2.port_b.m_flow' < (-0.01) then 273.15 + 'valve2.port_b.h_outflow' / 4184.0 else if 0.01 > 0.0 then 'valve2.port_b.m_flow' / 0.01 * (('valve2.port_b.m_flow' / 0.01) ^ 2.0 - 3.0) * (273.15 + 'valve2.port_b.h_outflow' / 4184.0 - 'valve2.state_b.T') / 4.0 + ('valve2.state_b.T' + 273.15 + 'valve2.port_b.h_outflow' / 4184.0) / 2.0 else ('valve2.state_b.T' + 273.15 + 'valve2.port_b.h_outflow' / 4184.0) / 2.0);
+    'valve3.V_flow' = 'valve3.m_flow' / smooth(1, if 'valve3.m_flow' > 0.01 then 995.586 else if 'valve3.m_flow' < (-0.01) then 995.586 else if 0.01 > 0.0 then 'valve3.m_flow' / 0.01 * (('valve3.m_flow' / 0.01) ^ 2.0 - 3.0) * (995.586 - 995.586) / 4.0 + (995.586 + 995.586) / 2.0 else (995.586 + 995.586) / 2.0);
+    'valve3.port_a_T' = smooth(1, if 'valve3.port_a.m_flow' > 0.01 then 'valve3.state_a.T' else if 'valve3.port_a.m_flow' < (-0.01) then 273.15 + 'valve3.port_a.h_outflow' / 4184.0 else if 0.01 > 0.0 then 'valve3.port_a.m_flow' / 0.01 * (('valve3.port_a.m_flow' / 0.01) ^ 2.0 - 3.0) * (273.15 + 'valve3.port_a.h_outflow' / 4184.0 - 'valve3.state_a.T') / 4.0 + ('valve3.state_a.T' + 273.15 + 'valve3.port_a.h_outflow' / 4184.0) / 2.0 else ('valve3.state_a.T' + 273.15 + 'valve3.port_a.h_outflow' / 4184.0) / 2.0);
+    'valve3.port_b_T' = smooth(1, if 'valve3.port_b.m_flow' > 0.01 then 'valve3.state_b.T' else if 'valve3.port_b.m_flow' < (-0.01) then 273.15 + 'valve3.port_b.h_outflow' / 4184.0 else if 0.01 > 0.0 then 'valve3.port_b.m_flow' / 0.01 * (('valve3.port_b.m_flow' / 0.01) ^ 2.0 - 3.0) * (273.15 + 'valve3.port_b.h_outflow' / 4184.0 - 'valve3.state_b.T') / 4.0 + ('valve3.state_b.T' + 273.15 + 'valve3.port_b.h_outflow' / 4184.0) / 2.0 else ('valve3.state_b.T' + 273.15 + 'valve3.port_b.h_outflow' / 4184.0) / 2.0);
+    'tank2.fluidVolume' = 'tank2.V';
+    'tank2.medium.T_degC' = 'tank2.medium.T' - 273.15;
+    'tank2.medium.p_bar' = 'tank2.medium.p' / 1e5;
+    'tank2.heatTransfer.states[1].p' = 'tank2.medium.state.p';
+    'tank2.heatTransfer.states[1].T' = 'tank2.medium.state.T';
+    'tank2.fluidLevel' = 'tank2.level';
+    'ambient1.medium.T_degC' = 'ambient1.medium.T' - 273.15;
+    'ambient1.medium.p_bar' = 'ambient1.medium.p' / 1e5;
+    'level2.y' = 'tank2.level';
+    'source.medium.T_degC' = 'source.medium.T' - 273.15;
+    'source.medium.p_bar' = 'source.medium.p' / 1e5;
     'tankController.emptyTanks.outerStatePort.subgraphStatePort.activeStepsDummy' = 'tankController.stateGraphRoot.subgraphStatePort.activeStepsDummy';
     'tankController.emptyTanks.outerStatePort.subgraphStatePort.activeStepsDummy' = 'tankController.s2.outerStatePort.subgraphStatePort.activeStepsDummy';
     'tankController.emptyTanks.outerStatePort.subgraphStatePort.activeStepsDummy' = 'tankController.normal.outerState.subgraphStatePort.activeStepsDummy';
@@ -1408,7 +1236,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.s1.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.s1.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.s1.active' = 'tankController.s1.localActive';
     'tankController.s1.localActive' = pre('tankController.s1.newActive');
-    'tankController.s1.newActive' = if 'tankController.s1.outerStatePort.subgraphStatePort.resume' then 'tankController.s1.oldActive' else (max({'tankController.s1.inPort[1].set', 'tankController.s1.inPort[2].set'}) or 'tankController.s1.localActive' and not max({'tankController.s1.outPort[1].reset'})) and not 'tankController.s1.outerStatePort.subgraphStatePort.suspend';
+    'tankController.s1.newActive' = if 'tankController.s1.outerStatePort.subgraphStatePort.resume' then 'tankController.s1.oldActive' else (size({'tankController.s1.inPort[1].set', 'tankController.s1.inPort[2].set'}, 1) > 0 and max({'tankController.s1.inPort[1].set', 'tankController.s1.inPort[2].set'}) or 'tankController.s1.localActive' and not (size({'tankController.s1.outPort[1].reset'}, 1) > 0 and max({'tankController.s1.outPort[1].reset'}))) and not 'tankController.s1.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.s1.outerStatePort.subgraphStatePort.suspend' then
       'tankController.s1.oldActive' = 'tankController.s1.localActive';
@@ -1424,7 +1252,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.normal.fillTank1.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.normal.fillTank1.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.normal.fillTank1.active' = 'tankController.normal.fillTank1.localActive';
     'tankController.normal.fillTank1.localActive' = pre('tankController.normal.fillTank1.newActive');
-    'tankController.normal.fillTank1.newActive' = if 'tankController.normal.fillTank1.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.fillTank1.oldActive' else (max({'tankController.normal.fillTank1.inPort[1].set'}) or 'tankController.normal.fillTank1.localActive' and not max({'tankController.normal.fillTank1.outPort[1].reset'})) and not 'tankController.normal.fillTank1.outerStatePort.subgraphStatePort.suspend';
+    'tankController.normal.fillTank1.newActive' = if 'tankController.normal.fillTank1.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.fillTank1.oldActive' else (size({'tankController.normal.fillTank1.inPort[1].set'}, 1) > 0 and max({'tankController.normal.fillTank1.inPort[1].set'}) or 'tankController.normal.fillTank1.localActive' and not (size({'tankController.normal.fillTank1.outPort[1].reset'}, 1) > 0 and max({'tankController.normal.fillTank1.outPort[1].reset'}))) and not 'tankController.normal.fillTank1.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.normal.fillTank1.outerStatePort.subgraphStatePort.suspend' then
       'tankController.normal.fillTank1.oldActive' = 'tankController.normal.fillTank1.localActive';
@@ -1446,7 +1274,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.normal.fillTank2.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.normal.fillTank2.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.normal.fillTank2.active' = 'tankController.normal.fillTank2.localActive';
     'tankController.normal.fillTank2.localActive' = pre('tankController.normal.fillTank2.newActive');
-    'tankController.normal.fillTank2.newActive' = if 'tankController.normal.fillTank2.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.fillTank2.oldActive' else (max({'tankController.normal.fillTank2.inPort[1].set'}) or 'tankController.normal.fillTank2.localActive' and not max({'tankController.normal.fillTank2.outPort[1].reset'})) and not 'tankController.normal.fillTank2.outerStatePort.subgraphStatePort.suspend';
+    'tankController.normal.fillTank2.newActive' = if 'tankController.normal.fillTank2.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.fillTank2.oldActive' else (size({'tankController.normal.fillTank2.inPort[1].set'}, 1) > 0 and max({'tankController.normal.fillTank2.inPort[1].set'}) or 'tankController.normal.fillTank2.localActive' and not (size({'tankController.normal.fillTank2.outPort[1].reset'}, 1) > 0 and max({'tankController.normal.fillTank2.outPort[1].reset'}))) and not 'tankController.normal.fillTank2.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.normal.fillTank2.outerStatePort.subgraphStatePort.suspend' then
       'tankController.normal.fillTank2.oldActive' = 'tankController.normal.fillTank2.localActive';
@@ -1468,7 +1296,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.normal.emptyTank2.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.normal.emptyTank2.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.normal.emptyTank2.active' = 'tankController.normal.emptyTank2.localActive';
     'tankController.normal.emptyTank2.localActive' = pre('tankController.normal.emptyTank2.newActive');
-    'tankController.normal.emptyTank2.newActive' = if 'tankController.normal.emptyTank2.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.emptyTank2.oldActive' else (max({'tankController.normal.emptyTank2.inPort[1].set'}) or 'tankController.normal.emptyTank2.localActive' and not max({'tankController.normal.emptyTank2.outPort[1].reset'})) and not 'tankController.normal.emptyTank2.outerStatePort.subgraphStatePort.suspend';
+    'tankController.normal.emptyTank2.newActive' = if 'tankController.normal.emptyTank2.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.emptyTank2.oldActive' else (size({'tankController.normal.emptyTank2.inPort[1].set'}, 1) > 0 and max({'tankController.normal.emptyTank2.inPort[1].set'}) or 'tankController.normal.emptyTank2.localActive' and not (size({'tankController.normal.emptyTank2.outPort[1].reset'}, 1) > 0 and max({'tankController.normal.emptyTank2.outPort[1].reset'}))) and not 'tankController.normal.emptyTank2.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.normal.emptyTank2.outerStatePort.subgraphStatePort.suspend' then
       'tankController.normal.emptyTank2.oldActive' = 'tankController.normal.emptyTank2.localActive';
@@ -1479,7 +1307,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.normal.wait1.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.normal.wait1.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.normal.wait1.active' = 'tankController.normal.wait1.localActive';
     'tankController.normal.wait1.localActive' = pre('tankController.normal.wait1.newActive');
-    'tankController.normal.wait1.newActive' = if 'tankController.normal.wait1.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.wait1.oldActive' else (max({'tankController.normal.wait1.inPort[1].set'}) or 'tankController.normal.wait1.localActive' and not max({'tankController.normal.wait1.outPort[1].reset'})) and not 'tankController.normal.wait1.outerStatePort.subgraphStatePort.suspend';
+    'tankController.normal.wait1.newActive' = if 'tankController.normal.wait1.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.wait1.oldActive' else (size({'tankController.normal.wait1.inPort[1].set'}, 1) > 0 and max({'tankController.normal.wait1.inPort[1].set'}) or 'tankController.normal.wait1.localActive' and not (size({'tankController.normal.wait1.outPort[1].reset'}, 1) > 0 and max({'tankController.normal.wait1.outPort[1].reset'}))) and not 'tankController.normal.wait1.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.normal.wait1.outerStatePort.subgraphStatePort.suspend' then
       'tankController.normal.wait1.oldActive' = 'tankController.normal.wait1.localActive';
@@ -1501,7 +1329,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.normal.wait2.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.normal.wait2.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.normal.wait2.active' = 'tankController.normal.wait2.localActive';
     'tankController.normal.wait2.localActive' = pre('tankController.normal.wait2.newActive');
-    'tankController.normal.wait2.newActive' = if 'tankController.normal.wait2.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.wait2.oldActive' else (max({'tankController.normal.wait2.inPort[1].set'}) or 'tankController.normal.wait2.localActive' and not max({'tankController.normal.wait2.outPort[1].reset'})) and not 'tankController.normal.wait2.outerStatePort.subgraphStatePort.suspend';
+    'tankController.normal.wait2.newActive' = if 'tankController.normal.wait2.outerStatePort.subgraphStatePort.resume' then 'tankController.normal.wait2.oldActive' else (size({'tankController.normal.wait2.inPort[1].set'}, 1) > 0 and max({'tankController.normal.wait2.inPort[1].set'}) or 'tankController.normal.wait2.localActive' and not (size({'tankController.normal.wait2.outPort[1].reset'}, 1) > 0 and max({'tankController.normal.wait2.outPort[1].reset'}))) and not 'tankController.normal.wait2.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.normal.wait2.outerStatePort.subgraphStatePort.suspend' then
       'tankController.normal.wait2.oldActive' = 'tankController.normal.wait2.localActive';
@@ -1522,7 +1350,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.normal.T4.outPort.set' = 'tankController.normal.T4.fire';
     'tankController.normal.activeSteps' = -integer('tankController.normal.stateGraphRoot.subgraphStatePort.activeSteps');
     'tankController.normal.active' = pre('tankController.normal.newActive');
-    'tankController.normal.newActive' = (('tankController.normal.activeSteps' > 0 and not max({'tankController.normal.suspend[1].reset'})) and not 'tankController.normal.outerState.subgraphStatePort.suspend' or max({'tankController.normal.resume[1].set'})) or 'tankController.normal.outerState.subgraphStatePort.resume';
+    'tankController.normal.newActive' = (('tankController.normal.activeSteps' > 0 and not (size({'tankController.normal.suspend[1].reset'}, 1) > 0 and max({'tankController.normal.suspend[1].reset'}))) and not 'tankController.normal.outerState.subgraphStatePort.suspend' or size({'tankController.normal.resume[1].set'}, 1) > 0 and max({'tankController.normal.resume[1].set'})) or 'tankController.normal.outerState.subgraphStatePort.resume';
     'tankController.normal.resume[1].occupied' = 'tankController.normal.active';
     'tankController.normal.suspend[1].available' = 'tankController.normal.active';
 
@@ -1561,7 +1389,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.s2.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.s2.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.s2.active' = 'tankController.s2.localActive';
     'tankController.s2.localActive' = pre('tankController.s2.newActive');
-    'tankController.s2.newActive' = if 'tankController.s2.outerStatePort.subgraphStatePort.resume' then 'tankController.s2.oldActive' else (max({'tankController.s2.inPort[1].set'}) or 'tankController.s2.localActive' and not max({'tankController.s2.outPort[1].reset', 'tankController.s2.outPort[2].reset'})) and not 'tankController.s2.outerStatePort.subgraphStatePort.suspend';
+    'tankController.s2.newActive' = if 'tankController.s2.outerStatePort.subgraphStatePort.resume' then 'tankController.s2.oldActive' else (size({'tankController.s2.inPort[1].set'}, 1) > 0 and max({'tankController.s2.inPort[1].set'}) or 'tankController.s2.localActive' and not (size({'tankController.s2.outPort[1].reset', 'tankController.s2.outPort[2].reset'}, 1) > 0 and max({'tankController.s2.outPort[1].reset', 'tankController.s2.outPort[2].reset'}))) and not 'tankController.s2.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.s2.outerStatePort.subgraphStatePort.suspend' then
       'tankController.s2.oldActive' = 'tankController.s2.localActive';
@@ -1595,7 +1423,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tankController.emptyTanks.outerStatePort.subgraphStatePort.activeSteps' = if 'tankController.emptyTanks.outerStatePort.localActive' then 1.0 else 0.0;
     'tankController.emptyTanks.active' = 'tankController.emptyTanks.localActive';
     'tankController.emptyTanks.localActive' = pre('tankController.emptyTanks.newActive');
-    'tankController.emptyTanks.newActive' = if 'tankController.emptyTanks.outerStatePort.subgraphStatePort.resume' then 'tankController.emptyTanks.oldActive' else (max({'tankController.emptyTanks.inPort[1].set'}) or 'tankController.emptyTanks.localActive' and not max({'tankController.emptyTanks.outPort[1].reset'})) and not 'tankController.emptyTanks.outerStatePort.subgraphStatePort.suspend';
+    'tankController.emptyTanks.newActive' = if 'tankController.emptyTanks.outerStatePort.subgraphStatePort.resume' then 'tankController.emptyTanks.oldActive' else (size({'tankController.emptyTanks.inPort[1].set'}, 1) > 0 and max({'tankController.emptyTanks.inPort[1].set'}) or 'tankController.emptyTanks.localActive' and not (size({'tankController.emptyTanks.outPort[1].reset'}, 1) > 0 and max({'tankController.emptyTanks.outPort[1].reset'}))) and not 'tankController.emptyTanks.outerStatePort.subgraphStatePort.suspend';
 
     when 'tankController.emptyTanks.outerStatePort.subgraphStatePort.suspend' then
       'tankController.emptyTanks.oldActive' = 'tankController.emptyTanks.localActive';
@@ -1654,15 +1482,15 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'valve1.m_flow' = if 'valve1.open' then 4e-4 * 'valve1.dp' else 0.0;
     'valve1.port_a.h_outflow' = 'tank1.ports[1].h_outflow';
     'valve1.port_b.h_outflow' = 'source.ports[1].h_outflow';
-    'valve1.state_a.p' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.setState_phX'('valve1.port_a.p', 'source.ports[1].h_outflow', fill(0.0, 0))).p;
-    'valve1.state_a.T' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.setState_phX'('valve1.port_a.p', 'source.ports[1].h_outflow', fill(0.0, 0))).T;
-    'valve1.state_b.p' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.setState_phX'('valve1.port_b.p', 'tank1.ports[1].h_outflow', fill(0.0, 0))).p;
-    'valve1.state_b.T' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve1.Medium.setState_phX'('valve1.port_b.p', 'tank1.ports[1].h_outflow', fill(0.0, 0))).T;
+    'valve1.state_a.p' = 'valve1.port_a.p';
+    'valve1.state_a.T' = 273.15 + 'source.ports[1].h_outflow' / 4184.0;
+    'valve1.state_b.p' = 'valve1.port_b.p';
+    'valve1.state_b.T' = 273.15 + 'tank1.ports[1].h_outflow' / 4184.0;
     'valve1.dp' = 'valve1.port_a.p' - 'valve1.port_b.p';
     'valve1.m_flow' = 'valve1.port_a.m_flow';
     'valve1.port_a.m_flow' + 'valve1.port_b.m_flow' = 0.0;
     assert('tank1.medium.T' >= 272.15 and 'tank1.medium.T' <= 403.15, "\nTemperature T (= " + String('tank1.medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
-    'tank1.medium.h' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.specificEnthalpy_pTX'('tank1.medium.p', 'tank1.medium.T', {'tank1.medium.X[1]'});
+    'tank1.medium.h' = 4184.0 * ('tank1.medium.T' - 273.15);
     'tank1.medium.u' = 4184.0 * ('tank1.medium.T' - 273.15);
     'tank1.medium.d' = 995.586;
     'tank1.medium.R_s' = 0.0;
@@ -1673,7 +1501,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     assert('tank1.medium.X[1]' >= (-1e-5) and 'tank1.medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('tank1.medium.X[1]') + "of substance " + "SimpleLiquidWater" + "\nof medium " + "SimpleLiquidWater" + " is not in the range 0..1", AssertionLevel.error);
     assert('tank1.medium.p' >= 0.0, "Pressure (= " + String('tank1.medium.p') + " Pa) of medium \"" + "SimpleLiquidWater" + "\" is negative\n(Temperature = " + String('tank1.medium.T') + " K)", AssertionLevel.error);
     'tank1.heatTransfer.surfaceAreas[1]' = 6.0 + 8.683215054699211 * 'tank1.level';
-    'tank1.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.heatTransfer.Medium.temperature'('tank1.heatTransfer.states[1]');
+    'tank1.heatTransfer.Ts[1]' = 'tank1.heatTransfer.states[1].T';
     'tank1.heatTransfer.Ts[1]' = 'tank1.heatTransfer.heatPorts[1].T';
     'tank1.heatTransfer.Q_flows[1]' = 'tank1.heatTransfer.heatPorts[1].Q_flow';
     'tank1.portAreas[1]' = 0.7853981633974483 * 'tank1.portsData_diameter[1]' ^ 2.0;
@@ -1696,20 +1524,20 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tank1.Hb_flow' = 'tank1.ports_H_flow[1]' + 'tank1.ports_H_flow[2]' + 'tank1.ports_E_flow[1]' + 'tank1.ports_E_flow[2]';
     'tank1.Qb_flow' = 'tank1.heatTransfer.Q_flows[1]';
     assert('tank1.fluidLevel' <= 4.0, "Vessel is overflowing (fluidLevel > fluidLevel_max = " + String('tank1.fluidLevel') + ")", AssertionLevel.error);
-    'tank1.portInDensities[1]' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.density'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.setState_phX'('tank1.vessel_ps_static[1]', 'valve1.port_b.h_outflow', fill(0.0, 0)));
-    'tank1.portVelocities[1]' = smooth(0, 'tank1.ports[1].m_flow' / 'tank1.portAreas[1]' / 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.density'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.setState_phX'('tank1.vessel_ps_static[1]', if 'tank1.ports[1].m_flow' > 0.0 then 'valve1.port_b.h_outflow' else 'tank1.ports[1].h_outflow', fill(0.0, 0))));
-    'tank1.ports_penetration[1]' = 'Modelica.Fluid.Utilities.regStep'('tank1.fluidLevel' - 'tank1.portsData_height[1]' - 0.1 * 'tank1.portsData_diameter[1]', 1.0, 0.001, 0.1 * 'tank1.portsData_diameter[1]');
+    'tank1.portInDensities[1]' = 995.586;
+    'tank1.portVelocities[1]' = smooth(0, 'tank1.ports[1].m_flow' / 'tank1.portAreas[1]' / 995.586);
+    'tank1.ports_penetration[1]' = smooth(1, if 'tank1.fluidLevel' - 'tank1.portsData_height[1]' - 0.1 * 'tank1.portsData_diameter[1]' > 0.1 * 'tank1.portsData_diameter[1]' then 1.0 else if 'tank1.fluidLevel' - 'tank1.portsData_height[1]' - 0.1 * 'tank1.portsData_diameter[1]' < (-0.1 * 'tank1.portsData_diameter[1]') then 0.001 else if 0.1 * 'tank1.portsData_diameter[1]' > 0.0 then ('tank1.fluidLevel' - 'tank1.portsData_height[1]' - 0.1 * 'tank1.portsData_diameter[1]') / (0.1 * 'tank1.portsData_diameter[1]') * ((('tank1.fluidLevel' - 'tank1.portsData_height[1]' - 0.1 * 'tank1.portsData_diameter[1]') / (0.1 * 'tank1.portsData_diameter[1]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'tank1.m_flow_turbulent[1]' = 0.01;
     'tank1.regularFlow[1]' = 'tank1.fluidLevel' >= 'tank1.portsData_height[1]';
     'tank1.inFlow[1]' = not 'tank1.regularFlow[1]' and ('tank1.s[1]' > 0.0 or 'tank1.portsData_height[1]' >= 4.0);
 
     if 'tank1.regularFlow[1]' then
-      'tank1.ports[1].p' = 'tank1.vessel_ps_static[1]' + 0.5 / 'tank1.portAreas[1]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('tank1.ports[1].m_flow', 'tank1.m_flow_turbulent[1]', ('tank1.portsData_zeta_in[1]' - 1.0 + 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.portInDensities[1]' * 'tank1.ports_penetration[1]', ('tank1.portsData_zeta_out[1]' + 1.0 - 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[1]', false, 1.0);
+      'tank1.ports[1].p' = 'tank1.vessel_ps_static[1]' + 0.5 / 'tank1.portAreas[1]' ^ 2.0 * smooth(2, if 'tank1.ports[1].m_flow' >= 'tank1.m_flow_turbulent[1]' then ('tank1.portsData_zeta_in[1]' - 1.0 + 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.portInDensities[1]' * 'tank1.ports_penetration[1]' * 'tank1.ports[1].m_flow' ^ 2.0 else if 'tank1.ports[1].m_flow' <= (-'tank1.m_flow_turbulent[1]') then -('tank1.portsData_zeta_out[1]' + 1.0 - 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[1]' * 'tank1.ports[1].m_flow' ^ 2.0 else if ('tank1.portsData_zeta_in[1]' - 1.0 + 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.portInDensities[1]' * 'tank1.ports_penetration[1]' >= ('tank1.portsData_zeta_out[1]' + 1.0 - 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[1]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('tank1.ports[1].m_flow', 'tank1.m_flow_turbulent[1]', ('tank1.portsData_zeta_in[1]' - 1.0 + 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.portInDensities[1]' * 'tank1.ports_penetration[1]', ('tank1.portsData_zeta_out[1]' + 1.0 - 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[1]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'tank1.ports[1].m_flow', 'tank1.m_flow_turbulent[1]', ('tank1.portsData_zeta_out[1]' + 1.0 - 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[1]', ('tank1.portsData_zeta_in[1]' - 1.0 + 'tank1.portAreas[1]' ^ 2.0 / 36.0) / 'tank1.portInDensities[1]' * 'tank1.ports_penetration[1]', false, 1.0));
       'tank1.s[1]' = 'tank1.fluidLevel' - 'tank1.portsData_height[1]';
     elseif 'tank1.inFlow[1]' then
       'tank1.ports[1].p' = 'tank1.vessel_ps_static[1]';
       'tank1.s[1]' = 'tank1.ports[1].m_flow';
-    elseif true then
+    else
       'tank1.ports[1].m_flow' = 0.0;
       'tank1.s[1]' = ('tank1.ports[1].p' - 'tank1.vessel_ps_static[1]') / 101325.0 * ('tank1.portsData_height[1]' - 'tank1.fluidLevel');
     end if;
@@ -1717,20 +1545,20 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tank1.ports[1].h_outflow' = 'tank1.medium.h';
     'tank1.ports_H_flow[1]' = smooth(0, 'tank1.ports[1].m_flow' * (if 'tank1.ports[1].m_flow' > 0.0 then 'valve1.port_b.h_outflow' else 'tank1.ports[1].h_outflow')) "Enthalpy flow";
     'tank1.ports_E_flow[1]' = 'tank1.ports[1].m_flow' * (0.5 * 'tank1.portVelocities[1]' * 'tank1.portVelocities[1]' + 9.80665 * 'tank1.portsData_height[1]') "Flow of kinetic and potential energy";
-    'tank1.portInDensities[2]' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.density'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.setState_phX'('tank1.vessel_ps_static[2]', 'valve2.port_a.h_outflow', fill(0.0, 0)));
-    'tank1.portVelocities[2]' = smooth(0, 'tank1.ports[2].m_flow' / 'tank1.portAreas[2]' / 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.density'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank1.Medium.setState_phX'('tank1.vessel_ps_static[2]', if 'tank1.ports[2].m_flow' > 0.0 then 'valve2.port_a.h_outflow' else 'tank1.ports[2].h_outflow', fill(0.0, 0))));
-    'tank1.ports_penetration[2]' = 'Modelica.Fluid.Utilities.regStep'('tank1.fluidLevel' - 'tank1.portsData_height[2]' - 0.1 * 'tank1.portsData_diameter[2]', 1.0, 0.001, 0.1 * 'tank1.portsData_diameter[2]');
+    'tank1.portInDensities[2]' = 995.586;
+    'tank1.portVelocities[2]' = smooth(0, 'tank1.ports[2].m_flow' / 'tank1.portAreas[2]' / 995.586);
+    'tank1.ports_penetration[2]' = smooth(1, if 'tank1.fluidLevel' - 'tank1.portsData_height[2]' - 0.1 * 'tank1.portsData_diameter[2]' > 0.1 * 'tank1.portsData_diameter[2]' then 1.0 else if 'tank1.fluidLevel' - 'tank1.portsData_height[2]' - 0.1 * 'tank1.portsData_diameter[2]' < (-0.1 * 'tank1.portsData_diameter[2]') then 0.001 else if 0.1 * 'tank1.portsData_diameter[2]' > 0.0 then ('tank1.fluidLevel' - 'tank1.portsData_height[2]' - 0.1 * 'tank1.portsData_diameter[2]') / (0.1 * 'tank1.portsData_diameter[2]') * ((('tank1.fluidLevel' - 'tank1.portsData_height[2]' - 0.1 * 'tank1.portsData_diameter[2]') / (0.1 * 'tank1.portsData_diameter[2]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'tank1.m_flow_turbulent[2]' = 0.01;
     'tank1.regularFlow[2]' = 'tank1.fluidLevel' >= 'tank1.portsData_height[2]';
     'tank1.inFlow[2]' = not 'tank1.regularFlow[2]' and ('tank1.s[2]' > 0.0 or 'tank1.portsData_height[2]' >= 4.0);
 
     if 'tank1.regularFlow[2]' then
-      'tank1.ports[2].p' = 'tank1.vessel_ps_static[2]' + 0.5 / 'tank1.portAreas[2]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('tank1.ports[2].m_flow', 'tank1.m_flow_turbulent[2]', ('tank1.portsData_zeta_in[2]' - 1.0 + 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.portInDensities[2]' * 'tank1.ports_penetration[2]', ('tank1.portsData_zeta_out[2]' + 1.0 - 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[2]', false, 1.0);
+      'tank1.ports[2].p' = 'tank1.vessel_ps_static[2]' + 0.5 / 'tank1.portAreas[2]' ^ 2.0 * smooth(2, if 'tank1.ports[2].m_flow' >= 'tank1.m_flow_turbulent[2]' then ('tank1.portsData_zeta_in[2]' - 1.0 + 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.portInDensities[2]' * 'tank1.ports_penetration[2]' * 'tank1.ports[2].m_flow' ^ 2.0 else if 'tank1.ports[2].m_flow' <= (-'tank1.m_flow_turbulent[2]') then -('tank1.portsData_zeta_out[2]' + 1.0 - 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[2]' * 'tank1.ports[2].m_flow' ^ 2.0 else if ('tank1.portsData_zeta_in[2]' - 1.0 + 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.portInDensities[2]' * 'tank1.ports_penetration[2]' >= ('tank1.portsData_zeta_out[2]' + 1.0 - 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[2]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('tank1.ports[2].m_flow', 'tank1.m_flow_turbulent[2]', ('tank1.portsData_zeta_in[2]' - 1.0 + 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.portInDensities[2]' * 'tank1.ports_penetration[2]', ('tank1.portsData_zeta_out[2]' + 1.0 - 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[2]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'tank1.ports[2].m_flow', 'tank1.m_flow_turbulent[2]', ('tank1.portsData_zeta_out[2]' + 1.0 - 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.medium.d' / 'tank1.ports_penetration[2]', ('tank1.portsData_zeta_in[2]' - 1.0 + 'tank1.portAreas[2]' ^ 2.0 / 36.0) / 'tank1.portInDensities[2]' * 'tank1.ports_penetration[2]', false, 1.0));
       'tank1.s[2]' = 'tank1.fluidLevel' - 'tank1.portsData_height[2]';
     elseif 'tank1.inFlow[2]' then
       'tank1.ports[2].p' = 'tank1.vessel_ps_static[2]';
       'tank1.s[2]' = 'tank1.ports[2].m_flow';
-    elseif true then
+    else
       'tank1.ports[2].m_flow' = 0.0;
       'tank1.s[2]' = ('tank1.ports[2].p' - 'tank1.vessel_ps_static[2]') / 101325.0 * ('tank1.portsData_height[2]' - 'tank1.fluidLevel');
     end if;
@@ -1745,25 +1573,25 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'valve2.m_flow' = if 'valve2.open' then 100.0 * 'valve2.dp' else 0.0;
     'valve2.port_a.h_outflow' = 'tank2.ports[1].h_outflow';
     'valve2.port_b.h_outflow' = 'tank1.ports[2].h_outflow';
-    'valve2.state_a.p' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.setState_phX'('valve2.port_a.p', 'tank1.ports[2].h_outflow', fill(0.0, 0))).p;
-    'valve2.state_a.T' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.setState_phX'('valve2.port_a.p', 'tank1.ports[2].h_outflow', fill(0.0, 0))).T;
-    'valve2.state_b.p' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.setState_phX'('valve2.port_b.p', 'tank2.ports[1].h_outflow', fill(0.0, 0))).p;
-    'valve2.state_b.T' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve2.Medium.setState_phX'('valve2.port_b.p', 'tank2.ports[1].h_outflow', fill(0.0, 0))).T;
+    'valve2.state_a.p' = 'valve2.port_a.p';
+    'valve2.state_a.T' = 273.15 + 'tank1.ports[2].h_outflow' / 4184.0;
+    'valve2.state_b.p' = 'valve2.port_b.p';
+    'valve2.state_b.T' = 273.15 + 'tank2.ports[1].h_outflow' / 4184.0;
     'valve2.dp' = 'valve2.port_a.p' - 'valve2.port_b.p';
     'valve2.m_flow' = 'valve2.port_a.m_flow';
     'valve2.port_a.m_flow' + 'valve2.port_b.m_flow' = 0.0;
     'valve3.m_flow' = if 'valve3.open' then 10.0 * 'valve3.dp' else 0.0;
     'valve3.port_a.h_outflow' = 'ambient1.ports[1].h_outflow';
     'valve3.port_b.h_outflow' = 'tank2.ports[2].h_outflow';
-    'valve3.state_a.p' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.setState_phX'('valve3.port_a.p', 'tank2.ports[2].h_outflow', fill(0.0, 0))).p;
-    'valve3.state_a.T' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.setState_phX'('valve3.port_a.p', 'tank2.ports[2].h_outflow', fill(0.0, 0))).T;
-    'valve3.state_b.p' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.setState_phX'('valve3.port_b.p', 'ambient1.ports[1].h_outflow', fill(0.0, 0))).p;
-    'valve3.state_b.T' = ('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.valve3.Medium.setState_phX'('valve3.port_b.p', 'ambient1.ports[1].h_outflow', fill(0.0, 0))).T;
+    'valve3.state_a.p' = 'valve3.port_a.p';
+    'valve3.state_a.T' = 273.15 + 'tank2.ports[2].h_outflow' / 4184.0;
+    'valve3.state_b.p' = 'valve3.port_b.p';
+    'valve3.state_b.T' = 273.15 + 'ambient1.ports[1].h_outflow' / 4184.0;
     'valve3.dp' = 'valve3.port_a.p' - 'valve3.port_b.p';
     'valve3.m_flow' = 'valve3.port_a.m_flow';
     'valve3.port_a.m_flow' + 'valve3.port_b.m_flow' = 0.0;
     assert('tank2.medium.T' >= 272.15 and 'tank2.medium.T' <= 403.15, "\nTemperature T (= " + String('tank2.medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
-    'tank2.medium.h' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.specificEnthalpy_pTX'('tank2.medium.p', 'tank2.medium.T', {'tank2.medium.X[1]'});
+    'tank2.medium.h' = 4184.0 * ('tank2.medium.T' - 273.15);
     'tank2.medium.u' = 4184.0 * ('tank2.medium.T' - 273.15);
     'tank2.medium.d' = 995.586;
     'tank2.medium.R_s' = 0.0;
@@ -1774,7 +1602,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     assert('tank2.medium.X[1]' >= (-1e-5) and 'tank2.medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('tank2.medium.X[1]') + "of substance " + "SimpleLiquidWater" + "\nof medium " + "SimpleLiquidWater" + " is not in the range 0..1", AssertionLevel.error);
     assert('tank2.medium.p' >= 0.0, "Pressure (= " + String('tank2.medium.p') + " Pa) of medium \"" + "SimpleLiquidWater" + "\" is negative\n(Temperature = " + String('tank2.medium.T') + " K)", AssertionLevel.error);
     'tank2.heatTransfer.surfaceAreas[1]' = 6.0 + 8.683215054699211 * 'tank2.level';
-    'tank2.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.heatTransfer.Medium.temperature'('tank2.heatTransfer.states[1]');
+    'tank2.heatTransfer.Ts[1]' = 'tank2.heatTransfer.states[1].T';
     'tank2.heatTransfer.Ts[1]' = 'tank2.heatTransfer.heatPorts[1].T';
     'tank2.heatTransfer.Q_flows[1]' = 'tank2.heatTransfer.heatPorts[1].Q_flow';
     'tank2.portAreas[1]' = 0.7853981633974483 * 'tank2.portsData_diameter[1]' ^ 2.0;
@@ -1797,20 +1625,20 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tank2.Hb_flow' = 'tank2.ports_H_flow[1]' + 'tank2.ports_H_flow[2]' + 'tank2.ports_E_flow[1]' + 'tank2.ports_E_flow[2]';
     'tank2.Qb_flow' = 'tank2.heatTransfer.Q_flows[1]';
     assert('tank2.fluidLevel' <= 5.0, "Vessel is overflowing (fluidLevel > fluidLevel_max = " + String('tank2.fluidLevel') + ")", AssertionLevel.error);
-    'tank2.portInDensities[1]' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.density'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.setState_phX'('tank2.vessel_ps_static[1]', 'valve2.port_b.h_outflow', fill(0.0, 0)));
-    'tank2.portVelocities[1]' = smooth(0, 'tank2.ports[1].m_flow' / 'tank2.portAreas[1]' / 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.density'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.setState_phX'('tank2.vessel_ps_static[1]', if 'tank2.ports[1].m_flow' > 0.0 then 'valve2.port_b.h_outflow' else 'tank2.ports[1].h_outflow', fill(0.0, 0))));
-    'tank2.ports_penetration[1]' = 'Modelica.Fluid.Utilities.regStep'('tank2.fluidLevel' - 'tank2.portsData_height[1]' - 0.1 * 'tank2.portsData_diameter[1]', 1.0, 0.001, 0.1 * 'tank2.portsData_diameter[1]');
+    'tank2.portInDensities[1]' = 995.586;
+    'tank2.portVelocities[1]' = smooth(0, 'tank2.ports[1].m_flow' / 'tank2.portAreas[1]' / 995.586);
+    'tank2.ports_penetration[1]' = smooth(1, if 'tank2.fluidLevel' - 'tank2.portsData_height[1]' - 0.1 * 'tank2.portsData_diameter[1]' > 0.1 * 'tank2.portsData_diameter[1]' then 1.0 else if 'tank2.fluidLevel' - 'tank2.portsData_height[1]' - 0.1 * 'tank2.portsData_diameter[1]' < (-0.1 * 'tank2.portsData_diameter[1]') then 0.001 else if 0.1 * 'tank2.portsData_diameter[1]' > 0.0 then ('tank2.fluidLevel' - 'tank2.portsData_height[1]' - 0.1 * 'tank2.portsData_diameter[1]') / (0.1 * 'tank2.portsData_diameter[1]') * ((('tank2.fluidLevel' - 'tank2.portsData_height[1]' - 0.1 * 'tank2.portsData_diameter[1]') / (0.1 * 'tank2.portsData_diameter[1]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'tank2.m_flow_turbulent[1]' = 0.01;
     'tank2.regularFlow[1]' = 'tank2.fluidLevel' >= 'tank2.portsData_height[1]';
     'tank2.inFlow[1]' = not 'tank2.regularFlow[1]' and ('tank2.s[1]' > 0.0 or 'tank2.portsData_height[1]' >= 5.0);
 
     if 'tank2.regularFlow[1]' then
-      'tank2.ports[1].p' = 'tank2.vessel_ps_static[1]' + 0.5 / 'tank2.portAreas[1]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('tank2.ports[1].m_flow', 'tank2.m_flow_turbulent[1]', ('tank2.portsData_zeta_in[1]' - 1.0 + 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.portInDensities[1]' * 'tank2.ports_penetration[1]', ('tank2.portsData_zeta_out[1]' + 1.0 - 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[1]', false, 1.0);
+      'tank2.ports[1].p' = 'tank2.vessel_ps_static[1]' + 0.5 / 'tank2.portAreas[1]' ^ 2.0 * smooth(2, if 'tank2.ports[1].m_flow' >= 'tank2.m_flow_turbulent[1]' then ('tank2.portsData_zeta_in[1]' - 1.0 + 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.portInDensities[1]' * 'tank2.ports_penetration[1]' * 'tank2.ports[1].m_flow' ^ 2.0 else if 'tank2.ports[1].m_flow' <= (-'tank2.m_flow_turbulent[1]') then -('tank2.portsData_zeta_out[1]' + 1.0 - 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[1]' * 'tank2.ports[1].m_flow' ^ 2.0 else if ('tank2.portsData_zeta_in[1]' - 1.0 + 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.portInDensities[1]' * 'tank2.ports_penetration[1]' >= ('tank2.portsData_zeta_out[1]' + 1.0 - 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[1]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('tank2.ports[1].m_flow', 'tank2.m_flow_turbulent[1]', ('tank2.portsData_zeta_in[1]' - 1.0 + 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.portInDensities[1]' * 'tank2.ports_penetration[1]', ('tank2.portsData_zeta_out[1]' + 1.0 - 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[1]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'tank2.ports[1].m_flow', 'tank2.m_flow_turbulent[1]', ('tank2.portsData_zeta_out[1]' + 1.0 - 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[1]', ('tank2.portsData_zeta_in[1]' - 1.0 + 'tank2.portAreas[1]' ^ 2.0 / 36.0) / 'tank2.portInDensities[1]' * 'tank2.ports_penetration[1]', false, 1.0));
       'tank2.s[1]' = 'tank2.fluidLevel' - 'tank2.portsData_height[1]';
     elseif 'tank2.inFlow[1]' then
       'tank2.ports[1].p' = 'tank2.vessel_ps_static[1]';
       'tank2.s[1]' = 'tank2.ports[1].m_flow';
-    elseif true then
+    else
       'tank2.ports[1].m_flow' = 0.0;
       'tank2.s[1]' = ('tank2.ports[1].p' - 'tank2.vessel_ps_static[1]') / 101325.0 * ('tank2.portsData_height[1]' - 'tank2.fluidLevel');
     end if;
@@ -1818,20 +1646,20 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'tank2.ports[1].h_outflow' = 'tank2.medium.h';
     'tank2.ports_H_flow[1]' = smooth(0, 'tank2.ports[1].m_flow' * (if 'tank2.ports[1].m_flow' > 0.0 then 'valve2.port_b.h_outflow' else 'tank2.ports[1].h_outflow')) "Enthalpy flow";
     'tank2.ports_E_flow[1]' = 'tank2.ports[1].m_flow' * (0.5 * 'tank2.portVelocities[1]' * 'tank2.portVelocities[1]' + 9.80665 * 'tank2.portsData_height[1]') "Flow of kinetic and potential energy";
-    'tank2.portInDensities[2]' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.density'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.setState_phX'('tank2.vessel_ps_static[2]', 'valve3.port_a.h_outflow', fill(0.0, 0)));
-    'tank2.portVelocities[2]' = smooth(0, 'tank2.ports[2].m_flow' / 'tank2.portAreas[2]' / 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.density'('Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.tank2.Medium.setState_phX'('tank2.vessel_ps_static[2]', if 'tank2.ports[2].m_flow' > 0.0 then 'valve3.port_a.h_outflow' else 'tank2.ports[2].h_outflow', fill(0.0, 0))));
-    'tank2.ports_penetration[2]' = 'Modelica.Fluid.Utilities.regStep'('tank2.fluidLevel' - 'tank2.portsData_height[2]' - 0.1 * 'tank2.portsData_diameter[2]', 1.0, 0.001, 0.1 * 'tank2.portsData_diameter[2]');
+    'tank2.portInDensities[2]' = 995.586;
+    'tank2.portVelocities[2]' = smooth(0, 'tank2.ports[2].m_flow' / 'tank2.portAreas[2]' / 995.586);
+    'tank2.ports_penetration[2]' = smooth(1, if 'tank2.fluidLevel' - 'tank2.portsData_height[2]' - 0.1 * 'tank2.portsData_diameter[2]' > 0.1 * 'tank2.portsData_diameter[2]' then 1.0 else if 'tank2.fluidLevel' - 'tank2.portsData_height[2]' - 0.1 * 'tank2.portsData_diameter[2]' < (-0.1 * 'tank2.portsData_diameter[2]') then 0.001 else if 0.1 * 'tank2.portsData_diameter[2]' > 0.0 then ('tank2.fluidLevel' - 'tank2.portsData_height[2]' - 0.1 * 'tank2.portsData_diameter[2]') / (0.1 * 'tank2.portsData_diameter[2]') * ((('tank2.fluidLevel' - 'tank2.portsData_height[2]' - 0.1 * 'tank2.portsData_diameter[2]') / (0.1 * 'tank2.portsData_diameter[2]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'tank2.m_flow_turbulent[2]' = 0.01;
     'tank2.regularFlow[2]' = 'tank2.fluidLevel' >= 'tank2.portsData_height[2]';
     'tank2.inFlow[2]' = not 'tank2.regularFlow[2]' and ('tank2.s[2]' > 0.0 or 'tank2.portsData_height[2]' >= 5.0);
 
     if 'tank2.regularFlow[2]' then
-      'tank2.ports[2].p' = 'tank2.vessel_ps_static[2]' + 0.5 / 'tank2.portAreas[2]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('tank2.ports[2].m_flow', 'tank2.m_flow_turbulent[2]', ('tank2.portsData_zeta_in[2]' - 1.0 + 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.portInDensities[2]' * 'tank2.ports_penetration[2]', ('tank2.portsData_zeta_out[2]' + 1.0 - 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[2]', false, 1.0);
+      'tank2.ports[2].p' = 'tank2.vessel_ps_static[2]' + 0.5 / 'tank2.portAreas[2]' ^ 2.0 * smooth(2, if 'tank2.ports[2].m_flow' >= 'tank2.m_flow_turbulent[2]' then ('tank2.portsData_zeta_in[2]' - 1.0 + 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.portInDensities[2]' * 'tank2.ports_penetration[2]' * 'tank2.ports[2].m_flow' ^ 2.0 else if 'tank2.ports[2].m_flow' <= (-'tank2.m_flow_turbulent[2]') then -('tank2.portsData_zeta_out[2]' + 1.0 - 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[2]' * 'tank2.ports[2].m_flow' ^ 2.0 else if ('tank2.portsData_zeta_in[2]' - 1.0 + 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.portInDensities[2]' * 'tank2.ports_penetration[2]' >= ('tank2.portsData_zeta_out[2]' + 1.0 - 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[2]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('tank2.ports[2].m_flow', 'tank2.m_flow_turbulent[2]', ('tank2.portsData_zeta_in[2]' - 1.0 + 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.portInDensities[2]' * 'tank2.ports_penetration[2]', ('tank2.portsData_zeta_out[2]' + 1.0 - 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[2]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'tank2.ports[2].m_flow', 'tank2.m_flow_turbulent[2]', ('tank2.portsData_zeta_out[2]' + 1.0 - 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.medium.d' / 'tank2.ports_penetration[2]', ('tank2.portsData_zeta_in[2]' - 1.0 + 'tank2.portAreas[2]' ^ 2.0 / 36.0) / 'tank2.portInDensities[2]' * 'tank2.ports_penetration[2]', false, 1.0));
       'tank2.s[2]' = 'tank2.fluidLevel' - 'tank2.portsData_height[2]';
     elseif 'tank2.inFlow[2]' then
       'tank2.ports[2].p' = 'tank2.vessel_ps_static[2]';
       'tank2.s[2]' = 'tank2.ports[2].m_flow';
-    elseif true then
+    else
       'tank2.ports[2].m_flow' = 0.0;
       'tank2.s[2]' = ('tank2.ports[2].p' - 'tank2.vessel_ps_static[2]') / 101325.0 * ('tank2.portsData_height[2]' - 'tank2.fluidLevel');
     end if;
@@ -1844,7 +1672,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     der('tank2.U') = 'tank2.Hb_flow' + 'tank2.Qb_flow' + 'tank2.Wb_flow';
     der('tank2.m') = 'tank2.mb_flow';
     assert('ambient1.medium.T' >= 272.15 and 'ambient1.medium.T' <= 403.15, "\nTemperature T (= " + String('ambient1.medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
-    'ambient1.medium.h' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.ambient1.Medium.specificEnthalpy_pTX'('ambient1.medium.p', 'ambient1.medium.T', {'ambient1.medium.X[1]'});
+    'ambient1.medium.h' = 4184.0 * ('ambient1.medium.T' - 273.15);
     'ambient1.medium.u' = 4184.0 * ('ambient1.medium.T' - 273.15);
     'ambient1.medium.d' = 995.586;
     'ambient1.medium.R_s' = 0.0;
@@ -1863,7 +1691,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     'ambient1.ports[1].p' = 'ambient1.medium.p';
     'ambient1.ports[1].h_outflow' = 'ambient1.medium.h';
     assert('source.medium.T' >= 272.15 and 'source.medium.T' <= 403.15, "\nTemperature T (= " + String('source.medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
-    'source.medium.h' = 'Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks.source.Medium.specificEnthalpy_pTX'('source.medium.p', 'source.medium.T', {'source.medium.X[1]'});
+    'source.medium.h' = 4184.0 * ('source.medium.T' - 273.15);
     'source.medium.u' = 4184.0 * ('source.medium.T' - 273.15);
     'source.medium.d' = 995.586;
     'source.medium.R_s' = 0.0;

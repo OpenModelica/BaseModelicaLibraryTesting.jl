@@ -1,158 +1,5 @@
 //! base 0.1.0
 package 'TanksWithOverflow'
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.density' "Return the density from the thermodynamic state"
-    input 'lowerTank.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154e-10 - ('state'.'T' - 278.15) * 2.5713e-4) * 997.05;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.density';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_pTX' "Set the thermodynamic state record from p and T (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'lowerTank.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'lowerTank.Medium.ThermodynamicState'('p', 'T');
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_pTX';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'lowerTank.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'lowerTank.Medium.ThermodynamicState'('p', ('h' - 104929.0 - ('p' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.specificEnthalpy' "Return the specific enthalpy from the thermodynamic state"
-    input 'lowerTank.Medium.ThermodynamicState' 'state';
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 104929.0 + ('state'.'T' - 278.15) * 4181.9 + ('state'.'p' - 101325.0) * 0.9284792905 / 997.05;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.specificEnthalpy';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.specificEnthalpy'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_pTX'('p', 'T', 'X'));
-    annotation(inverse(T = Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.temperature_phX('p', 'h', 'X')));
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'lowerTank.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.temperature_phX' "Return temperature from p, h, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.temperature'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_phX'('p', 'h', 'X'));
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.temperature_phX';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.heatTransfer.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'lowerTank.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.heatTransfer.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.density' "Return the density from the thermodynamic state"
-    input 'overflow.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154e-10 - ('state'.'T' - 278.15) * 2.5713e-4) * 997.05;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.density';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'overflow.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'overflow.Medium.ThermodynamicState'('p', ('h' - 104929.0 - ('p' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.density' "Return the density from the thermodynamic state"
-    input 'overflow.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154e-10 - ('state'.'T' - 278.15) * 2.5713e-4) * 997.05;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.density';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.dynamicViscosity' "Dynamic viscosity of water"
-    input 'overflow.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-  algorithm
-    'eta' := 0.0015;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.dynamicViscosity';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.pressure' "Return the pressure from the thermodynamic state"
-    input 'overflow.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  algorithm
-    'p' := 'state'.'p';
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.pressure';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
   function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
     input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -172,158 +19,120 @@ package 'TanksWithOverflow'
     Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
     Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
   algorithm
     'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
     'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
     'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / log10('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
     'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow';
 
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric' "Calculate mass flow rate as function of pressure drop due to friction"
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+  function 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility' "Interpolating with two 3-order polynomials with a prescribed derivative at x=0"
+    input Real 'x';
+    input Real 'x1';
+    input Real 'k1';
+    input Real 'k2';
+    input Boolean 'use_yd0' = false;
+    input Real 'yd0'(min = 0.0) = 1.0;
+    output Real 'y';
+    Real 'x2';
+    Real 'y1';
+    Real 'y2';
+    Real 'y1d';
+    Real 'y2d';
+    Real 'w';
+    Real 'w1';
+    Real 'w2';
+    Real 'y0d';
+    Real 'ww';
+  algorithm
+    'x2' := -'x1';
+
+    if 'x' <= 'x2' then
+      'y' := -'k2' * 'x' ^ 2.0;
+    else
+      'y1' := 'k1' * 'x1' ^ 2.0;
+      'y2' := -'k2' * 'x2' ^ 2.0;
+      'y1d' := 'k1' * 2.0 * 'x1';
+      'y2d' := -'k2' * 2.0 * 'x2';
+
+      if 'use_yd0' then
+        'y0d' := 'yd0';
+      else
+        'w' := 'x2' / 'x1';
+        'y0d' := ((3.0 * 'y2' - 'x2' * 'y2d') / 'w' - (3.0 * 'y1' - 'x1' * 'y1d') * 'w') / (2.0 * 'x1' * (1.0 - 'w'));
+      end if;
+
+      'w1' := 2.23606797749979 * 'k1' * 'x1';
+      'w2' := 2.23606797749979 * 'k2' * abs('x2');
+      'ww' := 0.9 * (if 'w1' < 'w2' then 'w1' else 'w2');
+
+      if 'ww' < 'y0d' then
+        'y0d' := 'ww';
+      end if;
+
+      'y' := if 'x' >= 0.0 then 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero'('x', 'x1', 'y1', 'y1d', 'y0d') else 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero'('x', 'x2', 'y2', 'y2d', 'y0d');
+    end if;
+    annotation(smoothOrder = 2);
+  end 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility';
+
+  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
     input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
     input Real 'length'(unit = "m", quantity = "Length");
     input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    output Real 'dm_flow_ddp_fric';
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
     Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
     Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'lambda2';
     Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'dRe_ddp';
-    Real 'aux1';
-    Real 'aux2';
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
   algorithm
-    if 'dp_fric' >= 0.0 then
-      'rho' := 'rho_a';
-      'mu' := 'mu_a';
-    elseif true then
-      'rho' := 'rho_b';
-      'mu' := 'mu_b';
-    end if;
-
-    'lambda2' := abs('dp_fric') * 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' * 'mu') "Known as lambda2=f(dp)";
-    'aux1' := 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' ^ 2.0);
-    'Re' := 'lambda2' / 64.0 "Hagen-Poiseuille";
-    'dRe_ddp' := 'aux1' / 64.0 "Hagen-Poiseuille";
-
-    if 'Re' > 'Re1' then
-      'Re' := -2.0 * sqrt('lambda2') * log10(2.51 / sqrt('lambda2') + 0.27 * 'Delta') "Colebrook-White";
-      'aux2' := sqrt('aux1' * abs('dp_fric'));
-      'dRe_ddp' := 0.43429448190325176 * (5.02 / (2.0 * abs('dp_fric') * (2.51 / 'aux2' + 0.27 * 'Delta')) - 2.0 * log(2.51 / 'aux2' + 0.27 * 'Delta') * 'aux1' / (2.0 * 'aux2'));
-
-      if 'Re' < 'Re2' then
-        ('Re', 'dRe_ddp') := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative'('lambda2', 'Re1', 'Re2', 'Delta', 'dp_fric');
-      end if;
-    end if;
-
-    'm_flow' := 'crossArea' / 'diameter' * 'mu' * (if 'dp_fric' >= 0.0 then 'Re' else -'Re');
-    'dm_flow_ddp_fric' := 'crossArea' / 'diameter' * 'mu' * 'dRe_ddp';
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric';
+  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow';
 
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative' "Interpolation in log-log space using a cubic Hermite polynomial, where x=log10(lambda2), y=log10(Re)"
-    input Real 'lambda2';
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    output Real 'dRe_ddp';
-    Real 'x1' = log10(64.0 * 'Re1');
-    Real 'y1' = log10('Re1');
-    Real 'y1d' = 1.0;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x' = log10('lambda2');
-    Real 'y';
-    Real 'dy_dx';
-    Real 'aux3' = log10('aux2');
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'x2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'y2' = log10('aux5');
-    Real 'y2d' = 0.5 + 1.0900791495771618 / ('aux5' * 'aux4');
+  function 'Modelica.Fluid.Utilities.checkBoundary' "Check whether boundary definition is correct"
+    input String 'mediumName';
+    input String 'substanceNames'[:];
+    input Boolean 'singleState';
+    input Boolean 'define_p';
+    input Real 'X_boundary'[:];
+    input String 'modelName' = "??? boundary ???";
+    Integer 'nX' = size('X_boundary', 1);
+    String 'X_str';
   algorithm
-    ('y', 'dy_dx') := 'Modelica.Fluid.Utilities.cubicHermite_withDerivative'('x', 'x1', 'x2', 'y1', 'y2', 'y1d', 'y2d');
-    'Re' := 10.0 ^ 'y';
-    'dRe_ddp' := 'Re' / abs('dp_fric') * 'dy_dx';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative';
+    assert(not 'singleState' or 'singleState' and 'define_p', "\nWrong value of parameter define_p (= false) in model \"" + 'modelName' + "\":\nThe selected medium \"" + 'mediumName' + "\" has Medium.singleState=true.\nTherefore, an boundary density cannot be defined and\ndefine_p = true is required.\n", AssertionLevel.error);
 
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2' "Cubic Hermite spline interpolation in transition region"
-    input Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta';
-    output Real 'lambda2';
-    Real 'x1' = log10('Re1');
-    Real 'y1' = log10(64.0 * 'Re1');
-    Real 'yd1' = 1.0;
-    Real 'aux1' = 1.1217826467560994;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x2' = log10('Re2');
-    Real 'dx' = log10('Re' / 'Re1');
-    Real 'aux3' = log10('aux2');
-    Real 'diff_x' = 'x2' - 'x1';
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'yd2' = 2.0 + 4.0 * 'aux1' / ('aux2' * 'aux3' * 'Re2' ^ 0.9);
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'y2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'm' = ('y2' - 'y1') / 'diff_x';
-    Real 'c2' = (3.0 * 'm' - 2.0 * 'yd1' - 'yd2') / 'diff_x';
-    Real 'c3' = ('yd1' + 'yd2' - 2.0 * 'm') / ('diff_x' * 'diff_x');
-  algorithm
-    'lambda2' := 64.0 * 'Re1' * ('Re' / 'Re1') ^ ('yd1' + 'dx' * ('c2' + 'dx' * 'c3'));
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2';
+    for 'i' in 1:'nX' loop
+      assert('X_boundary'['i'] >= 0.0, "\nWrong boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\":\nThe boundary value X_boundary(" + String('i') + ") = " + String('X_boundary'['i']) + "\nis negative. It must be positive.\n", AssertionLevel.error);
+    end for;
 
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.density' "Return the density from the thermodynamic state"
-    input 'pipe.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154e-10 - ('state'.'T' - 278.15) * 2.5713e-4) * 997.05;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.density';
+    if 'nX' > 0 and abs(sum('X_boundary') - 1.0) > 1e-10 then
+      'X_str' := "";
 
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'pipe.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'pipe.Medium.ThermodynamicState'('p', ('h' - 104929.0 - ('p' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.setState_phX';
+      for 'i' in 1:'nX' loop
+        'X_str' := 'X_str' + "   X_boundary[" + String('i') + "] = " + String('X_boundary'['i']) + " \"" + 'substanceNames'['i'] + "\"\n";
+      end for;
 
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.density' "Return the density from the thermodynamic state"
-    input 'pipe.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154e-10 - ('state'.'T' - 278.15) * 2.5713e-4) * 997.05;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.density';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.dynamicViscosity' "Dynamic viscosity of water"
-    input 'pipe.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-  algorithm
-    'eta' := 0.0015;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.dynamicViscosity';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.pressure' "Return the pressure from the thermodynamic state"
-    input 'pipe.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  algorithm
-    'p' := 'state'.'p';
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.pressure';
+      'Modelica.Utilities.Streams.error'("The boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\"\n" + "do not sum up to 1. Instead, sum(X_boundary) = " + String(sum('X_boundary')) + ":\n" + 'X_str');
+    end if;
+  end 'Modelica.Fluid.Utilities.checkBoundary';
 
   function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -352,7 +161,7 @@ package 'TanksWithOverflow'
     Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
     Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
     Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
     Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
   algorithm
     'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
@@ -362,543 +171,74 @@ package 'TanksWithOverflow'
       'm_flow' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
     input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
     input Real 'length'(unit = "m", quantity = "Length");
     input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
     input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
     input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
     input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / log10('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric' "Calculate mass flow rate as function of pressure drop due to friction"
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
     output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    output Real 'dm_flow_ddp_fric';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'lambda2';
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
     Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'dRe_ddp';
-    Real 'aux1';
-    Real 'aux2';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
   algorithm
-    if 'dp_fric' >= 0.0 then
-      'rho' := 'rho_a';
-      'mu' := 'mu_a';
-    elseif true then
-      'rho' := 'rho_b';
-      'mu' := 'mu_b';
-    end if;
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
 
-    'lambda2' := abs('dp_fric') * 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' * 'mu') "Known as lambda2=f(dp)";
-    'aux1' := 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' ^ 2.0);
-    'Re' := 'lambda2' / 64.0 "Hagen-Poiseuille";
-    'dRe_ddp' := 'aux1' / 64.0 "Hagen-Poiseuille";
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
-    if 'Re' > 'Re1' then
-      'Re' := -2.0 * sqrt('lambda2') * log10(2.51 / sqrt('lambda2') + 0.27 * 'Delta') "Colebrook-White";
-      'aux2' := sqrt('aux1' * abs('dp_fric'));
-      'dRe_ddp' := 0.43429448190325176 * (5.02 / (2.0 * abs('dp_fric') * (2.51 / 'aux2' + 0.27 * 'Delta')) - 2.0 * log(2.51 / 'aux2' + 0.27 * 'Delta') * 'aux1' / (2.0 * 'aux2'));
-
-      if 'Re' < 'Re2' then
-        ('Re', 'dRe_ddp') := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative'('lambda2', 'Re1', 'Re2', 'Delta', 'dp_fric');
-      end if;
-    end if;
-
-    'm_flow' := 'crossArea' / 'diameter' * 'mu' * (if 'dp_fric' >= 0.0 then 'Re' else -'Re');
-    'dm_flow_ddp_fric' := 'crossArea' / 'diameter' * 'mu' * 'dRe_ddp';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative' "Interpolation in log-log space using a cubic Hermite polynomial, where x=log10(lambda2), y=log10(Re)"
-    input Real 'lambda2';
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    output Real 'dRe_ddp';
-    Real 'x1' = log10(64.0 * 'Re1');
-    Real 'y1' = log10('Re1');
-    Real 'y1d' = 1.0;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x' = log10('lambda2');
-    Real 'y';
-    Real 'dy_dx';
-    Real 'aux3' = log10('aux2');
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'x2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'y2' = log10('aux5');
-    Real 'y2d' = 0.5 + 1.0900791495771618 / ('aux5' * 'aux4');
-  algorithm
-    ('y', 'dy_dx') := 'Modelica.Fluid.Utilities.cubicHermite_withDerivative'('x', 'x1', 'x2', 'y1', 'y2', 'y1d', 'y2d');
-    'Re' := 10.0 ^ 'y';
-    'dRe_ddp' := 'Re' / abs('dp_fric') * 'dy_dx';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2' "Cubic Hermite spline interpolation in transition region"
-    input Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta';
-    output Real 'lambda2';
-    Real 'x1' = log10('Re1');
-    Real 'y1' = log10(64.0 * 'Re1');
-    Real 'yd1' = 1.0;
-    Real 'aux1' = 1.1217826467560994;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x2' = log10('Re2');
-    Real 'dx' = log10('Re' / 'Re1');
-    Real 'aux3' = log10('aux2');
-    Real 'diff_x' = 'x2' - 'x1';
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'yd2' = 2.0 + 4.0 * 'aux1' / ('aux2' * 'aux3' * 'Re2' ^ 0.9);
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'y2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'm' = ('y2' - 'y1') / 'diff_x';
-    Real 'c2' = (3.0 * 'm' - 2.0 * 'yd1' - 'yd2') / 'diff_x';
-    Real 'c3' = ('yd1' + 'yd2' - 2.0 * 'm') / ('diff_x' * 'diff_x');
-  algorithm
-    'lambda2' := 64.0 * 'Re1' * ('Re' / 'Re1') ^ ('yd1' + 'dx' * ('c2' + 'dx' * 'c3'));
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.density' "Return the density from the thermodynamic state"
-    input 'upperTank.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154e-10 - ('state'.'T' - 278.15) * 2.5713e-4) * 997.05;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.density';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_pTX' "Set the thermodynamic state record from p and T (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'upperTank.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'upperTank.Medium.ThermodynamicState'('p', 'T');
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_pTX';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'upperTank.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'upperTank.Medium.ThermodynamicState'('p', ('h' - 104929.0 - ('p' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15);
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.specificEnthalpy' "Return the specific enthalpy from the thermodynamic state"
-    input 'upperTank.Medium.ThermodynamicState' 'state';
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 104929.0 + ('state'.'T' - 278.15) * 4181.9 + ('state'.'p' - 101325.0) * 0.9284792905 / 997.05;
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.specificEnthalpy';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.specificEnthalpy'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_pTX'('p', 'T', 'X'));
-    annotation(inverse(T = Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.temperature_phX('p', 'h', 'X')));
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'upperTank.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.temperature_phX' "Return temperature from p, h, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.temperature'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_phX'('p', 'h', 'X'));
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.temperature_phX';
-
-  function 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.heatTransfer.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'upperTank.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.heatTransfer.Medium.temperature';
-
-  function 'Modelica.Fluid.Utilities.checkBoundary' "Check whether boundary definition is correct"
-    input String 'mediumName';
-    input String[:] 'substanceNames';
-    input Boolean 'singleState';
-    input Boolean 'define_p';
-    input Real[:] 'X_boundary';
-    input String 'modelName' = "??? boundary ???";
-    Integer 'nX' = size('X_boundary', 1);
-    String 'X_str';
-  algorithm
-    assert(not 'singleState' or 'singleState' and 'define_p', "\nWrong value of parameter define_p (= false) in model \"" + 'modelName' + "\":\nThe selected medium \"" + 'mediumName' + "\" has Medium.singleState=true.\nTherefore, an boundary density cannot be defined and\ndefine_p = true is required.\n", AssertionLevel.error);
-
-    for 'i' in 1:'nX' loop
-      assert('X_boundary'['i'] >= 0.0, "\nWrong boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\":\nThe boundary value X_boundary(" + String('i') + ") = " + String('X_boundary'['i']) + "\nis negative. It must be positive.\n", AssertionLevel.error);
-    end for;
-
-    if 'nX' > 0 and abs(sum('X_boundary') - 1.0) > 1e-10 then
-      'X_str' := "";
-
-      for 'i' in 1:'nX' loop
-        'X_str' := 'X_str' + "   X_boundary[" + String('i') + "] = " + String('X_boundary'['i']) + " \"" + 'substanceNames'['i'] + "\"\n";
-      end for;
-
-      'Modelica.Utilities.Streams.error'("The boundary mass fractions in medium \"" + 'mediumName' + "\" in model \"" + 'modelName' + "\"\n" + "do not sum up to 1. Instead, sum(X_boundary) = " + String(sum('X_boundary')) + ":\n" + 'X_str');
-    end if;
-  end 'Modelica.Fluid.Utilities.checkBoundary';
-
-  function 'Modelica.Fluid.Utilities.cubicHermite_withDerivative' "Evaluate a cubic Hermite spline, return value and derivative"
-    input Real 'x';
-    input Real 'x1';
-    input Real 'x2';
-    input Real 'y1';
-    input Real 'y2';
-    input Real 'y1d';
-    input Real 'y2d';
-    output Real 'y';
-    output Real 'dy_dx';
-    Real 'h';
-    Real 't';
-    Real 'h00';
-    Real 'h10';
-    Real 'h01';
-    Real 'h11';
-    Real 'h00d';
-    Real 'h10d';
-    Real 'h01d';
-    Real 'h11d';
-    Real 'aux3';
-    Real 'aux2';
-  algorithm
-    'h' := 'x2' - 'x1';
-
-    if abs('h') > 0.0 then
-      't' := ('x' - 'x1') / 'h';
-      'aux3' := 't' ^ 3.0;
-      'aux2' := 't' ^ 2.0;
-      'h00' := 2.0 * 'aux3' - 3.0 * 'aux2' + 1.0;
-      'h10' := 'aux3' - 2.0 * 'aux2' + 't';
-      'h01' := 3.0 * 'aux2' - 2.0 * 'aux3';
-      'h11' := 'aux3' - 'aux2';
-      'h00d' := 6.0 * ('aux2' - 't');
-      'h10d' := 3.0 * 'aux2' - 4.0 * 't' + 1.0;
-      'h01d' := 6.0 * ('t' - 'aux2');
-      'h11d' := 3.0 * 'aux2' - 2.0 * 't';
-      'y' := 'y1' * 'h00' + 'h' * 'y1d' * 'h10' + 'y2' * 'h01' + 'h' * 'y2d' * 'h11';
-      'dy_dx' := 'y1' * 'h00d' / 'h' + 'y1d' * 'h10d' + 'y2' * 'h01d' / 'h' + 'y2d' * 'h11d';
-    elseif true then
-      'y' := ('y1' + 'y2') / 2.0;
-      'dy_dx' := sign('y2' - 'y1') * 1e60;
-    end if;
-    annotation(smoothOrder = 3);
-  end 'Modelica.Fluid.Utilities.cubicHermite_withDerivative';
-
-  function 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero' "Evaluate polynomial of order 3 that passes the origin with a predefined derivative"
-    input Real 'x';
-    input Real 'x1';
-    input Real 'y1';
-    input Real 'y1d';
-    input Real 'y0d';
-    output Real 'y';
-    Real 'a1';
-    Real 'a2';
-    Real 'a3';
-    Real 'xx';
-  algorithm
-    'a1' := 'x1' * 'y0d';
-    'a2' := 3.0 * 'y1' - 'x1' * 'y1d' - 2.0 * 'a1';
-    'a3' := 'y1' - 'a2' - 'a1';
-    'xx' := 'x' / 'x1';
-    'y' := 'xx' * ('a1' + 'xx' * ('a2' + 'xx' * 'a3'));
-    annotation(smoothOrder = 3);
-  end 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero';
-
-  function 'Modelica.Fluid.Utilities.regFun3' "Co-monotonic and C1 smooth regularization function"
-    input Real 'x';
-    input Real 'x0';
-    input Real 'x1';
-    input Real 'y0';
-    input Real 'y1';
-    input Real 'y0d';
-    input Real 'y1d';
-    output Real 'y';
-    output Real 'c';
-    Real 'h0';
-    Real 'Delta0';
-    Real 'xstar';
-    Real 'mu';
-    Real 'eta';
-    Real 'omega';
-    Real 'rho';
-    Real 'theta0';
-    Real 'mu_tilde';
-    Real 'eta_tilde';
-    Real 'xi1';
-    Real 'xi2';
-    Real 'a1';
-    Real 'a2';
-    Real 'const12';
-    Real 'const3';
-    Real 'aux01';
-    Real 'aux02';
-    Boolean 'useSingleCubicPolynomial' = false;
-  algorithm
-    assert('x0' < 'x1', "regFun3(): Data points not sorted appropriately (x0 = " + String('x0') + " > x1 = " + String('x1') + "). Please flip arguments.", AssertionLevel.error);
-
-    if 'y0d' * 'y1d' >= 0.0 then
-    elseif true then
-      assert(abs('y0d') < 2.220446049250313e-16 or abs('y1d') < 2.220446049250313e-16, "regFun3(): Derivatives at data points do not allow co-monotone interpolation, as both are non-zero, of opposite sign and have an absolute value larger than machine eps (y0d = " + String('y0d') + ", y1d = " + String('y1d') + "). Please correct arguments.", AssertionLevel.error);
-    end if;
-
-    'h0' := 'x1' - 'x0';
-    'Delta0' := ('y1' - 'y0') / 'h0';
-
-    if abs('Delta0') <= 0.0 then
-      'y' := 'y0' + 'Delta0' * ('x' - 'x0');
-      'c' := 0.0;
-    elseif abs('y1d' + 'y0d' - 2.0 * 'Delta0') < 2.220446049250313e-14 then
-      'y' := 'y0' + ('x' - 'x0') * ('y0d' + ('x' - 'x0') / 'h0' * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d') + ('x' - 'x0') * ('y0d' + 'y1d' - 2.0 * 'Delta0') / 'h0'));
-      'aux01' := ('x0' + 'x1') / 2.0;
-      'c' := 3.0 * ('y0d' + 'y1d' - 2.0 * 'Delta0') * ('aux01' - 'x0') ^ 2.0 / 'h0' ^ 2.0 + 2.0 * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d')) * ('aux01' - 'x0') / 'h0' + 'y0d';
-    elseif true then
-      'xstar' := 0.3333333333333333 * (6.0 * 'x0' * 'Delta0' - (3.0 * 'x0' * 'y0d' + 3.0 * 'x0' * 'y1d') - 2.0 * 'h0' * 'y0d' - 'h0' * 'y1d' + 3.0 * 'h0' * 'Delta0') / (2.0 * 'Delta0' - ('y0d' + 'y1d'));
-      'mu' := 'xstar' - 'x0';
-      'eta' := 'x1' - 'xstar';
-      'omega' := 3.0 * ('y0d' + 'y1d' - 2.0 * 'Delta0') * ('xstar' - 'x0') ^ 2.0 / 'h0' ^ 2.0 + 2.0 * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d')) * ('xstar' - 'x0') / 'h0' + 'y0d';
-      'aux01' := 0.25 * sign('Delta0') * min(abs('omega'), abs('Delta0')) "Slope c if not using plain cubic S0";
-
-      if abs('y0d' - 'y1d') <= 2.220446049250313e-14 then
-        'aux02' := 'y0d';
-
-        if 'y1' > 'y0' + 'y0d' * ('x1' - 'x0') then
-          'useSingleCubicPolynomial' := true;
-        end if;
-      elseif abs('y1d' + 'y0d' - 2.0 * 'Delta0') < 2.220446049250313e-14 then
-        'aux02' := (6.0 * 'Delta0' * ('y1d' + 'y0d' - 1.5 * 'Delta0') - 'y1d' * 'y0d' - 'y1d' ^ 2.0 - 'y0d' ^ 2.0) * (if 'y1d' + 'y0d' - 2.0 * 'Delta0' >= 0.0 then 1.0 else -1.0) * 1e60;
-      elseif true then
-        'aux02' := (6.0 * 'Delta0' * ('y1d' + 'y0d' - 1.5 * 'Delta0') - 'y1d' * 'y0d' - 'y1d' ^ 2.0 - 'y0d' ^ 2.0) / (3.0 * ('y1d' + 'y0d' - 2.0 * 'Delta0'));
-      end if;
-
-      if ((('mu' > 0.0 and 'eta' < 'h0') and 'Delta0' * 'omega' <= 0.0 or abs('aux01') < abs('aux02') and 'aux02' * 'Delta0' >= 0.0) or abs('aux01') < abs(0.1 * 'Delta0')) and not 'useSingleCubicPolynomial' then
-        'c' := 'aux01';
-
-        if abs('c') < abs('aux02') and 'aux02' * 'Delta0' >= 0.0 then
-          'c' := 'aux02';
-        end if;
-
-        if abs('c') < abs(0.1 * 'Delta0') then
-          'c' := 0.1 * 'Delta0';
-        end if;
-
-        'theta0' := ('y0d' * 'mu' + 'y1d' * 'eta') / 'h0';
-
-        if abs('theta0' - 'c') < 1e-6 * abs('c') then
-          'c' := 0.999999 * 'theta0';
-        end if;
-
-        'rho' := 3.0 * ('Delta0' - 'c') / ('theta0' - 'c');
-        'mu_tilde' := 'rho' * 'mu';
-        'eta_tilde' := 'rho' * 'eta';
-        'xi1' := 'x0' + 'mu_tilde';
-        'xi2' := 'x1' - 'eta_tilde';
-        'a1' := ('y0d' - 'c') / max('mu_tilde' ^ 2.0, 2.220446049250313e-14);
-        'a2' := ('y1d' - 'c') / max('eta_tilde' ^ 2.0, 2.220446049250313e-14);
-        'const12' := 'y0' - 'a1' / 3.0 * ('x0' - 'xi1') ^ 3.0 - 'c' * 'x0';
-        'const3' := 'y1' - 'a2' / 3.0 * ('x1' - 'xi2') ^ 3.0 - 'c' * 'x1';
-
-        if 'x' < 'xi1' then
-          'y' := 'a1' / 3.0 * ('x' - 'xi1') ^ 3.0 + 'c' * 'x' + 'const12';
-        elseif 'x' < 'xi2' then
-          'y' := 'c' * 'x' + 'const12';
-        elseif true then
-          'y' := 'a2' / 3.0 * ('x' - 'xi2') ^ 3.0 + 'c' * 'x' + 'const3';
-        end if;
-      elseif true then
-        'y' := 'y0' + ('x' - 'x0') * ('y0d' + ('x' - 'x0') / 'h0' * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d') + ('x' - 'x0') * ('y0d' + 'y1d' - 2.0 * 'Delta0') / 'h0'));
-        'aux01' := ('x0' + 'x1') / 2.0;
-        'c' := 3.0 * ('y0d' + 'y1d' - 2.0 * 'Delta0') * ('aux01' - 'x0') ^ 2.0 / 'h0' ^ 2.0 + 2.0 * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d')) * ('aux01' - 'x0') / 'h0' + 'y0d';
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Utilities.regFun3';
-
-  function 'Modelica.Fluid.Utilities.regSquare2' "Anti-symmetric approximation of square with discontinuous factor so that the first derivative is non-zero and is continuous"
-    input Real 'x';
-    input Real 'x_small'(min = 0.0) = 0.01;
-    input Real 'k1'(min = 0.0) = 1.0;
-    input Real 'k2'(min = 0.0) = 1.0;
-    input Boolean 'use_yd0' = false;
-    input Real 'yd0'(min = 0.0) = 1.0;
-    output Real 'y';
-  algorithm
-    'y' := smooth(2, if 'x' >= 'x_small' then 'k1' * 'x' ^ 2.0 else if 'x' <= (-'x_small') then -'k2' * 'x' ^ 2.0 else if 'k1' >= 'k2' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('x', 'x_small', 'k1', 'k2', 'use_yd0', 'yd0') else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'x', 'x_small', 'k2', 'k1', 'use_yd0', 'yd0'));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Fluid.Utilities.regSquare2';
-
-  function 'Modelica.Fluid.Utilities.regStep' "Approximation of a general step, such that the characteristic is continuous and differentiable"
-    input Real 'x';
-    input Real 'y1';
-    input Real 'y2';
-    input Real 'x_small'(min = 0.0) = 1e-5;
-    output Real 'y';
-  algorithm
-    'y' := smooth(1, if 'x' > 'x_small' then 'y1' else if 'x' < (-'x_small') then 'y2' else if 'x_small' > 0.0 then 'x' / 'x_small' * (('x' / 'x_small') ^ 2.0 - 3.0) * ('y2' - 'y1') / 4.0 + ('y1' + 'y2') / 2.0 else ('y1' + 'y2') / 2.0);
-  end 'Modelica.Fluid.Utilities.regStep';
-
-  function 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility' "Interpolating with two 3-order polynomials with a prescribed derivative at x=0"
-    input Real 'x';
-    input Real 'x1';
-    input Real 'k1';
-    input Real 'k2';
-    input Boolean 'use_yd0' = false;
-    input Real 'yd0'(min = 0.0) = 1.0;
-    output Real 'y';
-    Real 'x2';
-    Real 'y1';
-    Real 'y2';
-    Real 'y1d';
-    Real 'y2d';
-    Real 'w';
-    Real 'w1';
-    Real 'w2';
-    Real 'y0d';
-    Real 'ww';
-  algorithm
-    'x2' := -'x1';
-
-    if 'x' <= 'x2' then
-      'y' := -'k2' * 'x' ^ 2.0;
-    elseif true then
-      'y1' := 'k1' * 'x1' ^ 2.0;
-      'y2' := -'k2' * 'x2' ^ 2.0;
-      'y1d' := 'k1' * 2.0 * 'x1';
-      'y2d' := -'k2' * 2.0 * 'x2';
-
-      if 'use_yd0' then
-        'y0d' := 'yd0';
-      elseif true then
-        'w' := 'x2' / 'x1';
-        'y0d' := ((3.0 * 'y2' - 'x2' * 'y2d') / 'w' - (3.0 * 'y1' - 'x1' * 'y1d') * 'w') / (2.0 * 'x1' * (1.0 - 'w'));
-      end if;
-
-      'w1' := 2.23606797749979 * 'k1' * 'x1';
-      'w2' := 2.23606797749979 * 'k2' * abs('x2');
-      'ww' := 0.9 * (if 'w1' < 'w2' then 'w1' else 'w2');
-
-      if 'ww' < 'y0d' then
-        'y0d' := 'ww';
-      end if;
-
-      'y' := if 'x' >= 0.0 then 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero'('x', 'x1', 'y1', 'y1d', 'y0d') else 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero'('x', 'x2', 'y2', 'y2d', 'y0d');
-    end if;
-    annotation(smoothOrder = 2);
-  end 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility';
-
-  function 'Modelica.Utilities.Streams.error' "Print error message and cancel all actions - in case of an unrecoverable error"
-    input String 'string';
-  algorithm
-    assert(false, 'string', AssertionLevel.error);
-  end 'Modelica.Utilities.Streams.error';
+  end 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
   type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
 
   type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
-
-  record 'upperTank.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'upperTank.heatTransfer.Medium.ThermodynamicState';
-
-  record 'upperTank.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'upperTank.Medium.ThermodynamicState';
-
-  record 'pipe.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pipe.Medium.ThermodynamicState';
-
-  record 'pipe.flowModel.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pipe.flowModel.Medium.ThermodynamicState';
-
-  record 'lowerTank.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'lowerTank.heatTransfer.Medium.ThermodynamicState';
-
-  record 'lowerTank.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'lowerTank.Medium.ThermodynamicState';
-
-  record 'overflow.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'overflow.Medium.ThermodynamicState';
-
-  record 'overflow.flowModel.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'overflow.flowModel.Medium.ThermodynamicState';
 
   model 'TanksWithOverflow' "Two tanks connected with pipes at different heights"
     Real 'upperTank.level'(stateSelect = StateSelect.prefer, start = 2.0, min = 0.0, unit = "m", quantity = "Length") "Level height of tank";
@@ -908,7 +248,7 @@ package 'TanksWithOverflow'
     parameter Real 'upperTank.p_ambient'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'upperTank.T_ambient'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'upperTank.level_start'(min = 0.0, unit = "m", quantity = "Length") = 2.0 "Start value of tank level";
-    Real 'upperTank.fluidVolume'(unit = "m3", quantity = "Volume") = 'upperTank.V' "Volume";
+    Real 'upperTank.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'upperTank.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'upperTank.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'upperTank.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -916,7 +256,7 @@ package 'TanksWithOverflow'
     parameter Real 'upperTank.p_start'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Start value of pressure";
     parameter Boolean 'upperTank.use_T_start' = true "= true, use T_start, otherwise h_start" annotation(Evaluate = true);
     parameter Real 'upperTank.T_start'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Start value of temperature";
-    parameter Real 'upperTank.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.specificEnthalpy_pTX'(101325.0, 'upperTank.T_start', {1.0}) "Start value of specific enthalpy";
+    parameter Real 'upperTank.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 104929.0 + ('upperTank.T_start' - 278.15) * 4181.9 + (101325.0 - 101325.0) * 0.9284792905 / 997.05 "Start value of specific enthalpy";
     parameter Real 'upperTank.X_start[1]'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") = 1.0 "Start value of mass fractions m_i/m";
     Real 'upperTank.medium.p'(stateSelect = StateSelect.prefer, nominal = 1e5, start = 101325.0, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'upperTank.medium.h'(start = 'upperTank.h_start', unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
@@ -930,8 +270,8 @@ package 'TanksWithOverflow'
     Real 'upperTank.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'upperTank.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'upperTank.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'upperTank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'upperTank.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'upperTank.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'upperTank.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'upperTank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'upperTank.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'upperTank.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'upperTank.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'upperTank.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -970,8 +310,8 @@ package 'TanksWithOverflow'
     Real 'upperTank.ports_H_flow[3]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'upperTank.use_HeatTransfer' = false "= true to use the HeatTransfer model";
     parameter Integer 'upperTank.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'upperTank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'upperTank.medium.state.p' "Absolute pressure of medium";
-    Real 'upperTank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'upperTank.medium.state.T' "Temperature of medium";
+    Real 'upperTank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'upperTank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'upperTank.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'upperTank.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'upperTank.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -1005,7 +345,7 @@ package 'TanksWithOverflow'
     Real 'upperTank.m_flow_turbulent[1]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'upperTank.m_flow_turbulent[2]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'upperTank.m_flow_turbulent[3]'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'upperTank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") = 'upperTank.level' "Level of fluid in the vessel for treating heights of ports";
+    Real 'upperTank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") "Level of fluid in the vessel for treating heights of ports";
     parameter Real 'upperTank.fluidLevel_max'(min = 0.0, unit = "m", quantity = "Length") = 20.0 "Maximum level of fluid in the vessel";
     parameter Real 'upperTank.vesselArea'(unit = "m2", quantity = "Area") = 0.2 "Area of the vessel used to relate to cross flow area of ports";
     Real 'upperTank.portsData_diameter_internal[1]';
@@ -1052,8 +392,8 @@ package 'TanksWithOverflow'
     Real 'massFlowRate.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'massFlowRate.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'massFlowRate.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'massFlowRate.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'massFlowRate.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'massFlowRate.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'massFlowRate.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'massFlowRate.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'massFlowRate.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'massFlowRate.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.Linear cold water") "Mass flow rate from the connection point into the component";
     Real 'massFlowRate.ports[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
     Real 'massFlowRate.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
@@ -1165,7 +505,7 @@ package 'TanksWithOverflow'
     parameter Boolean 'pipe.flowModel.constantPressureLossCoefficient' = false "= true, if the pressure loss does not depend on fluid states" annotation(Evaluate = true);
     parameter Boolean 'pipe.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'pipe.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 993.2044280025, 993.2044280025, 0.0015, 0.0015, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]') "Pressure loss for nominal conditions";
+    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
     Real 'lowerTank.level'(stateSelect = StateSelect.prefer, start = 2.0, min = 0.0, unit = "m", quantity = "Length") "Level height of tank";
     Real 'lowerTank.V'(stateSelect = StateSelect.never, unit = "m3", quantity = "Volume") "Actual tank volume";
     parameter Real 'lowerTank.height'(min = 0.0, unit = "m", quantity = "Length") = 20.0 "Height of tank";
@@ -1173,7 +513,7 @@ package 'TanksWithOverflow'
     parameter Real 'lowerTank.p_ambient'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'lowerTank.T_ambient'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'lowerTank.level_start'(min = 0.0, unit = "m", quantity = "Length") = 2.0 "Start value of tank level";
-    Real 'lowerTank.fluidVolume'(unit = "m3", quantity = "Volume") = 'lowerTank.V' "Volume";
+    Real 'lowerTank.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'lowerTank.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'lowerTank.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'lowerTank.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -1181,7 +521,7 @@ package 'TanksWithOverflow'
     parameter Real 'lowerTank.p_start'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Start value of pressure";
     parameter Boolean 'lowerTank.use_T_start' = true "= true, use T_start, otherwise h_start" annotation(Evaluate = true);
     parameter Real 'lowerTank.T_start'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Start value of temperature";
-    parameter Real 'lowerTank.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.specificEnthalpy_pTX'(101325.0, 'lowerTank.T_start', {1.0}) "Start value of specific enthalpy";
+    parameter Real 'lowerTank.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 104929.0 + ('lowerTank.T_start' - 278.15) * 4181.9 + (101325.0 - 101325.0) * 0.9284792905 / 997.05 "Start value of specific enthalpy";
     parameter Real 'lowerTank.X_start[1]'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") = 1.0 "Start value of mass fractions m_i/m";
     Real 'lowerTank.medium.p'(stateSelect = StateSelect.prefer, nominal = 1e5, start = 101325.0, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'lowerTank.medium.h'(start = 'lowerTank.h_start', unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
@@ -1195,8 +535,8 @@ package 'TanksWithOverflow'
     Real 'lowerTank.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'lowerTank.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'lowerTank.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'lowerTank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'lowerTank.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'lowerTank.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'lowerTank.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'lowerTank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'lowerTank.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'lowerTank.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'lowerTank.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'lowerTank.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -1227,8 +567,8 @@ package 'TanksWithOverflow'
     Real 'lowerTank.ports_H_flow[2]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'lowerTank.use_HeatTransfer' = false "= true to use the HeatTransfer model";
     parameter Integer 'lowerTank.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'lowerTank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'lowerTank.medium.state.p' "Absolute pressure of medium";
-    Real 'lowerTank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'lowerTank.medium.state.T' "Temperature of medium";
+    Real 'lowerTank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'lowerTank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'lowerTank.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'lowerTank.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'lowerTank.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -1254,7 +594,7 @@ package 'TanksWithOverflow'
     constant Real 'lowerTank.Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 100.0 "cf. suddenExpansion";
     Real 'lowerTank.m_flow_turbulent[1]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'lowerTank.m_flow_turbulent[2]'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'lowerTank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") = 'lowerTank.level' "Level of fluid in the vessel for treating heights of ports";
+    Real 'lowerTank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") "Level of fluid in the vessel for treating heights of ports";
     parameter Real 'lowerTank.fluidLevel_max'(min = 0.0, unit = "m", quantity = "Length") = 20.0 "Maximum level of fluid in the vessel";
     parameter Real 'lowerTank.vesselArea'(unit = "m2", quantity = "Area") = 1.0 "Area of the vessel used to relate to cross flow area of ports";
     Real 'lowerTank.portsData_diameter_internal[1]';
@@ -1366,7 +706,7 @@ package 'TanksWithOverflow'
     parameter Boolean 'overflow.flowModel.constantPressureLossCoefficient' = false "= true, if the pressure loss does not depend on fluid states" annotation(Evaluate = true);
     parameter Boolean 'overflow.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'overflow.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'overflow.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow'('overflow.flowModel.m_flow_nominal', 993.2044280025, 993.2044280025, 0.0015, 0.0015, 'overflow.flowModel.pathLengths_internal[1]', 'overflow.flowModel.diameters[1]', ('overflow.flowModel.crossAreas[1]' + 'overflow.flowModel.crossAreas[2]') / 2.0, ('overflow.flowModel.roughnesses[1]' + 'overflow.flowModel.roughnesses[2]') / 2.0, 'overflow.flowModel.m_flow_small', 'overflow.flowModel.Res_turbulent_internal[1]') "Pressure loss for nominal conditions";
+    Real 'overflow.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
   initial equation
     'upperTank.level' = 2.0;
     'upperTank.medium.T' = 'upperTank.T_start';
@@ -1378,6 +718,22 @@ package 'TanksWithOverflow'
     'overflow.flowModel.dp_nominal' = 1000.0 * 'overflow.flowModel.dp_small';
     'overflow.flowModel.dp_small' = 1.0;
   equation
+    'upperTank.fluidVolume' = 'upperTank.V';
+    'upperTank.medium.T_degC' = 'upperTank.medium.T' - 273.15;
+    'upperTank.medium.p_bar' = 'upperTank.medium.p' / 1e5;
+    'upperTank.heatTransfer.states[1].p' = 'upperTank.medium.state.p';
+    'upperTank.heatTransfer.states[1].T' = 'upperTank.medium.state.T';
+    'upperTank.fluidLevel' = 'upperTank.level';
+    'massFlowRate.medium.T_degC' = 'massFlowRate.medium.T' - 273.15;
+    'massFlowRate.medium.p_bar' = 'massFlowRate.medium.p' / 1e5;
+    'pipe.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 993.2044280025, 993.2044280025, 0.0015, 0.0015, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]');
+    'lowerTank.fluidVolume' = 'lowerTank.V';
+    'lowerTank.medium.T_degC' = 'lowerTank.medium.T' - 273.15;
+    'lowerTank.medium.p_bar' = 'lowerTank.medium.p' / 1e5;
+    'lowerTank.heatTransfer.states[1].p' = 'lowerTank.medium.state.p';
+    'lowerTank.heatTransfer.states[1].T' = 'lowerTank.medium.state.T';
+    'lowerTank.fluidLevel' = 'lowerTank.level';
+    'overflow.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.WallFriction.pressureLoss_m_flow'('overflow.flowModel.m_flow_nominal', 993.2044280025, 993.2044280025, 0.0015, 0.0015, 'overflow.flowModel.pathLengths_internal[1]', 'overflow.flowModel.diameters[1]', ('overflow.flowModel.crossAreas[1]' + 'overflow.flowModel.crossAreas[2]') / 2.0, ('overflow.flowModel.roughnesses[1]' + 'overflow.flowModel.roughnesses[2]') / 2.0, 'overflow.flowModel.m_flow_small', 'overflow.flowModel.Res_turbulent_internal[1]');
     'upperTank.portsData_diameter[1]' = 'upperTank.portsData_diameter_internal[1]';
     'upperTank.portsData_diameter[2]' = 'upperTank.portsData_diameter_internal[2]';
     'upperTank.portsData_diameter[3]' = 'upperTank.portsData_diameter_internal[3]';
@@ -1428,7 +784,7 @@ package 'TanksWithOverflow'
     assert('upperTank.medium.X[1]' >= (-1e-5) and 'upperTank.medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('upperTank.medium.X[1]') + "of substance " + "Linear cold water" + "\nof medium " + "Linear cold water" + " is not in the range 0..1", AssertionLevel.error);
     assert('upperTank.medium.p' >= 0.0, "Pressure (= " + String('upperTank.medium.p') + " Pa) of medium \"" + "Linear cold water" + "\" is negative\n(Temperature = " + String('upperTank.medium.T') + " K)", AssertionLevel.error);
     'upperTank.heatTransfer.surfaceAreas[1]' = 0.2 + 1.5853309190424043 * 'upperTank.level';
-    'upperTank.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.heatTransfer.Medium.temperature'('upperTank.heatTransfer.states[1]');
+    'upperTank.heatTransfer.Ts[1]' = 'upperTank.heatTransfer.states[1].T';
     'upperTank.heatTransfer.Ts[1]' = 'upperTank.heatTransfer.heatPorts[1].T';
     'upperTank.heatTransfer.Q_flows[1]' = 'upperTank.heatTransfer.heatPorts[1].Q_flow';
     'upperTank.portAreas[1]' = 0.7853981633974483 * 'upperTank.portsData_diameter[1]' ^ 2.0;
@@ -1457,20 +813,20 @@ package 'TanksWithOverflow'
     'upperTank.Hb_flow' = 'upperTank.ports_H_flow[1]' + 'upperTank.ports_H_flow[2]' + 'upperTank.ports_H_flow[3]' + 'upperTank.ports_E_flow[1]' + 'upperTank.ports_E_flow[2]' + 'upperTank.ports_E_flow[3]';
     'upperTank.Qb_flow' = 'upperTank.heatTransfer.Q_flows[1]';
     assert('upperTank.fluidLevel' <= 20.0, "Vessel is overflowing (fluidLevel > fluidLevel_max = " + String('upperTank.fluidLevel') + ")", AssertionLevel.error);
-    'upperTank.portInDensities[1]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_phX'('upperTank.vessel_ps_static[1]', 'massFlowRate.ports[1].h_outflow', fill(0.0, 0)));
-    'upperTank.portVelocities[1]' = smooth(0, 'upperTank.ports[1].m_flow' / 'upperTank.portAreas[1]' / 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_phX'('upperTank.vessel_ps_static[1]', if 'upperTank.ports[1].m_flow' > 0.0 then 'massFlowRate.ports[1].h_outflow' else 'upperTank.ports[1].h_outflow', fill(0.0, 0))));
-    'upperTank.ports_penetration[1]' = 'Modelica.Fluid.Utilities.regStep'('upperTank.fluidLevel' - 'upperTank.portsData_height[1]' - 0.1 * 'upperTank.portsData_diameter[1]', 1.0, 0.001, 0.1 * 'upperTank.portsData_diameter[1]');
+    'upperTank.portInDensities[1]' = (1.0 + ('upperTank.vessel_ps_static[1]' - 101325.0) * 4.5154e-10 - (('massFlowRate.ports[1].h_outflow' - 104929.0 - ('upperTank.vessel_ps_static[1]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05;
+    'upperTank.portVelocities[1]' = smooth(0, 'upperTank.ports[1].m_flow' / 'upperTank.portAreas[1]' / ((1.0 + ('upperTank.vessel_ps_static[1]' - 101325.0) * 4.5154e-10 - (((if 'upperTank.ports[1].m_flow' > 0.0 then 'massFlowRate.ports[1].h_outflow' else 'upperTank.ports[1].h_outflow') - 104929.0 - ('upperTank.vessel_ps_static[1]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05));
+    'upperTank.ports_penetration[1]' = smooth(1, if 'upperTank.fluidLevel' - 'upperTank.portsData_height[1]' - 0.1 * 'upperTank.portsData_diameter[1]' > 0.1 * 'upperTank.portsData_diameter[1]' then 1.0 else if 'upperTank.fluidLevel' - 'upperTank.portsData_height[1]' - 0.1 * 'upperTank.portsData_diameter[1]' < (-0.1 * 'upperTank.portsData_diameter[1]') then 0.001 else if 0.1 * 'upperTank.portsData_diameter[1]' > 0.0 then ('upperTank.fluidLevel' - 'upperTank.portsData_height[1]' - 0.1 * 'upperTank.portsData_diameter[1]') / (0.1 * 'upperTank.portsData_diameter[1]') * ((('upperTank.fluidLevel' - 'upperTank.portsData_height[1]' - 0.1 * 'upperTank.portsData_diameter[1]') / (0.1 * 'upperTank.portsData_diameter[1]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'upperTank.m_flow_turbulent[1]' = 0.01;
     'upperTank.regularFlow[1]' = 'upperTank.fluidLevel' >= 'upperTank.portsData_height[1]';
     'upperTank.inFlow[1]' = not 'upperTank.regularFlow[1]' and ('upperTank.s[1]' > 0.0 or 'upperTank.portsData_height[1]' >= 20.0);
 
     if 'upperTank.regularFlow[1]' then
-      'upperTank.ports[1].p' = 'upperTank.vessel_ps_static[1]' + 0.5 / 'upperTank.portAreas[1]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('upperTank.ports[1].m_flow', 'upperTank.m_flow_turbulent[1]', ('upperTank.portsData_zeta_in[1]' - 1.0 + 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[1]' * 'upperTank.ports_penetration[1]', ('upperTank.portsData_zeta_out[1]' + 1.0 - 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[1]', false, 1.0);
+      'upperTank.ports[1].p' = 'upperTank.vessel_ps_static[1]' + 0.5 / 'upperTank.portAreas[1]' ^ 2.0 * smooth(2, if 'upperTank.ports[1].m_flow' >= 'upperTank.m_flow_turbulent[1]' then ('upperTank.portsData_zeta_in[1]' - 1.0 + 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[1]' * 'upperTank.ports_penetration[1]' * 'upperTank.ports[1].m_flow' ^ 2.0 else if 'upperTank.ports[1].m_flow' <= (-'upperTank.m_flow_turbulent[1]') then -('upperTank.portsData_zeta_out[1]' + 1.0 - 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[1]' * 'upperTank.ports[1].m_flow' ^ 2.0 else if ('upperTank.portsData_zeta_in[1]' - 1.0 + 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[1]' * 'upperTank.ports_penetration[1]' >= ('upperTank.portsData_zeta_out[1]' + 1.0 - 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[1]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('upperTank.ports[1].m_flow', 'upperTank.m_flow_turbulent[1]', ('upperTank.portsData_zeta_in[1]' - 1.0 + 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[1]' * 'upperTank.ports_penetration[1]', ('upperTank.portsData_zeta_out[1]' + 1.0 - 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[1]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'upperTank.ports[1].m_flow', 'upperTank.m_flow_turbulent[1]', ('upperTank.portsData_zeta_out[1]' + 1.0 - 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[1]', ('upperTank.portsData_zeta_in[1]' - 1.0 + 'upperTank.portAreas[1]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[1]' * 'upperTank.ports_penetration[1]', false, 1.0));
       'upperTank.s[1]' = 'upperTank.fluidLevel' - 'upperTank.portsData_height[1]';
     elseif 'upperTank.inFlow[1]' then
       'upperTank.ports[1].p' = 'upperTank.vessel_ps_static[1]';
       'upperTank.s[1]' = 'upperTank.ports[1].m_flow';
-    elseif true then
+    else
       'upperTank.ports[1].m_flow' = 0.0;
       'upperTank.s[1]' = ('upperTank.ports[1].p' - 'upperTank.vessel_ps_static[1]') / 101325.0 * ('upperTank.portsData_height[1]' - 'upperTank.fluidLevel');
     end if;
@@ -1478,20 +834,20 @@ package 'TanksWithOverflow'
     'upperTank.ports[1].h_outflow' = 'upperTank.medium.h';
     'upperTank.ports_H_flow[1]' = smooth(0, 'upperTank.ports[1].m_flow' * (if 'upperTank.ports[1].m_flow' > 0.0 then 'massFlowRate.ports[1].h_outflow' else 'upperTank.ports[1].h_outflow')) "Enthalpy flow";
     'upperTank.ports_E_flow[1]' = 'upperTank.ports[1].m_flow' * (0.5 * 'upperTank.portVelocities[1]' * 'upperTank.portVelocities[1]' + 9.80665 * 'upperTank.portsData_height[1]') "Flow of kinetic and potential energy";
-    'upperTank.portInDensities[2]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_phX'('upperTank.vessel_ps_static[2]', 'pipe.port_a.h_outflow', fill(0.0, 0)));
-    'upperTank.portVelocities[2]' = smooth(0, 'upperTank.ports[2].m_flow' / 'upperTank.portAreas[2]' / 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_phX'('upperTank.vessel_ps_static[2]', if 'upperTank.ports[2].m_flow' > 0.0 then 'pipe.port_a.h_outflow' else 'upperTank.ports[2].h_outflow', fill(0.0, 0))));
-    'upperTank.ports_penetration[2]' = 'Modelica.Fluid.Utilities.regStep'('upperTank.fluidLevel' - 'upperTank.portsData_height[2]' - 0.1 * 'upperTank.portsData_diameter[2]', 1.0, 0.001, 0.1 * 'upperTank.portsData_diameter[2]');
+    'upperTank.portInDensities[2]' = (1.0 + ('upperTank.vessel_ps_static[2]' - 101325.0) * 4.5154e-10 - (('pipe.port_a.h_outflow' - 104929.0 - ('upperTank.vessel_ps_static[2]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05;
+    'upperTank.portVelocities[2]' = smooth(0, 'upperTank.ports[2].m_flow' / 'upperTank.portAreas[2]' / ((1.0 + ('upperTank.vessel_ps_static[2]' - 101325.0) * 4.5154e-10 - (((if 'upperTank.ports[2].m_flow' > 0.0 then 'pipe.port_a.h_outflow' else 'upperTank.ports[2].h_outflow') - 104929.0 - ('upperTank.vessel_ps_static[2]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05));
+    'upperTank.ports_penetration[2]' = smooth(1, if 'upperTank.fluidLevel' - 'upperTank.portsData_height[2]' - 0.1 * 'upperTank.portsData_diameter[2]' > 0.1 * 'upperTank.portsData_diameter[2]' then 1.0 else if 'upperTank.fluidLevel' - 'upperTank.portsData_height[2]' - 0.1 * 'upperTank.portsData_diameter[2]' < (-0.1 * 'upperTank.portsData_diameter[2]') then 0.001 else if 0.1 * 'upperTank.portsData_diameter[2]' > 0.0 then ('upperTank.fluidLevel' - 'upperTank.portsData_height[2]' - 0.1 * 'upperTank.portsData_diameter[2]') / (0.1 * 'upperTank.portsData_diameter[2]') * ((('upperTank.fluidLevel' - 'upperTank.portsData_height[2]' - 0.1 * 'upperTank.portsData_diameter[2]') / (0.1 * 'upperTank.portsData_diameter[2]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'upperTank.m_flow_turbulent[2]' = 0.01;
     'upperTank.regularFlow[2]' = 'upperTank.fluidLevel' >= 'upperTank.portsData_height[2]';
     'upperTank.inFlow[2]' = not 'upperTank.regularFlow[2]' and ('upperTank.s[2]' > 0.0 or 'upperTank.portsData_height[2]' >= 20.0);
 
     if 'upperTank.regularFlow[2]' then
-      'upperTank.ports[2].p' = 'upperTank.vessel_ps_static[2]' + 0.5 / 'upperTank.portAreas[2]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('upperTank.ports[2].m_flow', 'upperTank.m_flow_turbulent[2]', ('upperTank.portsData_zeta_in[2]' - 1.0 + 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[2]' * 'upperTank.ports_penetration[2]', ('upperTank.portsData_zeta_out[2]' + 1.0 - 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[2]', false, 1.0);
+      'upperTank.ports[2].p' = 'upperTank.vessel_ps_static[2]' + 0.5 / 'upperTank.portAreas[2]' ^ 2.0 * smooth(2, if 'upperTank.ports[2].m_flow' >= 'upperTank.m_flow_turbulent[2]' then ('upperTank.portsData_zeta_in[2]' - 1.0 + 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[2]' * 'upperTank.ports_penetration[2]' * 'upperTank.ports[2].m_flow' ^ 2.0 else if 'upperTank.ports[2].m_flow' <= (-'upperTank.m_flow_turbulent[2]') then -('upperTank.portsData_zeta_out[2]' + 1.0 - 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[2]' * 'upperTank.ports[2].m_flow' ^ 2.0 else if ('upperTank.portsData_zeta_in[2]' - 1.0 + 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[2]' * 'upperTank.ports_penetration[2]' >= ('upperTank.portsData_zeta_out[2]' + 1.0 - 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[2]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('upperTank.ports[2].m_flow', 'upperTank.m_flow_turbulent[2]', ('upperTank.portsData_zeta_in[2]' - 1.0 + 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[2]' * 'upperTank.ports_penetration[2]', ('upperTank.portsData_zeta_out[2]' + 1.0 - 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[2]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'upperTank.ports[2].m_flow', 'upperTank.m_flow_turbulent[2]', ('upperTank.portsData_zeta_out[2]' + 1.0 - 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[2]', ('upperTank.portsData_zeta_in[2]' - 1.0 + 'upperTank.portAreas[2]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[2]' * 'upperTank.ports_penetration[2]', false, 1.0));
       'upperTank.s[2]' = 'upperTank.fluidLevel' - 'upperTank.portsData_height[2]';
     elseif 'upperTank.inFlow[2]' then
       'upperTank.ports[2].p' = 'upperTank.vessel_ps_static[2]';
       'upperTank.s[2]' = 'upperTank.ports[2].m_flow';
-    elseif true then
+    else
       'upperTank.ports[2].m_flow' = 0.0;
       'upperTank.s[2]' = ('upperTank.ports[2].p' - 'upperTank.vessel_ps_static[2]') / 101325.0 * ('upperTank.portsData_height[2]' - 'upperTank.fluidLevel');
     end if;
@@ -1499,20 +855,20 @@ package 'TanksWithOverflow'
     'upperTank.ports[2].h_outflow' = 'upperTank.medium.h';
     'upperTank.ports_H_flow[2]' = smooth(0, 'upperTank.ports[2].m_flow' * (if 'upperTank.ports[2].m_flow' > 0.0 then 'pipe.port_a.h_outflow' else 'upperTank.ports[2].h_outflow')) "Enthalpy flow";
     'upperTank.ports_E_flow[2]' = 'upperTank.ports[2].m_flow' * (0.5 * 'upperTank.portVelocities[2]' * 'upperTank.portVelocities[2]' + 9.80665 * 'upperTank.portsData_height[2]') "Flow of kinetic and potential energy";
-    'upperTank.portInDensities[3]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_phX'('upperTank.vessel_ps_static[3]', 'overflow.port_a.h_outflow', fill(0.0, 0)));
-    'upperTank.portVelocities[3]' = smooth(0, 'upperTank.ports[3].m_flow' / 'upperTank.portAreas[3]' / 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.upperTank.Medium.setState_phX'('upperTank.vessel_ps_static[3]', if 'upperTank.ports[3].m_flow' > 0.0 then 'overflow.port_a.h_outflow' else 'upperTank.ports[3].h_outflow', fill(0.0, 0))));
-    'upperTank.ports_penetration[3]' = 'Modelica.Fluid.Utilities.regStep'('upperTank.fluidLevel' - 'upperTank.portsData_height[3]' - 0.1 * 'upperTank.portsData_diameter[3]', 1.0, 0.001, 0.1 * 'upperTank.portsData_diameter[3]');
+    'upperTank.portInDensities[3]' = (1.0 + ('upperTank.vessel_ps_static[3]' - 101325.0) * 4.5154e-10 - (('overflow.port_a.h_outflow' - 104929.0 - ('upperTank.vessel_ps_static[3]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05;
+    'upperTank.portVelocities[3]' = smooth(0, 'upperTank.ports[3].m_flow' / 'upperTank.portAreas[3]' / ((1.0 + ('upperTank.vessel_ps_static[3]' - 101325.0) * 4.5154e-10 - (((if 'upperTank.ports[3].m_flow' > 0.0 then 'overflow.port_a.h_outflow' else 'upperTank.ports[3].h_outflow') - 104929.0 - ('upperTank.vessel_ps_static[3]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05));
+    'upperTank.ports_penetration[3]' = smooth(1, if 'upperTank.fluidLevel' - 'upperTank.portsData_height[3]' - 0.1 * 'upperTank.portsData_diameter[3]' > 0.1 * 'upperTank.portsData_diameter[3]' then 1.0 else if 'upperTank.fluidLevel' - 'upperTank.portsData_height[3]' - 0.1 * 'upperTank.portsData_diameter[3]' < (-0.1 * 'upperTank.portsData_diameter[3]') then 0.001 else if 0.1 * 'upperTank.portsData_diameter[3]' > 0.0 then ('upperTank.fluidLevel' - 'upperTank.portsData_height[3]' - 0.1 * 'upperTank.portsData_diameter[3]') / (0.1 * 'upperTank.portsData_diameter[3]') * ((('upperTank.fluidLevel' - 'upperTank.portsData_height[3]' - 0.1 * 'upperTank.portsData_diameter[3]') / (0.1 * 'upperTank.portsData_diameter[3]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'upperTank.m_flow_turbulent[3]' = 0.01;
     'upperTank.regularFlow[3]' = 'upperTank.fluidLevel' >= 'upperTank.portsData_height[3]';
     'upperTank.inFlow[3]' = not 'upperTank.regularFlow[3]' and ('upperTank.s[3]' > 0.0 or 'upperTank.portsData_height[3]' >= 20.0);
 
     if 'upperTank.regularFlow[3]' then
-      'upperTank.ports[3].p' = 'upperTank.vessel_ps_static[3]' + 0.5 / 'upperTank.portAreas[3]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('upperTank.ports[3].m_flow', 'upperTank.m_flow_turbulent[3]', ('upperTank.portsData_zeta_in[3]' - 1.0 + 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[3]' * 'upperTank.ports_penetration[3]', ('upperTank.portsData_zeta_out[3]' + 1.0 - 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[3]', false, 1.0);
+      'upperTank.ports[3].p' = 'upperTank.vessel_ps_static[3]' + 0.5 / 'upperTank.portAreas[3]' ^ 2.0 * smooth(2, if 'upperTank.ports[3].m_flow' >= 'upperTank.m_flow_turbulent[3]' then ('upperTank.portsData_zeta_in[3]' - 1.0 + 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[3]' * 'upperTank.ports_penetration[3]' * 'upperTank.ports[3].m_flow' ^ 2.0 else if 'upperTank.ports[3].m_flow' <= (-'upperTank.m_flow_turbulent[3]') then -('upperTank.portsData_zeta_out[3]' + 1.0 - 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[3]' * 'upperTank.ports[3].m_flow' ^ 2.0 else if ('upperTank.portsData_zeta_in[3]' - 1.0 + 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[3]' * 'upperTank.ports_penetration[3]' >= ('upperTank.portsData_zeta_out[3]' + 1.0 - 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[3]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('upperTank.ports[3].m_flow', 'upperTank.m_flow_turbulent[3]', ('upperTank.portsData_zeta_in[3]' - 1.0 + 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[3]' * 'upperTank.ports_penetration[3]', ('upperTank.portsData_zeta_out[3]' + 1.0 - 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[3]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'upperTank.ports[3].m_flow', 'upperTank.m_flow_turbulent[3]', ('upperTank.portsData_zeta_out[3]' + 1.0 - 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.medium.d' / 'upperTank.ports_penetration[3]', ('upperTank.portsData_zeta_in[3]' - 1.0 + 'upperTank.portAreas[3]' ^ 2.0 / 0.04000000000000001) / 'upperTank.portInDensities[3]' * 'upperTank.ports_penetration[3]', false, 1.0));
       'upperTank.s[3]' = 'upperTank.fluidLevel' - 'upperTank.portsData_height[3]';
     elseif 'upperTank.inFlow[3]' then
       'upperTank.ports[3].p' = 'upperTank.vessel_ps_static[3]';
       'upperTank.s[3]' = 'upperTank.ports[3].m_flow';
-    elseif true then
+    else
       'upperTank.ports[3].m_flow' = 0.0;
       'upperTank.s[3]' = ('upperTank.ports[3].p' - 'upperTank.vessel_ps_static[3]') / 101325.0 * ('upperTank.portsData_height[3]' - 'upperTank.fluidLevel');
     end if;
@@ -1544,12 +900,12 @@ package 'TanksWithOverflow'
     'pressure.p' = 'pressure.port.p';
     'pressure.port.m_flow' = 0.0;
     'pressure.port.h_outflow' = 167657.5;
-    'pipe.flowModel.states[1].p' = ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.setState_phX'('pipe.port_a.p', 'upperTank.ports[2].h_outflow', fill(0.0, 0))).p;
-    'pipe.flowModel.states[1].T' = ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.setState_phX'('pipe.port_a.p', 'upperTank.ports[2].h_outflow', fill(0.0, 0))).T;
-    'pipe.flowModel.states[2].p' = ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.setState_phX'('pipe.port_b.p', 'lowerTank.ports[1].h_outflow', fill(0.0, 0))).p;
-    'pipe.flowModel.states[2].T' = ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.setState_phX'('pipe.port_b.p', 'lowerTank.ports[1].h_outflow', fill(0.0, 0))).T;
-    'pipe.flowModel.vs[1]' = 'pipe.port_a.m_flow' / 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.density'('pipe.flowModel.states[1]') / 'pipe.flowModel.crossAreas[1]';
-    'pipe.flowModel.vs[2]' = -'pipe.port_b.m_flow' / 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.Medium.density'('pipe.flowModel.states[2]') / 'pipe.flowModel.crossAreas[2]';
+    'pipe.flowModel.states[1].p' = 'pipe.port_a.p';
+    'pipe.flowModel.states[1].T' = ('upperTank.ports[2].h_outflow' - 104929.0 - ('pipe.port_a.p' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15;
+    'pipe.flowModel.states[2].p' = 'pipe.port_b.p';
+    'pipe.flowModel.states[2].T' = ('lowerTank.ports[1].h_outflow' - 104929.0 - ('pipe.port_b.p' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15;
+    'pipe.flowModel.vs[1]' = 'pipe.port_a.m_flow' / ((1.0 + ('pipe.flowModel.states[1].p' - 101325.0) * 4.5154e-10 - ('pipe.flowModel.states[1].T' - 278.15) * 2.5713e-4) * 997.05) / 'pipe.flowModel.crossAreas[1]';
+    'pipe.flowModel.vs[2]' = -'pipe.port_b.m_flow' / ((1.0 + ('pipe.flowModel.states[2].p' - 101325.0) * 4.5154e-10 - ('pipe.flowModel.states[2].T' - 278.15) * 2.5713e-4) * 997.05) / 'pipe.flowModel.crossAreas[2]';
     'pipe.flowModel.crossAreas[1]' = 3.1415926535897936e-4;
     'pipe.flowModel.crossAreas[2]' = 3.1415926535897936e-4;
     'pipe.flowModel.dimensions[1]' = 0.02;
@@ -1558,10 +914,10 @@ package 'TanksWithOverflow'
     'pipe.flowModel.roughnesses[2]' = 2.5e-5;
     'pipe.flowModel.dheights[1]' = -5.0;
     'pipe.flowModel.pathLengths[1]' = 200.0;
-    'pipe.flowModel.rhos[1]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.density'('pipe.flowModel.states[1]');
-    'pipe.flowModel.rhos[2]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.density'('pipe.flowModel.states[2]');
-    'pipe.flowModel.mus[1]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.dynamicViscosity'('pipe.flowModel.states[1]');
-    'pipe.flowModel.mus[2]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.dynamicViscosity'('pipe.flowModel.states[2]');
+    'pipe.flowModel.rhos[1]' = (1.0 + ('pipe.flowModel.states[1].p' - 101325.0) * 4.5154e-10 - ('pipe.flowModel.states[1].T' - 278.15) * 2.5713e-4) * 997.05;
+    'pipe.flowModel.rhos[2]' = (1.0 + ('pipe.flowModel.states[2].p' - 101325.0) * 4.5154e-10 - ('pipe.flowModel.states[2].T' - 278.15) * 2.5713e-4) * 997.05;
+    'pipe.flowModel.mus[1]' = 0.0015;
+    'pipe.flowModel.mus[2]' = 0.0015;
     'pipe.flowModel.pathLengths_internal[1]' = 'pipe.flowModel.pathLengths[1]';
     'pipe.flowModel.Res_turbulent_internal[1]' = 4000.0;
     'pipe.flowModel.diameters[1]' = 0.5 * ('pipe.flowModel.dimensions[1]' + 'pipe.flowModel.dimensions[2]');
@@ -1569,7 +925,7 @@ package 'TanksWithOverflow'
     'pipe.flowModel.rhos_act[1]' = noEvent(if 'pipe.flowModel.m_flows[1]' > 0.0 then 'pipe.flowModel.rhos[1]' else 'pipe.flowModel.rhos[2]');
     'pipe.flowModel.mus_act[1]' = noEvent(if 'pipe.flowModel.m_flows[1]' > 0.0 then 'pipe.flowModel.mus[1]' else 'pipe.flowModel.mus[2]');
     'pipe.flowModel.Ib_flows[1]' = 0.0;
-    'pipe.flowModel.Fs_p[1]' = 0.5 * ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') * ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.pressure'('pipe.flowModel.states[2]') - 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.pipe.flowModel.Medium.pressure'('pipe.flowModel.states[1]'));
+    'pipe.flowModel.Fs_p[1]' = 0.5 * ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') * ('pipe.flowModel.states[2].p' - 'pipe.flowModel.states[1].p');
     'pipe.flowModel.dps_fg[1]' = 'pipe.flowModel.Fs_fg[1]' * 2.0 / ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]');
     'pipe.flowModel.Is[1]' = 'pipe.flowModel.m_flows[1]' * 'pipe.flowModel.pathLengths[1]';
     0.0 = 'pipe.flowModel.Ib_flows[1]' - 'pipe.flowModel.Fs_p[1]' - 'pipe.flowModel.Fs_fg[1]';
@@ -1588,7 +944,7 @@ package 'TanksWithOverflow'
     assert('lowerTank.medium.X[1]' >= (-1e-5) and 'lowerTank.medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('lowerTank.medium.X[1]') + "of substance " + "Linear cold water" + "\nof medium " + "Linear cold water" + " is not in the range 0..1", AssertionLevel.error);
     assert('lowerTank.medium.p' >= 0.0, "Pressure (= " + String('lowerTank.medium.p') + " Pa) of medium \"" + "Linear cold water" + "\" is negative\n(Temperature = " + String('lowerTank.medium.T') + " K)", AssertionLevel.error);
     'lowerTank.heatTransfer.surfaceAreas[1]' = 1.0 + 3.5449077018110318 * 'lowerTank.level';
-    'lowerTank.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.heatTransfer.Medium.temperature'('lowerTank.heatTransfer.states[1]');
+    'lowerTank.heatTransfer.Ts[1]' = 'lowerTank.heatTransfer.states[1].T';
     'lowerTank.heatTransfer.Ts[1]' = 'lowerTank.heatTransfer.heatPorts[1].T';
     'lowerTank.heatTransfer.Q_flows[1]' = 'lowerTank.heatTransfer.heatPorts[1].Q_flow';
     'lowerTank.portAreas[1]' = 0.7853981633974483 * 'lowerTank.portsData_diameter[1]' ^ 2.0;
@@ -1611,20 +967,20 @@ package 'TanksWithOverflow'
     'lowerTank.Hb_flow' = 'lowerTank.ports_H_flow[1]' + 'lowerTank.ports_H_flow[2]' + 'lowerTank.ports_E_flow[1]' + 'lowerTank.ports_E_flow[2]';
     'lowerTank.Qb_flow' = 'lowerTank.heatTransfer.Q_flows[1]';
     assert('lowerTank.fluidLevel' <= 20.0, "Vessel is overflowing (fluidLevel > fluidLevel_max = " + String('lowerTank.fluidLevel') + ")", AssertionLevel.error);
-    'lowerTank.portInDensities[1]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_phX'('lowerTank.vessel_ps_static[1]', 'pipe.port_b.h_outflow', fill(0.0, 0)));
-    'lowerTank.portVelocities[1]' = smooth(0, 'lowerTank.ports[1].m_flow' / 'lowerTank.portAreas[1]' / 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_phX'('lowerTank.vessel_ps_static[1]', if 'lowerTank.ports[1].m_flow' > 0.0 then 'pipe.port_b.h_outflow' else 'lowerTank.ports[1].h_outflow', fill(0.0, 0))));
-    'lowerTank.ports_penetration[1]' = 'Modelica.Fluid.Utilities.regStep'('lowerTank.fluidLevel' - 'lowerTank.portsData_height[1]' - 0.1 * 'lowerTank.portsData_diameter[1]', 1.0, 0.001, 0.1 * 'lowerTank.portsData_diameter[1]');
+    'lowerTank.portInDensities[1]' = (1.0 + ('lowerTank.vessel_ps_static[1]' - 101325.0) * 4.5154e-10 - (('pipe.port_b.h_outflow' - 104929.0 - ('lowerTank.vessel_ps_static[1]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05;
+    'lowerTank.portVelocities[1]' = smooth(0, 'lowerTank.ports[1].m_flow' / 'lowerTank.portAreas[1]' / ((1.0 + ('lowerTank.vessel_ps_static[1]' - 101325.0) * 4.5154e-10 - (((if 'lowerTank.ports[1].m_flow' > 0.0 then 'pipe.port_b.h_outflow' else 'lowerTank.ports[1].h_outflow') - 104929.0 - ('lowerTank.vessel_ps_static[1]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05));
+    'lowerTank.ports_penetration[1]' = smooth(1, if 'lowerTank.fluidLevel' - 'lowerTank.portsData_height[1]' - 0.1 * 'lowerTank.portsData_diameter[1]' > 0.1 * 'lowerTank.portsData_diameter[1]' then 1.0 else if 'lowerTank.fluidLevel' - 'lowerTank.portsData_height[1]' - 0.1 * 'lowerTank.portsData_diameter[1]' < (-0.1 * 'lowerTank.portsData_diameter[1]') then 0.001 else if 0.1 * 'lowerTank.portsData_diameter[1]' > 0.0 then ('lowerTank.fluidLevel' - 'lowerTank.portsData_height[1]' - 0.1 * 'lowerTank.portsData_diameter[1]') / (0.1 * 'lowerTank.portsData_diameter[1]') * ((('lowerTank.fluidLevel' - 'lowerTank.portsData_height[1]' - 0.1 * 'lowerTank.portsData_diameter[1]') / (0.1 * 'lowerTank.portsData_diameter[1]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'lowerTank.m_flow_turbulent[1]' = 0.01;
     'lowerTank.regularFlow[1]' = 'lowerTank.fluidLevel' >= 'lowerTank.portsData_height[1]';
     'lowerTank.inFlow[1]' = not 'lowerTank.regularFlow[1]' and ('lowerTank.s[1]' > 0.0 or 'lowerTank.portsData_height[1]' >= 20.0);
 
     if 'lowerTank.regularFlow[1]' then
-      'lowerTank.ports[1].p' = 'lowerTank.vessel_ps_static[1]' + 0.5 / 'lowerTank.portAreas[1]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('lowerTank.ports[1].m_flow', 'lowerTank.m_flow_turbulent[1]', ('lowerTank.portsData_zeta_in[1]' - 1.0 + 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.portInDensities[1]' * 'lowerTank.ports_penetration[1]', ('lowerTank.portsData_zeta_out[1]' + 1.0 - 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[1]', false, 1.0);
+      'lowerTank.ports[1].p' = 'lowerTank.vessel_ps_static[1]' + 0.5 / 'lowerTank.portAreas[1]' ^ 2.0 * smooth(2, if 'lowerTank.ports[1].m_flow' >= 'lowerTank.m_flow_turbulent[1]' then ('lowerTank.portsData_zeta_in[1]' - 1.0 + 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.portInDensities[1]' * 'lowerTank.ports_penetration[1]' * 'lowerTank.ports[1].m_flow' ^ 2.0 else if 'lowerTank.ports[1].m_flow' <= (-'lowerTank.m_flow_turbulent[1]') then -('lowerTank.portsData_zeta_out[1]' + 1.0 - 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[1]' * 'lowerTank.ports[1].m_flow' ^ 2.0 else if ('lowerTank.portsData_zeta_in[1]' - 1.0 + 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.portInDensities[1]' * 'lowerTank.ports_penetration[1]' >= ('lowerTank.portsData_zeta_out[1]' + 1.0 - 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[1]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('lowerTank.ports[1].m_flow', 'lowerTank.m_flow_turbulent[1]', ('lowerTank.portsData_zeta_in[1]' - 1.0 + 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.portInDensities[1]' * 'lowerTank.ports_penetration[1]', ('lowerTank.portsData_zeta_out[1]' + 1.0 - 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[1]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'lowerTank.ports[1].m_flow', 'lowerTank.m_flow_turbulent[1]', ('lowerTank.portsData_zeta_out[1]' + 1.0 - 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[1]', ('lowerTank.portsData_zeta_in[1]' - 1.0 + 'lowerTank.portAreas[1]' ^ 2.0) / 'lowerTank.portInDensities[1]' * 'lowerTank.ports_penetration[1]', false, 1.0));
       'lowerTank.s[1]' = 'lowerTank.fluidLevel' - 'lowerTank.portsData_height[1]';
     elseif 'lowerTank.inFlow[1]' then
       'lowerTank.ports[1].p' = 'lowerTank.vessel_ps_static[1]';
       'lowerTank.s[1]' = 'lowerTank.ports[1].m_flow';
-    elseif true then
+    else
       'lowerTank.ports[1].m_flow' = 0.0;
       'lowerTank.s[1]' = ('lowerTank.ports[1].p' - 'lowerTank.vessel_ps_static[1]') / 101325.0 * ('lowerTank.portsData_height[1]' - 'lowerTank.fluidLevel');
     end if;
@@ -1632,20 +988,20 @@ package 'TanksWithOverflow'
     'lowerTank.ports[1].h_outflow' = 'lowerTank.medium.h';
     'lowerTank.ports_H_flow[1]' = smooth(0, 'lowerTank.ports[1].m_flow' * (if 'lowerTank.ports[1].m_flow' > 0.0 then 'pipe.port_b.h_outflow' else 'lowerTank.ports[1].h_outflow')) "Enthalpy flow";
     'lowerTank.ports_E_flow[1]' = 'lowerTank.ports[1].m_flow' * (0.5 * 'lowerTank.portVelocities[1]' * 'lowerTank.portVelocities[1]' + 9.80665 * 'lowerTank.portsData_height[1]') "Flow of kinetic and potential energy";
-    'lowerTank.portInDensities[2]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_phX'('lowerTank.vessel_ps_static[2]', 'overflow.port_b.h_outflow', fill(0.0, 0)));
-    'lowerTank.portVelocities[2]' = smooth(0, 'lowerTank.ports[2].m_flow' / 'lowerTank.portAreas[2]' / 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.density'('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.lowerTank.Medium.setState_phX'('lowerTank.vessel_ps_static[2]', if 'lowerTank.ports[2].m_flow' > 0.0 then 'overflow.port_b.h_outflow' else 'lowerTank.ports[2].h_outflow', fill(0.0, 0))));
-    'lowerTank.ports_penetration[2]' = 'Modelica.Fluid.Utilities.regStep'('lowerTank.fluidLevel' - 'lowerTank.portsData_height[2]' - 0.1 * 'lowerTank.portsData_diameter[2]', 1.0, 0.001, 0.1 * 'lowerTank.portsData_diameter[2]');
+    'lowerTank.portInDensities[2]' = (1.0 + ('lowerTank.vessel_ps_static[2]' - 101325.0) * 4.5154e-10 - (('overflow.port_b.h_outflow' - 104929.0 - ('lowerTank.vessel_ps_static[2]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05;
+    'lowerTank.portVelocities[2]' = smooth(0, 'lowerTank.ports[2].m_flow' / 'lowerTank.portAreas[2]' / ((1.0 + ('lowerTank.vessel_ps_static[2]' - 101325.0) * 4.5154e-10 - (((if 'lowerTank.ports[2].m_flow' > 0.0 then 'overflow.port_b.h_outflow' else 'lowerTank.ports[2].h_outflow') - 104929.0 - ('lowerTank.vessel_ps_static[2]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05));
+    'lowerTank.ports_penetration[2]' = smooth(1, if 'lowerTank.fluidLevel' - 'lowerTank.portsData_height[2]' - 0.1 * 'lowerTank.portsData_diameter[2]' > 0.1 * 'lowerTank.portsData_diameter[2]' then 1.0 else if 'lowerTank.fluidLevel' - 'lowerTank.portsData_height[2]' - 0.1 * 'lowerTank.portsData_diameter[2]' < (-0.1 * 'lowerTank.portsData_diameter[2]') then 0.001 else if 0.1 * 'lowerTank.portsData_diameter[2]' > 0.0 then ('lowerTank.fluidLevel' - 'lowerTank.portsData_height[2]' - 0.1 * 'lowerTank.portsData_diameter[2]') / (0.1 * 'lowerTank.portsData_diameter[2]') * ((('lowerTank.fluidLevel' - 'lowerTank.portsData_height[2]' - 0.1 * 'lowerTank.portsData_diameter[2]') / (0.1 * 'lowerTank.portsData_diameter[2]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'lowerTank.m_flow_turbulent[2]' = 0.01;
     'lowerTank.regularFlow[2]' = 'lowerTank.fluidLevel' >= 'lowerTank.portsData_height[2]';
     'lowerTank.inFlow[2]' = not 'lowerTank.regularFlow[2]' and ('lowerTank.s[2]' > 0.0 or 'lowerTank.portsData_height[2]' >= 20.0);
 
     if 'lowerTank.regularFlow[2]' then
-      'lowerTank.ports[2].p' = 'lowerTank.vessel_ps_static[2]' + 0.5 / 'lowerTank.portAreas[2]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('lowerTank.ports[2].m_flow', 'lowerTank.m_flow_turbulent[2]', ('lowerTank.portsData_zeta_in[2]' - 1.0 + 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.portInDensities[2]' * 'lowerTank.ports_penetration[2]', ('lowerTank.portsData_zeta_out[2]' + 1.0 - 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[2]', false, 1.0);
+      'lowerTank.ports[2].p' = 'lowerTank.vessel_ps_static[2]' + 0.5 / 'lowerTank.portAreas[2]' ^ 2.0 * smooth(2, if 'lowerTank.ports[2].m_flow' >= 'lowerTank.m_flow_turbulent[2]' then ('lowerTank.portsData_zeta_in[2]' - 1.0 + 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.portInDensities[2]' * 'lowerTank.ports_penetration[2]' * 'lowerTank.ports[2].m_flow' ^ 2.0 else if 'lowerTank.ports[2].m_flow' <= (-'lowerTank.m_flow_turbulent[2]') then -('lowerTank.portsData_zeta_out[2]' + 1.0 - 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[2]' * 'lowerTank.ports[2].m_flow' ^ 2.0 else if ('lowerTank.portsData_zeta_in[2]' - 1.0 + 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.portInDensities[2]' * 'lowerTank.ports_penetration[2]' >= ('lowerTank.portsData_zeta_out[2]' + 1.0 - 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[2]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('lowerTank.ports[2].m_flow', 'lowerTank.m_flow_turbulent[2]', ('lowerTank.portsData_zeta_in[2]' - 1.0 + 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.portInDensities[2]' * 'lowerTank.ports_penetration[2]', ('lowerTank.portsData_zeta_out[2]' + 1.0 - 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[2]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'lowerTank.ports[2].m_flow', 'lowerTank.m_flow_turbulent[2]', ('lowerTank.portsData_zeta_out[2]' + 1.0 - 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.medium.d' / 'lowerTank.ports_penetration[2]', ('lowerTank.portsData_zeta_in[2]' - 1.0 + 'lowerTank.portAreas[2]' ^ 2.0) / 'lowerTank.portInDensities[2]' * 'lowerTank.ports_penetration[2]', false, 1.0));
       'lowerTank.s[2]' = 'lowerTank.fluidLevel' - 'lowerTank.portsData_height[2]';
     elseif 'lowerTank.inFlow[2]' then
       'lowerTank.ports[2].p' = 'lowerTank.vessel_ps_static[2]';
       'lowerTank.s[2]' = 'lowerTank.ports[2].m_flow';
-    elseif true then
+    else
       'lowerTank.ports[2].m_flow' = 0.0;
       'lowerTank.s[2]' = ('lowerTank.ports[2].p' - 'lowerTank.vessel_ps_static[2]') / 101325.0 * ('lowerTank.portsData_height[2]' - 'lowerTank.fluidLevel');
     end if;
@@ -1661,12 +1017,12 @@ package 'TanksWithOverflow'
     'switch1.y' = if 'switch1.u2' then 'switch1.u1' else 'switch1.u3';
     'm_flow_off.y' = 0.0;
     'm_flow_on.y' = 2.0;
-    'overflow.flowModel.states[1].p' = ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.setState_phX'('overflow.port_a.p', 'upperTank.ports[3].h_outflow', fill(0.0, 0))).p;
-    'overflow.flowModel.states[1].T' = ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.setState_phX'('overflow.port_a.p', 'upperTank.ports[3].h_outflow', fill(0.0, 0))).T;
-    'overflow.flowModel.states[2].p' = ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.setState_phX'('overflow.port_b.p', 'lowerTank.ports[2].h_outflow', fill(0.0, 0))).p;
-    'overflow.flowModel.states[2].T' = ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.setState_phX'('overflow.port_b.p', 'lowerTank.ports[2].h_outflow', fill(0.0, 0))).T;
-    'overflow.flowModel.vs[1]' = 'overflow.port_a.m_flow' / 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.density'('overflow.flowModel.states[1]') / 'overflow.flowModel.crossAreas[1]';
-    'overflow.flowModel.vs[2]' = -'overflow.port_b.m_flow' / 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.Medium.density'('overflow.flowModel.states[2]') / 'overflow.flowModel.crossAreas[2]';
+    'overflow.flowModel.states[1].p' = 'overflow.port_a.p';
+    'overflow.flowModel.states[1].T' = ('upperTank.ports[3].h_outflow' - 104929.0 - ('overflow.port_a.p' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15;
+    'overflow.flowModel.states[2].p' = 'overflow.port_b.p';
+    'overflow.flowModel.states[2].T' = ('lowerTank.ports[2].h_outflow' - 104929.0 - ('overflow.port_b.p' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15;
+    'overflow.flowModel.vs[1]' = 'overflow.port_a.m_flow' / ((1.0 + ('overflow.flowModel.states[1].p' - 101325.0) * 4.5154e-10 - ('overflow.flowModel.states[1].T' - 278.15) * 2.5713e-4) * 997.05) / 'overflow.flowModel.crossAreas[1]';
+    'overflow.flowModel.vs[2]' = -'overflow.port_b.m_flow' / ((1.0 + ('overflow.flowModel.states[2].p' - 101325.0) * 4.5154e-10 - ('overflow.flowModel.states[2].T' - 278.15) * 2.5713e-4) * 997.05) / 'overflow.flowModel.crossAreas[2]';
     'overflow.flowModel.crossAreas[1]' = 3.1415926535897936e-4;
     'overflow.flowModel.crossAreas[2]' = 3.1415926535897936e-4;
     'overflow.flowModel.dimensions[1]' = 0.02;
@@ -1675,10 +1031,10 @@ package 'TanksWithOverflow'
     'overflow.flowModel.roughnesses[2]' = 2.5e-5;
     'overflow.flowModel.dheights[1]' = -5.0;
     'overflow.flowModel.pathLengths[1]' = 200.0;
-    'overflow.flowModel.rhos[1]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.density'('overflow.flowModel.states[1]');
-    'overflow.flowModel.rhos[2]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.density'('overflow.flowModel.states[2]');
-    'overflow.flowModel.mus[1]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.dynamicViscosity'('overflow.flowModel.states[1]');
-    'overflow.flowModel.mus[2]' = 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.dynamicViscosity'('overflow.flowModel.states[2]');
+    'overflow.flowModel.rhos[1]' = (1.0 + ('overflow.flowModel.states[1].p' - 101325.0) * 4.5154e-10 - ('overflow.flowModel.states[1].T' - 278.15) * 2.5713e-4) * 997.05;
+    'overflow.flowModel.rhos[2]' = (1.0 + ('overflow.flowModel.states[2].p' - 101325.0) * 4.5154e-10 - ('overflow.flowModel.states[2].T' - 278.15) * 2.5713e-4) * 997.05;
+    'overflow.flowModel.mus[1]' = 0.0015;
+    'overflow.flowModel.mus[2]' = 0.0015;
     'overflow.flowModel.pathLengths_internal[1]' = 'overflow.flowModel.pathLengths[1]';
     'overflow.flowModel.Res_turbulent_internal[1]' = 4000.0;
     'overflow.flowModel.diameters[1]' = 0.5 * ('overflow.flowModel.dimensions[1]' + 'overflow.flowModel.dimensions[2]');
@@ -1686,7 +1042,7 @@ package 'TanksWithOverflow'
     'overflow.flowModel.rhos_act[1]' = noEvent(if 'overflow.flowModel.m_flows[1]' > 0.0 then 'overflow.flowModel.rhos[1]' else 'overflow.flowModel.rhos[2]');
     'overflow.flowModel.mus_act[1]' = noEvent(if 'overflow.flowModel.m_flows[1]' > 0.0 then 'overflow.flowModel.mus[1]' else 'overflow.flowModel.mus[2]');
     'overflow.flowModel.Ib_flows[1]' = 0.0;
-    'overflow.flowModel.Fs_p[1]' = 0.5 * ('overflow.flowModel.crossAreas[1]' + 'overflow.flowModel.crossAreas[2]') * ('Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.pressure'('overflow.flowModel.states[2]') - 'Modelica.Fluid.Examples.Tanks.TanksWithOverflow.overflow.flowModel.Medium.pressure'('overflow.flowModel.states[1]'));
+    'overflow.flowModel.Fs_p[1]' = 0.5 * ('overflow.flowModel.crossAreas[1]' + 'overflow.flowModel.crossAreas[2]') * ('overflow.flowModel.states[2].p' - 'overflow.flowModel.states[1].p');
     'overflow.flowModel.dps_fg[1]' = 'overflow.flowModel.Fs_fg[1]' * 2.0 / ('overflow.flowModel.crossAreas[1]' + 'overflow.flowModel.crossAreas[2]');
     'overflow.flowModel.Is[1]' = 'overflow.flowModel.m_flows[1]' * 'overflow.flowModel.pathLengths[1]';
     0.0 = 'overflow.flowModel.Ib_flows[1]' - 'overflow.flowModel.Fs_p[1]' - 'overflow.flowModel.Fs_fg[1]';

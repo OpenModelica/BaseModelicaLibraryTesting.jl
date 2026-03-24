@@ -7,7 +7,7 @@ package 'CompareSincExpSine'
     Real 'sinc.y' "Connector of Real output signal";
     parameter Real 'sinc.offset' = 0.0 "Offset of output signal y";
     parameter Real 'sinc.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
-    Real 'sinc.x'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 31.41592653589793 * time;
+    Real 'sinc.x'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     parameter Real 'expSine1.amplitude' = 1.0 "Amplitude of sine wave";
     parameter Real 'expSine1.f'(start = 2.0, unit = "Hz", quantity = "Frequency") = 5.0 "Frequency of sine wave";
     parameter Real 'expSine1.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of sine wave";
@@ -23,6 +23,7 @@ package 'CompareSincExpSine'
     parameter Real 'expSine2.offset' = 0.0 "Offset of output signal y";
     parameter Real 'expSine2.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
   equation
+    'sinc.x' = 31.41592653589793 * time;
     'sinc.y' = if time < 0.0 then 0.0 else if noEvent(time < 2.220446049250313e-16) then 1.0 else sin('sinc.x') / 'sinc.x';
     'expSine1.y' = if time < 0.0 then 0.0 else exp(-time * 5.0) * sin(31.41592653589793 * time);
     'expSine2.y' = if time < 0.0 then 0.0 else exp(-time * 5.0) * sin(31.41592653589793 * time + 1.5707963267948966);

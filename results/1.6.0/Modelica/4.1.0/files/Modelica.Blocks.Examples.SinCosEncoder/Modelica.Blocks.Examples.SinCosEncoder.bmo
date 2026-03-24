@@ -15,7 +15,7 @@ package 'SinCosEncoder'
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 
   model 'SinCosEncoder' "Evaluation of a sinusoidal encoder"
-    Real 'w'(unit = "rad/s", quantity = "AngularVelocity") = 6.283185307179586 * 'ramp.y' "2*pi*f";
+    Real 'w'(unit = "rad/s", quantity = "AngularVelocity") "2*pi*f";
     parameter Real 'ramp.height' = 100.0 "Height of ramp";
     parameter Real 'ramp.duration'(start = 2.0, min = 0.0, unit = "s", quantity = "Time") = 1.0 "Duration of ramp (= 0.0 gives a Step)";
     Real 'ramp.y' "Connector of Real output signal";
@@ -108,6 +108,7 @@ package 'SinCosEncoder'
   initial equation
     'integrator.y' = 0.0;
   equation
+    'w' = 6.283185307179586 * 'ramp.y';
     'cosB.f' = 'cosB.f_internal';
     'cosB.amplitude_constant.y' = 'cosB.amplitude_internal';
     'cosBminus.f' = 'cosBminus.f_internal';

@@ -1,5 +1,20 @@
 //! base 0.1.0
 package 'Dimmer_R'
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMax';
+  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
+
   function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
@@ -9,26 +24,11 @@ package 'Dimmer_R'
   external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
 
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMax';
-  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
-
   function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     output Real 'uMin';
   external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
 
   type 'Modelica.Blocks.Types.LimiterHomotopy' = enumeration('NoHomotopy', 'Linear', 'UpperLimit', 'LowerLimit');
 
@@ -46,8 +46,8 @@ package 'Dimmer_R'
     function constructor "Initialize 1-dim. table defined by matrix"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
-      input Integer[:] 'columns';
+      input Real 'table'[:, :];
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
       input Boolean 'verboseRead' = true;
@@ -97,7 +97,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'triac.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'triac.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'triac.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'triac.i'(unit = "A", quantity = "ElectricCurrent") = 'triac.p.i' "Current flowing from pin p to pin n";
+    Real 'triac.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Real 'triac.Ron'(min = 0.0, unit = "Ohm", quantity = "Resistance") = 1e-9 "Forward state-on differential resistance (closed resistance)";
     parameter Real 'triac.Goff'(min = 0.0, unit = "S", quantity = "Conductance") = 1e-9 "Backward state-off conductance (opened conductance)";
     parameter Real 'triac.Vknee'(min = 0.0, unit = "V", quantity = "ElectricPotential") = 0.0 "Forward threshold voltage";
@@ -813,6 +813,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'iH01.mean2.x' = 0.0;
     'iH01.mean2.y_last' = 0.0;
   equation
+    'triac.i' = 'triac.p.i';
     'triac.fire1' = 'triac.thyristor1.fire';
     'triac.fire2' = 'triac.thyristor2.fire';
     'triac.p.v' = 'triac.thyristor2.n.v';

@@ -23,14 +23,14 @@ package 'SinglePhaseTwoLevel_R'
     Real 'inverter.dc_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'inverter.dc_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'inverter.dc_n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'inverter.vDC'(unit = "V", quantity = "ElectricPotential") = 'inverter.dc_p.v' - 'inverter.dc_n.v' "DC voltage";
-    Real 'inverter.iDC'(unit = "A", quantity = "ElectricCurrent") = 'inverter.dc_p.i' "DC current";
-    Real 'inverter.powerDC'(unit = "W", quantity = "Power") = 'inverter.vDC' * 'inverter.iDC' "DC power";
+    Real 'inverter.vDC'(unit = "V", quantity = "ElectricPotential") "DC voltage";
+    Real 'inverter.iDC'(unit = "A", quantity = "ElectricCurrent") "DC current";
+    Real 'inverter.powerDC'(unit = "W", quantity = "Power") "DC power";
     Real 'inverter.ac.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'inverter.ac.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'inverter.vAC'(unit = "V", quantity = "ElectricPotential") = 'inverter.ac.v' "AC potential";
-    Real 'inverter.iAC'(unit = "A", quantity = "ElectricCurrent") = 'inverter.ac.i' "AC current";
-    Real 'inverter.powerAC'(unit = "W", quantity = "Power") = 'inverter.vAC' * 'inverter.iAC' "AC power";
+    Real 'inverter.vAC'(unit = "V", quantity = "ElectricPotential") "AC potential";
+    Real 'inverter.iAC'(unit = "A", quantity = "ElectricCurrent") "AC current";
+    Real 'inverter.powerAC'(unit = "W", quantity = "Power") "AC power";
     parameter Boolean 'inverter.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'inverter.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
     Real 'inverter.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
@@ -335,6 +335,12 @@ package 'SinglePhaseTwoLevel_R'
     'fundamentalWaveCurrent.mean2.x' = 0.0;
     'fundamentalWaveCurrent.mean2.y_last' = 0.0;
   equation
+    'inverter.vDC' = 'inverter.dc_p.v' - 'inverter.dc_n.v';
+    'inverter.iDC' = 'inverter.dc_p.i';
+    'inverter.powerDC' = 'inverter.vDC' * 'inverter.iDC';
+    'inverter.vAC' = 'inverter.ac.v';
+    'inverter.iAC' = 'inverter.ac.i';
+    'inverter.powerAC' = 'inverter.vAC' * 'inverter.iAC';
     'inverter.enableLogic.internalEnable[1]' = 'inverter.enableLogic.booleanReplicator.y[1]';
     'inverter.enableLogic.enableConstantSource.y' = 'inverter.enableLogic.booleanReplicator.u';
     'inverter.transistor_p.p.v' = 'inverter.diode_p.n.v';

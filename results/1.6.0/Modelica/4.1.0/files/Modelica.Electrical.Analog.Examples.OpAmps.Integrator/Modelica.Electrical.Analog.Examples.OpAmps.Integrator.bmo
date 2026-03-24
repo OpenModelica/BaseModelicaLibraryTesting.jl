@@ -35,12 +35,12 @@ package 'Integrator'
     parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'integrator.opAmp.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'NoHomotopy' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
     Real 'integrator.opAmp.vps'(unit = "V", quantity = "ElectricPotential") "Positive supply voltage";
     Real 'integrator.opAmp.vns'(unit = "V", quantity = "ElectricPotential") "Negative supply voltage";
-    Real 'integrator.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") = 'integrator.opAmp.in_p.v' - 'integrator.opAmp.in_n.v' "Input voltage difference";
-    Real 'integrator.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") = 'integrator.opAmp.out.v' "Output voltage to ground";
-    Real 'integrator.opAmp.p_in'(unit = "W", quantity = "Power") = 'integrator.opAmp.in_p.v' * 'integrator.opAmp.in_p.i' + 'integrator.opAmp.in_n.v' * 'integrator.opAmp.in_n.i' "Input power";
-    Real 'integrator.opAmp.p_out'(unit = "W", quantity = "Power") = 'integrator.opAmp.out.v' * 'integrator.opAmp.out.i' "Output power";
-    Real 'integrator.opAmp.p_s'(unit = "W", quantity = "Power") = -('integrator.opAmp.p_in' + 'integrator.opAmp.p_out') "Supply power";
-    Real 'integrator.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") = 'integrator.opAmp.p_s' / ('integrator.opAmp.vps' - 'integrator.opAmp.vns') "Supply current";
+    Real 'integrator.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") "Input voltage difference";
+    Real 'integrator.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") "Output voltage to ground";
+    Real 'integrator.opAmp.p_in'(unit = "W", quantity = "Power") "Input power";
+    Real 'integrator.opAmp.p_out'(unit = "W", quantity = "Power") "Output power";
+    Real 'integrator.opAmp.p_s'(unit = "W", quantity = "Power") "Supply power";
+    Real 'integrator.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") "Supply current";
     Real 'integrator.opAmp.in_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'integrator.opAmp.in_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'integrator.opAmp.in_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -52,7 +52,7 @@ package 'Integrator'
     parameter Real 'integrator.f'(unit = "Hz", quantity = "Frequency") = 10.0 "Frequency";
     parameter Real 'integrator.R'(unit = "Ohm", quantity = "Resistance") = 1000.0 "Resistance at negative input of OpAmp";
     parameter Real 'integrator.C'(min = 0.0, unit = "F", quantity = "Capacitance") = 7.957747154594767e-6 "Calculated capacitance to reach desired amplification k";
-    Real 'integrator.v'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential") = 'integrator.c.v' "Capacitor voltage = state";
+    Real 'integrator.v'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential") "Capacitor voltage = state";
     Real 'integrator.c.v'(start = 0.0, unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
     Real 'integrator.c.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'integrator.c.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
@@ -103,6 +103,13 @@ package 'Integrator'
     parameter Real 'vIn.offset'(unit = "V", quantity = "ElectricPotential") = -5.0 "Voltage offset";
     parameter Real 'vIn.startTime'(unit = "s", quantity = "Time") = -0.035 "Time offset";
   equation
+    'integrator.opAmp.v_in' = 'integrator.opAmp.in_p.v' - 'integrator.opAmp.in_n.v';
+    'integrator.opAmp.v_out' = 'integrator.opAmp.out.v';
+    'integrator.opAmp.p_in' = 'integrator.opAmp.in_p.v' * 'integrator.opAmp.in_p.i' + 'integrator.opAmp.in_n.v' * 'integrator.opAmp.in_n.i';
+    'integrator.opAmp.p_out' = 'integrator.opAmp.out.v' * 'integrator.opAmp.out.i';
+    'integrator.opAmp.p_s' = -('integrator.opAmp.p_in' + 'integrator.opAmp.p_out');
+    'integrator.opAmp.i_s' = 'integrator.opAmp.p_s' / ('integrator.opAmp.vps' - 'integrator.opAmp.vns');
+    'integrator.v' = 'integrator.c.v';
     'integrator.n1.v' = 'integrator.opAmp.in_p.v';
     'integrator.n1.v' = 'integrator.n2.v';
     'integrator.opAmp.in_p.i' - 'integrator.n1.i' - 'integrator.n2.i' = 0.0;

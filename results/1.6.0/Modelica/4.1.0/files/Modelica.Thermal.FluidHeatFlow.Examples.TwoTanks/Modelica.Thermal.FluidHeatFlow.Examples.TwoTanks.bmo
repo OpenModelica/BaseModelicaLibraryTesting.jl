@@ -1,11 +1,11 @@
 //! base 0.1.0
 package 'TwoTanks'
   model 'TwoTanks' "Two connected open tanks"
-    output Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'pipe.V_flow' "Volume flow rate tank 1 -> tank 2";
-    output Real 'level1'(unit = "m", quantity = "Length") = 'openTank1.level' "Level in tank 1";
-    output Real 'T1'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'openTank1.TTank' "Temperature in tank 1";
-    output Real 'level2'(unit = "m", quantity = "Length") = 'openTank2.level' "Level in tank 2";
-    output Real 'T2'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'openTank2.TTank' "Temperature in tank 2";
+    output Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate tank 1 -> tank 2";
+    output Real 'level1'(unit = "m", quantity = "Length") "Level in tank 1";
+    output Real 'T1'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature in tank 1";
+    output Real 'level2'(unit = "m", quantity = "Length") "Level in tank 2";
+    output Real 'T2'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature in tank 2";
     parameter Real 'openTank1.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'openTank1.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
     parameter Real 'openTank1.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
@@ -117,6 +117,11 @@ package 'TwoTanks'
     parameter Real 'pipe.g'(min = 0.0, unit = "m/s2", quantity = "Acceleration") = 9.80665 "Gravitation";
     Real 'pipe.Q_flowHeatPort'(unit = "W", quantity = "Power") "Heat flow at conditional heatPort";
   equation
+    'V_flow' = 'pipe.V_flow';
+    'level1' = 'openTank1.level';
+    'T1' = 'openTank1.TTank';
+    'level2' = 'openTank2.level';
+    'T2' = 'openTank2.TTank';
     'openTank1.flowPort.h' = 'pipe.flowPort_a.h';
     assert(abs('openTank1.flowPort.medium.rho' - 'pipe.flowPort_a.medium.rho') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
     assert(abs('openTank1.flowPort.medium.cp' - 'pipe.flowPort_a.medium.cp') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
@@ -168,7 +173,7 @@ package 'TwoTanks'
       'pipe.pressureDrop' = 5.0 * 'pipe.volumeFlow' + 'pipe.k' * ('pipe.volumeFlow' - 2.0) ^ 2.0;
     elseif 'pipe.volumeFlow' < (-2.0) then
       'pipe.pressureDrop' = 5.0 * 'pipe.volumeFlow' - 'pipe.k' * ('pipe.volumeFlow' + 2.0) ^ 2.0;
-    elseif true then
+    else
       'pipe.pressureDrop' = 5.0 * 'pipe.volumeFlow';
     end if;
 

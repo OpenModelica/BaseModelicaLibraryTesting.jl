@@ -1,34 +1,17 @@
 //! base 0.1.0
 package 'ThreePhaseTransformerWithRectifier'
-  function 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass' "Return low pass filter coefficients at given cut-off frequency"
-    input Real[:] 'cr_in';
-    input Real[:] 'c0_in';
-    input Real[size('c0_in', 1)] 'c1_in';
-    input Real 'f_cut'(unit = "Hz", quantity = "Frequency");
-    output Real[size('cr_in', 1)] 'cr';
-    output Real[size('c0_in', 1)] 'c0';
-    output Real[size('c0_in', 1)] 'c1';
-    Real 'w_cut'(unit = "rad/s", quantity = "AngularVelocity") = 6.283185307179586 * 'f_cut';
-    Real 'w_cut2' = 'w_cut' * 'w_cut';
-  algorithm
-    assert('f_cut' > 0.0, "Cut-off frequency f_cut must be positive", AssertionLevel.error);
-    'cr' := 'w_cut' * 'cr_in';
-    'c1' := 'w_cut' * 'c1_in';
-    'c0' := 'w_cut2' * 'c0_in';
-  end 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass';
-
   function 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass' "Return low pass filter roots as needed for block for given cut-off frequency"
-    input Real[:] 'cr_in';
-    input Real[:] 'c0_in';
-    input Real[size('c0_in', 1)] 'c1_in';
+    input Real 'cr_in'[:];
+    input Real 'c0_in'[:];
+    input Real 'c1_in'[size('c0_in', 1)];
     input Real 'f_cut'(unit = "Hz", quantity = "Frequency");
-    output Real[size('cr_in', 1)] 'r';
-    output Real[size('c0_in', 1)] 'a';
-    output Real[size('c0_in', 1)] 'b';
-    output Real[size('c0_in', 1)] 'ku';
-    Real[size('c0_in', 1)] 'c0';
-    Real[size('c0_in', 1)] 'c1';
-    Real[size('cr_in', 1)] 'cr';
+    output Real 'r'[size('cr_in', 1)];
+    output Real 'a'[size('c0_in', 1)];
+    output Real 'b'[size('c0_in', 1)];
+    output Real 'ku'[size('c0_in', 1)];
+    Real 'c0'[size('c0_in', 1)];
+    Real 'c1'[size('c0_in', 1)];
+    Real 'cr'[size('cr_in', 1)];
   algorithm
     ('cr', 'c0', 'c1') := 'Modelica.Blocks.Continuous.Internal.Filter.coefficients.lowPass'('cr_in', 'c0_in', 'c1_in', 'f_cut');
 
@@ -203,7 +186,7 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'transformer.core1.MagRel'(fixed = true, start = -0.4, max = 1.0, min = -1.0, unit = "1", quantity = "Relative magnetization") "Relative magnetization at initialization (-1..1)";
     Real 'transformer.core1.LossPowerStat'(unit = "W", quantity = "Power") "Ferromagnetic (static) hysteresis losses";
     Real 'transformer.core1.LossPowerEddy'(unit = "W", quantity = "Power") "Eddy current losses (dynamic hysteresis losses)";
-    Real 'transformer.core1.derHstat'(start = 0.0, unit = "A/(m.s)") = der('transformer.core1.Hstat');
+    Real 'transformer.core1.derHstat'(start = 0.0, unit = "A/(m.s)");
     parameter Real 'transformer.core1.eddyCurrentFactor'(unit = "S.m") = 0.04583333333333333;
     Boolean 'transformer.core1.asc'(start = true) "True when der(Hstat)>0";
     Real 'transformer.core1.hystR'(unit = "T", quantity = "MagneticFluxDensity") "Rising branch of limiting hysteresis loop";
@@ -254,7 +237,7 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'transformer.core2.MagRel'(fixed = true, start = 0.8, max = 1.0, min = -1.0, unit = "1", quantity = "Relative magnetization") "Relative magnetization at initialization (-1..1)";
     Real 'transformer.core2.LossPowerStat'(unit = "W", quantity = "Power") "Ferromagnetic (static) hysteresis losses";
     Real 'transformer.core2.LossPowerEddy'(unit = "W", quantity = "Power") "Eddy current losses (dynamic hysteresis losses)";
-    Real 'transformer.core2.derHstat'(start = 0.0, unit = "A/(m.s)") = der('transformer.core2.Hstat');
+    Real 'transformer.core2.derHstat'(start = 0.0, unit = "A/(m.s)");
     parameter Real 'transformer.core2.eddyCurrentFactor'(unit = "S.m") = 0.04583333333333333;
     Boolean 'transformer.core2.asc'(start = true) "True when der(Hstat)>0";
     Real 'transformer.core2.hystR'(unit = "T", quantity = "MagneticFluxDensity") "Rising branch of limiting hysteresis loop";
@@ -305,7 +288,7 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'transformer.core3.MagRel'(fixed = false, start = -0.4, max = 1.0, min = -1.0, unit = "1", quantity = "Relative magnetization") "Relative magnetization at initialization (-1..1)";
     Real 'transformer.core3.LossPowerStat'(unit = "W", quantity = "Power") "Ferromagnetic (static) hysteresis losses";
     Real 'transformer.core3.LossPowerEddy'(unit = "W", quantity = "Power") "Eddy current losses (dynamic hysteresis losses)";
-    Real 'transformer.core3.derHstat'(start = 0.0, unit = "A/(m.s)") = der('transformer.core3.Hstat');
+    Real 'transformer.core3.derHstat'(start = 0.0, unit = "A/(m.s)");
     parameter Real 'transformer.core3.eddyCurrentFactor'(unit = "S.m") = 0.04583333333333333;
     Boolean 'transformer.core3.asc'(start = true) "True when der(Hstat)>0";
     Real 'transformer.core3.hystR'(unit = "T", quantity = "MagneticFluxDensity") "Rising branch of limiting hysteresis loop";
@@ -469,8 +452,8 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'transformer.resistor11.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.resistor11.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.resistor11.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.resistor11.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.resistor11.T_heatPort' "Port temperature";
-    Real 'transformer.resistor11.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.resistor11.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.resistor11.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.resistor11.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.resistor11.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.resistor11.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.resistor11.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -485,8 +468,8 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'transformer.resistor21.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.resistor21.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.resistor21.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.resistor21.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.resistor21.T_heatPort' "Port temperature";
-    Real 'transformer.resistor21.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.resistor21.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.resistor21.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.resistor21.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.resistor21.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.resistor21.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.resistor21.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -501,8 +484,8 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'transformer.resistor12.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.resistor12.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.resistor12.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.resistor12.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.resistor12.T_heatPort' "Port temperature";
-    Real 'transformer.resistor12.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.resistor12.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.resistor12.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.resistor12.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.resistor12.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.resistor12.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.resistor12.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -517,8 +500,8 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'transformer.resistor22.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.resistor22.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.resistor22.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.resistor22.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.resistor22.T_heatPort' "Port temperature";
-    Real 'transformer.resistor22.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.resistor22.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.resistor22.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.resistor22.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.resistor22.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.resistor22.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.resistor22.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -533,8 +516,8 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'transformer.resistor23.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.resistor23.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.resistor23.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.resistor23.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.resistor23.T_heatPort' "Port temperature";
-    Real 'transformer.resistor23.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.resistor23.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.resistor23.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.resistor23.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.resistor23.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.resistor23.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.resistor23.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -549,8 +532,8 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'transformer.resistor13.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.resistor13.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.resistor13.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.resistor13.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.resistor13.T_heatPort' "Port temperature";
-    Real 'transformer.resistor13.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.resistor13.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.resistor13.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.resistor13.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.resistor13.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.resistor13.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.resistor13.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -823,9 +806,9 @@ package 'ThreePhaseTransformerWithRectifier'
     Real 'capacitor2.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'capacitor2.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Real 'capacitor2.C'(start = 1.0, min = 0.0, unit = "F", quantity = "Capacitance") = 1e-6 "Capacitance";
-    Real 'rExp1.y' = 'transformer.LossPowerStat' "Value of Real output";
-    Real 'rExp2.y' = 'transformer.LossPowerEddy' "Value of Real output";
-    Real 'rExp3.y' = 'transformer.LossPowerWinding' "Value of Real output";
+    Real 'rExp1.y' "Value of Real output";
+    Real 'rExp2.y' "Value of Real output";
+    Real 'rExp3.y' "Value of Real output";
     Real 'pdissStatAvg.u' "Connector of Real input signal";
     Real 'pdissStatAvg.y' "Connector of Real output signal";
     parameter 'Modelica.Blocks.Types.AnalogFilter' 'pdissStatAvg.analogFilter' = 'Modelica.Blocks.Types.AnalogFilter'.'CriticalDamping' "Analog filter characteristics (CriticalDamping/Bessel/Butterworth/ChebyshevI)";
@@ -936,6 +919,24 @@ package 'ThreePhaseTransformerWithRectifier'
     'transformer.core2.derHstat' = 0.0;
     'transformer.core3.derHstat' = 0.0;
   equation
+    'transformer.core1.derHstat' = der('transformer.core1.Hstat');
+    'transformer.core2.derHstat' = der('transformer.core2.Hstat');
+    'transformer.core3.derHstat' = der('transformer.core3.Hstat');
+    'transformer.resistor11.heatPort.T' = 'transformer.resistor11.T_heatPort';
+    'transformer.resistor11.heatPort.Q_flow' = -'transformer.resistor11.LossPower';
+    'transformer.resistor21.heatPort.T' = 'transformer.resistor21.T_heatPort';
+    'transformer.resistor21.heatPort.Q_flow' = -'transformer.resistor21.LossPower';
+    'transformer.resistor12.heatPort.T' = 'transformer.resistor12.T_heatPort';
+    'transformer.resistor12.heatPort.Q_flow' = -'transformer.resistor12.LossPower';
+    'transformer.resistor22.heatPort.T' = 'transformer.resistor22.T_heatPort';
+    'transformer.resistor22.heatPort.Q_flow' = -'transformer.resistor22.LossPower';
+    'transformer.resistor23.heatPort.T' = 'transformer.resistor23.T_heatPort';
+    'transformer.resistor23.heatPort.Q_flow' = -'transformer.resistor23.LossPower';
+    'transformer.resistor13.heatPort.T' = 'transformer.resistor13.T_heatPort';
+    'transformer.resistor13.heatPort.Q_flow' = -'transformer.resistor13.LossPower';
+    'rExp1.y' = 'transformer.LossPowerStat';
+    'rExp2.y' = 'transformer.LossPowerEddy';
+    'rExp3.y' = 'transformer.LossPowerWinding';
     'transformer.winding11.port_n.V_m' = 'transformer.winding21.port_p.V_m';
     'transformer.winding11.p.v' = 'transformer.resistor11.n.v';
     'transformer.resistor11.p.v' = 'transformer.p1.v';
@@ -1070,7 +1071,7 @@ package 'ThreePhaseTransformerWithRectifier'
     elseif 'transformer.core1.asc' then
       'transformer.core1.dHyst' = der('transformer.core1.hystR' - 6.2831853106e-5 * 'transformer.core1.Hstat');
       'transformer.core1.k' = max(0.01, ('transformer.core1.hystF' - 'transformer.core1.B') / 'transformer.core1.diffHyst');
-    elseif true then
+    else
       'transformer.core1.dHyst' = der('transformer.core1.hystF' - 6.2831853106e-5 * 'transformer.core1.Hstat');
       'transformer.core1.k' = max(0.01, ('transformer.core1.B' - 'transformer.core1.hystR') / 'transformer.core1.diffHyst');
     end if;
@@ -1104,7 +1105,7 @@ package 'ThreePhaseTransformerWithRectifier'
     elseif 'transformer.core2.asc' then
       'transformer.core2.dHyst' = der('transformer.core2.hystR' - 6.2831853106e-5 * 'transformer.core2.Hstat');
       'transformer.core2.k' = max(0.01, ('transformer.core2.hystF' - 'transformer.core2.B') / 'transformer.core2.diffHyst');
-    elseif true then
+    else
       'transformer.core2.dHyst' = der('transformer.core2.hystF' - 6.2831853106e-5 * 'transformer.core2.Hstat');
       'transformer.core2.k' = max(0.01, ('transformer.core2.B' - 'transformer.core2.hystR') / 'transformer.core2.diffHyst');
     end if;
@@ -1138,7 +1139,7 @@ package 'ThreePhaseTransformerWithRectifier'
     elseif 'transformer.core3.asc' then
       'transformer.core3.dHyst' = der('transformer.core3.hystR' - 6.2831853106e-5 * 'transformer.core3.Hstat');
       'transformer.core3.k' = max(0.01, ('transformer.core3.hystF' - 'transformer.core3.B') / 'transformer.core3.diffHyst');
-    elseif true then
+    else
       'transformer.core3.dHyst' = der('transformer.core3.hystF' - 6.2831853106e-5 * 'transformer.core3.Hstat');
       'transformer.core3.k' = max(0.01, ('transformer.core3.B' - 'transformer.core3.hystR') / 'transformer.core3.diffHyst');
     end if;

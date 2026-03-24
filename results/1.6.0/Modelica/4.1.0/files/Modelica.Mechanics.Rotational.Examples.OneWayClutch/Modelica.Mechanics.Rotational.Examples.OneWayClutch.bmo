@@ -1,14 +1,5 @@
 //! base 0.1.0
 package 'OneWayClutch'
-  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    input Real 'der_u';
-    output Real 'der_y';
-  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
-
   function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
@@ -18,6 +9,15 @@ package 'OneWayClutch'
     annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
   end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
 
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
+
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   class 'Modelica.Blocks.Types.ExternalCombiTable1D'
@@ -26,8 +26,8 @@ package 'OneWayClutch'
     function constructor "Initialize 1-dim. table defined by matrix"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
-      input Integer[:] 'columns';
+      input Real 'table'[:, :];
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
       input Boolean 'verboseRead' = true;
@@ -121,10 +121,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'signalEngagement.y' "Connector of Real output signal";
     parameter Real 'signalEngagement.offset' = 0.0 "Offset of output signal y";
     parameter Real 'signalEngagement.startTime'(unit = "s", quantity = "Time") = 0.3 "Output y = offset for time < startTime";
-    Real 'signalEngagement.T_width'(unit = "s", quantity = "Time") = 0.65;
+    Real 'signalEngagement.T_width'(unit = "s", quantity = "Time");
     Real 'signalEngagement.T_start'(unit = "s", quantity = "Time") "Start time of current period";
     Integer 'signalEngagement.count' "Period count";
   equation
+    'signalEngagement.T_width' = 0.65;
     'torque.flange.phi' = 'inertiaIn.flange_a.phi';
     'signalTorque.y' = 'torque.tau';
     'inertiaIn.flange_b.phi' = 'oneWayClutch.flange_a.phi';

@@ -11,9 +11,9 @@ package 'DemoPowerSupplyWithBuffer'
     parameter Real 'dcPowerSupply.Rcv'(min = 2.220446049250313e-16, unit = "Ohm", quantity = "Resistance") = 0.01 "Inner resistance in constant voltage region";
     parameter Real 'dcPowerSupply.Gcc'(min = 2.220446049250313e-16, unit = "S", quantity = "Conductance") = 0.01 "Inner conductance in constant current region";
     parameter Real 'dcPowerSupply.iBack'(unit = "A", quantity = "ElectricCurrent") = 0.1 "Allowed back current";
-    Real 'dcPowerSupply.v'(start = 60.0, unit = "V", quantity = "ElectricPotential") = 'dcPowerSupply.p.v' - 'dcPowerSupply.n.v' "Terminal voltage";
-    Real 'dcPowerSupply.i'(unit = "A", quantity = "ElectricCurrent") = 'dcPowerSupply.p.i' "Current (delivered < 0)";
-    Real 'dcPowerSupply.P'(unit = "W", quantity = "Power") = 'dcPowerSupply.v' * 'dcPowerSupply.i' "Power (delivered < 0)";
+    Real 'dcPowerSupply.v'(start = 60.0, unit = "V", quantity = "ElectricPotential") "Terminal voltage";
+    Real 'dcPowerSupply.i'(unit = "A", quantity = "ElectricCurrent") "Current (delivered < 0)";
+    Real 'dcPowerSupply.P'(unit = "W", quantity = "Power") "Power (delivered < 0)";
     Real 'dcPowerSupply.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'dcPowerSupply.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'dcPowerSupply.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -76,7 +76,7 @@ package 'DemoPowerSupplyWithBuffer'
     Real 'pulse.y' "Connector of Real output signal";
     parameter Real 'pulse.offset' = 0.0 "Offset of output signal y";
     parameter Real 'pulse.startTime'(unit = "s", quantity = "Time") = 0.5 "Output y = offset for time < startTime";
-    Real 'pulse.T_width'(unit = "s", quantity = "Time") = 5e-4;
+    Real 'pulse.T_width'(unit = "s", quantity = "Time");
     Real 'pulse.T_start'(unit = "s", quantity = "Time") "Start time of current period";
     Integer 'pulse.count' "Period count";
     parameter Real 'step.height' = -25.0 "Height of step";
@@ -89,6 +89,10 @@ package 'DemoPowerSupplyWithBuffer'
     parameter Real 'add.k1' = 1.0 "Gain of input signal 1";
     parameter Real 'add.k2' = 1.0 "Gain of input signal 2";
   equation
+    'dcPowerSupply.v' = 'dcPowerSupply.p.v' - 'dcPowerSupply.n.v';
+    'dcPowerSupply.i' = 'dcPowerSupply.p.i';
+    'dcPowerSupply.P' = 'dcPowerSupply.v' * 'dcPowerSupply.i';
+    'pulse.T_width' = 5e-4;
     'ground.p.v' = 'bufferCapacitor.n.v';
     'ground.p.v' = 'loadCurrent.n.v';
     'ground.p.v' = 'dcPowerSupply.n.v';
@@ -114,13 +118,13 @@ package 'DemoPowerSupplyWithBuffer'
         'dcPowerSupply.v' = 60.0 - 0.01 * (-'dcPowerSupply.i');
       elseif 'dcPowerSupply.cc' then
         -'dcPowerSupply.i' = 50.0 - 0.01 * 'dcPowerSupply.v';
-      elseif true then
+      else
         1200.0 = 'dcPowerSupply.v' * (-'dcPowerSupply.i');
       end if;
-    elseif true then
+    else
       if 'dcPowerSupply.cv' then
         'dcPowerSupply.v' = 60.0 - 0.01 * (-'dcPowerSupply.i');
-      elseif true then
+      else
         -'dcPowerSupply.i' = 50.0 - 0.01 * 'dcPowerSupply.v';
       end if;
     end if;

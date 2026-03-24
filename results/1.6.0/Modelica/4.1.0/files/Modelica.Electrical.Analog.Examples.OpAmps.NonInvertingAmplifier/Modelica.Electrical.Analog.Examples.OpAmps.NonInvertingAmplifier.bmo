@@ -63,12 +63,12 @@ package 'NonInvertingAmplifier'
     parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'buffer.opAmp.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'NoHomotopy' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
     Real 'buffer.opAmp.vps'(unit = "V", quantity = "ElectricPotential") "Positive supply voltage";
     Real 'buffer.opAmp.vns'(unit = "V", quantity = "ElectricPotential") "Negative supply voltage";
-    Real 'buffer.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") = 'buffer.opAmp.in_p.v' - 'buffer.opAmp.in_n.v' "Input voltage difference";
-    Real 'buffer.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") = 'buffer.opAmp.out.v' "Output voltage to ground";
-    Real 'buffer.opAmp.p_in'(unit = "W", quantity = "Power") = 'buffer.opAmp.in_p.v' * 'buffer.opAmp.in_p.i' + 'buffer.opAmp.in_n.v' * 'buffer.opAmp.in_n.i' "Input power";
-    Real 'buffer.opAmp.p_out'(unit = "W", quantity = "Power") = 'buffer.opAmp.out.v' * 'buffer.opAmp.out.i' "Output power";
-    Real 'buffer.opAmp.p_s'(unit = "W", quantity = "Power") = -('buffer.opAmp.p_in' + 'buffer.opAmp.p_out') "Supply power";
-    Real 'buffer.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") = 'buffer.opAmp.p_s' / ('buffer.opAmp.vps' - 'buffer.opAmp.vns') "Supply current";
+    Real 'buffer.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") "Input voltage difference";
+    Real 'buffer.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") "Output voltage to ground";
+    Real 'buffer.opAmp.p_in'(unit = "W", quantity = "Power") "Input power";
+    Real 'buffer.opAmp.p_out'(unit = "W", quantity = "Power") "Output power";
+    Real 'buffer.opAmp.p_s'(unit = "W", quantity = "Power") "Supply power";
+    Real 'buffer.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") "Supply current";
     Real 'buffer.opAmp.in_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'buffer.opAmp.in_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'buffer.opAmp.in_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -108,6 +108,12 @@ package 'NonInvertingAmplifier'
     Real 'buffer.r2.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'buffer.r2.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
   equation
+    'buffer.opAmp.v_in' = 'buffer.opAmp.in_p.v' - 'buffer.opAmp.in_n.v';
+    'buffer.opAmp.v_out' = 'buffer.opAmp.out.v';
+    'buffer.opAmp.p_in' = 'buffer.opAmp.in_p.v' * 'buffer.opAmp.in_p.i' + 'buffer.opAmp.in_n.v' * 'buffer.opAmp.in_n.i';
+    'buffer.opAmp.p_out' = 'buffer.opAmp.out.v' * 'buffer.opAmp.out.i';
+    'buffer.opAmp.p_s' = -('buffer.opAmp.p_in' + 'buffer.opAmp.p_out');
+    'buffer.opAmp.i_s' = 'buffer.opAmp.p_s' / ('buffer.opAmp.vps' - 'buffer.opAmp.vns');
     'buffer.opAmp.out.v' = 'buffer.r2.p.v';
     'buffer.opAmp.out.v' = 'buffer.p2.v';
     'buffer.r2.p.i' + 'buffer.opAmp.out.i' - 'buffer.p2.i' = 0.0;

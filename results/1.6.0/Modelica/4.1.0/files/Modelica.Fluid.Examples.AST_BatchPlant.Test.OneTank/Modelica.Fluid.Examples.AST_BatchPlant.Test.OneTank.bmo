@@ -1,264 +1,7 @@
 //! base 0.1.0
 package 'OneTank'
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.ambient_fixed.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 4184.0 * ('T' - 273.15);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.ambient_fixed.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.flowSource.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 4184.0 * ('T' - 273.15);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.flowSource.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.density' "Return density"
-    input 'pipe.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := 995.586;
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.density';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.setState_phX' "Return thermodynamic state from p, h, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'pipe.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'pipe.Medium.ThermodynamicState'('p', 273.15 + 'h' / 4184.0);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.density' "Return density"
-    input 'pipe.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := 995.586;
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.density';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.dynamicViscosity' "Return dynamic viscosity"
-    input 'pipe.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-  algorithm
-    'eta' := 0.001;
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.dynamicViscosity';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.pressure' "Return pressure"
-    input 'pipe.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  algorithm
-    'p' := 'state'.'p';
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.pressure';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / log10('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric' "Calculate mass flow rate as function of pressure drop due to friction"
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    output Real 'dm_flow_ddp_fric';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'lambda2';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'dRe_ddp';
-    Real 'aux1';
-    Real 'aux2';
-  algorithm
-    if 'dp_fric' >= 0.0 then
-      'rho' := 'rho_a';
-      'mu' := 'mu_a';
-    elseif true then
-      'rho' := 'rho_b';
-      'mu' := 'mu_b';
-    end if;
-
-    'lambda2' := abs('dp_fric') * 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' * 'mu') "Known as lambda2=f(dp)";
-    'aux1' := 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' ^ 2.0);
-    'Re' := 'lambda2' / 64.0 "Hagen-Poiseuille";
-    'dRe_ddp' := 'aux1' / 64.0 "Hagen-Poiseuille";
-
-    if 'Re' > 'Re1' then
-      'Re' := -2.0 * sqrt('lambda2') * log10(2.51 / sqrt('lambda2') + 0.27 * 'Delta') "Colebrook-White";
-      'aux2' := sqrt('aux1' * abs('dp_fric'));
-      'dRe_ddp' := 0.43429448190325176 * (5.02 / (2.0 * abs('dp_fric') * (2.51 / 'aux2' + 0.27 * 'Delta')) - 2.0 * log(2.51 / 'aux2' + 0.27 * 'Delta') * 'aux1' / (2.0 * 'aux2'));
-
-      if 'Re' < 'Re2' then
-        ('Re', 'dRe_ddp') := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative'('lambda2', 'Re1', 'Re2', 'Delta', 'dp_fric');
-      end if;
-    end if;
-
-    'm_flow' := 'crossArea' / 'diameter' * 'mu' * (if 'dp_fric' >= 0.0 then 'Re' else -'Re');
-    'dm_flow_ddp_fric' := 'crossArea' / 'diameter' * 'mu' * 'dRe_ddp';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative' "Interpolation in log-log space using a cubic Hermite polynomial, where x=log10(lambda2), y=log10(Re)"
-    input Real 'lambda2';
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    output Real 'dRe_ddp';
-    Real 'x1' = log10(64.0 * 'Re1');
-    Real 'y1' = log10('Re1');
-    Real 'y1d' = 1.0;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x' = log10('lambda2');
-    Real 'y';
-    Real 'dy_dx';
-    Real 'aux3' = log10('aux2');
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'x2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'y2' = log10('aux5');
-    Real 'y2d' = 0.5 + 1.0900791495771618 / ('aux5' * 'aux4');
-  algorithm
-    ('y', 'dy_dx') := 'Modelica.Fluid.Utilities.cubicHermite_withDerivative'('x', 'x1', 'x2', 'y1', 'y2', 'y1d', 'y2d');
-    'Re' := 10.0 ^ 'y';
-    'dRe_ddp' := 'Re' / abs('dp_fric') * 'dy_dx';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2' "Cubic Hermite spline interpolation in transition region"
-    input Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta';
-    output Real 'lambda2';
-    Real 'x1' = log10('Re1');
-    Real 'y1' = log10(64.0 * 'Re1');
-    Real 'yd1' = 1.0;
-    Real 'aux1' = 1.1217826467560994;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x2' = log10('Re2');
-    Real 'dx' = log10('Re' / 'Re1');
-    Real 'aux3' = log10('aux2');
-    Real 'diff_x' = 'x2' - 'x1';
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'yd2' = 2.0 + 4.0 * 'aux1' / ('aux2' * 'aux3' * 'Re2' ^ 0.9);
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'y2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'm' = ('y2' - 'y1') / 'diff_x';
-    Real 'c2' = (3.0 * 'm' - 2.0 * 'yd1' - 'yd2') / 'diff_x';
-    Real 'c3' = ('yd1' + 'yd2' - 2.0 * 'm') / ('diff_x' * 'diff_x');
-  algorithm
-    'lambda2' := 64.0 * 'Re1' * ('Re' / 'Re1') ^ ('yd1' + 'dx' * ('c2' + 'dx' * 'c3'));
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.tank.Medium.specificEnthalpy_pTX' "Return specific enthalpy from p, T, and X or Xi"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-  algorithm
-    'h' := 4184.0 * ('T' - 273.15);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.tank.Medium.specificEnthalpy_pTX';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.tank.heatTransfer.Medium.temperature' "Return temperature"
-    input 'tank.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.tank.heatTransfer.Medium.temperature';
-
   function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.timeTable.getInterpolationCoefficients' "Determine interpolation coefficients and next time event"
-    input Real[:, 2] 'table';
+    input Real 'table'[:, 2];
     input Real 'offset';
     input Real 'startTimeScaled';
     input Real 'timeScaled';
@@ -287,7 +30,7 @@ package 'OneTank'
     elseif 'nrow' < 2 then
       'a' := 0.0;
       'b' := 'offset' + 'table'[1,'columns'];
-    elseif true then
+    else
       'tp' := 'tp' - 'shiftTimeScaled';
 
       while 'next' < 'nrow' and 'tp' >= 'table'['next',1] loop
@@ -308,7 +51,7 @@ package 'OneTank'
       if 'dt' <= 'TimeEps' * abs('table'['next',1]) then
         'a' := 0.0;
         'b' := 'offset' + 'table'['next','columns'];
-      elseif true then
+      else
         'a' := ('table'['next','columns'] - 'table'['next0','columns']) / 'dt';
         'b' := 'offset' + 'table'['next0','columns'] - 'a' * 'table'['next0',1];
       end if;
@@ -317,12 +60,41 @@ package 'OneTank'
     'b' := 'b' - 'a' * 'shiftTimeScaled';
   end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.timeTable.getInterpolationCoefficients';
 
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow';
+
   function 'Modelica.Fluid.Utilities.checkBoundary' "Check whether boundary definition is correct"
     input String 'mediumName';
-    input String[:] 'substanceNames';
+    input String 'substanceNames'[:];
     input Boolean 'singleState';
     input Boolean 'define_p';
-    input Real[:] 'X_boundary';
+    input Real 'X_boundary'[:];
     input String 'modelName' = "??? boundary ???";
     Integer 'nX' = size('X_boundary', 1);
     String 'X_str';
@@ -344,185 +116,60 @@ package 'OneTank'
     end if;
   end 'Modelica.Fluid.Utilities.checkBoundary';
 
-  function 'Modelica.Fluid.Utilities.cubicHermite_withDerivative' "Evaluate a cubic Hermite spline, return value and derivative"
-    input Real 'x';
-    input Real 'x1';
-    input Real 'x2';
-    input Real 'y1';
-    input Real 'y2';
-    input Real 'y1d';
-    input Real 'y2d';
-    output Real 'y';
-    output Real 'dy_dx';
-    Real 'h';
-    Real 't';
-    Real 'h00';
-    Real 'h10';
-    Real 'h01';
-    Real 'h11';
-    Real 'h00d';
-    Real 'h10d';
-    Real 'h01d';
-    Real 'h11d';
-    Real 'aux3';
-    Real 'aux2';
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
   algorithm
-    'h' := 'x2' - 'x1';
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
 
-    if abs('h') > 0.0 then
-      't' := ('x' - 'x1') / 'h';
-      'aux3' := 't' ^ 3.0;
-      'aux2' := 't' ^ 2.0;
-      'h00' := 2.0 * 'aux3' - 3.0 * 'aux2' + 1.0;
-      'h10' := 'aux3' - 2.0 * 'aux2' + 't';
-      'h01' := 3.0 * 'aux2' - 2.0 * 'aux3';
-      'h11' := 'aux3' - 'aux2';
-      'h00d' := 6.0 * ('aux2' - 't');
-      'h10d' := 3.0 * 'aux2' - 4.0 * 't' + 1.0;
-      'h01d' := 6.0 * ('t' - 'aux2');
-      'h11d' := 3.0 * 'aux2' - 2.0 * 't';
-      'y' := 'y1' * 'h00' + 'h' * 'y1d' * 'h10' + 'y2' * 'h01' + 'h' * 'y2d' * 'h11';
-      'dy_dx' := 'y1' * 'h00d' / 'h' + 'y1d' * 'h10d' + 'y2' * 'h01d' / 'h' + 'y2d' * 'h11d';
-    elseif true then
-      'y' := ('y1' + 'y2') / 2.0;
-      'dy_dx' := sign('y2' - 'y1') * 1e60;
-    end if;
-    annotation(smoothOrder = 3);
-  end 'Modelica.Fluid.Utilities.cubicHermite_withDerivative';
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
-  function 'Modelica.Fluid.Utilities.regFun3' "Co-monotonic and C1 smooth regularization function"
-    input Real 'x';
-    input Real 'x0';
-    input Real 'x1';
-    input Real 'y0';
-    input Real 'y1';
-    input Real 'y0d';
-    input Real 'y1d';
-    output Real 'y';
-    output Real 'c';
-    Real 'h0';
-    Real 'Delta0';
-    Real 'xstar';
-    Real 'mu';
-    Real 'eta';
-    Real 'omega';
-    Real 'rho';
-    Real 'theta0';
-    Real 'mu_tilde';
-    Real 'eta_tilde';
-    Real 'xi1';
-    Real 'xi2';
-    Real 'a1';
-    Real 'a2';
-    Real 'const12';
-    Real 'const3';
-    Real 'aux01';
-    Real 'aux02';
-    Boolean 'useSingleCubicPolynomial' = false;
-  algorithm
-    assert('x0' < 'x1', "regFun3(): Data points not sorted appropriately (x0 = " + String('x0') + " > x1 = " + String('x1') + "). Please flip arguments.", AssertionLevel.error);
-
-    if 'y0d' * 'y1d' >= 0.0 then
-    elseif true then
-      assert(abs('y0d') < 2.220446049250313e-16 or abs('y1d') < 2.220446049250313e-16, "regFun3(): Derivatives at data points do not allow co-monotone interpolation, as both are non-zero, of opposite sign and have an absolute value larger than machine eps (y0d = " + String('y0d') + ", y1d = " + String('y1d') + "). Please correct arguments.", AssertionLevel.error);
-    end if;
-
-    'h0' := 'x1' - 'x0';
-    'Delta0' := ('y1' - 'y0') / 'h0';
-
-    if abs('Delta0') <= 0.0 then
-      'y' := 'y0' + 'Delta0' * ('x' - 'x0');
-      'c' := 0.0;
-    elseif abs('y1d' + 'y0d' - 2.0 * 'Delta0') < 2.220446049250313e-14 then
-      'y' := 'y0' + ('x' - 'x0') * ('y0d' + ('x' - 'x0') / 'h0' * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d') + ('x' - 'x0') * ('y0d' + 'y1d' - 2.0 * 'Delta0') / 'h0'));
-      'aux01' := ('x0' + 'x1') / 2.0;
-      'c' := 3.0 * ('y0d' + 'y1d' - 2.0 * 'Delta0') * ('aux01' - 'x0') ^ 2.0 / 'h0' ^ 2.0 + 2.0 * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d')) * ('aux01' - 'x0') / 'h0' + 'y0d';
-    elseif true then
-      'xstar' := 0.3333333333333333 * (6.0 * 'x0' * 'Delta0' - (3.0 * 'x0' * 'y0d' + 3.0 * 'x0' * 'y1d') - 2.0 * 'h0' * 'y0d' - 'h0' * 'y1d' + 3.0 * 'h0' * 'Delta0') / (2.0 * 'Delta0' - ('y0d' + 'y1d'));
-      'mu' := 'xstar' - 'x0';
-      'eta' := 'x1' - 'xstar';
-      'omega' := 3.0 * ('y0d' + 'y1d' - 2.0 * 'Delta0') * ('xstar' - 'x0') ^ 2.0 / 'h0' ^ 2.0 + 2.0 * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d')) * ('xstar' - 'x0') / 'h0' + 'y0d';
-      'aux01' := 0.25 * sign('Delta0') * min(abs('omega'), abs('Delta0')) "Slope c if not using plain cubic S0";
-
-      if abs('y0d' - 'y1d') <= 2.220446049250313e-14 then
-        'aux02' := 'y0d';
-
-        if 'y1' > 'y0' + 'y0d' * ('x1' - 'x0') then
-          'useSingleCubicPolynomial' := true;
-        end if;
-      elseif abs('y1d' + 'y0d' - 2.0 * 'Delta0') < 2.220446049250313e-14 then
-        'aux02' := (6.0 * 'Delta0' * ('y1d' + 'y0d' - 1.5 * 'Delta0') - 'y1d' * 'y0d' - 'y1d' ^ 2.0 - 'y0d' ^ 2.0) * (if 'y1d' + 'y0d' - 2.0 * 'Delta0' >= 0.0 then 1.0 else -1.0) * 1e60;
-      elseif true then
-        'aux02' := (6.0 * 'Delta0' * ('y1d' + 'y0d' - 1.5 * 'Delta0') - 'y1d' * 'y0d' - 'y1d' ^ 2.0 - 'y0d' ^ 2.0) / (3.0 * ('y1d' + 'y0d' - 2.0 * 'Delta0'));
-      end if;
-
-      if ((('mu' > 0.0 and 'eta' < 'h0') and 'Delta0' * 'omega' <= 0.0 or abs('aux01') < abs('aux02') and 'aux02' * 'Delta0' >= 0.0) or abs('aux01') < abs(0.1 * 'Delta0')) and not 'useSingleCubicPolynomial' then
-        'c' := 'aux01';
-
-        if abs('c') < abs('aux02') and 'aux02' * 'Delta0' >= 0.0 then
-          'c' := 'aux02';
-        end if;
-
-        if abs('c') < abs(0.1 * 'Delta0') then
-          'c' := 0.1 * 'Delta0';
-        end if;
-
-        'theta0' := ('y0d' * 'mu' + 'y1d' * 'eta') / 'h0';
-
-        if abs('theta0' - 'c') < 1e-6 * abs('c') then
-          'c' := 0.999999 * 'theta0';
-        end if;
-
-        'rho' := 3.0 * ('Delta0' - 'c') / ('theta0' - 'c');
-        'mu_tilde' := 'rho' * 'mu';
-        'eta_tilde' := 'rho' * 'eta';
-        'xi1' := 'x0' + 'mu_tilde';
-        'xi2' := 'x1' - 'eta_tilde';
-        'a1' := ('y0d' - 'c') / max('mu_tilde' ^ 2.0, 2.220446049250313e-14);
-        'a2' := ('y1d' - 'c') / max('eta_tilde' ^ 2.0, 2.220446049250313e-14);
-        'const12' := 'y0' - 'a1' / 3.0 * ('x0' - 'xi1') ^ 3.0 - 'c' * 'x0';
-        'const3' := 'y1' - 'a2' / 3.0 * ('x1' - 'xi2') ^ 3.0 - 'c' * 'x1';
-
-        if 'x' < 'xi1' then
-          'y' := 'a1' / 3.0 * ('x' - 'xi1') ^ 3.0 + 'c' * 'x' + 'const12';
-        elseif 'x' < 'xi2' then
-          'y' := 'c' * 'x' + 'const12';
-        elseif true then
-          'y' := 'a2' / 3.0 * ('x' - 'xi2') ^ 3.0 + 'c' * 'x' + 'const3';
-        end if;
-      elseif true then
-        'y' := 'y0' + ('x' - 'x0') * ('y0d' + ('x' - 'x0') / 'h0' * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d') + ('x' - 'x0') * ('y0d' + 'y1d' - 2.0 * 'Delta0') / 'h0'));
-        'aux01' := ('x0' + 'x1') / 2.0;
-        'c' := 3.0 * ('y0d' + 'y1d' - 2.0 * 'Delta0') * ('aux01' - 'x0') ^ 2.0 / 'h0' ^ 2.0 + 2.0 * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d')) * ('aux01' - 'x0') / 'h0' + 'y0d';
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Utilities.regFun3';
-
-  function 'Modelica.Utilities.Streams.error' "Print error message and cancel all actions - in case of an unrecoverable error"
-    input String 'string';
-  algorithm
-    assert(false, 'string', AssertionLevel.error);
-  end 'Modelica.Utilities.Streams.error';
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
   type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
 
   type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
-
-  record 'tank.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'tank.heatTransfer.Medium.ThermodynamicState';
-
-  record 'pipe.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pipe.Medium.ThermodynamicState';
-
-  record 'pipe.flowModel.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pipe.flowModel.Medium.ThermodynamicState';
 
   model 'OneTank' "Tank with one time-varying top inlet mass flow rate and a bottom outlet into the ambient"
     Real 'tank.level'(stateSelect = StateSelect.prefer, start = 0.8, unit = "m", quantity = "Length") "Fluid level in the tank";
@@ -532,7 +179,7 @@ package 'OneTank'
     parameter Real 'tank.p_ambient'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'tank.T_ambient'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'tank.level_start'(min = 0.0, unit = "m", quantity = "Length") = 0.8 "Start value of tank level";
-    Real 'tank.fluidVolume'(unit = "m3", quantity = "Volume") = 'tank.V' "Volume";
+    Real 'tank.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'DynamicFreeInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -540,7 +187,7 @@ package 'OneTank'
     parameter Real 'tank.p_start'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Start value of pressure";
     parameter Boolean 'tank.use_T_start' = true "= true, use T_start, otherwise h_start" annotation(Evaluate = true);
     parameter Real 'tank.T_start'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Start value of temperature";
-    parameter Real 'tank.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.tank.Medium.specificEnthalpy_pTX'(101325.0, 'tank.T_start', {1.0}) "Start value of specific enthalpy";
+    parameter Real 'tank.h_start'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") = 4184.0 * ('tank.T_start' - 273.15) "Start value of specific enthalpy";
     parameter Real 'tank.X_start[1]'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") = 1.0 "Start value of mass fractions m_i/m";
     Real 'tank.medium.p'(stateSelect = StateSelect.prefer, nominal = 1e5, start = 101325.0, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'tank.medium.h'(start = 'tank.h_start', unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
@@ -554,8 +201,8 @@ package 'OneTank'
     Real 'tank.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'tank.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'tank.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'tank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'tank.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'tank.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'tank.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'tank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'tank.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'tank.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'tank.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'tank.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -577,8 +224,8 @@ package 'OneTank'
     Real 'tank.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
     parameter Boolean 'tank.use_HeatTransfer' = false "= true, if HeatTransfer model is used";
     parameter Integer 'tank.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'tank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'tank.medium.state.p' "Absolute pressure of medium";
-    Real 'tank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'tank.medium.state.T' "Temperature of medium";
+    Real 'tank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'tank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'tank.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'tank.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'tank.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -617,8 +264,8 @@ package 'OneTank'
     Real 'flowSource.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'flowSource.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'flowSource.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'flowSource.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'flowSource.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'flowSource.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'flowSource.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'flowSource.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'flowSource.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'flowSource.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate from the connection point into the component";
     Real 'flowSource.ports[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
     Real 'flowSource.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
@@ -664,8 +311,8 @@ package 'OneTank'
     Real 'ambient_fixed.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'ambient_fixed.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'ambient_fixed.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'ambient_fixed.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'ambient_fixed.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'ambient_fixed.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'ambient_fixed.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'ambient_fixed.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'ambient_fixed.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'ambient_fixed.ports[1].m_flow'(max = 1e60, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.SimpleLiquidWater") "Mass flow rate from the connection point into the component";
     Real 'ambient_fixed.ports[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Thermodynamic pressure in the connection point";
     Real 'ambient_fixed.ports[1].h_outflow'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific thermodynamic enthalpy close to the connection point if m_flow < 0";
@@ -755,7 +402,7 @@ package 'OneTank'
     parameter Boolean 'pipe.flowModel.constantPressureLossCoefficient' = false "= true, if the pressure loss does not depend on fluid states" annotation(Evaluate = true);
     parameter Boolean 'pipe.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'pipe.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 995.586, 995.586, 0.001, 0.001, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]') "Pressure loss for nominal conditions";
+    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
     parameter Real 'timeTable.table[1,1]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
     parameter Real 'timeTable.table[1,2]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
     parameter Real 'timeTable.table[2,1]' = 10.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
@@ -798,6 +445,16 @@ package 'OneTank'
     'pipe.flowModel.dp_nominal' = 1000.0 * 'pipe.flowModel.dp_small';
     'pipe.flowModel.dp_small' = 1.0;
   equation
+    'tank.fluidVolume' = 'tank.V';
+    'tank.medium.T_degC' = 'tank.medium.T' - 273.15;
+    'tank.medium.p_bar' = 'tank.medium.p' / 1e5;
+    'tank.heatTransfer.states[1].p' = 'tank.medium.state.p';
+    'tank.heatTransfer.states[1].T' = 'tank.medium.state.T';
+    'flowSource.medium.T_degC' = 'flowSource.medium.T' - 273.15;
+    'flowSource.medium.p_bar' = 'flowSource.medium.p' / 1e5;
+    'ambient_fixed.medium.T_degC' = 'ambient_fixed.medium.T' - 273.15;
+    'ambient_fixed.medium.p_bar' = 'ambient_fixed.medium.p' / 1e5;
+    'pipe.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 995.586, 995.586, 0.001, 0.001, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]');
     'tank.portsData_diameter[1]' = 'tank.portsData_diameter2[1]';
     'tank.portsData_height[1]' = 'tank.portsData_height2[1]';
     'flowSource.m_flow_in' = 'flowSource.m_flow_in_internal';
@@ -810,7 +467,7 @@ package 'OneTank'
     'flowSource.ports[1].m_flow' + 'tank.topPorts[1].m_flow' = 0.0;
     'pipe.port_b.m_flow' + 'ambient_fixed.ports[1].m_flow' = 0.0;
     assert('tank.medium.T' >= 272.15 and 'tank.medium.T' <= 403.15, "\nTemperature T (= " + String('tank.medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
-    'tank.medium.h' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.tank.Medium.specificEnthalpy_pTX'('tank.medium.p', 'tank.medium.T', {'tank.medium.X[1]'});
+    'tank.medium.h' = 4184.0 * ('tank.medium.T' - 273.15);
     'tank.medium.u' = 4184.0 * ('tank.medium.T' - 273.15);
     'tank.medium.d' = 995.586;
     'tank.medium.R_s' = 0.0;
@@ -821,7 +478,7 @@ package 'OneTank'
     assert('tank.medium.X[1]' >= (-1e-5) and 'tank.medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('tank.medium.X[1]') + "of substance " + "SimpleLiquidWater" + "\nof medium " + "SimpleLiquidWater" + " is not in the range 0..1", AssertionLevel.error);
     assert('tank.medium.p' >= 0.0, "Pressure (= " + String('tank.medium.p') + " Pa) of medium \"" + "SimpleLiquidWater" + "\" is negative\n(Temperature = " + String('tank.medium.T') + " K)", AssertionLevel.error);
     'tank.heatTransfer.surfaceAreas[1]' = 1.0 + 3.5449077018110318 * 'tank.level';
-    'tank.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.tank.heatTransfer.Medium.temperature'('tank.heatTransfer.states[1]');
+    'tank.heatTransfer.Ts[1]' = 'tank.heatTransfer.states[1].T';
     'tank.heatTransfer.Ts[1]' = 'tank.heatTransfer.heatPorts[1].T';
     'tank.heatTransfer.Q_flows[1]' = 'tank.heatTransfer.heatPorts[1].Q_flow';
     'tank.portsData_diameter[1]' = 'tank.portsData[1].diameter';
@@ -847,10 +504,10 @@ package 'OneTank'
 
     if 'tank.aboveLevel[1]' then
       'tank.ports[1].p' = 101325.0 + 'tank.levelAbovePort[1]' * 9.80665 * 'tank.medium.d' - smooth(2, noEvent(if 'tank.ports[1].m_flow' < 0.0 then 'tank.ports[1].m_flow' ^ 2.0 / (2.0 * 'tank.medium.d' * 'tank.bottomArea[1]' ^ 2.0) else 0.0));
-    elseif true then
+    else
       if pre('tank.ports_m_flow_out[1]') then
         'tank.ports[1].m_flow' = 0.0;
-      elseif true then
+      else
         'tank.ports[1].p' = 101325.0;
       end if;
     end if;
@@ -861,7 +518,7 @@ package 'OneTank'
     der('tank.U') = 'tank.Hb_flow' + 'tank.Qb_flow' + 'tank.Wb_flow';
     der('tank.m') = 'tank.mb_flow';
     assert('flowSource.medium.T' >= 272.15 and 'flowSource.medium.T' <= 403.15, "\nTemperature T (= " + String('flowSource.medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
-    'flowSource.medium.h' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.flowSource.Medium.specificEnthalpy_pTX'('flowSource.medium.p', 'flowSource.medium.T', {'flowSource.medium.X[1]'});
+    'flowSource.medium.h' = 4184.0 * ('flowSource.medium.T' - 273.15);
     'flowSource.medium.u' = 4184.0 * ('flowSource.medium.T' - 273.15);
     'flowSource.medium.d' = 995.586;
     'flowSource.medium.R_s' = 0.0;
@@ -879,7 +536,7 @@ package 'OneTank'
     'flowSource.ports[1].p' = 'flowSource.medium.p';
     'flowSource.ports[1].h_outflow' = 'flowSource.medium.h';
     assert('ambient_fixed.medium.T' >= 272.15 and 'ambient_fixed.medium.T' <= 403.15, "\nTemperature T (= " + String('ambient_fixed.medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);
-    'ambient_fixed.medium.h' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.ambient_fixed.Medium.specificEnthalpy_pTX'('ambient_fixed.medium.p', 'ambient_fixed.medium.T', {'ambient_fixed.medium.X[1]'});
+    'ambient_fixed.medium.h' = 4184.0 * ('ambient_fixed.medium.T' - 273.15);
     'ambient_fixed.medium.u' = 4184.0 * ('ambient_fixed.medium.T' - 273.15);
     'ambient_fixed.medium.d' = 995.586;
     'ambient_fixed.medium.R_s' = 0.0;
@@ -897,12 +554,12 @@ package 'OneTank'
     'ambient_fixed.medium.T' = 'ambient_fixed.T_in_internal';
     'ambient_fixed.ports[1].p' = 'ambient_fixed.medium.p';
     'ambient_fixed.ports[1].h_outflow' = 'ambient_fixed.medium.h';
-    'pipe.flowModel.states[1].p' = ('Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.setState_phX'('pipe.port_a.p', 'tank.ports[1].h_outflow', fill(0.0, 0))).p;
-    'pipe.flowModel.states[1].T' = ('Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.setState_phX'('pipe.port_a.p', 'tank.ports[1].h_outflow', fill(0.0, 0))).T;
-    'pipe.flowModel.states[2].p' = ('Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.setState_phX'('pipe.port_b.p', 'ambient_fixed.ports[1].h_outflow', fill(0.0, 0))).p;
-    'pipe.flowModel.states[2].T' = ('Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.setState_phX'('pipe.port_b.p', 'ambient_fixed.ports[1].h_outflow', fill(0.0, 0))).T;
-    'pipe.flowModel.vs[1]' = 'pipe.port_a.m_flow' / 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.density'('pipe.flowModel.states[1]') / 'pipe.flowModel.crossAreas[1]';
-    'pipe.flowModel.vs[2]' = -'pipe.port_b.m_flow' / 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.Medium.density'('pipe.flowModel.states[2]') / 'pipe.flowModel.crossAreas[2]';
+    'pipe.flowModel.states[1].p' = 'pipe.port_a.p';
+    'pipe.flowModel.states[1].T' = 273.15 + 'tank.ports[1].h_outflow' / 4184.0;
+    'pipe.flowModel.states[2].p' = 'pipe.port_b.p';
+    'pipe.flowModel.states[2].T' = 273.15 + 'ambient_fixed.ports[1].h_outflow' / 4184.0;
+    'pipe.flowModel.vs[1]' = 'pipe.port_a.m_flow' / 995.586 / 'pipe.flowModel.crossAreas[1]';
+    'pipe.flowModel.vs[2]' = -'pipe.port_b.m_flow' / 995.586 / 'pipe.flowModel.crossAreas[2]';
     'pipe.flowModel.crossAreas[1]' = 0.007853981633974483;
     'pipe.flowModel.crossAreas[2]' = 0.007853981633974483;
     'pipe.flowModel.dimensions[1]' = 0.1;
@@ -911,10 +568,10 @@ package 'OneTank'
     'pipe.flowModel.roughnesses[2]' = 2.5e-5;
     'pipe.flowModel.dheights[1]' = -1.0;
     'pipe.flowModel.pathLengths[1]' = 1.0;
-    'pipe.flowModel.rhos[1]' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.density'('pipe.flowModel.states[1]');
-    'pipe.flowModel.rhos[2]' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.density'('pipe.flowModel.states[2]');
-    'pipe.flowModel.mus[1]' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.dynamicViscosity'('pipe.flowModel.states[1]');
-    'pipe.flowModel.mus[2]' = 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.dynamicViscosity'('pipe.flowModel.states[2]');
+    'pipe.flowModel.rhos[1]' = 995.586;
+    'pipe.flowModel.rhos[2]' = 995.586;
+    'pipe.flowModel.mus[1]' = 0.001;
+    'pipe.flowModel.mus[2]' = 0.001;
     'pipe.flowModel.pathLengths_internal[1]' = 'pipe.flowModel.pathLengths[1]';
     'pipe.flowModel.Res_turbulent_internal[1]' = 4000.0;
     'pipe.flowModel.diameters[1]' = 0.5 * ('pipe.flowModel.dimensions[1]' + 'pipe.flowModel.dimensions[2]');
@@ -922,7 +579,7 @@ package 'OneTank'
     'pipe.flowModel.rhos_act[1]' = noEvent(if 'pipe.flowModel.m_flows[1]' > 0.0 then 'pipe.flowModel.rhos[1]' else 'pipe.flowModel.rhos[2]');
     'pipe.flowModel.mus_act[1]' = noEvent(if 'pipe.flowModel.m_flows[1]' > 0.0 then 'pipe.flowModel.mus[1]' else 'pipe.flowModel.mus[2]');
     'pipe.flowModel.Ib_flows[1]' = 0.0;
-    'pipe.flowModel.Fs_p[1]' = 0.5 * ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') * ('Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.pressure'('pipe.flowModel.states[2]') - 'Modelica.Fluid.Examples.AST_BatchPlant.Test.OneTank.pipe.flowModel.Medium.pressure'('pipe.flowModel.states[1]'));
+    'pipe.flowModel.Fs_p[1]' = 0.5 * ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') * ('pipe.flowModel.states[2].p' - 'pipe.flowModel.states[1].p');
     'pipe.flowModel.dps_fg[1]' = 'pipe.flowModel.Fs_fg[1]' * 2.0 / ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]');
     'pipe.flowModel.Is[1]' = 'pipe.flowModel.m_flows[1]' * 'pipe.flowModel.pathLengths[1]';
     0.0 = 'pipe.flowModel.Ib_flows[1]' - 'pipe.flowModel.Fs_p[1]' - 'pipe.flowModel.Fs_fg[1]';

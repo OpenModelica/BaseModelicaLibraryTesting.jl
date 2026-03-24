@@ -1,12 +1,5 @@
 //! base 0.1.0
 package 'SuperCapDischargeCharge'
-  function 'Modelica.Math.BooleanVectors.oneTrue' "Returns true, if exactly one element of the Boolean input vector is true (\"xor\")"
-    input Boolean[:] 'b';
-    output Boolean 'result';
-  algorithm
-    'result' := sum(if 'b'['i'] then 1 else 0 for 'i' in 1:size('b', 1)) == 1;
-  end 'Modelica.Math.BooleanVectors.oneTrue';
-
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 
   model 'SuperCapDischargeCharge' "Discharge and charge idealized supercap"
@@ -39,7 +32,7 @@ package 'SuperCapDischargeCharge'
     Real 'superCap.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'superCap.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'superCap.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'superCap.i'(unit = "A", quantity = "ElectricCurrent") = 'superCap.p.i' "Current into the supercap";
+    Real 'superCap.i'(unit = "A", quantity = "ElectricCurrent") "Current into the supercap";
     parameter Real 'superCap.Vnom'(unit = "V", quantity = "ElectricPotential") = 48.0 "Nominal voltage";
     parameter Real 'superCap.V0'(unit = "V", quantity = "ElectricPotential") = 48.0 "Initial voltage";
     parameter Real 'superCap.C'(min = 0.0, unit = "F", quantity = "Capacitance") = 500.0 "Capacitance";
@@ -66,8 +59,8 @@ package 'SuperCapDischargeCharge'
     Real 'superCap.resistor.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'superCap.resistor.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'superCap.resistor.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'superCap.resistor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'superCap.resistor.T_heatPort' "Port temperature";
-    Real 'superCap.resistor.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'superCap.resistor.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'superCap.resistor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'superCap.resistor.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'superCap.resistor.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'superCap.resistor.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'superCap.resistor.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -82,8 +75,8 @@ package 'SuperCapDischargeCharge'
     Real 'superCap.conductor.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'superCap.conductor.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'superCap.conductor.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'superCap.conductor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'superCap.conductor.T_heatPort' "Port temperature";
-    Real 'superCap.conductor.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'superCap.conductor.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'superCap.conductor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'superCap.conductor.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'superCap.conductor.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'superCap.conductor.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'superCap.conductor.G_actual'(unit = "S", quantity = "Conductance") "Actual conductance = G_ref/(1 + alpha*(T_heatPort - T_ref))";
@@ -139,6 +132,11 @@ package 'SuperCapDischargeCharge'
   initial equation
     'energy.y' = 0.0;
   equation
+    'superCap.i' = 'superCap.p.i';
+    'superCap.resistor.heatPort.T' = 'superCap.resistor.T_heatPort';
+    'superCap.resistor.heatPort.Q_flow' = -'superCap.resistor.LossPower';
+    'superCap.conductor.heatPort.T' = 'superCap.conductor.T_heatPort';
+    'superCap.conductor.heatPort.Q_flow' = -'superCap.conductor.LossPower';
     'superCap.p.v' = 'superCap.resistor.p.v';
     'superCap.resistor.p.i' - 'superCap.p.i' = 0.0;
     'superCap.capacitor.p.v' = 'superCap.conductor.p.v';
@@ -175,8 +173,8 @@ package 'SuperCapDischargeCharge'
     'powerSensor.nc.i' + 'superCap.p.i' = 0.0;
     'powerSensor.voltageSensor.n.i' - 'powerSensor.nv.i' = 0.0;
     'powerSensor.currentSensor.n.i' - 'powerSensor.nc.i' = 0.0;
-    'pulseSeries.on1' = 'Modelica.Math.BooleanVectors.oneTrue'({time >= 10.0 and time < 20.0, time >= 30.0 and time < 40.0, time >= 50.0 and time < 60.0, time >= 70.0 and time < 80.0, time >= 90.0 and time < 100.0});
-    'pulseSeries.on2' = 'Modelica.Math.BooleanVectors.oneTrue'({time >= 120.0 and time < 130.0, time >= 140.0 and time < 150.0, time >= 160.0 and time < 170.0, time >= 180.0 and time < 190.0, time >= 200.0 and time < 210.0});
+    'pulseSeries.on1' = sum(if time >= ({10.0, 30.0, 50.0, 70.0, 90.0})[(1:5)['i']] and time < ({10.0, 30.0, 50.0, 70.0, 90.0})[(1:5)['i']] + 10.0 then 1 else 0 for 'i' in 1:size({time >= ({10.0, 30.0, 50.0, 70.0, 90.0})['k'] and time < ({10.0, 30.0, 50.0, 70.0, 90.0})['k'] + 10.0 for 'k' in 1:5}, 1)) == 1;
+    'pulseSeries.on2' = sum(if time >= ({120.0, 140.0, 160.0, 180.0, 200.0})[(1:5)['i']] and time < ({120.0, 140.0, 160.0, 180.0, 200.0})[(1:5)['i']] + 10.0 then 1 else 0 for 'i' in 1:size({time >= ({120.0, 140.0, 160.0, 180.0, 200.0})['k'] and time < ({120.0, 140.0, 160.0, 180.0, 200.0})['k'] + 10.0 for 'k' in 1:5}, 1)) == 1;
     'pulseSeries.y' = if 'pulseSeries.on1' then 1.0 else if 'pulseSeries.on2' then -1.0 else 0.0;
     'superCap.fixedTemperature.port.T' = 293.15;
     'superCap.resistor.R_actual' = 0.002;

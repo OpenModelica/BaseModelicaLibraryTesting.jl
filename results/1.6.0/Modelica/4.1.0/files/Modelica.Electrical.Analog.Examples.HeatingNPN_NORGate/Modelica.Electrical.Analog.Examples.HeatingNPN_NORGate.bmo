@@ -1,30 +1,5 @@
 //! base 0.1.0
 package 'HeatingNPN_NORGate'
-  function 'Modelica.Electrical.Analog.Semiconductors.exlin' "Exponential function linearly continued for x > Maxexp"
-    input Real 'x';
-    input Real 'Maxexp';
-    output Real 'z';
-  algorithm
-    'z' := if 'x' > 'Maxexp' then exp('Maxexp') * (1.0 + 'x' - 'Maxexp') else exp('x');
-  end 'Modelica.Electrical.Analog.Semiconductors.exlin';
-
-  function 'Modelica.Electrical.Analog.Semiconductors.exlin2' "Exponential function linearly continued for x < MinExp and x > Maxexp"
-    input Real 'x';
-    input Real 'Minexp';
-    input Real 'Maxexp';
-    output Real 'z';
-  algorithm
-    'z' := if 'x' < 'Minexp' then exp('Minexp') * (1.0 + 'x' - 'Minexp') else 'Modelica.Electrical.Analog.Semiconductors.exlin'('x', 'Maxexp');
-  end 'Modelica.Electrical.Analog.Semiconductors.exlin2';
-
-  function 'Modelica.Electrical.Analog.Semiconductors.pow' "Just a helper function for x^y in order that a symbolic engine can apply some transformations more easily"
-    input Real 'x';
-    input Real 'y';
-    output Real 'z';
-  algorithm
-    'z' := 'x' ^ 'y';
-  end 'Modelica.Electrical.Analog.Semiconductors.pow';
-
   model 'HeatingNPN_NORGate' "Heating NPN NOR Gate"
     parameter Real 'CapVal'(min = 0.0, unit = "F", quantity = "Capacitance") = 0.0 "Value for capacitances" annotation(Evaluate = true);
     parameter Real 'tauVal'(unit = "s", quantity = "Time") = 0.0 "Value for ideal forward and reverse transit time of semiconductors" annotation(Evaluate = true);
@@ -227,8 +202,8 @@ package 'HeatingNPN_NORGate'
     parameter Boolean 'T1.useSubstrate' = false "= false, if substrate is implicitly grounded";
     parameter Boolean 'T1.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'T1.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'T1.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'T1.T_heatPort' "Port temperature";
-    Real 'T1.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'T1.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'T1.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'T1.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'T1.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'T1.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'T1.vbc'(start = 0.0, unit = "V", quantity = "ElectricPotential") "Base-collector voltage";
@@ -285,8 +260,8 @@ package 'HeatingNPN_NORGate'
     parameter Boolean 'T2.useSubstrate' = false "= false, if substrate is implicitly grounded";
     parameter Boolean 'T2.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'T2.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'T2.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'T2.T_heatPort' "Port temperature";
-    Real 'T2.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'T2.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'T2.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'T2.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'T2.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'T2.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'T2.vbc'(start = 0.0, unit = "V", quantity = "ElectricPotential") "Base-collector voltage";
@@ -316,6 +291,10 @@ package 'HeatingNPN_NORGate'
   initial equation
     'HeatCapacitor1.T' = 293.15;
   equation
+    'T1.heatPort.T' = 'T1.T_heatPort';
+    'T1.heatPort.Q_flow' = -'T1.LossPower';
+    'T2.heatPort.T' = 'T2.T_heatPort';
+    'T2.heatPort.Q_flow' = -'T2.LossPower';
     'Gnd1.p.v' = 'V1.n.v';
     'V1.p.v' = 'R1.p.v';
     'RI.n.v' = 'V.p.v';
@@ -440,17 +419,17 @@ package 'HeatingNPN_NORGate'
     'T1.vcs' = 'T1.C.v' - 'T1.vS';
     'T1.qbk' = 1.0;
     'T1.hexp' = ('T1.T_heatPort' / 300.15 - 1.0) * 1.11 / 'T1.vt_t';
-    'T1.htempexp' = smooth(1, 'Modelica.Electrical.Analog.Semiconductors.exlin2'('T1.hexp', -100.0, 40.0));
-    'T1.is_t' = 1e-14 * 'Modelica.Electrical.Analog.Semiconductors.pow'('T1.T_heatPort' / 300.15, 3.0) * 'T1.htempexp';
-    'T1.br_t' = 'Modelica.Electrical.Analog.Semiconductors.pow'('T1.T_heatPort' / 300.15, 0.0);
-    'T1.bf_t' = 100.0 * 'Modelica.Electrical.Analog.Semiconductors.pow'('T1.T_heatPort' / 300.15, 0.0);
+    'T1.htempexp' = smooth(1, if 'T1.hexp' < (-100.0) then exp(-100.0) * (1.0 + 'T1.hexp' - (-100.0)) else if 'T1.hexp' > 40.0 then exp(40.0) * (1.0 + 'T1.hexp' - 40.0) else exp('T1.hexp'));
+    'T1.is_t' = 1e-14 * ('T1.T_heatPort' / 300.15) ^ 3.0 * 'T1.htempexp';
+    'T1.br_t' = ('T1.T_heatPort' / 300.15) ^ 0.0;
+    'T1.bf_t' = 100.0 * ('T1.T_heatPort' / 300.15) ^ 0.0;
     'T1.vt_t' = 8.617333262145179e-5 * 'T1.T_heatPort';
-    'T1.ibc' = smooth(1, 'T1.is_t' * ('Modelica.Electrical.Analog.Semiconductors.exlin2'('T1.vbc' / 'T1.vt_t', -100.0, 40.0) - 1.0) + 'T1.vbc' * 1e-12);
-    'T1.ibe' = smooth(1, 'T1.is_t' * ('Modelica.Electrical.Analog.Semiconductors.exlin2'('T1.vbe' / 'T1.vt_t', -100.0, 40.0) - 1.0) + 'T1.vbe' * 1e-12);
+    'T1.ibc' = smooth(1, 'T1.is_t' * ((if 'T1.vbc' / 'T1.vt_t' < (-100.0) then exp(-100.0) * (1.0 + 'T1.vbc' / 'T1.vt_t' - (-100.0)) else if 'T1.vbc' / 'T1.vt_t' > 40.0 then exp(40.0) * (1.0 + 'T1.vbc' / 'T1.vt_t' - 40.0) else exp('T1.vbc' / 'T1.vt_t')) - 1.0) + 'T1.vbc' * 1e-12);
+    'T1.ibe' = smooth(1, 'T1.is_t' * ((if 'T1.vbe' / 'T1.vt_t' < (-100.0) then exp(-100.0) * (1.0 + 'T1.vbe' / 'T1.vt_t' - (-100.0)) else if 'T1.vbe' / 'T1.vt_t' > 40.0 then exp(40.0) * (1.0 + 'T1.vbe' / 'T1.vt_t' - 40.0) else exp('T1.vbe' / 'T1.vt_t')) - 1.0) + 'T1.vbe' * 1e-12);
     'T1.Capcjc' = 0.0;
     'T1.Capcje' = 0.0;
-    'T1.cbc' = smooth(1, 0.0 / 'T1.vt_t' * 'Modelica.Electrical.Analog.Semiconductors.exlin2'('T1.vbc' / 'T1.vt_t', -100.0, 40.0) + 'T1.Capcjc');
-    'T1.cbe' = smooth(1, 0.0 / 'T1.vt_t' * 'Modelica.Electrical.Analog.Semiconductors.exlin2'('T1.vbe' / 'T1.vt_t', -100.0, 40.0) + 'T1.Capcje');
+    'T1.cbc' = smooth(1, 0.0 / 'T1.vt_t' * (if 'T1.vbc' / 'T1.vt_t' < (-100.0) then exp(-100.0) * (1.0 + 'T1.vbc' / 'T1.vt_t' - (-100.0)) else if 'T1.vbc' / 'T1.vt_t' > 40.0 then exp(40.0) * (1.0 + 'T1.vbc' / 'T1.vt_t' - 40.0) else exp('T1.vbc' / 'T1.vt_t')) + 'T1.Capcjc');
+    'T1.cbe' = smooth(1, 0.0 / 'T1.vt_t' * (if 'T1.vbe' / 'T1.vt_t' < (-100.0) then exp(-100.0) * (1.0 + 'T1.vbe' / 'T1.vt_t' - (-100.0)) else if 'T1.vbe' / 'T1.vt_t' > 40.0 then exp(40.0) * (1.0 + 'T1.vbe' / 'T1.vt_t' - 40.0) else exp('T1.vbe' / 'T1.vt_t')) + 'T1.Capcje');
     'T1.C.i' = ('T1.ibe' - 'T1.ibc') * 'T1.qbk' - 'T1.ibc' / 'T1.br_t' - 'T1.cbc' * der('T1.vbc') - 'T1.iS';
     'T1.B.i' = 'T1.ibe' / 'T1.bf_t' + 'T1.ibc' / 'T1.br_t' + 'T1.cbc' * der('T1.vbc') + 'T1.cbe' * der('T1.vbe');
     'T1.E.i' = -('T1.B.i' + 'T1.C.i' + 'T1.iS');
@@ -463,17 +442,17 @@ package 'HeatingNPN_NORGate'
     'T2.vcs' = 'T2.C.v' - 'T2.vS';
     'T2.qbk' = 1.0;
     'T2.hexp' = ('T2.T_heatPort' / 300.15 - 1.0) * 1.11 / 'T2.vt_t';
-    'T2.htempexp' = smooth(1, 'Modelica.Electrical.Analog.Semiconductors.exlin2'('T2.hexp', -100.0, 40.0));
-    'T2.is_t' = 1e-14 * 'Modelica.Electrical.Analog.Semiconductors.pow'('T2.T_heatPort' / 300.15, 3.0) * 'T2.htempexp';
-    'T2.br_t' = 'Modelica.Electrical.Analog.Semiconductors.pow'('T2.T_heatPort' / 300.15, 0.0);
-    'T2.bf_t' = 100.0 * 'Modelica.Electrical.Analog.Semiconductors.pow'('T2.T_heatPort' / 300.15, 0.0);
+    'T2.htempexp' = smooth(1, if 'T2.hexp' < (-100.0) then exp(-100.0) * (1.0 + 'T2.hexp' - (-100.0)) else if 'T2.hexp' > 40.0 then exp(40.0) * (1.0 + 'T2.hexp' - 40.0) else exp('T2.hexp'));
+    'T2.is_t' = 1e-14 * ('T2.T_heatPort' / 300.15) ^ 3.0 * 'T2.htempexp';
+    'T2.br_t' = ('T2.T_heatPort' / 300.15) ^ 0.0;
+    'T2.bf_t' = 100.0 * ('T2.T_heatPort' / 300.15) ^ 0.0;
     'T2.vt_t' = 8.617333262145179e-5 * 'T2.T_heatPort';
-    'T2.ibc' = smooth(1, 'T2.is_t' * ('Modelica.Electrical.Analog.Semiconductors.exlin2'('T2.vbc' / 'T2.vt_t', -100.0, 40.0) - 1.0) + 'T2.vbc' * 1e-12);
-    'T2.ibe' = smooth(1, 'T2.is_t' * ('Modelica.Electrical.Analog.Semiconductors.exlin2'('T2.vbe' / 'T2.vt_t', -100.0, 40.0) - 1.0) + 'T2.vbe' * 1e-12);
+    'T2.ibc' = smooth(1, 'T2.is_t' * ((if 'T2.vbc' / 'T2.vt_t' < (-100.0) then exp(-100.0) * (1.0 + 'T2.vbc' / 'T2.vt_t' - (-100.0)) else if 'T2.vbc' / 'T2.vt_t' > 40.0 then exp(40.0) * (1.0 + 'T2.vbc' / 'T2.vt_t' - 40.0) else exp('T2.vbc' / 'T2.vt_t')) - 1.0) + 'T2.vbc' * 1e-12);
+    'T2.ibe' = smooth(1, 'T2.is_t' * ((if 'T2.vbe' / 'T2.vt_t' < (-100.0) then exp(-100.0) * (1.0 + 'T2.vbe' / 'T2.vt_t' - (-100.0)) else if 'T2.vbe' / 'T2.vt_t' > 40.0 then exp(40.0) * (1.0 + 'T2.vbe' / 'T2.vt_t' - 40.0) else exp('T2.vbe' / 'T2.vt_t')) - 1.0) + 'T2.vbe' * 1e-12);
     'T2.Capcjc' = 0.0;
     'T2.Capcje' = 0.0;
-    'T2.cbc' = smooth(1, 0.0 / 'T2.vt_t' * 'Modelica.Electrical.Analog.Semiconductors.exlin2'('T2.vbc' / 'T2.vt_t', -100.0, 40.0) + 'T2.Capcjc');
-    'T2.cbe' = smooth(1, 0.0 / 'T2.vt_t' * 'Modelica.Electrical.Analog.Semiconductors.exlin2'('T2.vbe' / 'T2.vt_t', -100.0, 40.0) + 'T2.Capcje');
+    'T2.cbc' = smooth(1, 0.0 / 'T2.vt_t' * (if 'T2.vbc' / 'T2.vt_t' < (-100.0) then exp(-100.0) * (1.0 + 'T2.vbc' / 'T2.vt_t' - (-100.0)) else if 'T2.vbc' / 'T2.vt_t' > 40.0 then exp(40.0) * (1.0 + 'T2.vbc' / 'T2.vt_t' - 40.0) else exp('T2.vbc' / 'T2.vt_t')) + 'T2.Capcjc');
+    'T2.cbe' = smooth(1, 0.0 / 'T2.vt_t' * (if 'T2.vbe' / 'T2.vt_t' < (-100.0) then exp(-100.0) * (1.0 + 'T2.vbe' / 'T2.vt_t' - (-100.0)) else if 'T2.vbe' / 'T2.vt_t' > 40.0 then exp(40.0) * (1.0 + 'T2.vbe' / 'T2.vt_t' - 40.0) else exp('T2.vbe' / 'T2.vt_t')) + 'T2.Capcje');
     'T2.C.i' = ('T2.ibe' - 'T2.ibc') * 'T2.qbk' - 'T2.ibc' / 'T2.br_t' - 'T2.cbc' * der('T2.vbc') - 'T2.iS';
     'T2.B.i' = 'T2.ibe' / 'T2.bf_t' + 'T2.ibc' / 'T2.br_t' + 'T2.cbc' * der('T2.vbc') + 'T2.cbe' * der('T2.vbe');
     'T2.E.i' = -('T2.B.i' + 'T2.C.i' + 'T2.iS');

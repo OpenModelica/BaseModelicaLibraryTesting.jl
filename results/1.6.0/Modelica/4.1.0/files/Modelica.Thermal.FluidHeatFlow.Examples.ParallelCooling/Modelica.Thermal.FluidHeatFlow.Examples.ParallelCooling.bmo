@@ -7,13 +7,13 @@ package 'ParallelCooling'
     parameter Real 'medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
     parameter Real 'medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
     parameter Real 'TAmb'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Ambient temperature";
-    output Real 'dTSource1'(unit = "K", quantity = "ThermodynamicTemperature") = 'prescribedHeatFlow1.port.T' - 293.15;
-    output Real 'dTtoPipe1'(unit = "K", quantity = "ThermodynamicTemperature") = 'prescribedHeatFlow1.port.T' - 'pipe1.T_q';
-    output Real 'dTCoolant1'(unit = "K", quantity = "ThermodynamicTemperature") = 'pipe1.dT';
-    output Real 'dTSource2'(unit = "K", quantity = "ThermodynamicTemperature") = 'prescribedHeatFlow2.port.T' - 293.15;
-    output Real 'dTtoPipe2'(unit = "K", quantity = "ThermodynamicTemperature") = 'prescribedHeatFlow2.port.T' - 'pipe2.T_q';
-    output Real 'dTCoolant2'(unit = "K", quantity = "ThermodynamicTemperature") = 'pipe2.dT';
-    output Real 'dTmixedCoolant'(unit = "K", quantity = "ThermodynamicTemperature") = 'ambient2.T_port' - 'ambient1.T_port';
+    output Real 'dTSource1'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTtoPipe1'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTCoolant1'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTSource2'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTtoPipe2'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTCoolant2'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTmixedCoolant'(unit = "K", quantity = "ThermodynamicTemperature");
     parameter Real 'ambient1.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'ambient1.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
     parameter Real 'ambient1.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
@@ -78,7 +78,7 @@ package 'ParallelCooling'
     Real 'pump.flowPort_b.H_flow'(unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'pump.useVolumeFlowInput' = true "Enable / disable volume flow input" annotation(Evaluate = true);
     parameter Real 'pump.constantVolumeFlow'(start = 1.0, unit = "m3/s", quantity = "VolumeFlowRate") = 1.0 "Volume flow rate";
-    Real 'pump.volumeFlow'(unit = "m3/s") = 'pump.internalVolumeFlow';
+    Real 'pump.volumeFlow'(unit = "m3/s");
     Real 'pump.internalVolumeFlow'(unit = "m3/s", quantity = "VolumeFlowRate");
     parameter Real 'pipe1.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'pipe1.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
@@ -129,8 +129,8 @@ package 'ParallelCooling'
     parameter Boolean 'pipe1.useHeatPort' = true "= true, if HeatPort is enabled" annotation(Evaluate = true);
     parameter Real 'pipe1.h_g'(start = 0.0, unit = "m", quantity = "Length") = 0.0 "Geodetic height (height difference from flowPort_a to flowPort_b)";
     parameter Real 'pipe1.g'(min = 0.0, unit = "m/s2", quantity = "Acceleration") = 9.80665 "Gravitation";
-    Real 'pipe1.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pipe1.T_q' "Port temperature";
-    Real 'pipe1.heatPort.Q_flow'(unit = "W", quantity = "Power") = 'pipe1.Q_flowHeatPort' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'pipe1.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'pipe1.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'pipe1.Q_flowHeatPort'(unit = "W", quantity = "Power") "Heat flow at conditional heatPort";
     parameter Real 'pipe2.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'pipe2.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
@@ -181,8 +181,8 @@ package 'ParallelCooling'
     parameter Boolean 'pipe2.useHeatPort' = true "= true, if HeatPort is enabled" annotation(Evaluate = true);
     parameter Real 'pipe2.h_g'(start = 0.0, unit = "m", quantity = "Length") = 0.0 "Geodetic height (height difference from flowPort_a to flowPort_b)";
     parameter Real 'pipe2.g'(min = 0.0, unit = "m/s2", quantity = "Acceleration") = 9.80665 "Gravitation";
-    Real 'pipe2.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pipe2.T_q' "Port temperature";
-    Real 'pipe2.heatPort.Q_flow'(unit = "W", quantity = "Power") = 'pipe2.Q_flowHeatPort' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'pipe2.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'pipe2.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'pipe2.Q_flowHeatPort'(unit = "W", quantity = "Power") "Heat flow at conditional heatPort";
     parameter Real 'pipe3.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'pipe3.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
@@ -305,6 +305,18 @@ package 'ParallelCooling'
     parameter Real 'thermalConductance2.k'(start = 1.0) = 1.0 "Constant output value";
     Real 'thermalConductance2.y' "Connector of Real output signal";
   equation
+    'dTSource1' = 'prescribedHeatFlow1.port.T' - 293.15;
+    'dTtoPipe1' = 'prescribedHeatFlow1.port.T' - 'pipe1.T_q';
+    'dTCoolant1' = 'pipe1.dT';
+    'dTSource2' = 'prescribedHeatFlow2.port.T' - 293.15;
+    'dTtoPipe2' = 'prescribedHeatFlow2.port.T' - 'pipe2.T_q';
+    'dTCoolant2' = 'pipe2.dT';
+    'dTmixedCoolant' = 'ambient2.T_port' - 'ambient1.T_port';
+    'pump.volumeFlow' = 'pump.internalVolumeFlow';
+    'pipe1.heatPort.T' = 'pipe1.T_q';
+    'pipe1.heatPort.Q_flow' = 'pipe1.Q_flowHeatPort';
+    'pipe2.heatPort.T' = 'pipe2.T_q';
+    'pipe2.heatPort.Q_flow' = 'pipe2.Q_flowHeatPort';
     'ambient1.flowPort.h' = 'pump.flowPort_a.h';
     assert(abs('ambient1.flowPort.medium.rho' - 'pump.flowPort_a.medium.rho') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
     assert(abs('ambient1.flowPort.medium.cp' - 'pump.flowPort_a.medium.cp') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
@@ -398,7 +410,7 @@ package 'ParallelCooling'
       'pipe1.pressureDrop' = 'pipe1.volumeFlow' + 'pipe1.k' * ('pipe1.volumeFlow' - 0.1) ^ 2.0;
     elseif 'pipe1.volumeFlow' < (-0.1) then
       'pipe1.pressureDrop' = 'pipe1.volumeFlow' - 'pipe1.k' * ('pipe1.volumeFlow' + 0.1) ^ 2.0;
-    elseif true then
+    else
       'pipe1.pressureDrop' = 'pipe1.volumeFlow';
     end if;
 
@@ -422,7 +434,7 @@ package 'ParallelCooling'
       'pipe2.pressureDrop' = 'pipe2.volumeFlow' + 'pipe2.k' * ('pipe2.volumeFlow' - 0.1) ^ 2.0;
     elseif 'pipe2.volumeFlow' < (-0.1) then
       'pipe2.pressureDrop' = 'pipe2.volumeFlow' - 'pipe2.k' * ('pipe2.volumeFlow' + 0.1) ^ 2.0;
-    elseif true then
+    else
       'pipe2.pressureDrop' = 'pipe2.volumeFlow';
     end if;
 
@@ -447,7 +459,7 @@ package 'ParallelCooling'
       'pipe3.pressureDrop' = 'pipe3.volumeFlow' + 'pipe3.k' * ('pipe3.volumeFlow' - 0.1) ^ 2.0;
     elseif 'pipe3.volumeFlow' < (-0.1) then
       'pipe3.pressureDrop' = 'pipe3.volumeFlow' - 'pipe3.k' * ('pipe3.volumeFlow' + 0.1) ^ 2.0;
-    elseif true then
+    else
       'pipe3.pressureDrop' = 'pipe3.volumeFlow';
     end if;
 

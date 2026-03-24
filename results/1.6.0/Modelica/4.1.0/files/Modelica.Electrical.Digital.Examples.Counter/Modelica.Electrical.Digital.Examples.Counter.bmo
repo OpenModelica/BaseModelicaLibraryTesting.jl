@@ -12,7 +12,7 @@ package 'Counter'
     parameter Real 'clock.width'(start = 50.0, max = 100.0, min = 2.2250738585072014e-308) = 50.0 "Width of pulses in % of period";
     'Modelica.Electrical.Digital.Interfaces.Logic' 'clock.y' "Connector of Digital output signal";
     Real 'clock.t_i'(fixed = true, start = 0.0, unit = "s", quantity = "Time") "Start time of current period";
-    Real 'clock.t_width'(unit = "s", quantity = "Time") = 0.5;
+    Real 'clock.t_width'(unit = "s", quantity = "Time");
     parameter Integer 'Counter.n' = 4 "Number of bits";
     parameter Real 'Counter.delayTime'(unit = "s", quantity = "Time") = 0.001 "Delay of each JKFF";
     parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'Counter.q0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Initial value";
@@ -519,6 +519,7 @@ package 'Counter'
     parameter Real 'Q3.value_H'(start = 1.0) = 1.0 "Value for digital H (Weak 1)";
     parameter Real 'Q3.value_m'(start = 0.5) = 0.5 "Value for digital m (Do not care)";
   equation
+    'clock.t_width' = 0.5;
     'Counter.FF[1].RS1.s' = 'Counter.FF[1].RS1.Nor1.x[2]';
     'Counter.FF[1].RS1.r' = 'Counter.FF[1].RS1.Nor2.x[1]';
     'Counter.FF[1].RS1.Nor2.y' = 'Counter.FF[1].RS1.q';
@@ -846,7 +847,7 @@ package 'Counter'
   algorithm
     if time >= 1.0 then
       'Enable.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'';
-    elseif true then
+    else
       'Enable.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
     end if;
     annotation(experiment(StopTime = 100));

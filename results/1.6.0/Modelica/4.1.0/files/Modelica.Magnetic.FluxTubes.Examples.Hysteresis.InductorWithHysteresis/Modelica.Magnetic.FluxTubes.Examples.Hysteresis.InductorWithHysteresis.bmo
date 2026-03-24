@@ -91,7 +91,7 @@ package 'InductorWithHysteresis'
     Real 'core.MagRel'(fixed = true, start = 0.0, max = 1.0, min = -1.0, unit = "1", quantity = "Relative magnetization") "Relative magnetization at initialization (-1..1)";
     Real 'core.LossPowerStat'(unit = "W", quantity = "Power") "Ferromagnetic (static) hysteresis losses";
     Real 'core.LossPowerEddy'(unit = "W", quantity = "Power") "Eddy current losses (dynamic hysteresis losses)";
-    Real 'core.derHstat'(fixed = true, start = 0.0, unit = "A/(m.s)") = der('core.Hstat');
+    Real 'core.derHstat'(fixed = true, start = 0.0, unit = "A/(m.s)");
     parameter Real 'core.eddyCurrentFactor'(unit = "S.m") = 0.04583333333333333;
     Boolean 'core.asc'(start = true) "True when der(Hstat)>0";
     Real 'core.hystR'(unit = "T", quantity = "MagneticFluxDensity") "Rising branch of limiting hysteresis loop";
@@ -113,6 +113,7 @@ package 'InductorWithHysteresis'
   initial equation
     'core.B' = ('core.hystR' + 'core.hystF') / 2.0 + 'core.MagRel' * 'core.diffHyst' / 2.0;
   equation
+    'core.derHstat' = der('core.Hstat');
     'mag_ground.port.V_m' = 'core.port_n.V_m';
     'mag_ground.port.V_m' = 'winding.port_n.V_m';
     'vSource.p.v' = 'resistor.p.v';
@@ -168,7 +169,7 @@ package 'InductorWithHysteresis'
     elseif 'core.asc' then
       'core.dHyst' = der('core.hystR' - 6.2831853106e-5 * 'core.Hstat');
       'core.k' = max(0.01, ('core.hystF' - 'core.B') / 'core.diffHyst');
-    elseif true then
+    else
       'core.dHyst' = der('core.hystF' - 6.2831853106e-5 * 'core.Hstat');
       'core.k' = max(0.01, ('core.B' - 'core.hystR') / 'core.diffHyst');
     end if;

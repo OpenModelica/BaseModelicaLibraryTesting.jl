@@ -1,51 +1,26 @@
 //! base 0.1.0
 package 'UniformNoiseProperties'
   function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
-    input Integer[4] 'stateIn';
+    input Integer 'stateIn'[4];
     output Real 'result';
-    output Integer[4] 'stateOut';
+    output Integer 'stateOut'[4];
   external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
-
-  function 'Modelica.Math.Random.Generators.Xorshift64star.initialState' "Returns an initial state for the xorshift64* algorithm"
-    input Integer 'localSeed';
-    input Integer 'globalSeed';
-    output Integer[2] 'state';
-    Real 'r';
-    constant Integer 'p' = 10;
-  algorithm
-    if 'localSeed' == 0 and 'globalSeed' == 0 then
-      'state' := {126247697, 'globalSeed'};
-    elseif true then
-      'state' := {'localSeed', 'globalSeed'};
-    end if;
-
-    for 'i' in 1:'p' loop
-      ('r', 'state') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state');
-    end for;
-  end 'Modelica.Math.Random.Generators.Xorshift64star.initialState';
-
-  function 'Modelica.Math.Random.Generators.Xorshift64star.random' "Returns a uniform random number with the xorshift64* algorithm"
-    input Integer[2] 'stateIn';
-    output Real 'result';
-    output Integer[2] 'stateOut';
-  external "C" ModelicaRandom_xorshift64star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Generators.Xorshift64star.random';
 
   function 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star' "Return an initial state vector for a random number generator (based on xorshift64star algorithm)"
     input Integer 'localSeed';
     input Integer 'globalSeed';
     input Integer 'nState'(min = 1);
-    output Integer['nState'] 'state';
+    output Integer 'state'['nState'];
     Real 'r';
-    Integer[2] 'aux';
+    Integer 'aux'[2];
     Integer 'nStateEven';
   algorithm
     'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
 
     if 'nState' >= 2 then
       'state'[1:2] := 'aux';
-    elseif true then
+    else
       'state'[1] := 'aux'[1];
     end if;
 
@@ -66,18 +41,12 @@ package 'UniformNoiseProperties'
     input Integer 'seed';
     output Integer 'id';
     constant Integer 'localSeed' = 715827883;
-    Integer[33] 'rngState';
+    Integer 'rngState'[33];
   algorithm
     'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
     'id' := 'localSeed';
     'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
   end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
-
-  function 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState' "Stores the given state vector in an external static variable"
-    input Integer[33] 'rngState';
-    input Integer 'id';
-  external "C" ModelicaRandom_setInternalState_xorshift1024star('rngState', size('rngState', 1), 'id') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState';
 
   model 'UniformNoiseProperties' "Demonstrates the computation of properties for uniformly distributed noise"
     parameter Real 'y_min' = 0.0 "Minimum value of band";
@@ -90,8 +59,8 @@ package 'UniformNoiseProperties'
     parameter Integer 'globalSeed.fixedSeed' = 67867967 "Fixed global seed for random number generators (if useAutomaticSeed = false)";
     parameter Integer 'globalSeed.seed'(fixed = false) "Actually used global seed";
     parameter Integer 'globalSeed.id_impure'(fixed = false) "ID for impure random number generators Modelica.Math.Random.Utilities.impureXXX";
-    output Real 'meanError_y' = 'meanError.y';
-    output Real 'sigmaError_y' = 'sigmaError.y';
+    output Real 'meanError_y';
+    output Real 'sigmaError_y';
     Real 'noise.y' "Connector of Real output signal";
     parameter Real 'noise.samplePeriod'(start = 0.01, unit = "s", quantity = "Time") = 0.001 "Period for sampling the raw random numbers";
     parameter Boolean 'noise.enableNoise' = true "= true: y = noise, otherwise y = y_off";
@@ -156,7 +125,7 @@ package 'UniformNoiseProperties'
   initial equation
     'globalSeed.seed' = 67867967;
     'globalSeed.id_impure' = 'Modelica.Math.Random.Utilities.initializeImpureRandom'('globalSeed.seed');
-    'noise.r' = 'noise.r_raw' * 6.0;
+    'noise.r' = 'noise.r_raw' * (6.0 - 0.0) + 0.0;
     'noise.localSeed' = 1;
     pre('noise.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('noise.localSeed', 'noise.actualGlobalSeed', 4))[1];
     pre('noise.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('noise.localSeed', 'noise.actualGlobalSeed', 4))[2];
@@ -171,6 +140,8 @@ package 'UniformNoiseProperties'
     'standardDeviation.variance.mu' = 'standardDeviation.variance.u';
     'standardDeviation.variance.var' = 0.0;
   equation
+    'meanError_y' = 'meanError.y';
+    'sigmaError_y' = 'sigmaError.y';
     'standardDeviation.variance.u' = 'standardDeviation.u';
     'standardDeviation.sqrt1.u' = 'standardDeviation.variance.y';
     'standardDeviation.sqrt1.y' = 'standardDeviation.y';
@@ -187,7 +158,7 @@ package 'UniformNoiseProperties'
     'standardDeviation.y' = 'sigmaError.u1';
 
     when sample(0.0, 0.001) then
-      'noise.r' = 'noise.r_raw' * 6.0;
+      'noise.r' = 'noise.r_raw' * (6.0 - 0.0) + 0.0;
     end when;
 
     when sample(0.0, 0.001) then

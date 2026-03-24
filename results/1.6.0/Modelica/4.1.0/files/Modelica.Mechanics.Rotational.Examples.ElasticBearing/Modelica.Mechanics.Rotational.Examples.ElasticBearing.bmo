@@ -50,8 +50,8 @@ package 'ElasticBearing'
     parameter Boolean 'torque.useSupport' = true "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     Real 'torque.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'torque.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
-    Real 'torque.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'torque.phi_support' "Absolute rotation angle of flange";
-    Real 'torque.support.tau'(unit = "N.m", quantity = "Torque") = -'torque.flange.tau' "Cut torque in the flange";
+    Real 'torque.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'torque.support.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'torque.phi_support'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute angle of support flange";
     Real 'torque.tau'(unit = "N.m") "Accelerating torque acting at flange (= -flange.tau)";
     parameter Real 'ramp.height' = 100.0 "Height of ramp";
@@ -64,8 +64,8 @@ package 'ElasticBearing'
     Real 'idealGear.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'idealGear.flange_b.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'idealGear.flange_b.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
-    Real 'idealGear.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'idealGear.phi_support' "Absolute rotation angle of flange";
-    Real 'idealGear.support.tau'(unit = "N.m", quantity = "Torque") = -('idealGear.flange_a.tau' + 'idealGear.flange_b.tau') "Cut torque in the flange";
+    Real 'idealGear.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'idealGear.support.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'idealGear.phi_support'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute angle of support flange";
     parameter Real 'idealGear.ratio'(start = 1.0) = 3.0 "Transmission ratio (flange_a.phi/flange_b.phi)";
     Real 'idealGear.phi_a'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Angle between left shaft flange and support";
@@ -87,6 +87,10 @@ package 'ElasticBearing'
     Real 'multiSensor.w'(unit = "rad/s") "Absolute angular velocity of flange_a as output signal";
     Real 'multiSensor.tau'(unit = "N.m") "Torque in flange flange_a and flange_b (tau = flange_a.tau = -flange_b.tau) as output signal";
   equation
+    'torque.support.phi' = 'torque.phi_support';
+    'torque.support.tau' = -'torque.flange.tau';
+    'idealGear.support.phi' = 'idealGear.phi_support';
+    'idealGear.support.tau' = -('idealGear.flange_a.tau' + 'idealGear.flange_b.tau');
     'torque.flange.phi' = 'shaft.flange_a.phi';
     'spring.flange_b.phi' = 'load.flange_a.phi';
     'fixed.flange.phi' = 'torque.support.phi';

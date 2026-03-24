@@ -1,25 +1,12 @@
 //! base 0.1.0
 package 'TransformerTestbench'
-  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
-    input Real[:] 'x';
-    output Real[2] 'y';
-    output Real 'y0';
-    Integer 'm' = size('x', 1);
-    Real['m'] 'phi'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
-    Real[2, 'm'] 'TransformationMatrix' = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
-  algorithm
-    'y' := 'TransformationMatrix' * 'x';
-    'y0' := 1.0 / 'm' * sum('x');
-    annotation(Inline = true);
-  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor';
-
   function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
-    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
-    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
+    input Real 'v'[3](unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    input Real 'i'[3](unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
     output Real 'p'(unit = "W", quantity = "Power");
     constant Integer 'm' = 3;
-    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
-    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
+    Real 'v_'[2](unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
+    Real 'i_'[2](unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
   algorithm
     'v_' := {0.0, 0.0};
     'i_' := {0.0, 0.0};
@@ -33,22 +20,18 @@ package 'TransformerTestbench'
     annotation(Inline = true);
   end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
 
-  function 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation' "Orientations of the resulting fundamental wave field phasors"
-    input Integer 'm';
-    output Real['m'] 'orientation'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm'));
+  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
+    input Real 'x'[:];
+    output Real 'y'[2];
+    output Real 'y0';
+    Integer 'm' = size('x', 1);
+    Real 'phi'['m'](displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
+    Real 'TransformationMatrix'[2, 'm'] = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
   algorithm
-    if mod('m', 2) == 0 then
-      if 'm' == 2 then
-        'orientation'[1] := 0.0;
-        'orientation'[2] := 1.5707963267948966;
-      elseif true then
-        'orientation'[1:integer('m' / 2.0)] := 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'(integer('m' / 2.0));
-        'orientation'[integer('m' / 2.0) + 1:'m'] := 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'(integer('m' / 2.0)) - fill(3.141592653589793 / 'm', integer('m' / 2.0));
-      end if;
-    elseif true then
-      'orientation' := {('k' - 1) * 2 * 3.141592653589793 / 'm' for 'k' in 1:'m'};
-    end if;
-  end 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation';
+    'y' := 'TransformationMatrix' * 'x';
+    'y0' := 1.0 / 'm' * sum('x');
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor';
 
   model 'TransformerTestbench' "Transformer test bench"
     parameter Real 'RL[1]'(unit = "Ohm", quantity = "Resistance") = 0.3333333333333333 "Load resistance";
@@ -708,12 +691,12 @@ package 'TransformerTestbench'
     parameter Boolean 'transformer.useThermalPort' = false "Enable / disable (=fixed temperatures) thermal port" annotation(Evaluate = true);
     parameter Real 'transformer.T1Operational'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Operational temperature of primary resistance";
     parameter Real 'transformer.T2Operational'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Operational temperature of secondary resistance";
-    Real 'transformer.powerBalance.power1'(unit = "W", quantity = "Power") = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('transformer.v1', 'transformer.i1') "Primary power";
-    Real 'transformer.powerBalance.power2'(unit = "W", quantity = "Power") = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('transformer.v2', 'transformer.i2') "Secondary power";
-    Real 'transformer.powerBalance.lossPowerTotal'(unit = "W", quantity = "Power") = 'transformer.powerBalance.lossPower1' + 'transformer.powerBalance.lossPower2' + 'transformer.powerBalance.lossPowerCore' "Total loss power";
-    Real 'transformer.powerBalance.lossPower1'(unit = "W", quantity = "Power") = 'transformer.r1.resistor[1].LossPower' + 'transformer.r1.resistor[2].LossPower' + 'transformer.r1.resistor[3].LossPower' "Primary copper losses";
-    Real 'transformer.powerBalance.lossPower2'(unit = "W", quantity = "Power") = 'transformer.r2.resistor[1].LossPower' + 'transformer.r2.resistor[2].LossPower' + 'transformer.r2.resistor[3].LossPower' "Secondary copper losses";
-    Real 'transformer.powerBalance.lossPowerCore'(unit = "W", quantity = "Power") = 0.0 "Core losses";
+    Real 'transformer.powerBalance.power1'(unit = "W", quantity = "Power") "Primary power";
+    Real 'transformer.powerBalance.power2'(unit = "W", quantity = "Power") "Secondary power";
+    Real 'transformer.powerBalance.lossPowerTotal'(unit = "W", quantity = "Power") "Total loss power";
+    Real 'transformer.powerBalance.lossPower1'(unit = "W", quantity = "Power") "Primary copper losses";
+    Real 'transformer.powerBalance.lossPower2'(unit = "W", quantity = "Power") "Secondary copper losses";
+    Real 'transformer.powerBalance.lossPowerCore'(unit = "W", quantity = "Power") "Core losses";
     Real 'transformer.v1[1]'(unit = "V", quantity = "ElectricPotential") "Primary voltage";
     Real 'transformer.v1[2]'(unit = "V", quantity = "ElectricPotential") "Primary voltage";
     Real 'transformer.v1[3]'(unit = "V", quantity = "ElectricPotential") "Primary voltage";
@@ -795,8 +778,8 @@ package 'TransformerTestbench'
     Real 'transformer.r1.resistor[1].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.r1.resistor[1].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.r1.resistor[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.r1.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.r1.resistor[1].T_heatPort' "Port temperature";
-    Real 'transformer.r1.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.r1.resistor[1].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.r1.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.r1.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.r1.resistor[1].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.r1.resistor[1].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.r1.resistor[1].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -811,8 +794,8 @@ package 'TransformerTestbench'
     Real 'transformer.r1.resistor[2].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.r1.resistor[2].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.r1.resistor[2].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.r1.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.r1.resistor[2].T_heatPort' "Port temperature";
-    Real 'transformer.r1.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.r1.resistor[2].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.r1.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.r1.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.r1.resistor[2].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.r1.resistor[2].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.r1.resistor[2].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -827,8 +810,8 @@ package 'TransformerTestbench'
     Real 'transformer.r1.resistor[3].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.r1.resistor[3].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.r1.resistor[3].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.r1.resistor[3].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.r1.resistor[3].T_heatPort' "Port temperature";
-    Real 'transformer.r1.resistor[3].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.r1.resistor[3].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.r1.resistor[3].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.r1.resistor[3].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.r1.resistor[3].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.r1.resistor[3].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.r1.resistor[3].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -929,8 +912,8 @@ package 'TransformerTestbench'
     Real 'transformer.r2.resistor[1].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.r2.resistor[1].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.r2.resistor[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.r2.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.r2.resistor[1].T_heatPort' "Port temperature";
-    Real 'transformer.r2.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.r2.resistor[1].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.r2.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.r2.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.r2.resistor[1].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.r2.resistor[1].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.r2.resistor[1].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -945,8 +928,8 @@ package 'TransformerTestbench'
     Real 'transformer.r2.resistor[2].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.r2.resistor[2].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.r2.resistor[2].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.r2.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.r2.resistor[2].T_heatPort' "Port temperature";
-    Real 'transformer.r2.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.r2.resistor[2].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.r2.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.r2.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.r2.resistor[2].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.r2.resistor[2].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.r2.resistor[2].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -961,8 +944,8 @@ package 'TransformerTestbench'
     Real 'transformer.r2.resistor[3].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'transformer.r2.resistor[3].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'transformer.r2.resistor[3].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'transformer.r2.resistor[3].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'transformer.r2.resistor[3].T_heatPort' "Port temperature";
-    Real 'transformer.r2.resistor[3].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'transformer.r2.resistor[3].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'transformer.r2.resistor[3].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'transformer.r2.resistor[3].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'transformer.r2.resistor[3].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'transformer.r2.resistor[3].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'transformer.r2.resistor[3].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -1082,10 +1065,10 @@ package 'TransformerTestbench'
     constant Real 'transformer.thermalAmbient.TDefault'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Default temperature";
     parameter Real 'transformer.thermalAmbient.T1'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Temperature of primary windings";
     parameter Real 'transformer.thermalAmbient.T2'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Temperature of secondary windings";
-    Real 'transformer.thermalAmbient.Q_flow1'(unit = "W", quantity = "Power") = 'transformer.thermalAmbient.temperature1.port.Q_flow' "Heat flow rate of primary windings";
-    Real 'transformer.thermalAmbient.Q_flow2'(unit = "W", quantity = "Power") = 'transformer.thermalAmbient.temperature2.port.Q_flow' "Heat flow rate of secondary windings";
-    Real 'transformer.thermalAmbient.Q_flowCore'(unit = "W", quantity = "Power") = 'transformer.thermalAmbient.temperatureCore.port.Q_flow' "Heat flow rate of core losses";
-    Real 'transformer.thermalAmbient.Q_flowTotal'(unit = "W", quantity = "Power") = 'transformer.thermalAmbient.Q_flow1' + 'transformer.thermalAmbient.Q_flow2' + 'transformer.thermalAmbient.Q_flowCore';
+    Real 'transformer.thermalAmbient.Q_flow1'(unit = "W", quantity = "Power") "Heat flow rate of primary windings";
+    Real 'transformer.thermalAmbient.Q_flow2'(unit = "W", quantity = "Power") "Heat flow rate of secondary windings";
+    Real 'transformer.thermalAmbient.Q_flowCore'(unit = "W", quantity = "Power") "Heat flow rate of core losses";
+    Real 'transformer.thermalAmbient.Q_flowTotal'(unit = "W", quantity = "Power");
     parameter Integer 'transformer.thermalAmbient.thermalPort.m' = 3 "Number of phases" annotation(Evaluate = true);
     Real 'transformer.thermalAmbient.thermalPort.heatPort1[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'transformer.thermalAmbient.thermalPort.heatPort1[1].Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
@@ -1193,6 +1176,28 @@ package 'TransformerTestbench'
     'transformer.i2[1]' = 0.0;
     'transformer.i2[2]' = 0.0;
   equation
+    'transformer.powerBalance.power1' = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('transformer.v1', 'transformer.i1');
+    'transformer.powerBalance.power2' = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('transformer.v2', 'transformer.i2');
+    'transformer.powerBalance.lossPowerTotal' = 'transformer.powerBalance.lossPower1' + 'transformer.powerBalance.lossPower2' + 'transformer.powerBalance.lossPowerCore';
+    'transformer.powerBalance.lossPower1' = 'transformer.r1.resistor[1].LossPower' + 'transformer.r1.resistor[2].LossPower' + 'transformer.r1.resistor[3].LossPower';
+    'transformer.powerBalance.lossPower2' = 'transformer.r2.resistor[1].LossPower' + 'transformer.r2.resistor[2].LossPower' + 'transformer.r2.resistor[3].LossPower';
+    'transformer.powerBalance.lossPowerCore' = 0.0;
+    'transformer.r1.resistor[1].heatPort.T' = 'transformer.r1.resistor[1].T_heatPort';
+    'transformer.r1.resistor[1].heatPort.Q_flow' = -'transformer.r1.resistor[1].LossPower';
+    'transformer.r1.resistor[2].heatPort.T' = 'transformer.r1.resistor[2].T_heatPort';
+    'transformer.r1.resistor[2].heatPort.Q_flow' = -'transformer.r1.resistor[2].LossPower';
+    'transformer.r1.resistor[3].heatPort.T' = 'transformer.r1.resistor[3].T_heatPort';
+    'transformer.r1.resistor[3].heatPort.Q_flow' = -'transformer.r1.resistor[3].LossPower';
+    'transformer.r2.resistor[1].heatPort.T' = 'transformer.r2.resistor[1].T_heatPort';
+    'transformer.r2.resistor[1].heatPort.Q_flow' = -'transformer.r2.resistor[1].LossPower';
+    'transformer.r2.resistor[2].heatPort.T' = 'transformer.r2.resistor[2].T_heatPort';
+    'transformer.r2.resistor[2].heatPort.Q_flow' = -'transformer.r2.resistor[2].LossPower';
+    'transformer.r2.resistor[3].heatPort.T' = 'transformer.r2.resistor[3].T_heatPort';
+    'transformer.r2.resistor[3].heatPort.Q_flow' = -'transformer.r2.resistor[3].LossPower';
+    'transformer.thermalAmbient.Q_flow1' = 'transformer.thermalAmbient.temperature1.port.Q_flow';
+    'transformer.thermalAmbient.Q_flow2' = 'transformer.thermalAmbient.temperature2.port.Q_flow';
+    'transformer.thermalAmbient.Q_flowCore' = 'transformer.thermalAmbient.temperatureCore.port.Q_flow';
+    'transformer.thermalAmbient.Q_flowTotal' = 'transformer.thermalAmbient.Q_flow1' + 'transformer.thermalAmbient.Q_flow2' + 'transformer.thermalAmbient.Q_flowCore';
     'source.sineVoltage[1].p.v' = 'source.plug_p.pin[1].v';
     'source.sineVoltage[2].p.v' = 'source.plug_p.pin[2].v';
     'source.sineVoltage[3].p.v' = 'source.plug_p.pin[3].v';

@@ -1,5 +1,20 @@
 //! base 0.1.0
 package 'ForceStrokeBehaviour'
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMax';
+  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
+
   function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
@@ -9,26 +24,11 @@ package 'ForceStrokeBehaviour'
   external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
 
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMax';
-  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
-
   function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     output Real 'uMin';
   external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
 
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
@@ -40,8 +40,8 @@ package 'ForceStrokeBehaviour'
     function constructor "Initialize 1-dim. table defined by matrix"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
-      input Integer[:] 'columns';
+      input Real 'table'[:, :];
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
       input Boolean 'verboseRead' = true;
@@ -194,7 +194,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'actuator.coil.N' = 140.0 "Number of turns";
     Real 'actuator.coil.Psi'(unit = "Wb", quantity = "MagneticFlux") "Flux linkage";
     Real 'actuator.coil.L_stat'(unit = "H", quantity = "Inductance") "Static inductance abs(Psi/i)";
-    Real 'actuator.coil.eps' = 2.220446049250313e-14;
+    Real 'actuator.coil.eps';
     Real 'actuator.g_ma.port_p.V_m'(unit = "A", quantity = "MagneticPotential") "Magnetic potential at the port";
     Real 'actuator.g_ma.port_p.Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnetic flux flowing into the port";
     Real 'actuator.g_ma.port_n.V_m'(unit = "A", quantity = "MagneticPotential") "Magnetic potential at the port";
@@ -204,7 +204,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Boolean 'actuator.g_ma.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     parameter Real 'actuator.g_ma.mu_r'(start = 1.0, unit = "1", quantity = "RelativePermeability") = 1.05 "Relative magnetic permeability";
     Real 'actuator.g_ma.F_m'(unit = "N", quantity = "Force") "Reluctance force";
-    Real 'actuator.g_ma.s'(unit = "m", quantity = "Length") = 'actuator.g_ma.flange.s' - 'actuator.g_ma.s_support' "Distance between flange and support";
+    Real 'actuator.g_ma.s'(unit = "m", quantity = "Length") "Distance between flange and support";
     Real 'actuator.g_ma.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
     Real 'actuator.g_ma.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
     Real 'actuator.g_ma.dGmBydx'(unit = "V.s/(A.m)", quantity = "Permeability") "Derivative of permeance with respect to armature position";
@@ -212,7 +212,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'actuator.g_ma.flange.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'actuator.g_ma.flange.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
     Real 'actuator.g_ma.s_support'(unit = "m", quantity = "Length") "Absolute position of support flange";
-    Real 'actuator.g_ma.l'(unit = "m", quantity = "Length") = 0.01 + 'actuator.x' "Axial length (orthogonal to direction of flux)";
+    Real 'actuator.g_ma.l'(unit = "m", quantity = "Length") "Axial length (orthogonal to direction of flux)";
     parameter Real 'actuator.g_ma.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.0125 "Inner radius of hollow cylinder";
     parameter Real 'actuator.g_ma.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.019 "Outer radius of hollow cylinder";
     Real 'actuator.g_ma.B_avg'(unit = "T", quantity = "MagneticFluxDensity") "Average flux density (at arithmetic mean radius)";
@@ -226,7 +226,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Boolean 'actuator.g_mb.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     parameter Real 'actuator.g_mb.mu_r'(start = 1.0, unit = "1", quantity = "RelativePermeability") = 1.05 "Relative magnetic permeability";
     Real 'actuator.g_mb.F_m'(unit = "N", quantity = "Force") "Reluctance force";
-    Real 'actuator.g_mb.s'(unit = "m", quantity = "Length") = 'actuator.g_mb.flange.s' - 'actuator.g_mb.s_support' "Distance between flange and support";
+    Real 'actuator.g_mb.s'(unit = "m", quantity = "Length") "Distance between flange and support";
     Real 'actuator.g_mb.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
     Real 'actuator.g_mb.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
     Real 'actuator.g_mb.dGmBydx'(unit = "V.s/(A.m)", quantity = "Permeability") "Derivative of permeance with respect to armature position";
@@ -234,7 +234,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'actuator.g_mb.flange.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'actuator.g_mb.flange.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
     Real 'actuator.g_mb.s_support'(unit = "m", quantity = "Length") "Absolute position of support flange";
-    Real 'actuator.g_mb.l'(unit = "m", quantity = "Length") = 0.01 - 'actuator.x' "Axial length (orthogonal to direction of flux)";
+    Real 'actuator.g_mb.l'(unit = "m", quantity = "Length") "Axial length (orthogonal to direction of flux)";
     parameter Real 'actuator.g_mb.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.0125 "Inner radius of hollow cylinder";
     parameter Real 'actuator.g_mb.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.019 "Outer radius of hollow cylinder";
     Real 'actuator.g_mb.B_avg'(unit = "T", quantity = "MagneticFluxDensity") "Average flux density (at arithmetic mean radius)";
@@ -382,6 +382,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter 'Modelica.Blocks.Types.ExternalCombiTable1D' 'comparisonWithFEA.tableID' = 'Modelica.Blocks.Types.ExternalCombiTable1D'("NoName", "NoName", {{-0.004, -8.8729, -9.07503, 0.00332}, {-0.0035, -9.05239, -9.25042, 0.00352}, {-0.003, -9.1915, -9.38558, 0.00371}, {-0.0025, -9.28247, -9.47266, 0.0039}, {-0.002, -9.3587, -9.54503, 0.00409}, {-0.0015, -9.41568, -9.59782, 0.00429}, {-0.001, -9.45496, -9.6331, 0.00448}, {-5e-4, -9.47427, -9.64839, 0.00467}, {0.0, -9.48639, -9.65616, 0.00486}, {5e-4, -9.48623, -9.65174, 0.00505}, {0.001, -9.4732, -9.63435, 0.00524}, {0.0015, -9.44143, -9.59825, 0.00543}, {0.002, -9.39915, -9.55226, 0.00562}, {0.0025, -9.33166, -9.47988, 0.00581}, {0.003, -9.23707, -9.38112, 0.006}, {0.0035, -9.09497, -9.23417, 0.00619}, {0.004, -8.91839, -9.05337, 0.00638}}, {2, 3, 4}, 'Modelica.Blocks.Types.Smoothness'.'LinearSegments', 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints', false, ",", 0) "External table object";
     parameter Boolean 'comparisonWithFEA.isCsvExt' = false;
   equation
+    'actuator.coil.eps' = 2.220446049250313e-14;
+    'actuator.g_ma.s' = 'actuator.g_ma.flange.s' - 'actuator.g_ma.s_support';
+    'actuator.g_ma.l' = 0.01 + 'actuator.x';
+    'actuator.g_mb.s' = 'actuator.g_mb.flange.s' - 'actuator.g_mb.s_support';
+    'actuator.g_mb.l' = 0.01 - 'actuator.x';
     'actuator.armature.mass.flange_a.s' = 'actuator.armature.flange_a.s';
     'actuator.armature.mass.flange_a.s' = 'actuator.armature.stopper_xMin.flange_b.s';
     'actuator.armature.limit_xMax.flange.s' = 'actuator.armature.stopper_xMax.flange_b.s';

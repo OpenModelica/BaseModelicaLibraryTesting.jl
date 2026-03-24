@@ -1,5 +1,20 @@
 //! base 0.1.0
 package 'ComparisonQuasiStatic'
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMax';
+  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
+
   function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
@@ -9,26 +24,11 @@ package 'ComparisonQuasiStatic'
   external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
 
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMax';
-  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
-
   function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     output Real 'uMin';
   external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
 
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
@@ -40,8 +40,8 @@ package 'ComparisonQuasiStatic'
     function constructor "Initialize 1-dim. table defined by matrix"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
-      input Integer[:] 'columns';
+      input Real 'table'[:, :];
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
       input Boolean 'verboseRead' = true;
@@ -124,7 +124,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'advancedSolenoid.coil1.N' = 478.5 "Number of turns";
     Real 'advancedSolenoid.coil1.Psi'(unit = "Wb", quantity = "MagneticFlux") "Flux linkage";
     Real 'advancedSolenoid.coil1.L_stat'(unit = "H", quantity = "Inductance") "Static inductance abs(Psi/i)";
-    Real 'advancedSolenoid.coil1.eps' = 2.220446049250313e-14;
+    Real 'advancedSolenoid.coil1.eps';
     parameter Real 'advancedSolenoid.r_1.R'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 5.0 "Resistance at temperature T_ref";
     parameter Real 'advancedSolenoid.r_1.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Reference temperature";
     parameter Real 'advancedSolenoid.r_1.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -198,7 +198,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Boolean 'advancedSolenoid.g_mAirWork.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     parameter Real 'advancedSolenoid.g_mAirWork.mu_r'(start = 1.0, unit = "1", quantity = "RelativePermeability") = 1.0 "Relative magnetic permeability";
     Real 'advancedSolenoid.g_mAirWork.F_m'(unit = "N", quantity = "Force") "Reluctance force";
-    Real 'advancedSolenoid.g_mAirWork.s'(unit = "m", quantity = "Length") = 'advancedSolenoid.g_mAirWork.flange.s' - 'advancedSolenoid.g_mAirWork.s_support' "Distance between flange and support";
+    Real 'advancedSolenoid.g_mAirWork.s'(unit = "m", quantity = "Length") "Distance between flange and support";
     Real 'advancedSolenoid.g_mAirWork.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
     Real 'advancedSolenoid.g_mAirWork.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
     Real 'advancedSolenoid.g_mAirWork.dGmBydx'(unit = "V.s/(A.m)", quantity = "Permeability") "Derivative of permeance with respect to armature position";
@@ -206,7 +206,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'advancedSolenoid.g_mAirWork.flange.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'advancedSolenoid.g_mAirWork.flange.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
     Real 'advancedSolenoid.g_mAirWork.s_support'(unit = "m", quantity = "Length") "Absolute position of support flange";
-    Real 'advancedSolenoid.g_mAirWork.l'(unit = "m", quantity = "Length") = 'advancedSolenoid.flange.s' "Axial length (in direction of flux)";
+    Real 'advancedSolenoid.g_mAirWork.l'(unit = "m", quantity = "Length") "Axial length (in direction of flux)";
     parameter Real 'advancedSolenoid.g_mAirWork.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.0 "Inner radius of (hollow) cylinder";
     parameter Real 'advancedSolenoid.g_mAirWork.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.005 "Outer radius of (hollow) cylinder";
     Real 'advancedSolenoid.g_mAirWork.B'(unit = "T", quantity = "MagneticFluxDensity") "Homogeneous flux density";
@@ -419,7 +419,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'advancedSolenoid.coil2.N' = 478.5 "Number of turns";
     Real 'advancedSolenoid.coil2.Psi'(unit = "Wb", quantity = "MagneticFlux") "Flux linkage";
     Real 'advancedSolenoid.coil2.L_stat'(unit = "H", quantity = "Inductance") "Static inductance abs(Psi/i)";
-    Real 'advancedSolenoid.coil2.eps' = 2.220446049250313e-14;
+    Real 'advancedSolenoid.coil2.eps';
     Real 'advancedSolenoid.c_par1.v'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
     Real 'advancedSolenoid.c_par1.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'advancedSolenoid.c_par1.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
@@ -544,7 +544,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Boolean 'advancedSolenoid.g_mLeakWork.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     parameter Real 'advancedSolenoid.g_mLeakWork.mu_r'(start = 1.0, unit = "1", quantity = "RelativePermeability") = 1.0 "Relative magnetic permeability";
     Real 'advancedSolenoid.g_mLeakWork.F_m'(unit = "N", quantity = "Force") "Reluctance force";
-    Real 'advancedSolenoid.g_mLeakWork.s'(unit = "m", quantity = "Length") = 'advancedSolenoid.g_mLeakWork.flange.s' - 'advancedSolenoid.g_mLeakWork.s_support' "Distance between flange and support";
+    Real 'advancedSolenoid.g_mLeakWork.s'(unit = "m", quantity = "Length") "Distance between flange and support";
     Real 'advancedSolenoid.g_mLeakWork.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
     Real 'advancedSolenoid.g_mLeakWork.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
     Real 'advancedSolenoid.g_mLeakWork.dGmBydx'(unit = "V.s/(A.m)", quantity = "Permeability") "Derivative of permeance with respect to armature position";
@@ -552,7 +552,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'advancedSolenoid.g_mLeakWork.flange.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'advancedSolenoid.g_mLeakWork.flange.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
     Real 'advancedSolenoid.g_mLeakWork.s_support'(unit = "m", quantity = "Length") "Absolute position of support flange";
-    Real 'advancedSolenoid.g_mLeakWork.l'(unit = "m", quantity = "Length") = 'advancedSolenoid.flange.s' "Axial length (in direction of flux)";
+    Real 'advancedSolenoid.g_mLeakWork.l'(unit = "m", quantity = "Length") "Axial length (in direction of flux)";
     parameter Real 'advancedSolenoid.g_mLeakWork.w'(unit = "m", quantity = "Length") = 0.04084070449666732 "Width orthogonal to flux; mean circumference of flux tube in case of cylindrical poles";
     parameter Real 'advancedSolenoid.g_mLeakWork.r'(min = 0.0, unit = "m", quantity = "Length") = 0.003 "Radius of leakage field";
     Real 'advancedSolenoid.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -629,7 +629,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'simpleSolenoid.coil.N' = 957.0 "Number of turns";
     Real 'simpleSolenoid.coil.Psi'(unit = "Wb", quantity = "MagneticFlux") "Flux linkage";
     Real 'simpleSolenoid.coil.L_stat'(unit = "H", quantity = "Inductance") "Static inductance abs(Psi/i)";
-    Real 'simpleSolenoid.coil.eps' = 2.220446049250313e-14;
+    Real 'simpleSolenoid.coil.eps';
     parameter Real 'simpleSolenoid.r.R'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 10.0 "Resistance at temperature T_ref";
     parameter Real 'simpleSolenoid.r.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Reference temperature";
     parameter Real 'simpleSolenoid.r.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -703,7 +703,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Boolean 'simpleSolenoid.g_mAirWork.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     parameter Real 'simpleSolenoid.g_mAirWork.mu_r'(start = 1.0, unit = "1", quantity = "RelativePermeability") = 1.0 "Relative magnetic permeability";
     Real 'simpleSolenoid.g_mAirWork.F_m'(unit = "N", quantity = "Force") "Reluctance force";
-    Real 'simpleSolenoid.g_mAirWork.s'(unit = "m", quantity = "Length") = 'simpleSolenoid.g_mAirWork.flange.s' - 'simpleSolenoid.g_mAirWork.s_support' "Distance between flange and support";
+    Real 'simpleSolenoid.g_mAirWork.s'(unit = "m", quantity = "Length") "Distance between flange and support";
     Real 'simpleSolenoid.g_mAirWork.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
     Real 'simpleSolenoid.g_mAirWork.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
     Real 'simpleSolenoid.g_mAirWork.dGmBydx'(unit = "V.s/(A.m)", quantity = "Permeability") "Derivative of permeance with respect to armature position";
@@ -711,7 +711,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'simpleSolenoid.g_mAirWork.flange.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'simpleSolenoid.g_mAirWork.flange.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
     Real 'simpleSolenoid.g_mAirWork.s_support'(unit = "m", quantity = "Length") "Absolute position of support flange";
-    Real 'simpleSolenoid.g_mAirWork.l'(unit = "m", quantity = "Length") = 'simpleSolenoid.flange.s' "Axial length (in direction of flux)";
+    Real 'simpleSolenoid.g_mAirWork.l'(unit = "m", quantity = "Length") "Axial length (in direction of flux)";
     parameter Real 'simpleSolenoid.g_mAirWork.r_i'(min = 0.0, unit = "m", quantity = "Length") = 0.0 "Inner radius of (hollow) cylinder";
     parameter Real 'simpleSolenoid.g_mAirWork.r_o'(min = 0.0, unit = "m", quantity = "Length") = 0.005 "Outer radius of (hollow) cylinder";
     Real 'simpleSolenoid.g_mAirWork.B'(unit = "T", quantity = "MagneticFluxDensity") "Homogeneous flux density";
@@ -918,7 +918,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Boolean 'simpleSolenoid.g_mLeakWork.useSupport' = false "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     parameter Real 'simpleSolenoid.g_mLeakWork.mu_r'(start = 1.0, unit = "1", quantity = "RelativePermeability") = 1.0 "Relative magnetic permeability";
     Real 'simpleSolenoid.g_mLeakWork.F_m'(unit = "N", quantity = "Force") "Reluctance force";
-    Real 'simpleSolenoid.g_mLeakWork.s'(unit = "m", quantity = "Length") = 'simpleSolenoid.g_mLeakWork.flange.s' - 'simpleSolenoid.g_mLeakWork.s_support' "Distance between flange and support";
+    Real 'simpleSolenoid.g_mLeakWork.s'(unit = "m", quantity = "Length") "Distance between flange and support";
     Real 'simpleSolenoid.g_mLeakWork.R_m'(unit = "H-1", quantity = "Reluctance") "Magnetic reluctance";
     Real 'simpleSolenoid.g_mLeakWork.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
     Real 'simpleSolenoid.g_mLeakWork.dGmBydx'(unit = "V.s/(A.m)", quantity = "Permeability") "Derivative of permeance with respect to armature position";
@@ -926,7 +926,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'simpleSolenoid.g_mLeakWork.flange.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'simpleSolenoid.g_mLeakWork.flange.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
     Real 'simpleSolenoid.g_mLeakWork.s_support'(unit = "m", quantity = "Length") "Absolute position of support flange";
-    Real 'simpleSolenoid.g_mLeakWork.l'(unit = "m", quantity = "Length") = 'simpleSolenoid.flange.s' "Axial length (in direction of flux)";
+    Real 'simpleSolenoid.g_mLeakWork.l'(unit = "m", quantity = "Length") "Axial length (in direction of flux)";
     parameter Real 'simpleSolenoid.g_mLeakWork.w'(unit = "m", quantity = "Length") = 0.04084070449666732 "Width orthogonal to flux; mean circumference of flux tube in case of cylindrical poles";
     parameter Real 'simpleSolenoid.g_mLeakWork.r'(min = 0.0, unit = "m", quantity = "Length") = 0.003 "Radius of leakage field";
     Real 'simpleSolenoid.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -1053,6 +1053,17 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'advancedFeed_x.s' = 'advancedFeed_x.s_ref';
     'simpleFeed_x.s' = 'simpleFeed_x.s_ref';
   equation
+    'advancedSolenoid.coil1.eps' = 2.220446049250313e-14;
+    'advancedSolenoid.g_mAirWork.s' = 'advancedSolenoid.g_mAirWork.flange.s' - 'advancedSolenoid.g_mAirWork.s_support';
+    'advancedSolenoid.g_mAirWork.l' = 'advancedSolenoid.flange.s';
+    'advancedSolenoid.coil2.eps' = 2.220446049250313e-14;
+    'advancedSolenoid.g_mLeakWork.s' = 'advancedSolenoid.g_mLeakWork.flange.s' - 'advancedSolenoid.g_mLeakWork.s_support';
+    'advancedSolenoid.g_mLeakWork.l' = 'advancedSolenoid.flange.s';
+    'simpleSolenoid.coil.eps' = 2.220446049250313e-14;
+    'simpleSolenoid.g_mAirWork.s' = 'simpleSolenoid.g_mAirWork.flange.s' - 'simpleSolenoid.g_mAirWork.s_support';
+    'simpleSolenoid.g_mAirWork.l' = 'simpleSolenoid.flange.s';
+    'simpleSolenoid.g_mLeakWork.s' = 'simpleSolenoid.g_mLeakWork.flange.s' - 'simpleSolenoid.g_mLeakWork.s_support';
+    'simpleSolenoid.g_mLeakWork.l' = 'simpleSolenoid.flange.s';
     'advancedSolenoid.armature.mass.flange_a.s' = 'advancedSolenoid.armature.flange_a.s';
     'advancedSolenoid.armature.mass.flange_a.s' = 'advancedSolenoid.armature.stopper_xMin.flange_b.s';
     'advancedSolenoid.armature.limit_xMax.flange.s' = 'advancedSolenoid.armature.stopper_xMax.flange_b.s';

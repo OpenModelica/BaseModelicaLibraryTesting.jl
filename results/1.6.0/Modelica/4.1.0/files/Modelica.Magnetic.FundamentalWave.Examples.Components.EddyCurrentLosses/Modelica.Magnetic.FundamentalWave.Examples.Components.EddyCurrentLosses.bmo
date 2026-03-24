@@ -1,13 +1,5 @@
 //! base 0.1.0
 package 'EddyCurrentLosses'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
   function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
     input Real 'u1';
     input Real 'u2';
@@ -16,58 +8,14 @@ package 'EddyCurrentLosses'
     constant Real 'pi2' = 6.283185307179586;
     Real 'w';
   algorithm
-    'w' := atan2('u1', 'u2');
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
 
     if 'y0' == 0.0 then
       'y' := 'w';
-    elseif true then
+    else
       'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
     end if;
   end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticFlux.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference.\'constructor\'.fromReal';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.Units.SI.ComplexMagneticFlux'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticFlux';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotential';
-
-  record 'Modelica.Units.SI.ComplexMagneticPotentialDifference'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexMagneticPotentialDifference';
 
   model 'EddyCurrentLosses' "Comparison of equivalent circuits of eddy current loss models"
     parameter Integer 'm' = 3 "Number of phases" annotation(Evaluate = true);
@@ -75,8 +23,8 @@ package 'EddyCurrentLosses'
     parameter Real 'Gc'(unit = "S", quantity = "Conductance") = 1.0 "Loss conductance";
     parameter Real 'R_m'(unit = "H-1", quantity = "Reluctance") = 1.0 "Reluctance of the magnetic circuit";
     parameter Real 'N' = 1.0 "Number of turns";
-    output Real 'lossPower_e'(unit = "W", quantity = "Power") = 'loss_e.conductor[1].LossPower' + 'loss_e.conductor[2].LossPower' + 'loss_e.conductor[3].LossPower';
-    output Real 'lossPower_m'(unit = "W", quantity = "Power") = 'loss_m.lossPower';
+    output Real 'lossPower_e'(unit = "W", quantity = "Power");
+    output Real 'lossPower_m'(unit = "W", quantity = "Power");
     Real 'ground_e.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'ground_e.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'ground_m.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -441,14 +389,14 @@ package 'EddyCurrentLosses'
     Real 'converter_e.i[1]'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_e.i[2]'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_e.i[3]'(unit = "A", quantity = "ElectricCurrent") "Current";
-    Real 'converter_e.V_m.re'(unit = "A", quantity = "MagneticPotential") = 'converter_e.port_p.V_m.re' - 'converter_e.port_n.V_m.re' "Real part of complex number";
-    Real 'converter_e.V_m.im'(unit = "A", quantity = "MagneticPotential") = 'converter_e.port_p.V_m.im' - 'converter_e.port_n.V_m.im' "Imaginary part of complex number";
-    Real 'converter_e.abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_e.V_m.re' ^ 2.0 + 'converter_e.V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'converter_e.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_e.V_m.im', 'converter_e.V_m.re', 0.0) "Argument of complex magnetic potential difference";
-    Real 'converter_e.Phi.re'(unit = "Wb", quantity = "MagneticFlux") = 'converter_e.port_p.Phi.re' "Real part of complex number";
-    Real 'converter_e.Phi.im'(unit = "Wb", quantity = "MagneticFlux") = 'converter_e.port_p.Phi.im' "Imaginary part of complex number";
-    Real 'converter_e.abs_Phi'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_e.Phi.re' ^ 2.0 + 'converter_e.Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'converter_e.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_e.Phi.im', 'converter_e.Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'converter_e.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'converter_e.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'converter_e.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'converter_e.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'converter_e.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'converter_e.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'converter_e.abs_Phi'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic flux";
+    Real 'converter_e.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Integer 'converter_e.plug_p.m'(min = 1) = 3 "Number of phases" annotation(Evaluate = true);
     Real 'converter_e.plug_p.pin[1].v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'converter_e.plug_p.pin[1].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
@@ -498,12 +446,12 @@ package 'EddyCurrentLosses'
     Real 'converter_e.singlePhaseElectroMagneticConverter[1].i'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_e.singlePhaseElectroMagneticConverter[1].V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
     Real 'converter_e.singlePhaseElectroMagneticConverter[1].V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[1].abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_e.singlePhaseElectroMagneticConverter[1].V_m.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[1].V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[1].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[1].V_m.im', 'converter_e.singlePhaseElectroMagneticConverter[1].V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[1].abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[1].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
     Real 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
     Real 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[1].abs_Phi'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_e.singlePhaseElectroMagneticConverter[1].Phi.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[1].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[1].Phi.im', 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[1].abs_Phi'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic flux";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[1].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Real 'converter_e.singlePhaseElectroMagneticConverter[1].N.re' = 1.0 "Real part of complex number";
     parameter Real 'converter_e.singlePhaseElectroMagneticConverter[1].N.im' = 0.0 "Imaginary part of complex number";
     Real 'converter_e.singlePhaseElectroMagneticConverter[2].pin_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -524,12 +472,12 @@ package 'EddyCurrentLosses'
     Real 'converter_e.singlePhaseElectroMagneticConverter[2].i'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_e.singlePhaseElectroMagneticConverter[2].V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
     Real 'converter_e.singlePhaseElectroMagneticConverter[2].V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[2].abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_e.singlePhaseElectroMagneticConverter[2].V_m.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[2].V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[2].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[2].V_m.im', 'converter_e.singlePhaseElectroMagneticConverter[2].V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[2].abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[2].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
     Real 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
     Real 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[2].abs_Phi'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_e.singlePhaseElectroMagneticConverter[2].Phi.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[2].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[2].Phi.im', 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[2].abs_Phi'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic flux";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[2].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Real 'converter_e.singlePhaseElectroMagneticConverter[2].N.re' = -0.4999999999999998 "Real part of complex number";
     parameter Real 'converter_e.singlePhaseElectroMagneticConverter[2].N.im' = 0.8660254037844387 "Imaginary part of complex number";
     Real 'converter_e.singlePhaseElectroMagneticConverter[3].pin_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -550,12 +498,12 @@ package 'EddyCurrentLosses'
     Real 'converter_e.singlePhaseElectroMagneticConverter[3].i'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_e.singlePhaseElectroMagneticConverter[3].V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
     Real 'converter_e.singlePhaseElectroMagneticConverter[3].V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[3].abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_e.singlePhaseElectroMagneticConverter[3].V_m.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[3].V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[3].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[3].V_m.im', 'converter_e.singlePhaseElectroMagneticConverter[3].V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[3].abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[3].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
     Real 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
     Real 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[3].abs_Phi'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_e.singlePhaseElectroMagneticConverter[3].Phi.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'converter_e.singlePhaseElectroMagneticConverter[3].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[3].Phi.im', 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[3].abs_Phi'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic flux";
+    Real 'converter_e.singlePhaseElectroMagneticConverter[3].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Real 'converter_e.singlePhaseElectroMagneticConverter[3].N.re' = -0.5000000000000004 "Real part of complex number";
     parameter Real 'converter_e.singlePhaseElectroMagneticConverter[3].N.im' = -0.8660254037844384 "Imaginary part of complex number";
     Real 'converter_m.v[1]'(unit = "V", quantity = "ElectricPotential") "Voltage";
@@ -564,14 +512,14 @@ package 'EddyCurrentLosses'
     Real 'converter_m.i[1]'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_m.i[2]'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_m.i[3]'(unit = "A", quantity = "ElectricCurrent") "Current";
-    Real 'converter_m.V_m.re'(unit = "A", quantity = "MagneticPotential") = 'converter_m.port_p.V_m.re' - 'converter_m.port_n.V_m.re' "Real part of complex number";
-    Real 'converter_m.V_m.im'(unit = "A", quantity = "MagneticPotential") = 'converter_m.port_p.V_m.im' - 'converter_m.port_n.V_m.im' "Imaginary part of complex number";
-    Real 'converter_m.abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_m.V_m.re' ^ 2.0 + 'converter_m.V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'converter_m.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_m.V_m.im', 'converter_m.V_m.re', 0.0) "Argument of complex magnetic potential difference";
-    Real 'converter_m.Phi.re'(unit = "Wb", quantity = "MagneticFlux") = 'converter_m.port_p.Phi.re' "Real part of complex number";
-    Real 'converter_m.Phi.im'(unit = "Wb", quantity = "MagneticFlux") = 'converter_m.port_p.Phi.im' "Imaginary part of complex number";
-    Real 'converter_m.abs_Phi'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_m.Phi.re' ^ 2.0 + 'converter_m.Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'converter_m.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_m.Phi.im', 'converter_m.Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'converter_m.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'converter_m.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'converter_m.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'converter_m.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'converter_m.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'converter_m.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'converter_m.abs_Phi'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic flux";
+    Real 'converter_m.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Integer 'converter_m.plug_p.m'(min = 1) = 3 "Number of phases" annotation(Evaluate = true);
     Real 'converter_m.plug_p.pin[1].v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'converter_m.plug_p.pin[1].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
@@ -621,12 +569,12 @@ package 'EddyCurrentLosses'
     Real 'converter_m.singlePhaseElectroMagneticConverter[1].i'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_m.singlePhaseElectroMagneticConverter[1].V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
     Real 'converter_m.singlePhaseElectroMagneticConverter[1].V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[1].abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_m.singlePhaseElectroMagneticConverter[1].V_m.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[1].V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[1].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[1].V_m.im', 'converter_m.singlePhaseElectroMagneticConverter[1].V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[1].abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[1].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
     Real 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
     Real 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[1].abs_Phi'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_m.singlePhaseElectroMagneticConverter[1].Phi.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[1].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[1].Phi.im', 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[1].abs_Phi'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic flux";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[1].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Real 'converter_m.singlePhaseElectroMagneticConverter[1].N.re' = 1.0 "Real part of complex number";
     parameter Real 'converter_m.singlePhaseElectroMagneticConverter[1].N.im' = 0.0 "Imaginary part of complex number";
     Real 'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -647,12 +595,12 @@ package 'EddyCurrentLosses'
     Real 'converter_m.singlePhaseElectroMagneticConverter[2].i'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_m.singlePhaseElectroMagneticConverter[2].V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
     Real 'converter_m.singlePhaseElectroMagneticConverter[2].V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[2].abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_m.singlePhaseElectroMagneticConverter[2].V_m.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[2].V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[2].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[2].V_m.im', 'converter_m.singlePhaseElectroMagneticConverter[2].V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[2].abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[2].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
     Real 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
     Real 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[2].abs_Phi'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_m.singlePhaseElectroMagneticConverter[2].Phi.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[2].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[2].Phi.im', 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[2].abs_Phi'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic flux";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[2].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Real 'converter_m.singlePhaseElectroMagneticConverter[2].N.re' = -0.4999999999999998 "Real part of complex number";
     parameter Real 'converter_m.singlePhaseElectroMagneticConverter[2].N.im' = 0.8660254037844387 "Imaginary part of complex number";
     Real 'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -673,12 +621,12 @@ package 'EddyCurrentLosses'
     Real 'converter_m.singlePhaseElectroMagneticConverter[3].i'(unit = "A", quantity = "ElectricCurrent") "Current";
     Real 'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
     Real 'converter_m.singlePhaseElectroMagneticConverter[3].V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[3].abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_m.singlePhaseElectroMagneticConverter[3].V_m.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[3].V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[3].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[3].V_m.im', 'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re', 0.0) "Argument of complex magnetic potential difference";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[3].abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[3].arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
     Real 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
     Real 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[3].abs_Phi'(unit = "A", quantity = "MagneticPotential") = sqrt('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'converter_m.singlePhaseElectroMagneticConverter[3].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im', 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[3].abs_Phi'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic flux";
+    Real 'converter_m.singlePhaseElectroMagneticConverter[3].arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Real 'converter_m.singlePhaseElectroMagneticConverter[3].N.re' = -0.5000000000000004 "Real part of complex number";
     parameter Real 'converter_m.singlePhaseElectroMagneticConverter[3].N.im' = -0.8660254037844384 "Imaginary part of complex number";
     Real 'reluctance_e.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
@@ -689,14 +637,14 @@ package 'EddyCurrentLosses'
     Real 'reluctance_e.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
     Real 'reluctance_e.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
     Real 'reluctance_e.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
-    Real 'reluctance_e.V_m.re'(unit = "A", quantity = "MagneticPotential") = 'reluctance_e.port_p.V_m.re' - 'reluctance_e.port_n.V_m.re' "Real part of complex number";
-    Real 'reluctance_e.V_m.im'(unit = "A", quantity = "MagneticPotential") = 'reluctance_e.port_p.V_m.im' - 'reluctance_e.port_n.V_m.im' "Imaginary part of complex number";
-    Real 'reluctance_e.abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('reluctance_e.V_m.re' ^ 2.0 + 'reluctance_e.V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'reluctance_e.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('reluctance_e.V_m.im', 'reluctance_e.V_m.re', 0.0) "Argument of complex magnetic potential difference";
-    Real 'reluctance_e.Phi.re'(unit = "Wb", quantity = "MagneticFlux") = 'reluctance_e.port_p.Phi.re' "Real part of complex number";
-    Real 'reluctance_e.Phi.im'(unit = "Wb", quantity = "MagneticFlux") = 'reluctance_e.port_p.Phi.im' "Imaginary part of complex number";
-    Real 'reluctance_e.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") = sqrt('reluctance_e.Phi.re' ^ 2.0 + 'reluctance_e.Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'reluctance_e.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('reluctance_e.Phi.im', 'reluctance_e.Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'reluctance_e.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'reluctance_e.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'reluctance_e.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'reluctance_e.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'reluctance_e.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'reluctance_e.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'reluctance_e.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'reluctance_e.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Real 'reluctance_e.R_m.d'(start = 1.0, unit = "H-1", quantity = "Reluctance") = 1.0 "Component of d (direct) axis, aligned to real part";
     parameter Real 'reluctance_e.R_m.q'(start = 1.0, unit = "H-1", quantity = "Reluctance") = 1.0 "Component of q (quadrature) axis, aligned to imaginary part";
     Real 'reluctance_m.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
@@ -707,14 +655,14 @@ package 'EddyCurrentLosses'
     Real 'reluctance_m.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
     Real 'reluctance_m.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
     Real 'reluctance_m.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
-    Real 'reluctance_m.V_m.re'(unit = "A", quantity = "MagneticPotential") = 'reluctance_m.port_p.V_m.re' - 'reluctance_m.port_n.V_m.re' "Real part of complex number";
-    Real 'reluctance_m.V_m.im'(unit = "A", quantity = "MagneticPotential") = 'reluctance_m.port_p.V_m.im' - 'reluctance_m.port_n.V_m.im' "Imaginary part of complex number";
-    Real 'reluctance_m.abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('reluctance_m.V_m.re' ^ 2.0 + 'reluctance_m.V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'reluctance_m.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('reluctance_m.V_m.im', 'reluctance_m.V_m.re', 0.0) "Argument of complex magnetic potential difference";
-    Real 'reluctance_m.Phi.re'(unit = "Wb", quantity = "MagneticFlux") = 'reluctance_m.port_p.Phi.re' "Real part of complex number";
-    Real 'reluctance_m.Phi.im'(unit = "Wb", quantity = "MagneticFlux") = 'reluctance_m.port_p.Phi.im' "Imaginary part of complex number";
-    Real 'reluctance_m.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") = sqrt('reluctance_m.Phi.re' ^ 2.0 + 'reluctance_m.Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'reluctance_m.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('reluctance_m.Phi.im', 'reluctance_m.Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'reluctance_m.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'reluctance_m.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'reluctance_m.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'reluctance_m.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'reluctance_m.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'reluctance_m.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'reluctance_m.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'reluctance_m.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Real 'reluctance_m.R_m.d'(start = 1.0, unit = "H-1", quantity = "Reluctance") = 1.0 "Component of d (direct) axis, aligned to real part";
     parameter Real 'reluctance_m.R_m.q'(start = 1.0, unit = "H-1", quantity = "Reluctance") = 1.0 "Component of q (quadrature) axis, aligned to imaginary part";
     Real 'mground_e.port_p.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
@@ -810,14 +758,14 @@ package 'EddyCurrentLosses'
     Real 'loss_m.port_n.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
     Real 'loss_m.port_n.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
     Real 'loss_m.port_n.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
-    Real 'loss_m.V_m.re'(unit = "A", quantity = "MagneticPotential") = 'loss_m.port_p.V_m.re' - 'loss_m.port_n.V_m.re' "Real part of complex number";
-    Real 'loss_m.V_m.im'(unit = "A", quantity = "MagneticPotential") = 'loss_m.port_p.V_m.im' - 'loss_m.port_n.V_m.im' "Imaginary part of complex number";
-    Real 'loss_m.abs_V_m'(unit = "A", quantity = "MagneticPotential") = sqrt('loss_m.V_m.re' ^ 2.0 + 'loss_m.V_m.im' ^ 2.0) "Magnitude of complex magnetic potential difference";
-    Real 'loss_m.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('loss_m.V_m.im', 'loss_m.V_m.re', 0.0) "Argument of complex magnetic potential difference";
-    Real 'loss_m.Phi.re'(unit = "Wb", quantity = "MagneticFlux") = 'loss_m.port_p.Phi.re' "Real part of complex number";
-    Real 'loss_m.Phi.im'(unit = "Wb", quantity = "MagneticFlux") = 'loss_m.port_p.Phi.im' "Imaginary part of complex number";
-    Real 'loss_m.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") = sqrt('loss_m.Phi.re' ^ 2.0 + 'loss_m.Phi.im' ^ 2.0) "Magnitude of complex magnetic flux";
-    Real 'loss_m.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('loss_m.Phi.im', 'loss_m.Phi.re', 0.0) "Argument of complex magnetic flux";
+    Real 'loss_m.V_m.re'(unit = "A", quantity = "MagneticPotential") "Real part of complex number";
+    Real 'loss_m.V_m.im'(unit = "A", quantity = "MagneticPotential") "Imaginary part of complex number";
+    Real 'loss_m.abs_V_m'(unit = "A", quantity = "MagneticPotential") "Magnitude of complex magnetic potential difference";
+    Real 'loss_m.arg_V_m'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic potential difference";
+    Real 'loss_m.Phi.re'(unit = "Wb", quantity = "MagneticFlux") "Real part of complex number";
+    Real 'loss_m.Phi.im'(unit = "Wb", quantity = "MagneticFlux") "Imaginary part of complex number";
+    Real 'loss_m.abs_Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnitude of complex magnetic flux";
+    Real 'loss_m.arg_Phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex magnetic flux";
     parameter Real 'loss_m.G'(min = 0.0, unit = "S", quantity = "Conductance") = 1.5 "Equivalent symmetric loss conductance";
     parameter Boolean 'loss_m.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'loss_m.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.15 "Fixed device temperature if useHeatPort = false";
@@ -1055,6 +1003,62 @@ package 'EddyCurrentLosses'
     'reluctance_m.Phi.re' = 0.0;
     'reluctance_m.Phi.im' = 0.0;
   equation
+    'lossPower_e' = 'loss_e.conductor[1].LossPower' + 'loss_e.conductor[2].LossPower' + 'loss_e.conductor[3].LossPower';
+    'lossPower_m' = 'loss_m.lossPower';
+    'converter_e.abs_V_m' = sqrt('converter_e.V_m.re' ^ 2.0 + 'converter_e.V_m.im' ^ 2.0);
+    'converter_e.arg_V_m' = 'Modelica.Math.atan3'('converter_e.V_m.im', 'converter_e.V_m.re', 0.0);
+    'converter_e.Phi.re' = 'converter_e.port_p.Phi.re';
+    'converter_e.Phi.im' = 'converter_e.port_p.Phi.im';
+    'converter_e.abs_Phi' = sqrt('converter_e.Phi.re' ^ 2.0 + 'converter_e.Phi.im' ^ 2.0);
+    'converter_e.arg_Phi' = 'Modelica.Math.atan3'('converter_e.Phi.im', 'converter_e.Phi.re', 0.0);
+    'converter_e.singlePhaseElectroMagneticConverter[1].abs_V_m' = sqrt('converter_e.singlePhaseElectroMagneticConverter[1].V_m.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[1].V_m.im' ^ 2.0);
+    'converter_e.singlePhaseElectroMagneticConverter[1].arg_V_m' = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[1].V_m.im', 'converter_e.singlePhaseElectroMagneticConverter[1].V_m.re', 0.0);
+    'converter_e.singlePhaseElectroMagneticConverter[1].abs_Phi' = sqrt('converter_e.singlePhaseElectroMagneticConverter[1].Phi.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.im' ^ 2.0);
+    'converter_e.singlePhaseElectroMagneticConverter[1].arg_Phi' = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[1].Phi.im', 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.re', 0.0);
+    'converter_e.singlePhaseElectroMagneticConverter[2].abs_V_m' = sqrt('converter_e.singlePhaseElectroMagneticConverter[2].V_m.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[2].V_m.im' ^ 2.0);
+    'converter_e.singlePhaseElectroMagneticConverter[2].arg_V_m' = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[2].V_m.im', 'converter_e.singlePhaseElectroMagneticConverter[2].V_m.re', 0.0);
+    'converter_e.singlePhaseElectroMagneticConverter[2].abs_Phi' = sqrt('converter_e.singlePhaseElectroMagneticConverter[2].Phi.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.im' ^ 2.0);
+    'converter_e.singlePhaseElectroMagneticConverter[2].arg_Phi' = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[2].Phi.im', 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.re', 0.0);
+    'converter_e.singlePhaseElectroMagneticConverter[3].abs_V_m' = sqrt('converter_e.singlePhaseElectroMagneticConverter[3].V_m.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[3].V_m.im' ^ 2.0);
+    'converter_e.singlePhaseElectroMagneticConverter[3].arg_V_m' = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[3].V_m.im', 'converter_e.singlePhaseElectroMagneticConverter[3].V_m.re', 0.0);
+    'converter_e.singlePhaseElectroMagneticConverter[3].abs_Phi' = sqrt('converter_e.singlePhaseElectroMagneticConverter[3].Phi.re' ^ 2.0 + 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.im' ^ 2.0);
+    'converter_e.singlePhaseElectroMagneticConverter[3].arg_Phi' = 'Modelica.Math.atan3'('converter_e.singlePhaseElectroMagneticConverter[3].Phi.im', 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.re', 0.0);
+    'converter_m.abs_V_m' = sqrt('converter_m.V_m.re' ^ 2.0 + 'converter_m.V_m.im' ^ 2.0);
+    'converter_m.arg_V_m' = 'Modelica.Math.atan3'('converter_m.V_m.im', 'converter_m.V_m.re', 0.0);
+    'converter_m.Phi.re' = 'converter_m.port_p.Phi.re';
+    'converter_m.Phi.im' = 'converter_m.port_p.Phi.im';
+    'converter_m.abs_Phi' = sqrt('converter_m.Phi.re' ^ 2.0 + 'converter_m.Phi.im' ^ 2.0);
+    'converter_m.arg_Phi' = 'Modelica.Math.atan3'('converter_m.Phi.im', 'converter_m.Phi.re', 0.0);
+    'converter_m.singlePhaseElectroMagneticConverter[1].abs_V_m' = sqrt('converter_m.singlePhaseElectroMagneticConverter[1].V_m.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[1].V_m.im' ^ 2.0);
+    'converter_m.singlePhaseElectroMagneticConverter[1].arg_V_m' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[1].V_m.im', 'converter_m.singlePhaseElectroMagneticConverter[1].V_m.re', 0.0);
+    'converter_m.singlePhaseElectroMagneticConverter[1].abs_Phi' = sqrt('converter_m.singlePhaseElectroMagneticConverter[1].Phi.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.im' ^ 2.0);
+    'converter_m.singlePhaseElectroMagneticConverter[1].arg_Phi' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[1].Phi.im', 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.re', 0.0);
+    'converter_m.singlePhaseElectroMagneticConverter[2].abs_V_m' = sqrt('converter_m.singlePhaseElectroMagneticConverter[2].V_m.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[2].V_m.im' ^ 2.0);
+    'converter_m.singlePhaseElectroMagneticConverter[2].arg_V_m' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[2].V_m.im', 'converter_m.singlePhaseElectroMagneticConverter[2].V_m.re', 0.0);
+    'converter_m.singlePhaseElectroMagneticConverter[2].abs_Phi' = sqrt('converter_m.singlePhaseElectroMagneticConverter[2].Phi.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.im' ^ 2.0);
+    'converter_m.singlePhaseElectroMagneticConverter[2].arg_Phi' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[2].Phi.im', 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.re', 0.0);
+    'converter_m.singlePhaseElectroMagneticConverter[3].abs_V_m' = sqrt('converter_m.singlePhaseElectroMagneticConverter[3].V_m.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[3].V_m.im' ^ 2.0);
+    'converter_m.singlePhaseElectroMagneticConverter[3].arg_V_m' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[3].V_m.im', 'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re', 0.0);
+    'converter_m.singlePhaseElectroMagneticConverter[3].abs_Phi' = sqrt('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re' ^ 2.0 + 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.im' ^ 2.0);
+    'converter_m.singlePhaseElectroMagneticConverter[3].arg_Phi' = 'Modelica.Math.atan3'('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im', 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.re', 0.0);
+    'reluctance_e.abs_V_m' = sqrt('reluctance_e.V_m.re' ^ 2.0 + 'reluctance_e.V_m.im' ^ 2.0);
+    'reluctance_e.arg_V_m' = 'Modelica.Math.atan3'('reluctance_e.V_m.im', 'reluctance_e.V_m.re', 0.0);
+    'reluctance_e.Phi.re' = 'reluctance_e.port_p.Phi.re';
+    'reluctance_e.Phi.im' = 'reluctance_e.port_p.Phi.im';
+    'reluctance_e.abs_Phi' = sqrt('reluctance_e.Phi.re' ^ 2.0 + 'reluctance_e.Phi.im' ^ 2.0);
+    'reluctance_e.arg_Phi' = 'Modelica.Math.atan3'('reluctance_e.Phi.im', 'reluctance_e.Phi.re', 0.0);
+    'reluctance_m.abs_V_m' = sqrt('reluctance_m.V_m.re' ^ 2.0 + 'reluctance_m.V_m.im' ^ 2.0);
+    'reluctance_m.arg_V_m' = 'Modelica.Math.atan3'('reluctance_m.V_m.im', 'reluctance_m.V_m.re', 0.0);
+    'reluctance_m.Phi.re' = 'reluctance_m.port_p.Phi.re';
+    'reluctance_m.Phi.im' = 'reluctance_m.port_p.Phi.im';
+    'reluctance_m.abs_Phi' = sqrt('reluctance_m.Phi.re' ^ 2.0 + 'reluctance_m.Phi.im' ^ 2.0);
+    'reluctance_m.arg_Phi' = 'Modelica.Math.atan3'('reluctance_m.Phi.im', 'reluctance_m.Phi.re', 0.0);
+    'loss_m.abs_V_m' = sqrt('loss_m.V_m.re' ^ 2.0 + 'loss_m.V_m.im' ^ 2.0);
+    'loss_m.arg_V_m' = 'Modelica.Math.atan3'('loss_m.V_m.im', 'loss_m.V_m.re', 0.0);
+    'loss_m.Phi.re' = 'loss_m.port_p.Phi.re';
+    'loss_m.Phi.im' = 'loss_m.port_p.Phi.im';
+    'loss_m.abs_Phi' = sqrt('loss_m.Phi.re' ^ 2.0 + 'loss_m.Phi.im' ^ 2.0);
+    'loss_m.arg_Phi' = 'Modelica.Math.atan3'('loss_m.Phi.im', 'loss_m.Phi.re', 0.0);
     'star_e.plug_p.pin[3].v' = 'star_e.pin_n.v';
     'star_e.plug_p.pin[3].v' = 'star_e.plug_p.pin[2].v';
     'star_e.plug_p.pin[3].v' = 'star_e.plug_p.pin[1].v';
@@ -1511,6 +1515,8 @@ package 'EddyCurrentLosses'
     'converter_e.i[1]' = 'converter_e.plug_p.pin[1].i';
     'converter_e.i[2]' = 'converter_e.plug_p.pin[2].i';
     'converter_e.i[3]' = 'converter_e.plug_p.pin[3].i';
+    'converter_e.V_m.re' = 'converter_e.port_p.V_m.re' - 'converter_e.port_n.V_m.re';
+    'converter_e.V_m.im' = 'converter_e.port_p.V_m.im' - 'converter_e.port_n.V_m.im';
     'converter_e.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' = 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.re';
     'converter_e.singlePhaseElectroMagneticConverter[1].port_p.Phi.im' = 'converter_e.singlePhaseElectroMagneticConverter[1].Phi.im';
     'converter_e.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' + 'converter_e.singlePhaseElectroMagneticConverter[1].port_n.Phi.re' = 0.0;
@@ -1520,9 +1526,9 @@ package 'EddyCurrentLosses'
     'converter_e.singlePhaseElectroMagneticConverter[1].v' = 'converter_e.singlePhaseElectroMagneticConverter[1].pin_p.v' - 'converter_e.singlePhaseElectroMagneticConverter[1].pin_n.v';
     'converter_e.singlePhaseElectroMagneticConverter[1].i' = 'converter_e.singlePhaseElectroMagneticConverter[1].pin_p.i';
     'converter_e.singlePhaseElectroMagneticConverter[1].pin_p.i' + 'converter_e.singlePhaseElectroMagneticConverter[1].pin_n.i' = 0.0;
-    'converter_e.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[1].N.re' * 'converter_e.singlePhaseElectroMagneticConverter[1].i';
-    'converter_e.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[1].N.im' * 'converter_e.singlePhaseElectroMagneticConverter[1].i';
-    -'converter_e.singlePhaseElectroMagneticConverter[1].v' = 'converter_e.singlePhaseElectroMagneticConverter[1].N.re' * der('converter_e.singlePhaseElectroMagneticConverter[1].Phi.re') - (-'converter_e.singlePhaseElectroMagneticConverter[1].N.im') * der('converter_e.singlePhaseElectroMagneticConverter[1].Phi.im');
+    'converter_e.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[1].i' - 0.0 * 0.0;
+    'converter_e.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 0.0 + 0.0 * 'converter_e.singlePhaseElectroMagneticConverter[1].i';
+    -'converter_e.singlePhaseElectroMagneticConverter[1].v' = 1.0 * der('converter_e.singlePhaseElectroMagneticConverter[1].Phi.re') - 0.0 * der('converter_e.singlePhaseElectroMagneticConverter[1].Phi.im');
     'converter_e.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' = 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.re';
     'converter_e.singlePhaseElectroMagneticConverter[2].port_p.Phi.im' = 'converter_e.singlePhaseElectroMagneticConverter[2].Phi.im';
     'converter_e.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' + 'converter_e.singlePhaseElectroMagneticConverter[2].port_n.Phi.re' = 0.0;
@@ -1532,9 +1538,9 @@ package 'EddyCurrentLosses'
     'converter_e.singlePhaseElectroMagneticConverter[2].v' = 'converter_e.singlePhaseElectroMagneticConverter[2].pin_p.v' - 'converter_e.singlePhaseElectroMagneticConverter[2].pin_n.v';
     'converter_e.singlePhaseElectroMagneticConverter[2].i' = 'converter_e.singlePhaseElectroMagneticConverter[2].pin_p.i';
     'converter_e.singlePhaseElectroMagneticConverter[2].pin_p.i' + 'converter_e.singlePhaseElectroMagneticConverter[2].pin_n.i' = 0.0;
-    'converter_e.singlePhaseElectroMagneticConverter[2].V_m.re' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[2].N.re' * 'converter_e.singlePhaseElectroMagneticConverter[2].i';
-    'converter_e.singlePhaseElectroMagneticConverter[2].V_m.im' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[2].N.im' * 'converter_e.singlePhaseElectroMagneticConverter[2].i';
-    -'converter_e.singlePhaseElectroMagneticConverter[2].v' = 'converter_e.singlePhaseElectroMagneticConverter[2].N.re' * der('converter_e.singlePhaseElectroMagneticConverter[2].Phi.re') - (-'converter_e.singlePhaseElectroMagneticConverter[2].N.im') * der('converter_e.singlePhaseElectroMagneticConverter[2].Phi.im');
+    'converter_e.singlePhaseElectroMagneticConverter[2].V_m.re' = (-0.3183098861837905) * 'converter_e.singlePhaseElectroMagneticConverter[2].i' - 0.5513288954217921 * 0.0;
+    'converter_e.singlePhaseElectroMagneticConverter[2].V_m.im' = (-0.3183098861837905) * 0.0 + 0.5513288954217921 * 'converter_e.singlePhaseElectroMagneticConverter[2].i';
+    -'converter_e.singlePhaseElectroMagneticConverter[2].v' = (-0.4999999999999998) * der('converter_e.singlePhaseElectroMagneticConverter[2].Phi.re') - (-0.8660254037844387) * der('converter_e.singlePhaseElectroMagneticConverter[2].Phi.im');
     'converter_e.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' = 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.re';
     'converter_e.singlePhaseElectroMagneticConverter[3].port_p.Phi.im' = 'converter_e.singlePhaseElectroMagneticConverter[3].Phi.im';
     'converter_e.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' + 'converter_e.singlePhaseElectroMagneticConverter[3].port_n.Phi.re' = 0.0;
@@ -1544,15 +1550,17 @@ package 'EddyCurrentLosses'
     'converter_e.singlePhaseElectroMagneticConverter[3].v' = 'converter_e.singlePhaseElectroMagneticConverter[3].pin_p.v' - 'converter_e.singlePhaseElectroMagneticConverter[3].pin_n.v';
     'converter_e.singlePhaseElectroMagneticConverter[3].i' = 'converter_e.singlePhaseElectroMagneticConverter[3].pin_p.i';
     'converter_e.singlePhaseElectroMagneticConverter[3].pin_p.i' + 'converter_e.singlePhaseElectroMagneticConverter[3].pin_n.i' = 0.0;
-    'converter_e.singlePhaseElectroMagneticConverter[3].V_m.re' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[3].N.re' * 'converter_e.singlePhaseElectroMagneticConverter[3].i';
-    'converter_e.singlePhaseElectroMagneticConverter[3].V_m.im' = 0.6366197723675814 * 'converter_e.singlePhaseElectroMagneticConverter[3].N.im' * 'converter_e.singlePhaseElectroMagneticConverter[3].i';
-    -'converter_e.singlePhaseElectroMagneticConverter[3].v' = 'converter_e.singlePhaseElectroMagneticConverter[3].N.re' * der('converter_e.singlePhaseElectroMagneticConverter[3].Phi.re') - (-'converter_e.singlePhaseElectroMagneticConverter[3].N.im') * der('converter_e.singlePhaseElectroMagneticConverter[3].Phi.im');
+    'converter_e.singlePhaseElectroMagneticConverter[3].V_m.re' = (-0.31830988618379097) * 'converter_e.singlePhaseElectroMagneticConverter[3].i' - (-0.5513288954217919) * 0.0;
+    'converter_e.singlePhaseElectroMagneticConverter[3].V_m.im' = (-0.31830988618379097) * 0.0 + (-0.5513288954217919) * 'converter_e.singlePhaseElectroMagneticConverter[3].i';
+    -'converter_e.singlePhaseElectroMagneticConverter[3].v' = (-0.5000000000000004) * der('converter_e.singlePhaseElectroMagneticConverter[3].Phi.re') - 0.8660254037844384 * der('converter_e.singlePhaseElectroMagneticConverter[3].Phi.im');
     'converter_m.v[1]' = 'converter_m.plug_p.pin[1].v' - 'converter_m.plug_n.pin[1].v';
     'converter_m.v[2]' = 'converter_m.plug_p.pin[2].v' - 'converter_m.plug_n.pin[2].v';
     'converter_m.v[3]' = 'converter_m.plug_p.pin[3].v' - 'converter_m.plug_n.pin[3].v';
     'converter_m.i[1]' = 'converter_m.plug_p.pin[1].i';
     'converter_m.i[2]' = 'converter_m.plug_p.pin[2].i';
     'converter_m.i[3]' = 'converter_m.plug_p.pin[3].i';
+    'converter_m.V_m.re' = 'converter_m.port_p.V_m.re' - 'converter_m.port_n.V_m.re';
+    'converter_m.V_m.im' = 'converter_m.port_p.V_m.im' - 'converter_m.port_n.V_m.im';
     'converter_m.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' = 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.re';
     'converter_m.singlePhaseElectroMagneticConverter[1].port_p.Phi.im' = 'converter_m.singlePhaseElectroMagneticConverter[1].Phi.im';
     'converter_m.singlePhaseElectroMagneticConverter[1].port_p.Phi.re' + 'converter_m.singlePhaseElectroMagneticConverter[1].port_n.Phi.re' = 0.0;
@@ -1562,9 +1570,9 @@ package 'EddyCurrentLosses'
     'converter_m.singlePhaseElectroMagneticConverter[1].v' = 'converter_m.singlePhaseElectroMagneticConverter[1].pin_p.v' - 'converter_m.singlePhaseElectroMagneticConverter[1].pin_n.v';
     'converter_m.singlePhaseElectroMagneticConverter[1].i' = 'converter_m.singlePhaseElectroMagneticConverter[1].pin_p.i';
     'converter_m.singlePhaseElectroMagneticConverter[1].pin_p.i' + 'converter_m.singlePhaseElectroMagneticConverter[1].pin_n.i' = 0.0;
-    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[1].N.re' * 'converter_m.singlePhaseElectroMagneticConverter[1].i';
-    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[1].N.im' * 'converter_m.singlePhaseElectroMagneticConverter[1].i';
-    -'converter_m.singlePhaseElectroMagneticConverter[1].v' = 'converter_m.singlePhaseElectroMagneticConverter[1].N.re' * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.re') - (-'converter_m.singlePhaseElectroMagneticConverter[1].N.im') * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.im');
+    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[1].i' - 0.0 * 0.0;
+    'converter_m.singlePhaseElectroMagneticConverter[1].V_m.im' = 0.6366197723675814 * 0.0 + 0.0 * 'converter_m.singlePhaseElectroMagneticConverter[1].i';
+    -'converter_m.singlePhaseElectroMagneticConverter[1].v' = 1.0 * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.re') - 0.0 * der('converter_m.singlePhaseElectroMagneticConverter[1].Phi.im');
     'converter_m.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' = 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.re';
     'converter_m.singlePhaseElectroMagneticConverter[2].port_p.Phi.im' = 'converter_m.singlePhaseElectroMagneticConverter[2].Phi.im';
     'converter_m.singlePhaseElectroMagneticConverter[2].port_p.Phi.re' + 'converter_m.singlePhaseElectroMagneticConverter[2].port_n.Phi.re' = 0.0;
@@ -1574,9 +1582,9 @@ package 'EddyCurrentLosses'
     'converter_m.singlePhaseElectroMagneticConverter[2].v' = 'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.v' - 'converter_m.singlePhaseElectroMagneticConverter[2].pin_n.v';
     'converter_m.singlePhaseElectroMagneticConverter[2].i' = 'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.i';
     'converter_m.singlePhaseElectroMagneticConverter[2].pin_p.i' + 'converter_m.singlePhaseElectroMagneticConverter[2].pin_n.i' = 0.0;
-    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[2].N.re' * 'converter_m.singlePhaseElectroMagneticConverter[2].i';
-    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.im' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[2].N.im' * 'converter_m.singlePhaseElectroMagneticConverter[2].i';
-    -'converter_m.singlePhaseElectroMagneticConverter[2].v' = 'converter_m.singlePhaseElectroMagneticConverter[2].N.re' * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.re') - (-'converter_m.singlePhaseElectroMagneticConverter[2].N.im') * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.im');
+    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.re' = (-0.3183098861837905) * 'converter_m.singlePhaseElectroMagneticConverter[2].i' - 0.5513288954217921 * 0.0;
+    'converter_m.singlePhaseElectroMagneticConverter[2].V_m.im' = (-0.3183098861837905) * 0.0 + 0.5513288954217921 * 'converter_m.singlePhaseElectroMagneticConverter[2].i';
+    -'converter_m.singlePhaseElectroMagneticConverter[2].v' = (-0.4999999999999998) * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.re') - (-0.8660254037844387) * der('converter_m.singlePhaseElectroMagneticConverter[2].Phi.im');
     'converter_m.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' = 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.re';
     'converter_m.singlePhaseElectroMagneticConverter[3].port_p.Phi.im' = 'converter_m.singlePhaseElectroMagneticConverter[3].Phi.im';
     'converter_m.singlePhaseElectroMagneticConverter[3].port_p.Phi.re' + 'converter_m.singlePhaseElectroMagneticConverter[3].port_n.Phi.re' = 0.0;
@@ -1586,13 +1594,17 @@ package 'EddyCurrentLosses'
     'converter_m.singlePhaseElectroMagneticConverter[3].v' = 'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.v' - 'converter_m.singlePhaseElectroMagneticConverter[3].pin_n.v';
     'converter_m.singlePhaseElectroMagneticConverter[3].i' = 'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.i';
     'converter_m.singlePhaseElectroMagneticConverter[3].pin_p.i' + 'converter_m.singlePhaseElectroMagneticConverter[3].pin_n.i' = 0.0;
-    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[3].N.re' * 'converter_m.singlePhaseElectroMagneticConverter[3].i';
-    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.im' = 0.6366197723675814 * 'converter_m.singlePhaseElectroMagneticConverter[3].N.im' * 'converter_m.singlePhaseElectroMagneticConverter[3].i';
-    -'converter_m.singlePhaseElectroMagneticConverter[3].v' = 'converter_m.singlePhaseElectroMagneticConverter[3].N.re' * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re') - (-'converter_m.singlePhaseElectroMagneticConverter[3].N.im') * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im');
+    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.re' = (-0.31830988618379097) * 'converter_m.singlePhaseElectroMagneticConverter[3].i' - (-0.5513288954217919) * 0.0;
+    'converter_m.singlePhaseElectroMagneticConverter[3].V_m.im' = (-0.31830988618379097) * 0.0 + (-0.5513288954217919) * 'converter_m.singlePhaseElectroMagneticConverter[3].i';
+    -'converter_m.singlePhaseElectroMagneticConverter[3].v' = (-0.5000000000000004) * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.re') - 0.8660254037844384 * der('converter_m.singlePhaseElectroMagneticConverter[3].Phi.im');
+    'reluctance_e.V_m.re' = 'reluctance_e.port_p.V_m.re' - 'reluctance_e.port_n.V_m.re';
+    'reluctance_e.V_m.im' = 'reluctance_e.port_p.V_m.im' - 'reluctance_e.port_n.V_m.im';
     1.5707963267948966 * 'reluctance_e.V_m.re' = 'reluctance_e.Phi.re';
     1.5707963267948966 * 'reluctance_e.V_m.im' = 'reluctance_e.Phi.im';
     'reluctance_e.port_p.Phi.re' + 'reluctance_e.port_n.Phi.re' = 0.0;
     'reluctance_e.port_p.Phi.im' + 'reluctance_e.port_n.Phi.im' = 0.0;
+    'reluctance_m.V_m.re' = 'reluctance_m.port_p.V_m.re' - 'reluctance_m.port_n.V_m.re';
+    'reluctance_m.V_m.im' = 'reluctance_m.port_p.V_m.im' - 'reluctance_m.port_n.V_m.im';
     1.5707963267948966 * 'reluctance_m.V_m.re' = 'reluctance_m.Phi.re';
     1.5707963267948966 * 'reluctance_m.V_m.im' = 'reluctance_m.Phi.im';
     'reluctance_m.port_p.Phi.re' + 'reluctance_m.port_n.Phi.re' = 0.0;
@@ -1628,6 +1640,8 @@ package 'EddyCurrentLosses'
     'loss_e.i[1]' = 'loss_e.plug_p.pin[1].i';
     'loss_e.i[2]' = 'loss_e.plug_p.pin[2].i';
     'loss_e.i[3]' = 'loss_e.plug_p.pin[3].i';
+    'loss_m.V_m.re' = 'loss_m.port_p.V_m.re' - 'loss_m.port_n.V_m.re';
+    'loss_m.V_m.im' = 'loss_m.port_p.V_m.im' - 'loss_m.port_n.V_m.im';
     'loss_m.lossPower' = 1.5707963267948966 * ('loss_m.V_m.re' * der('loss_m.Phi.re') + 'loss_m.V_m.im' * der('loss_m.Phi.im'));
     1.5707963267948966 * 'loss_m.V_m.re' = 1.5 * der('loss_m.Phi.re');
     1.5707963267948966 * 'loss_m.V_m.im' = 1.5 * der('loss_m.Phi.im');

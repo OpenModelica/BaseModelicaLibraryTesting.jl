@@ -1,5 +1,11 @@
 //! base 0.1.0
 package 'Inverse_sine'
+  function 'Modelica.Utilities.Streams.print' "Print string to terminal or file"
+    input String 'string' = "";
+    input String 'fileName' = "";
+  external "C" ModelicaInternal_print('string', 'fileName') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaInternal.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Streams.print';
+
   function 'Modelica.Math.Nonlinear.solveOneNonlinearEquation' "Solve f(u) = 0 in a very reliable and efficient way (f(u_min) and f(u_max) must have different signs)"
     input 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' 'f';
     input Real 'u_min';
@@ -52,17 +58,17 @@ package 'Inverse_sine'
       if abs('m') <= 'tol' or 'fb' == 0.0 then
         'found' := true;
         'u' := 'b';
-      elseif true then
+      else
         if abs('e') < 'tol' or abs('fa') <= abs('fb') then
           'e' := 'm';
           'd' := 'e';
-        elseif true then
+        else
           's' := 'fb' / 'fa';
 
           if 'a' == 'c' then
             'p' := 2.0 * 'm' * 's';
             'q' := 1.0 - 's';
-          elseif true then
+          else
             'q' := 'fa' / 'fc';
             'r' := 'fb' / 'fc';
             'p' := 's' * (2.0 * 'm' * 'q' * ('q' - 'r') - ('b' - 'a') * ('r' - 1.0));
@@ -71,7 +77,7 @@ package 'Inverse_sine'
 
           if 'p' > 0.0 then
             'q' := -'q';
-          elseif true then
+          else
             'p' := -'p';
           end if;
 
@@ -80,7 +86,7 @@ package 'Inverse_sine'
 
           if 2.0 * 'p' < 3.0 * 'm' * 'q' - abs('tol' * 'q') and 'p' < abs(0.5 * 's' * 'q') then
             'd' := 'p' / 'q';
-          elseif true then
+          else
             'e' := 'm';
             'd' := 'e';
           end if;
@@ -100,28 +106,6 @@ package 'Inverse_sine'
       end if;
     end while;
   end 'Modelica.Math.Nonlinear.solveOneNonlinearEquation';
-
-  function 'Modelica.Media.Examples.SolveOneNonlinearEquation.Inverse_sine.f_nonlinear' "Define sine as non-linear equation to be solved"
-    input Real 'u';
-    input Real 'A' = 1.0;
-    input Real 'w' = 1.0;
-    input Real 's' = 0.0;
-    output Real 'y';
-  algorithm
-    'y' := 'A' * sin('w' * 'u') + 's';
-  end 'Modelica.Media.Examples.SolveOneNonlinearEquation.Inverse_sine.f_nonlinear';
-
-  function 'Modelica.Utilities.Streams.error' "Print error message and cancel all actions - in case of an unrecoverable error"
-    input String 'string';
-  algorithm
-    assert(false, 'string', AssertionLevel.error);
-  end 'Modelica.Utilities.Streams.error';
-
-  function 'Modelica.Utilities.Streams.print' "Print string to terminal or file"
-    input String 'string' = "";
-    input String 'fileName' = "";
-  external "C" ModelicaInternal_print('string', 'fileName') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaInternal.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
-  end 'Modelica.Utilities.Streams.print';
 
   partial function 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' "Interface for a function with one input and one output Real signal"
     input Real 'u';

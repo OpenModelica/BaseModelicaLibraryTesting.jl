@@ -1,14 +1,5 @@
 //! base 0.1.0
 package 'ActuatorWithNoise'
-  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    input Real 'der_u';
-    output Real 'der_y';
-  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
-
   function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
@@ -19,12 +10,12 @@ package 'ActuatorWithNoise'
   end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
 
   function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
-    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
-    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
+    input Real 'v'[3](unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    input Real 'i'[3](unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
     output Real 'p'(unit = "W", quantity = "Power");
     constant Integer 'm' = 3;
-    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
-    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
+    Real 'v_'[2](unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
+    Real 'i_'[2](unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
   algorithm
     'v_' := {0.0, 0.0};
     'i_' := {0.0, 0.0};
@@ -38,6 +29,22 @@ package 'ActuatorWithNoise'
     annotation(Inline = true);
   end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
 
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
+
+  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
+    input Integer 'stateIn'[4];
+    output Real 'result';
+    output Integer 'stateOut'[4];
+  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
+
   function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
     input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     input Boolean 'positiveRange' = false;
@@ -50,52 +57,20 @@ package 'ActuatorWithNoise'
     end if;
   end 'Modelica.Math.wrapAngle';
 
-  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
-    input Integer[4] 'stateIn';
-    output Real 'result';
-    output Integer[4] 'stateOut';
-  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
-
-  function 'Modelica.Math.Random.Generators.Xorshift64star.initialState' "Returns an initial state for the xorshift64* algorithm"
-    input Integer 'localSeed';
-    input Integer 'globalSeed';
-    output Integer[2] 'state';
-    Real 'r';
-    constant Integer 'p' = 10;
-  algorithm
-    if 'localSeed' == 0 and 'globalSeed' == 0 then
-      'state' := {126247697, 'globalSeed'};
-    elseif true then
-      'state' := {'localSeed', 'globalSeed'};
-    end if;
-
-    for 'i' in 1:'p' loop
-      ('r', 'state') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state');
-    end for;
-  end 'Modelica.Math.Random.Generators.Xorshift64star.initialState';
-
-  function 'Modelica.Math.Random.Generators.Xorshift64star.random' "Returns a uniform random number with the xorshift64* algorithm"
-    input Integer[2] 'stateIn';
-    output Real 'result';
-    output Integer[2] 'stateOut';
-  external "C" ModelicaRandom_xorshift64star('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Generators.Xorshift64star.random';
-
   function 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star' "Return an initial state vector for a random number generator (based on xorshift64star algorithm)"
     input Integer 'localSeed';
     input Integer 'globalSeed';
     input Integer 'nState'(min = 1);
-    output Integer['nState'] 'state';
+    output Integer 'state'['nState'];
     Real 'r';
-    Integer[2] 'aux';
+    Integer 'aux'[2];
     Integer 'nStateEven';
   algorithm
     'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
 
     if 'nState' >= 2 then
       'state'[1:2] := 'aux';
-    elseif true then
+    else
       'state'[1] := 'aux'[1];
     end if;
 
@@ -116,18 +91,12 @@ package 'ActuatorWithNoise'
     input Integer 'seed';
     output Integer 'id';
     constant Integer 'localSeed' = 715827883;
-    Integer[33] 'rngState';
+    Integer 'rngState'[33];
   algorithm
     'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
     'id' := 'localSeed';
     'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
   end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
-
-  function 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState' "Stores the given state vector in an external static variable"
-    input Integer[33] 'rngState';
-    input Integer 'id';
-  external "C" ModelicaRandom_setInternalState_xorshift1024star('rngState', size('rngState', 1), 'id') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState';
 
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 
@@ -139,8 +108,8 @@ package 'ActuatorWithNoise'
     function constructor "Initialize 1-dim. table defined by matrix"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
-      input Integer[:] 'columns';
+      input Real 'table'[:, :];
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
       input Boolean 'verboseRead' = true;
@@ -188,10 +157,10 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'motor.smpm.frictionParameters.linear' = 0.001 "Linear angular velocity range with respect to reference angular velocity";
     parameter Real 'motor.smpm.frictionParameters.wLinear'(unit = "rad/s", quantity = "AngularVelocity") = 0.15707963267948966 "Linear angular velocity range";
     parameter Real 'motor.smpm.frictionParameters.tauLinear'(unit = "N.m", quantity = "Torque") = 0.0 "Torque corresponding with linear angular velocity range";
-    Real 'motor.smpm.phiMechanical'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") = 'motor.smpm.flange.phi' - 'motor.smpm.internalSupport.phi' "Mechanical angle of rotor against stator";
-    Real 'motor.smpm.wMechanical'(fixed = true, start = 0.0, displayUnit = "rev/min", unit = "rad/s", quantity = "AngularVelocity") = der('motor.smpm.phiMechanical') "Mechanical angular velocity of rotor against stator";
-    Real 'motor.smpm.tauElectrical'(unit = "N.m", quantity = "Torque") = 'motor.smpm.inertiaRotor.flange_a.tau' "Electromagnetic torque";
-    Real 'motor.smpm.tauShaft'(unit = "N.m", quantity = "Torque") = -'motor.smpm.flange.tau' "Shaft torque";
+    Real 'motor.smpm.phiMechanical'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") "Mechanical angle of rotor against stator";
+    Real 'motor.smpm.wMechanical'(fixed = true, start = 0.0, displayUnit = "rev/min", unit = "rad/s", quantity = "AngularVelocity") "Mechanical angular velocity of rotor against stator";
+    Real 'motor.smpm.tauElectrical'(unit = "N.m", quantity = "Torque") "Electromagnetic torque";
+    Real 'motor.smpm.tauShaft'(unit = "N.m", quantity = "Torque") "Shaft torque";
     Real 'motor.smpm.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'motor.smpm.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'motor.smpm.inertiaRotor.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
@@ -231,7 +200,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'motor.smpm.friction.frictionParameters.tauLinear'(unit = "N.m", quantity = "Torque") = 0.0 "Torque corresponding with linear angular velocity range";
     parameter Boolean 'motor.smpm.friction.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'motor.smpm.friction.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'motor.smpm.friction.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'motor.smpm.friction.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'motor.smpm.friction.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'motor.smpm.friction.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'motor.smpm.internalSupport.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'motor.smpm.internalSupport.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
@@ -247,25 +216,25 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'motor.smpm.strayLoadParameters.wRef'(min = 2.2250738585072014e-308, displayUnit = "rev/min", unit = "rad/s", quantity = "AngularVelocity") = 157.07963267948966 "Reference angular velocity that PRef refers to";
     parameter Real 'motor.smpm.strayLoadParameters.power_w'(min = 2.2250738585072014e-308) = 1.0 "Exponent of stray load loss torque w.r.t. angular velocity";
     parameter Real 'motor.smpm.strayLoadParameters.tauRef'(unit = "N.m", quantity = "Torque") = 0.0 "Reference stray load torque at reference angular velocity and reference current";
-    Real 'motor.smpm.powerBalance.powerStator'(unit = "W", quantity = "Power") = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('motor.smpm.vs', 'motor.smpm.is') "Electrical power (stator)";
-    Real 'motor.smpm.powerBalance.powerMechanical'(unit = "W", quantity = "Power") = 'motor.smpm.wMechanical' * 'motor.smpm.tauShaft' "Mechanical power";
-    Real 'motor.smpm.powerBalance.powerInertiaStator'(unit = "W", quantity = "Power") = 0.29 * 'motor.smpm.inertiaStator.a' * 'motor.smpm.inertiaStator.w' "Stator inertia power";
-    Real 'motor.smpm.powerBalance.powerInertiaRotor'(unit = "W", quantity = "Power") = 0.29 * 'motor.smpm.inertiaRotor.a' * 'motor.smpm.inertiaRotor.w' "Rotor inertia power";
-    Real 'motor.smpm.powerBalance.lossPowerTotal'(unit = "W", quantity = "Power") = 'motor.smpm.powerBalance.lossPowerStatorWinding' + 'motor.smpm.powerBalance.lossPowerStatorCore' + 'motor.smpm.powerBalance.lossPowerRotorCore' + 'motor.smpm.powerBalance.lossPowerStrayLoad' + 'motor.smpm.powerBalance.lossPowerFriction' + 'motor.smpm.powerBalance.lossPowerRotorWinding' + 'motor.smpm.powerBalance.lossPowerPermanentMagnet' "Total loss power";
-    Real 'motor.smpm.powerBalance.lossPowerStatorWinding'(unit = "W", quantity = "Power") = 'motor.smpm.rs.resistor[1].LossPower' + 'motor.smpm.rs.resistor[2].LossPower' + 'motor.smpm.rs.resistor[3].LossPower' "Stator copper losses";
-    Real 'motor.smpm.powerBalance.lossPowerStatorCore'(unit = "W", quantity = "Power") = 'motor.smpm.statorCore.lossPower' "Stator core losses";
-    Real 'motor.smpm.powerBalance.lossPowerRotorCore'(unit = "W", quantity = "Power") = 0.0 "Rotor core losses";
-    Real 'motor.smpm.powerBalance.lossPowerStrayLoad'(unit = "W", quantity = "Power") = 'motor.smpm.strayLoad.lossPower' "Stray load losses";
-    Real 'motor.smpm.powerBalance.lossPowerFriction'(unit = "W", quantity = "Power") = 'motor.smpm.friction.lossPower' "Friction losses";
-    Real 'motor.smpm.powerBalance.lossPowerRotorWinding'(unit = "W", quantity = "Power") = 'motor.smpm.damperCageLossPower' "Rotor copper losses";
-    Real 'motor.smpm.powerBalance.lossPowerPermanentMagnet'(unit = "W", quantity = "Power") = 'motor.smpm.permanentMagnet.lossPower' "Permanent magnet losses";
+    Real 'motor.smpm.powerBalance.powerStator'(unit = "W", quantity = "Power") "Electrical power (stator)";
+    Real 'motor.smpm.powerBalance.powerMechanical'(unit = "W", quantity = "Power") "Mechanical power";
+    Real 'motor.smpm.powerBalance.powerInertiaStator'(unit = "W", quantity = "Power") "Stator inertia power";
+    Real 'motor.smpm.powerBalance.powerInertiaRotor'(unit = "W", quantity = "Power") "Rotor inertia power";
+    Real 'motor.smpm.powerBalance.lossPowerTotal'(unit = "W", quantity = "Power") "Total loss power";
+    Real 'motor.smpm.powerBalance.lossPowerStatorWinding'(unit = "W", quantity = "Power") "Stator copper losses";
+    Real 'motor.smpm.powerBalance.lossPowerStatorCore'(unit = "W", quantity = "Power") "Stator core losses";
+    Real 'motor.smpm.powerBalance.lossPowerRotorCore'(unit = "W", quantity = "Power") "Rotor core losses";
+    Real 'motor.smpm.powerBalance.lossPowerStrayLoad'(unit = "W", quantity = "Power") "Stray load losses";
+    Real 'motor.smpm.powerBalance.lossPowerFriction'(unit = "W", quantity = "Power") "Friction losses";
+    Real 'motor.smpm.powerBalance.lossPowerRotorWinding'(unit = "W", quantity = "Power") "Rotor copper losses";
+    Real 'motor.smpm.powerBalance.lossPowerPermanentMagnet'(unit = "W", quantity = "Power") "Permanent magnet losses";
     Real 'motor.smpm.vs[1]'(unit = "V", quantity = "ElectricPotential") "Stator instantaneous voltages";
     Real 'motor.smpm.vs[2]'(unit = "V", quantity = "ElectricPotential") "Stator instantaneous voltages";
     Real 'motor.smpm.vs[3]'(unit = "V", quantity = "ElectricPotential") "Stator instantaneous voltages";
     Real 'motor.smpm.is[1]'(unit = "A", quantity = "ElectricCurrent") "Stator instantaneous currents";
     Real 'motor.smpm.is[2]'(unit = "A", quantity = "ElectricCurrent") "Stator instantaneous currents";
     Real 'motor.smpm.is[3]'(unit = "A", quantity = "ElectricCurrent") "Stator instantaneous currents";
-    Real 'motor.smpm.i_0_s'(stateSelect = StateSelect.prefer, unit = "A", quantity = "ElectricCurrent") = 'motor.smpm.spacePhasorS.zero.i' "Stator zero-sequence current";
+    Real 'motor.smpm.i_0_s'(stateSelect = StateSelect.prefer, unit = "A", quantity = "ElectricCurrent") "Stator zero-sequence current";
     Real 'motor.smpm.idq_ss[1]'(unit = "A", quantity = "ElectricCurrent") "Stator space phasor current / stator fixed frame";
     Real 'motor.smpm.idq_ss[2]'(unit = "A", quantity = "ElectricCurrent") "Stator space phasor current / stator fixed frame";
     Real 'motor.smpm.idq_sr[1]'(stateSelect = StateSelect.prefer, unit = "A", quantity = "ElectricCurrent") "Stator space phasor current / rotor fixed frame";
@@ -340,8 +309,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'motor.smpm.rs.resistor[1].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'motor.smpm.rs.resistor[1].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'motor.smpm.rs.resistor[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'motor.smpm.rs.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'motor.smpm.rs.resistor[1].T_heatPort' "Port temperature";
-    Real 'motor.smpm.rs.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'motor.smpm.rs.resistor[1].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'motor.smpm.rs.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'motor.smpm.rs.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'motor.smpm.rs.resistor[1].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'motor.smpm.rs.resistor[1].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'motor.smpm.rs.resistor[1].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -356,8 +325,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'motor.smpm.rs.resistor[2].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'motor.smpm.rs.resistor[2].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'motor.smpm.rs.resistor[2].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'motor.smpm.rs.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'motor.smpm.rs.resistor[2].T_heatPort' "Port temperature";
-    Real 'motor.smpm.rs.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'motor.smpm.rs.resistor[2].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'motor.smpm.rs.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'motor.smpm.rs.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'motor.smpm.rs.resistor[2].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'motor.smpm.rs.resistor[2].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'motor.smpm.rs.resistor[2].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -372,8 +341,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'motor.smpm.rs.resistor[3].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'motor.smpm.rs.resistor[3].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'motor.smpm.rs.resistor[3].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'motor.smpm.rs.resistor[3].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'motor.smpm.rs.resistor[3].T_heatPort' "Port temperature";
-    Real 'motor.smpm.rs.resistor[3].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'motor.smpm.rs.resistor[3].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'motor.smpm.rs.resistor[3].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'motor.smpm.rs.resistor[3].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'motor.smpm.rs.resistor[3].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'motor.smpm.rs.resistor[3].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'motor.smpm.rs.resistor[3].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -409,15 +378,15 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'motor.smpm.statorCore.turnsRatio'(min = 2.2250738585072014e-308) = 1.0 "Effective number of stator turns / effective number of rotor turns (if used as rotor core)";
     parameter Boolean 'motor.smpm.statorCore.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'motor.smpm.statorCore.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'motor.smpm.statorCore.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'motor.smpm.statorCore.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'motor.smpm.statorCore.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'motor.smpm.statorCore.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'motor.smpm.statorCore.spacePhasor.v_[1]'(unit = "V", quantity = "ElectricPotential") "1=real, 2=imaginary part";
     Real 'motor.smpm.statorCore.spacePhasor.v_[2]'(unit = "V", quantity = "ElectricPotential") "1=real, 2=imaginary part";
     Real 'motor.smpm.statorCore.spacePhasor.i_[1]'(unit = "A", quantity = "ElectricCurrent") "1=real, 2=imaginary part";
     Real 'motor.smpm.statorCore.spacePhasor.i_[2]'(unit = "A", quantity = "ElectricCurrent") "1=real, 2=imaginary part";
-    Real 'motor.smpm.statorCore.w'(unit = "rad/s", quantity = "AngularVelocity") = 'motor.smpm.statorCoreParameters.wRef' "Remagnetization angular velocity";
+    Real 'motor.smpm.statorCore.w'(unit = "rad/s", quantity = "AngularVelocity") "Remagnetization angular velocity";
     Real 'motor.smpm.statorCore.Gc'(unit = "S", quantity = "Conductance") "Variable core loss conductance";
-    Real 'motor.smpm.statorCore.wLimit'(unit = "rad/s", quantity = "AngularVelocity") = noEvent(max(noEvent(abs('motor.smpm.statorCore.w')), 'motor.smpm.statorCore.coreParameters.wMin')) "Limited angular velocity";
+    Real 'motor.smpm.statorCore.wLimit'(unit = "rad/s", quantity = "AngularVelocity") "Limited angular velocity";
     constant Integer 'motor.smpm.spacePhasorS.m' = 3 "Number of phases";
     parameter Real 'motor.smpm.spacePhasorS.turnsRatio' = 1.0 "Turns ratio";
     Real 'motor.smpm.spacePhasorS.v[1]'(unit = "V", quantity = "ElectricPotential") "Instantaneous phase voltages";
@@ -495,19 +464,19 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'motor.smpm.strayLoad.strayLoadParameters.tauRef'(unit = "N.m", quantity = "Torque") = 0.0 "Reference stray load torque at reference angular velocity and reference current";
     parameter Boolean 'motor.smpm.strayLoad.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'motor.smpm.strayLoad.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'motor.smpm.strayLoad.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'motor.smpm.strayLoad.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'motor.smpm.strayLoad.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'motor.smpm.strayLoad.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
-    Real 'motor.smpm.strayLoad.iRMS'(unit = "A", quantity = "ElectricCurrent") = sqrt('motor.smpm.strayLoad.i[1]' ^ 2.0 / 3.0 + 'motor.smpm.strayLoad.i[2]' ^ 2.0 / 3.0 + 'motor.smpm.strayLoad.i[3]' ^ 2.0 / 3.0);
+    Real 'motor.smpm.strayLoad.iRMS'(unit = "A", quantity = "ElectricCurrent");
     parameter Boolean 'motor.smpm.thermalAmbient.useDamperCage'(start = true) = false "Enable / disable damper cage" annotation(Evaluate = true);
     parameter Integer 'motor.smpm.thermalAmbient.m' = 3 "Number of stator phases" annotation(Evaluate = true);
     parameter Boolean 'motor.smpm.thermalAmbient.useTemperatureInputs' = false "If true, temperature inputs are used; else, temperatures are constant" annotation(Evaluate = true);
     constant Real 'motor.smpm.thermalAmbient.TDefault'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Default temperature";
     parameter Real 'motor.smpm.thermalAmbient.Ts'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Temperature of stator windings";
-    Real 'motor.smpm.thermalAmbient.Q_flowStatorWinding'(unit = "W", quantity = "Power") = 'motor.smpm.thermalAmbient.temperatureStatorWinding.port.Q_flow' "Heat flow rate of stator windings";
-    Real 'motor.smpm.thermalAmbient.Q_flowStatorCore'(unit = "W", quantity = "Power") = 'motor.smpm.thermalAmbient.temperatureStatorCore.port.Q_flow' "Heat flow rate of stator core losses";
-    Real 'motor.smpm.thermalAmbient.Q_flowRotorCore'(unit = "W", quantity = "Power") = 'motor.smpm.thermalAmbient.temperatureRotorCore.port.Q_flow' "Heat flow rate of stator core losses";
-    Real 'motor.smpm.thermalAmbient.Q_flowStrayLoad'(unit = "W", quantity = "Power") = 'motor.smpm.thermalAmbient.temperatureStrayLoad.port.Q_flow' "Heat flow rate of stray load losses";
-    Real 'motor.smpm.thermalAmbient.Q_flowFriction'(unit = "W", quantity = "Power") = 'motor.smpm.thermalAmbient.temperatureFriction.port.Q_flow' "Heat flow rate of friction losses";
+    Real 'motor.smpm.thermalAmbient.Q_flowStatorWinding'(unit = "W", quantity = "Power") "Heat flow rate of stator windings";
+    Real 'motor.smpm.thermalAmbient.Q_flowStatorCore'(unit = "W", quantity = "Power") "Heat flow rate of stator core losses";
+    Real 'motor.smpm.thermalAmbient.Q_flowRotorCore'(unit = "W", quantity = "Power") "Heat flow rate of stator core losses";
+    Real 'motor.smpm.thermalAmbient.Q_flowStrayLoad'(unit = "W", quantity = "Power") "Heat flow rate of stray load losses";
+    Real 'motor.smpm.thermalAmbient.Q_flowFriction'(unit = "W", quantity = "Power") "Heat flow rate of friction losses";
     parameter Integer 'motor.smpm.thermalAmbient.thermalPort.m' = 3 "Number of stator phases" annotation(Evaluate = true);
     Real 'motor.smpm.thermalAmbient.thermalPort.heatPortStatorWinding[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'motor.smpm.thermalAmbient.thermalPort.heatPortStatorWinding[1].Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
@@ -554,9 +523,9 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'motor.smpm.thermalAmbient.thermalCollectorStator.port_b.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     parameter Real 'motor.smpm.thermalAmbient.Tpm'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Temperature of permanent magnet";
     parameter Real 'motor.smpm.thermalAmbient.Tr'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Temperature of damper cage (optional)";
-    Real 'motor.smpm.thermalAmbient.Q_flowRotorWinding'(unit = "W", quantity = "Power") = 'motor.smpm.thermalAmbient.temperatureRotorWinding.port.Q_flow' "Heat flow rate of damper cage (optional)";
-    Real 'motor.smpm.thermalAmbient.Q_flowPermanentMagnet'(unit = "W", quantity = "Power") = 'motor.smpm.thermalAmbient.temperaturePermanentMagnet.port.Q_flow' "Heat flow rate of permanent magnets";
-    Real 'motor.smpm.thermalAmbient.Q_flowTotal'(unit = "W", quantity = "Power") = 'motor.smpm.thermalAmbient.Q_flowStatorWinding' + 'motor.smpm.thermalAmbient.Q_flowRotorWinding' + 'motor.smpm.thermalAmbient.Q_flowPermanentMagnet' + 'motor.smpm.thermalAmbient.Q_flowStatorCore' + 'motor.smpm.thermalAmbient.Q_flowRotorCore' + 'motor.smpm.thermalAmbient.Q_flowStrayLoad' + 'motor.smpm.thermalAmbient.Q_flowFriction';
+    Real 'motor.smpm.thermalAmbient.Q_flowRotorWinding'(unit = "W", quantity = "Power") "Heat flow rate of damper cage (optional)";
+    Real 'motor.smpm.thermalAmbient.Q_flowPermanentMagnet'(unit = "W", quantity = "Power") "Heat flow rate of permanent magnets";
+    Real 'motor.smpm.thermalAmbient.Q_flowTotal'(unit = "W", quantity = "Power");
     Real 'motor.smpm.thermalAmbient.temperatureRotorWinding.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'motor.smpm.thermalAmbient.temperatureRotorWinding.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'motor.smpm.thermalAmbient.temperatureRotorWinding.T'(unit = "K");
@@ -668,12 +637,12 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'motor.smpm.permanentMagnet.permanentMagnetLossParameters.tauRef'(unit = "N.m", quantity = "Torque") = 0.0 "Reference permanent magnet loss torque at reference angular velocity and reference current";
     parameter Boolean 'motor.smpm.permanentMagnet.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'motor.smpm.permanentMagnet.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'motor.smpm.permanentMagnet.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'motor.smpm.permanentMagnet.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'motor.smpm.permanentMagnet.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'motor.smpm.permanentMagnet.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'motor.smpm.permanentMagnet.is[1]'(unit = "A", quantity = "ElectricCurrent") "Instantaneous stator currents";
     Real 'motor.smpm.permanentMagnet.is[2]'(unit = "A", quantity = "ElectricCurrent") "Instantaneous stator currents";
     Real 'motor.smpm.permanentMagnet.is[3]'(unit = "A", quantity = "ElectricCurrent") "Instantaneous stator currents";
-    Real 'motor.smpm.permanentMagnet.iRMS'(unit = "A", quantity = "ElectricCurrent") = sqrt('motor.smpm.permanentMagnet.is[1]' ^ 2.0 / 3.0 + 'motor.smpm.permanentMagnet.is[2]' ^ 2.0 / 3.0 + 'motor.smpm.permanentMagnet.is[3]' ^ 2.0 / 3.0);
+    Real 'motor.smpm.permanentMagnet.iRMS'(unit = "A", quantity = "ElectricCurrent");
     parameter Real 'motor.smpm.Ie'(unit = "A", quantity = "ElectricCurrent") = 529.3872768483287 "Equivalent excitation current";
     Real 'motor.smpm.damperCageLossPower'(unit = "W", quantity = "Power") "Damper losses";
     parameter Integer 'motor.signalCurrent.m'(min = 1) = 3 "Number of phases" annotation(Evaluate = true);
@@ -1185,8 +1154,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'motor.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'motor.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'motor.phi'(unit = "rad") "Absolute angle of flange as output signal";
-    Real 'motor.phi_motor'(displayUnit = "deg", unit = "rad") = 'motor.angleSensor.phi' "Rotational position";
-    Real 'motor.w'(unit = "rad/s") = 'motor.speedSensor.w' "Rotational speed";
+    Real 'motor.phi_motor'(displayUnit = "deg", unit = "rad") "Rotational position";
+    Real 'motor.w'(unit = "rad/s") "Rotational speed";
     Real 'motor.addNoise.u1' "Connector of Real input signal 1";
     Real 'motor.addNoise.u2' "Connector of Real input signal 2";
     Real 'motor.addNoise.y' "Connector of Real output signal";
@@ -1282,16 +1251,16 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'gearbox.fixedTemperature.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'gearbox.internalHeatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'gearbox.internalHeatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
-    Real 'gearbox.phi_rel'(stateSelect = StateSelect.prefer, nominal = 1e-4, fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") = 'gearbox.flange_b.phi' - 'gearbox.lossyGear.flange_b.phi' "Relative rotation angle over gear elasticity (= flange_b.phi - lossyGear.flange_b.phi)";
-    Real 'gearbox.w_rel'(stateSelect = StateSelect.prefer, fixed = true, start = 0.0, unit = "rad/s", quantity = "AngularVelocity") = der('gearbox.phi_rel') "Relative angular velocity over gear elasticity (= der(phi_rel))";
-    Real 'gearbox.a_rel'(start = 0.0, unit = "rad/s2", quantity = "AngularAcceleration") = der('gearbox.w_rel') "Relative angular acceleration over gear elasticity (= der(w_rel))";
+    Real 'gearbox.phi_rel'(stateSelect = StateSelect.prefer, nominal = 1e-4, fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") "Relative rotation angle over gear elasticity (= flange_b.phi - lossyGear.flange_b.phi)";
+    Real 'gearbox.w_rel'(stateSelect = StateSelect.prefer, fixed = true, start = 0.0, unit = "rad/s", quantity = "AngularVelocity") "Relative angular velocity over gear elasticity (= der(phi_rel))";
+    Real 'gearbox.a_rel'(start = 0.0, unit = "rad/s2", quantity = "AngularAcceleration") "Relative angular acceleration over gear elasticity (= der(w_rel))";
     parameter Boolean 'gearbox.lossyGear.useSupport' = true "= true, if support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     Real 'gearbox.lossyGear.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'gearbox.lossyGear.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'gearbox.lossyGear.flange_b.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'gearbox.lossyGear.flange_b.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
-    Real 'gearbox.lossyGear.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'gearbox.lossyGear.phi_support' "Absolute rotation angle of flange";
-    Real 'gearbox.lossyGear.support.tau'(unit = "N.m", quantity = "Torque") = -('gearbox.lossyGear.flange_a.tau' + 'gearbox.lossyGear.flange_b.tau') "Cut torque in the flange";
+    Real 'gearbox.lossyGear.support.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
+    Real 'gearbox.lossyGear.support.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'gearbox.lossyGear.phi_support'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute angle of support flange";
     parameter Real 'gearbox.lossyGear.ratio'(start = 1.0) = 10.0 "Transmission ratio (flange_a.phi/flange_b.phi)";
     parameter Real 'gearbox.lossyGear.lossTable[1,1]' = 0.0 "Array for mesh efficiencies and bearing friction depending on speed";
@@ -1302,7 +1271,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter 'Modelica.Blocks.Types.Smoothness' 'gearbox.lossyGear.smoothness' = 'Modelica.Blocks.Types.Smoothness'.'LinearSegments' "Smoothness of interpolation in lossTable table";
     parameter Boolean 'gearbox.lossyGear.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'gearbox.lossyGear.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'gearbox.lossyGear.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'gearbox.lossyGear.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'gearbox.lossyGear.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'gearbox.lossyGear.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'gearbox.lossyGear.phi_a'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Angle between left shaft flange and support";
     Real 'gearbox.lossyGear.phi_b'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Angle between right shaft flange and support";
@@ -1370,13 +1339,13 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter StateSelect 'gearbox.elastoBacklash.stateSelect' = StateSelect.prefer "Priority to use phi_rel and w_rel as states";
     parameter Boolean 'gearbox.elastoBacklash.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'gearbox.elastoBacklash.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'gearbox.elastoBacklash.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'gearbox.elastoBacklash.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'gearbox.elastoBacklash.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'gearbox.elastoBacklash.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     parameter Real 'gearbox.elastoBacklash.bMax'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 8.7266462599715e-4 "Backlash in range bMin <= phi_rel - phi_rel0 <= bMax";
     parameter Real 'gearbox.elastoBacklash.bMin'(displayUnit = "deg", unit = "rad", quantity = "Angle") = -8.7266462599715e-4 "Backlash in range bMin <= phi_rel - phi_rel0 <= bMax";
     Real 'gearbox.elastoBacklash.tau_c'(unit = "N.m", quantity = "Torque");
     Real 'gearbox.elastoBacklash.tau_d'(unit = "N.m", quantity = "Torque");
-    Real 'gearbox.elastoBacklash.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'gearbox.elastoBacklash.phi_rel';
+    Real 'gearbox.elastoBacklash.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     constant Real 'gearbox.elastoBacklash.bEps'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 1e-10 "Minimum backlash";
     parameter Boolean 'idealGearR2T.useSupportR' = false "= true, if rotational support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
     parameter Boolean 'idealGearR2T.useSupportT' = false "= true, if translational support flange enabled, otherwise implicitly grounded" annotation(Evaluate = true);
@@ -1384,11 +1353,11 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'idealGearR2T.flangeR.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'idealGearR2T.flangeT.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'idealGearR2T.flangeT.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
-    Real 'idealGearR2T.internalSupportR.tau'(unit = "N.m", quantity = "Torque") = -'idealGearR2T.flangeR.tau' "External support torque (must be computed via torque balance in model where InternalSupport is used; = flange.tau)";
+    Real 'idealGearR2T.internalSupportR.tau'(unit = "N.m", quantity = "Torque") "External support torque (must be computed via torque balance in model where InternalSupport is used; = flange.tau)";
     Real 'idealGearR2T.internalSupportR.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "External support angle (= flange.phi)";
     Real 'idealGearR2T.internalSupportR.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'idealGearR2T.internalSupportR.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
-    Real 'idealGearR2T.internalSupportT.f'(unit = "N", quantity = "Force") = -'idealGearR2T.flangeT.f' "External support force (must be computed via force balance in model where InternalSupport is used; = flange.f)";
+    Real 'idealGearR2T.internalSupportT.f'(unit = "N", quantity = "Force") "External support force (must be computed via force balance in model where InternalSupport is used; = flange.f)";
     Real 'idealGearR2T.internalSupportT.s'(unit = "m", quantity = "Length") "External support position (= flange.s)";
     Real 'idealGearR2T.internalSupportT.flange.s'(unit = "m", quantity = "Length") "Absolute position of flange";
     Real 'idealGearR2T.internalSupportT.flange.f'(unit = "N", quantity = "Force") "Cut force directed into flange";
@@ -1424,7 +1393,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter 'Modelica.Blocks.Types.Init' 'slewRateLimiter.initType' = 'Modelica.Blocks.Types.Init'.'SteadyState' "Type of initialization (SteadyState implies y = u)" annotation(Evaluate = true);
     parameter Real 'slewRateLimiter.y_start' = 0.0 "Initial or guess value of output (= state)";
     parameter Boolean 'slewRateLimiter.strict' = false "= true, if strict limits with noEvent(..)" annotation(Evaluate = true);
-    Real 'slewRateLimiter.val' = ('slewRateLimiter.u' - 'slewRateLimiter.y') / 0.001;
+    Real 'slewRateLimiter.val';
     parameter Real 'rodMass.m'(start = 1.0, min = 0.0, unit = "kg", quantity = "Mass") = 3.0 "Mass of the sliding mass";
     parameter StateSelect 'rodMass.stateSelect' = StateSelect.default "Priority to use s and v as states";
     Real 'rodMass.s'(stateSelect = StateSelect.default, start = 0.0, unit = "m", quantity = "Length") "Absolute position of center of component (s = flange_a.s + L/2 = flange_b.s - L/2)";
@@ -1457,7 +1426,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Integer 'globalSeed.seed'(fixed = false) "Actually used global seed";
     parameter Integer 'globalSeed.id_impure'(fixed = false) "ID for impure random number generators Modelica.Math.Random.Utilities.impureXXX";
   initial equation
-    'motor.uniformNoise.r' = 'motor.uniformNoise.r_raw' * 0.02 - 0.01;
+    'motor.uniformNoise.r' = 'motor.uniformNoise.r_raw' * (0.01 - (-0.01)) + (-0.01);
     'motor.uniformNoise.localSeed' = 188641931;
     pre('motor.uniformNoise.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('motor.uniformNoise.localSeed', 'motor.uniformNoise.actualGlobalSeed', 4))[1];
     pre('motor.uniformNoise.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('motor.uniformNoise.localSeed', 'motor.uniformNoise.actualGlobalSeed', 4))[2];
@@ -1472,6 +1441,58 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'globalSeed.seed' = 67867967;
     'globalSeed.id_impure' = 'Modelica.Math.Random.Utilities.initializeImpureRandom'('globalSeed.seed');
   equation
+    'motor.smpm.phiMechanical' = 'motor.smpm.flange.phi' - 'motor.smpm.internalSupport.phi';
+    'motor.smpm.wMechanical' = der('motor.smpm.phiMechanical');
+    'motor.smpm.tauElectrical' = 'motor.smpm.inertiaRotor.flange_a.tau';
+    'motor.smpm.tauShaft' = -'motor.smpm.flange.tau';
+    'motor.smpm.friction.heatPort.Q_flow' = -'motor.smpm.friction.lossPower';
+    'motor.smpm.powerBalance.powerStator' = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('motor.smpm.vs', 'motor.smpm.is');
+    'motor.smpm.powerBalance.powerMechanical' = 'motor.smpm.wMechanical' * 'motor.smpm.tauShaft';
+    'motor.smpm.powerBalance.powerInertiaStator' = 0.29 * 'motor.smpm.inertiaStator.a' * 'motor.smpm.inertiaStator.w';
+    'motor.smpm.powerBalance.powerInertiaRotor' = 0.29 * 'motor.smpm.inertiaRotor.a' * 'motor.smpm.inertiaRotor.w';
+    'motor.smpm.powerBalance.lossPowerTotal' = 'motor.smpm.powerBalance.lossPowerStatorWinding' + 'motor.smpm.powerBalance.lossPowerStatorCore' + 'motor.smpm.powerBalance.lossPowerRotorCore' + 'motor.smpm.powerBalance.lossPowerStrayLoad' + 'motor.smpm.powerBalance.lossPowerFriction' + 'motor.smpm.powerBalance.lossPowerRotorWinding' + 'motor.smpm.powerBalance.lossPowerPermanentMagnet';
+    'motor.smpm.powerBalance.lossPowerStatorWinding' = 'motor.smpm.rs.resistor[1].LossPower' + 'motor.smpm.rs.resistor[2].LossPower' + 'motor.smpm.rs.resistor[3].LossPower';
+    'motor.smpm.powerBalance.lossPowerStatorCore' = 'motor.smpm.statorCore.lossPower';
+    'motor.smpm.powerBalance.lossPowerRotorCore' = 0.0;
+    'motor.smpm.powerBalance.lossPowerStrayLoad' = 'motor.smpm.strayLoad.lossPower';
+    'motor.smpm.powerBalance.lossPowerFriction' = 'motor.smpm.friction.lossPower';
+    'motor.smpm.powerBalance.lossPowerRotorWinding' = 'motor.smpm.damperCageLossPower';
+    'motor.smpm.powerBalance.lossPowerPermanentMagnet' = 'motor.smpm.permanentMagnet.lossPower';
+    'motor.smpm.i_0_s' = 'motor.smpm.spacePhasorS.zero.i';
+    'motor.smpm.rs.resistor[1].heatPort.T' = 'motor.smpm.rs.resistor[1].T_heatPort';
+    'motor.smpm.rs.resistor[1].heatPort.Q_flow' = -'motor.smpm.rs.resistor[1].LossPower';
+    'motor.smpm.rs.resistor[2].heatPort.T' = 'motor.smpm.rs.resistor[2].T_heatPort';
+    'motor.smpm.rs.resistor[2].heatPort.Q_flow' = -'motor.smpm.rs.resistor[2].LossPower';
+    'motor.smpm.rs.resistor[3].heatPort.T' = 'motor.smpm.rs.resistor[3].T_heatPort';
+    'motor.smpm.rs.resistor[3].heatPort.Q_flow' = -'motor.smpm.rs.resistor[3].LossPower';
+    'motor.smpm.statorCore.heatPort.Q_flow' = -'motor.smpm.statorCore.lossPower';
+    'motor.smpm.statorCore.w' = 'motor.smpm.statorCoreParameters.wRef';
+    'motor.smpm.statorCore.wLimit' = noEvent(max(noEvent(abs('motor.smpm.statorCore.w')), 'motor.smpm.statorCore.coreParameters.wMin'));
+    'motor.smpm.strayLoad.heatPort.Q_flow' = -'motor.smpm.strayLoad.lossPower';
+    'motor.smpm.strayLoad.iRMS' = sqrt(sum('motor.smpm.strayLoad.i' .^ 2.0 / size('motor.smpm.strayLoad.i', 1)));
+    'motor.smpm.thermalAmbient.Q_flowStatorWinding' = 'motor.smpm.thermalAmbient.temperatureStatorWinding.port.Q_flow';
+    'motor.smpm.thermalAmbient.Q_flowStatorCore' = 'motor.smpm.thermalAmbient.temperatureStatorCore.port.Q_flow';
+    'motor.smpm.thermalAmbient.Q_flowRotorCore' = 'motor.smpm.thermalAmbient.temperatureRotorCore.port.Q_flow';
+    'motor.smpm.thermalAmbient.Q_flowStrayLoad' = 'motor.smpm.thermalAmbient.temperatureStrayLoad.port.Q_flow';
+    'motor.smpm.thermalAmbient.Q_flowFriction' = 'motor.smpm.thermalAmbient.temperatureFriction.port.Q_flow';
+    'motor.smpm.thermalAmbient.Q_flowRotorWinding' = 'motor.smpm.thermalAmbient.temperatureRotorWinding.port.Q_flow';
+    'motor.smpm.thermalAmbient.Q_flowPermanentMagnet' = 'motor.smpm.thermalAmbient.temperaturePermanentMagnet.port.Q_flow';
+    'motor.smpm.thermalAmbient.Q_flowTotal' = 'motor.smpm.thermalAmbient.Q_flowStatorWinding' + 'motor.smpm.thermalAmbient.Q_flowRotorWinding' + 'motor.smpm.thermalAmbient.Q_flowPermanentMagnet' + 'motor.smpm.thermalAmbient.Q_flowStatorCore' + 'motor.smpm.thermalAmbient.Q_flowRotorCore' + 'motor.smpm.thermalAmbient.Q_flowStrayLoad' + 'motor.smpm.thermalAmbient.Q_flowFriction';
+    'motor.smpm.permanentMagnet.heatPort.Q_flow' = -'motor.smpm.permanentMagnet.lossPower';
+    'motor.smpm.permanentMagnet.iRMS' = sqrt(sum('motor.smpm.permanentMagnet.is' .^ 2.0 / size('motor.smpm.permanentMagnet.is', 1)));
+    'motor.phi_motor' = 'motor.angleSensor.phi';
+    'motor.w' = 'motor.speedSensor.w';
+    'gearbox.phi_rel' = 'gearbox.flange_b.phi' - 'gearbox.lossyGear.flange_b.phi';
+    'gearbox.w_rel' = der('gearbox.phi_rel');
+    'gearbox.a_rel' = der('gearbox.w_rel');
+    'gearbox.lossyGear.support.phi' = 'gearbox.lossyGear.phi_support';
+    'gearbox.lossyGear.support.tau' = -('gearbox.lossyGear.flange_a.tau' + 'gearbox.lossyGear.flange_b.tau');
+    'gearbox.lossyGear.heatPort.Q_flow' = -'gearbox.lossyGear.lossPower';
+    'gearbox.elastoBacklash.heatPort.Q_flow' = -'gearbox.elastoBacklash.lossPower';
+    'gearbox.elastoBacklash.phi_diff' = 'gearbox.elastoBacklash.phi_rel';
+    'idealGearR2T.internalSupportR.tau' = -'idealGearR2T.flangeR.tau';
+    'idealGearR2T.internalSupportT.f' = -'idealGearR2T.flangeT.f';
+    'slewRateLimiter.val' = ('slewRateLimiter.u' - 'slewRateLimiter.y') / 0.001;
     'motor.smpm.rs.resistor[1].p.v' = 'motor.smpm.rs.plug_p.pin[1].v';
     'motor.smpm.rs.resistor[2].p.v' = 'motor.smpm.rs.plug_p.pin[2].v';
     'motor.smpm.rs.resistor[3].p.v' = 'motor.smpm.rs.plug_p.pin[3].v';
@@ -2137,7 +2158,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'motor.addNoise.y' = 'motor.addNoise.u1' + 'motor.addNoise.u2';
 
     when sample(0.0, 0.005) then
-      'motor.uniformNoise.r' = 'motor.uniformNoise.r_raw' * 0.02 - 0.01;
+      'motor.uniformNoise.r' = 'motor.uniformNoise.r_raw' * (0.01 - (-0.01)) + (-0.01);
     end when;
 
     when sample(0.0, 0.005) then
@@ -2168,7 +2189,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
       'gearbox.lossyGear.eta_mf2' = 1.0;
       'gearbox.lossyGear.tau_bf1' = 0.0;
       'gearbox.lossyGear.tau_bf2' = 0.0;
-    elseif true then
+    else
       'gearbox.lossyGear.interpolation_result[1,1]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 1, noEvent(abs('gearbox.lossyGear.w_a')));
       'gearbox.lossyGear.interpolation_result[1,2]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 2, noEvent(abs('gearbox.lossyGear.w_a')));
       'gearbox.lossyGear.interpolation_result[1,3]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('gearbox.lossyGear.tableID', 3, noEvent(abs('gearbox.lossyGear.w_a')));
@@ -2181,7 +2202,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
 
     if abs('gearbox.lossyGear.eta_mf1' - 1.0) <= 2.220446049250313e-16 and abs('gearbox.lossyGear.eta_mf2' - 1.0) <= 2.220446049250313e-16 then
       'gearbox.lossyGear.tau_bf_a' = 'gearbox.lossyGear.tau_bf1' / 2.0;
-    elseif true then
+    else
       'gearbox.lossyGear.tau_bf_a' = ('gearbox.lossyGear.tau_bf1' - 'gearbox.lossyGear.tau_bf2') / ('gearbox.lossyGear.eta_mf1' - 1.0 / 'gearbox.lossyGear.eta_mf2');
     end if;
 
@@ -2221,7 +2242,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
       'gearbox.elastoBacklash.tau_d' = 1e4 * 'gearbox.elastoBacklash.w_rel';
       'gearbox.elastoBacklash.tau' = 'gearbox.elastoBacklash.tau_c' + 'gearbox.elastoBacklash.tau_d';
       'gearbox.elastoBacklash.lossPower' = 'gearbox.elastoBacklash.tau_d' * 'gearbox.elastoBacklash.w_rel';
-    elseif true then
+    else
       'gearbox.elastoBacklash.tau_c' = if 'gearbox.elastoBacklash.phi_diff' > 8.7266462599715e-4 then 1e6 * ('gearbox.elastoBacklash.phi_diff' - 8.7266462599715e-4) else if 'gearbox.elastoBacklash.phi_diff' < (-8.7266462599715e-4) then 1e6 * ('gearbox.elastoBacklash.phi_diff' + 8.7266462599715e-4) else 0.0;
       'gearbox.elastoBacklash.tau_d' = 1e4 * 'gearbox.elastoBacklash.w_rel';
       'gearbox.elastoBacklash.tau' = if 'gearbox.elastoBacklash.phi_diff' > 8.7266462599715e-4 then smooth(0, noEvent(if 'gearbox.elastoBacklash.tau_c' + 'gearbox.elastoBacklash.tau_d' <= 0.0 then 0.0 else 'gearbox.elastoBacklash.tau_c' + min('gearbox.elastoBacklash.tau_c', 'gearbox.elastoBacklash.tau_d'))) else if 'gearbox.elastoBacklash.phi_diff' < (-8.7266462599715e-4) then smooth(0, noEvent(if 'gearbox.elastoBacklash.tau_c' + 'gearbox.elastoBacklash.tau_d' >= 0.0 then 0.0 else 'gearbox.elastoBacklash.tau_c' + max('gearbox.elastoBacklash.tau_c', 'gearbox.elastoBacklash.tau_d'))) else 0.0;

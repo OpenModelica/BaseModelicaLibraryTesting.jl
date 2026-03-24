@@ -5,7 +5,7 @@ package 'DemoSignalCharacteristic'
     parameter Real 'dutyCycle'(max = 1.0, min = 0.0) = 0.5 "Duty cycle of pulse signal";
     parameter Real 'offset' = 0.0 "Offset of pulse signal";
     parameter Real 'f'(unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency of pulse signal";
-    Real 'y' = 'pulse.y' "Investigated pulse signal";
+    Real 'y' "Investigated pulse signal";
     parameter Real 'y_mean' = 0.5 "Mean value";
     parameter Real 'y_rect' = 0.5 "Rectified mean";
     parameter Real 'y_rms' = 0.7071067811865476 "Root mean square";
@@ -20,7 +20,7 @@ package 'DemoSignalCharacteristic'
     Real 'pulse.y' "Connector of Real output signal";
     parameter Real 'pulse.offset' = 0.0 "Offset of output signal y";
     parameter Real 'pulse.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
-    Real 'pulse.T_width'(unit = "s", quantity = "Time") = 0.01;
+    Real 'pulse.T_width'(unit = "s", quantity = "Time");
     Real 'pulse.T_start'(unit = "s", quantity = "Time") "Start time of current period";
     Integer 'pulse.count' "Period count";
     Real 'mean.u' "Connector of Real input signal";
@@ -146,6 +146,8 @@ package 'DemoSignalCharacteristic'
     'harmonic.mean2.x' = 0.0;
     'harmonic.mean2.y_last' = 0.45015815807855303;
   equation
+    'y' = 'pulse.y';
+    'pulse.T_width' = 0.01;
     'rectifiedMean.u' = 'rectifiedMean.abs1.u';
     'rectifiedMean.abs1.y' = 'rectifiedMean.mean.u';
     'rectifiedMean.mean.y' = 'rectifiedMean.y';

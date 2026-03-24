@@ -1,13 +1,5 @@
 //! base 0.1.0
 package 'MultipleResonance'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
   function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
     input Real 'u1';
     input Real 'u2';
@@ -16,68 +8,14 @@ package 'MultipleResonance'
     constant Real 'pi2' = 6.283185307179586;
     Real 'w';
   algorithm
-    'w' := atan2('u1', 'u2');
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
 
     if 'y0' == 0.0 then
       'y' := 'w';
-    elseif true then
+    else
       'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
     end if;
   end 'Modelica.Math.atan3';
-
-  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
-
-  record 'Modelica.Units.SI.ComplexCurrent'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexCurrent';
-
-  record 'Modelica.Units.SI.ComplexElectricPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexElectricPotential';
-
-  record 'Modelica.Units.SI.ComplexVoltage'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexVoltage';
 
   model 'MultipleResonance' "Demonstrates series and parallel resonance using a transformer"
     parameter Real 'V'(unit = "V", quantity = "ElectricPotential") = 0.5 "Source rms voltage";
@@ -105,17 +43,17 @@ package 'MultipleResonance'
     Real 'voltageSource.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'voltageSource.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'voltageSource.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
-    Real 'voltageSource.abs_v'(unit = "V", quantity = "ElectricPotential") = sqrt('voltageSource.v.re' ^ 2.0 + 'voltageSource.v.im' ^ 2.0) "Magnitude of complex voltage";
-    Real 'voltageSource.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('voltageSource.v.im', 'voltageSource.v.re', 0.0) "Argument of complex voltage";
+    Real 'voltageSource.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'voltageSource.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
     Real 'voltageSource.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
     Real 'voltageSource.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
-    Real 'voltageSource.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('voltageSource.i.re' ^ 2.0 + 'voltageSource.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'voltageSource.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('voltageSource.i.im', 'voltageSource.i.re', 0.0) "Argument of complex current";
-    Real 'voltageSource.P'(unit = "W", quantity = "Power") = 'voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im') "Active power";
-    Real 'voltageSource.Q'(unit = "var", quantity = "Power") = 'voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re' "Reactive power";
-    Real 'voltageSource.S'(unit = "V.A", quantity = "Power") = sqrt(('voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im')) ^ 2.0 + ('voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re') ^ 2.0) "Magnitude of complex apparent power";
-    Real 'voltageSource.pf' = cos('Modelica.Math.atan3'('voltageSource.Q', 'voltageSource.P', 0.0)) "Power factor";
-    Real 'voltageSource.gamma'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") = 'voltageSource.pin_p.reference.gamma';
+    Real 'voltageSource.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'voltageSource.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'voltageSource.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'voltageSource.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'voltageSource.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'voltageSource.pf' "Power factor";
+    Real 'voltageSource.gamma'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'voltageSource.f'(unit = "Hz");
     Real 'voltageSource.V.re' "Real part of complex number";
     Real 'voltageSource.V.im' "Imaginary part of complex number";
@@ -132,16 +70,16 @@ package 'MultipleResonance'
     Real 'zi.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'zi.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'zi.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
-    Real 'zi.abs_v'(unit = "V", quantity = "ElectricPotential") = sqrt('zi.v.re' ^ 2.0 + 'zi.v.im' ^ 2.0) "Magnitude of complex voltage";
-    Real 'zi.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('zi.v.im', 'zi.v.re', 0.0) "Argument of complex voltage";
+    Real 'zi.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'zi.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
     Real 'zi.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
     Real 'zi.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
-    Real 'zi.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('zi.i.re' ^ 2.0 + 'zi.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'zi.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('zi.i.im', 'zi.i.re', 0.0) "Argument of complex current";
-    Real 'zi.P'(unit = "W", quantity = "Power") = 'zi.v.re' * 'zi.i.re' - 'zi.v.im' * (-'zi.i.im') "Active power";
-    Real 'zi.Q'(unit = "var", quantity = "Power") = 'zi.v.re' * (-'zi.i.im') + 'zi.v.im' * 'zi.i.re' "Reactive power";
-    Real 'zi.S'(unit = "V.A", quantity = "Power") = sqrt(('zi.v.re' * 'zi.i.re' - 'zi.v.im' * (-'zi.i.im')) ^ 2.0 + ('zi.v.re' * (-'zi.i.im') + 'zi.v.im' * 'zi.i.re') ^ 2.0) "Magnitude of complex apparent power";
-    Real 'zi.pf' = cos('Modelica.Math.atan3'('zi.Q', 'zi.P', 0.0)) "Power factor";
+    Real 'zi.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'zi.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'zi.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'zi.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'zi.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'zi.pf' "Power factor";
     parameter Real 'zi.Z_ref.re'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 100.0 "Real part of complex number";
     parameter Real 'zi.Z_ref.im'(start = 0.0, unit = "Ohm", quantity = "Resistance") = 0.0 "Imaginary part of complex number";
     parameter Real 'zi.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Reference temperature";
@@ -159,29 +97,29 @@ package 'MultipleResonance'
     parameter Real 'transformer.L1'(start = 1.0, unit = "H", quantity = "Inductance") = 3e-5 "Primary inductance";
     parameter Real 'transformer.L2'(start = 1.0, unit = "H", quantity = "Inductance") = 1e-6 "Secondary inductance";
     parameter Real 'transformer.M'(start = 1.0, unit = "H", quantity = "Inductance") = 5.203364296299078e-6 "Coupling inductance";
-    Real 'transformer.omega'(unit = "rad/s", quantity = "AngularVelocity") = der('transformer.pin_p1.reference.gamma') "Angular velocity of reference frame";
-    Real 'transformer.v1.re'(unit = "V", quantity = "ElectricPotential") = 'transformer.pin_p1.v.re' - 'transformer.pin_n1.v.re' "Real part of complex number";
-    Real 'transformer.v1.im'(unit = "V", quantity = "ElectricPotential") = 'transformer.pin_p1.v.im' - 'transformer.pin_n1.v.im' "Imaginary part of complex number";
-    Real 'transformer.i1.re'(unit = "A", quantity = "ElectricCurrent") = 'transformer.pin_p1.i.re' "Real part of complex number";
-    Real 'transformer.i1.im'(unit = "A", quantity = "ElectricCurrent") = 'transformer.pin_p1.i.im' "Imaginary part of complex number";
-    Real 'transformer.v2.re'(unit = "V", quantity = "ElectricPotential") = 'transformer.pin_p2.v.re' - 'transformer.pin_n2.v.re' "Real part of complex number";
-    Real 'transformer.v2.im'(unit = "V", quantity = "ElectricPotential") = 'transformer.pin_p2.v.im' - 'transformer.pin_n2.v.im' "Imaginary part of complex number";
-    Real 'transformer.i2.re'(unit = "A", quantity = "ElectricCurrent") = 'transformer.pin_p2.i.re' "Real part of complex number";
-    Real 'transformer.i2.im'(unit = "A", quantity = "ElectricCurrent") = 'transformer.pin_p2.i.im' "Imaginary part of complex number";
-    Real 'transformer.abs_v1'(unit = "V", quantity = "ElectricPotential") = sqrt('transformer.v1.re' ^ 2.0 + 'transformer.v1.im' ^ 2.0) "Magnitude of complex voltage v1";
-    Real 'transformer.arg_v1'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('transformer.v1.im', 'transformer.v1.re', 0.0) "Argument of complex voltage v1";
-    Real 'transformer.abs_i1'(unit = "A", quantity = "ElectricCurrent") = sqrt('transformer.i1.re' ^ 2.0 + 'transformer.i1.im' ^ 2.0) "Magnitude of complex current i1";
-    Real 'transformer.arg_i1'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('transformer.i1.im', 'transformer.i1.re', 0.0) "Argument of complex current i1";
-    Real 'transformer.P1'(unit = "W", quantity = "Power") = 'transformer.v1.re' * 'transformer.i1.re' - 'transformer.v1.im' * (-'transformer.i1.im') "Active power, side 1";
-    Real 'transformer.Q1'(unit = "var", quantity = "Power") = 'transformer.v1.re' * (-'transformer.i1.im') + 'transformer.v1.im' * 'transformer.i1.re' "Reactive power, side 1";
-    Real 'transformer.S1'(unit = "V.A", quantity = "Power") = sqrt(('transformer.v1.re' * 'transformer.i1.re' - 'transformer.v1.im' * (-'transformer.i1.im')) ^ 2.0 + ('transformer.v1.re' * (-'transformer.i1.im') + 'transformer.v1.im' * 'transformer.i1.re') ^ 2.0) "Magnitude of complex apparent power, side 1";
-    Real 'transformer.abs_v2'(unit = "V", quantity = "ElectricPotential") = sqrt('transformer.v2.re' ^ 2.0 + 'transformer.v2.im' ^ 2.0) "Magnitude of complex voltage v2";
-    Real 'transformer.arg_v2'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('transformer.v2.im', 'transformer.v2.re', 0.0) "Argument of complex voltage v2";
-    Real 'transformer.abs_i2'(unit = "A", quantity = "ElectricCurrent") = sqrt('transformer.i2.re' ^ 2.0 + 'transformer.i2.im' ^ 2.0) "Magnitude of complex current i2";
-    Real 'transformer.arg_i2'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('transformer.i2.im', 'transformer.i2.re', 0.0) "Argument of complex current i2";
-    Real 'transformer.P2'(unit = "W", quantity = "Power") = 'transformer.v2.re' * 'transformer.i2.re' - 'transformer.v2.im' * (-'transformer.i2.im') "Active power, side 2";
-    Real 'transformer.Q2'(unit = "var", quantity = "Power") = 'transformer.v2.re' * (-'transformer.i2.im') + 'transformer.v2.im' * 'transformer.i2.re' "Reactive power, side 2";
-    Real 'transformer.S2'(unit = "V.A", quantity = "Power") = sqrt(('transformer.v2.re' * 'transformer.i2.re' - 'transformer.v2.im' * (-'transformer.i2.im')) ^ 2.0 + ('transformer.v2.re' * (-'transformer.i2.im') + 'transformer.v2.im' * 'transformer.i2.re') ^ 2.0) "Magnitude of complex apparent power, side 2";
+    Real 'transformer.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
+    Real 'transformer.v1.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'transformer.v1.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'transformer.i1.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'transformer.i1.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'transformer.v2.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
+    Real 'transformer.v2.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
+    Real 'transformer.i2.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
+    Real 'transformer.i2.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
+    Real 'transformer.abs_v1'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage v1";
+    Real 'transformer.arg_v1'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage v1";
+    Real 'transformer.abs_i1'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current i1";
+    Real 'transformer.arg_i1'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current i1";
+    Real 'transformer.P1'(unit = "W", quantity = "Power") "Active power, side 1";
+    Real 'transformer.Q1'(unit = "var", quantity = "Power") "Reactive power, side 1";
+    Real 'transformer.S1'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power, side 1";
+    Real 'transformer.abs_v2'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage v2";
+    Real 'transformer.arg_v2'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage v2";
+    Real 'transformer.abs_i2'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current i2";
+    Real 'transformer.arg_i2'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current i2";
+    Real 'transformer.P2'(unit = "W", quantity = "Power") "Active power, side 2";
+    Real 'transformer.Q2'(unit = "var", quantity = "Power") "Reactive power, side 2";
+    Real 'transformer.S2'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power, side 2";
     Real 'transformer.pin_p1.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'transformer.pin_p1.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
     Real 'transformer.pin_p1.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
@@ -225,16 +163,16 @@ package 'MultipleResonance'
     Real 'loadResistor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'loadResistor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'loadResistor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
-    Real 'loadResistor.abs_v'(unit = "V", quantity = "ElectricPotential") = sqrt('loadResistor.v.re' ^ 2.0 + 'loadResistor.v.im' ^ 2.0) "Magnitude of complex voltage";
-    Real 'loadResistor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('loadResistor.v.im', 'loadResistor.v.re', 0.0) "Argument of complex voltage";
+    Real 'loadResistor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'loadResistor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
     Real 'loadResistor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
     Real 'loadResistor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
-    Real 'loadResistor.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('loadResistor.i.re' ^ 2.0 + 'loadResistor.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'loadResistor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('loadResistor.i.im', 'loadResistor.i.re', 0.0) "Argument of complex current";
-    Real 'loadResistor.P'(unit = "W", quantity = "Power") = 'loadResistor.v.re' * 'loadResistor.i.re' - 'loadResistor.v.im' * (-'loadResistor.i.im') "Active power";
-    Real 'loadResistor.Q'(unit = "var", quantity = "Power") = 'loadResistor.v.re' * (-'loadResistor.i.im') + 'loadResistor.v.im' * 'loadResistor.i.re' "Reactive power";
-    Real 'loadResistor.S'(unit = "V.A", quantity = "Power") = sqrt(('loadResistor.v.re' * 'loadResistor.i.re' - 'loadResistor.v.im' * (-'loadResistor.i.im')) ^ 2.0 + ('loadResistor.v.re' * (-'loadResistor.i.im') + 'loadResistor.v.im' * 'loadResistor.i.re') ^ 2.0) "Magnitude of complex apparent power";
-    Real 'loadResistor.pf' = cos('Modelica.Math.atan3'('loadResistor.Q', 'loadResistor.P', 0.0)) "Power factor";
+    Real 'loadResistor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'loadResistor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'loadResistor.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'loadResistor.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'loadResistor.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'loadResistor.pf' "Power factor";
     parameter Real 'loadResistor.R_ref'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 5.0 "Reference resistance at T_ref";
     parameter Real 'loadResistor.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Reference temperature";
     parameter Real 'loadResistor.alpha_ref'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R_ref*(1 + alpha_ref*(heatPort.T - T_ref))";
@@ -256,16 +194,16 @@ package 'MultipleResonance'
     Real 'loadInductor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'loadInductor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'loadInductor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
-    Real 'loadInductor.abs_v'(unit = "V", quantity = "ElectricPotential") = sqrt('loadInductor.v.re' ^ 2.0 + 'loadInductor.v.im' ^ 2.0) "Magnitude of complex voltage";
-    Real 'loadInductor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('loadInductor.v.im', 'loadInductor.v.re', 0.0) "Argument of complex voltage";
+    Real 'loadInductor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'loadInductor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
     Real 'loadInductor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
     Real 'loadInductor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
-    Real 'loadInductor.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('loadInductor.i.re' ^ 2.0 + 'loadInductor.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'loadInductor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('loadInductor.i.im', 'loadInductor.i.re', 0.0) "Argument of complex current";
-    Real 'loadInductor.P'(unit = "W", quantity = "Power") = 'loadInductor.v.re' * 'loadInductor.i.re' - 'loadInductor.v.im' * (-'loadInductor.i.im') "Active power";
-    Real 'loadInductor.Q'(unit = "var", quantity = "Power") = 'loadInductor.v.re' * (-'loadInductor.i.im') + 'loadInductor.v.im' * 'loadInductor.i.re' "Reactive power";
-    Real 'loadInductor.S'(unit = "V.A", quantity = "Power") = sqrt(('loadInductor.v.re' * 'loadInductor.i.re' - 'loadInductor.v.im' * (-'loadInductor.i.im')) ^ 2.0 + ('loadInductor.v.re' * (-'loadInductor.i.im') + 'loadInductor.v.im' * 'loadInductor.i.re') ^ 2.0) "Magnitude of complex apparent power";
-    Real 'loadInductor.pf' = cos('Modelica.Math.atan3'('loadInductor.Q', 'loadInductor.P', 0.0)) "Power factor";
+    Real 'loadInductor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'loadInductor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'loadInductor.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'loadInductor.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'loadInductor.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'loadInductor.pf' "Power factor";
     parameter Real 'loadInductor.L'(start = 1.0, unit = "H", quantity = "Inductance") = 5e-6 "Inductance";
     Real 'loadCapacitor.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
     Real 'loadCapacitor.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
@@ -280,16 +218,16 @@ package 'MultipleResonance'
     Real 'loadCapacitor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'loadCapacitor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'loadCapacitor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
-    Real 'loadCapacitor.abs_v'(unit = "V", quantity = "ElectricPotential") = sqrt('loadCapacitor.v.re' ^ 2.0 + 'loadCapacitor.v.im' ^ 2.0) "Magnitude of complex voltage";
-    Real 'loadCapacitor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('loadCapacitor.v.im', 'loadCapacitor.v.re', 0.0) "Argument of complex voltage";
+    Real 'loadCapacitor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'loadCapacitor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
     Real 'loadCapacitor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
     Real 'loadCapacitor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
-    Real 'loadCapacitor.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('loadCapacitor.i.re' ^ 2.0 + 'loadCapacitor.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'loadCapacitor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('loadCapacitor.i.im', 'loadCapacitor.i.re', 0.0) "Argument of complex current";
-    Real 'loadCapacitor.P'(unit = "W", quantity = "Power") = 'loadCapacitor.v.re' * 'loadCapacitor.i.re' - 'loadCapacitor.v.im' * (-'loadCapacitor.i.im') "Active power";
-    Real 'loadCapacitor.Q'(unit = "var", quantity = "Power") = 'loadCapacitor.v.re' * (-'loadCapacitor.i.im') + 'loadCapacitor.v.im' * 'loadCapacitor.i.re' "Reactive power";
-    Real 'loadCapacitor.S'(unit = "V.A", quantity = "Power") = sqrt(('loadCapacitor.v.re' * 'loadCapacitor.i.re' - 'loadCapacitor.v.im' * (-'loadCapacitor.i.im')) ^ 2.0 + ('loadCapacitor.v.re' * (-'loadCapacitor.i.im') + 'loadCapacitor.v.im' * 'loadCapacitor.i.re') ^ 2.0) "Magnitude of complex apparent power";
-    Real 'loadCapacitor.pf' = cos('Modelica.Math.atan3'('loadCapacitor.Q', 'loadCapacitor.P', 0.0)) "Power factor";
+    Real 'loadCapacitor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'loadCapacitor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'loadCapacitor.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'loadCapacitor.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'loadCapacitor.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'loadCapacitor.pf' "Power factor";
     parameter Real 'loadCapacitor.C'(start = 1.0, min = 0.0, unit = "F", quantity = "Capacitance") = 5e-11 "Capacitance";
     parameter Real 'complexConst.k.re'(start = 1.0) = 0.5 "Real part of complex number";
     parameter Real 'complexConst.k.im'(start = 0.0) = 0.0 "Imaginary part of complex number";
@@ -313,11 +251,73 @@ package 'MultipleResonance'
     Real 'currentSensor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'currentSensor.i.re'(unit = "A") "Real part of complex number";
     Real 'currentSensor.i.im'(unit = "A") "Imaginary part of complex number";
-    Real 'currentSensor.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('currentSensor.i.re' ^ 2.0 + 'currentSensor.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'currentSensor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('currentSensor.i.im', 'currentSensor.i.re', 0.0) "Argument of complex current";
+    Real 'currentSensor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'currentSensor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
     Real 'currentSensor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'currentSensor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
   equation
+    'voltageSource.abs_v' = sqrt('voltageSource.v.re' ^ 2.0 + 'voltageSource.v.im' ^ 2.0);
+    'voltageSource.arg_v' = 'Modelica.Math.atan3'('voltageSource.v.im', 'voltageSource.v.re', 0.0);
+    'voltageSource.abs_i' = sqrt('voltageSource.i.re' ^ 2.0 + 'voltageSource.i.im' ^ 2.0);
+    'voltageSource.arg_i' = 'Modelica.Math.atan3'('voltageSource.i.im', 'voltageSource.i.re', 0.0);
+    'voltageSource.P' = 'voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im');
+    'voltageSource.Q' = 'voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re';
+    'voltageSource.S' = sqrt(('voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im')) ^ 2.0 + ('voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re') ^ 2.0);
+    'voltageSource.pf' = cos('Modelica.Math.atan3'('voltageSource.Q', 'voltageSource.P', 0.0));
+    'voltageSource.gamma' = 'voltageSource.pin_p.reference.gamma';
+    'zi.abs_v' = sqrt('zi.v.re' ^ 2.0 + 'zi.v.im' ^ 2.0);
+    'zi.arg_v' = 'Modelica.Math.atan3'('zi.v.im', 'zi.v.re', 0.0);
+    'zi.abs_i' = sqrt('zi.i.re' ^ 2.0 + 'zi.i.im' ^ 2.0);
+    'zi.arg_i' = 'Modelica.Math.atan3'('zi.i.im', 'zi.i.re', 0.0);
+    'zi.P' = 'zi.v.re' * 'zi.i.re' - 'zi.v.im' * (-'zi.i.im');
+    'zi.Q' = 'zi.v.re' * (-'zi.i.im') + 'zi.v.im' * 'zi.i.re';
+    'zi.S' = sqrt(('zi.v.re' * 'zi.i.re' - 'zi.v.im' * (-'zi.i.im')) ^ 2.0 + ('zi.v.re' * (-'zi.i.im') + 'zi.v.im' * 'zi.i.re') ^ 2.0);
+    'zi.pf' = cos('Modelica.Math.atan3'('zi.Q', 'zi.P', 0.0));
+    'transformer.omega' = der('transformer.pin_p1.reference.gamma');
+    'transformer.i1.re' = 'transformer.pin_p1.i.re';
+    'transformer.i1.im' = 'transformer.pin_p1.i.im';
+    'transformer.i2.re' = 'transformer.pin_p2.i.re';
+    'transformer.i2.im' = 'transformer.pin_p2.i.im';
+    'transformer.abs_v1' = sqrt('transformer.v1.re' ^ 2.0 + 'transformer.v1.im' ^ 2.0);
+    'transformer.arg_v1' = 'Modelica.Math.atan3'('transformer.v1.im', 'transformer.v1.re', 0.0);
+    'transformer.abs_i1' = sqrt('transformer.i1.re' ^ 2.0 + 'transformer.i1.im' ^ 2.0);
+    'transformer.arg_i1' = 'Modelica.Math.atan3'('transformer.i1.im', 'transformer.i1.re', 0.0);
+    'transformer.P1' = 'transformer.v1.re' * 'transformer.i1.re' - 'transformer.v1.im' * (-'transformer.i1.im');
+    'transformer.Q1' = 'transformer.v1.re' * (-'transformer.i1.im') + 'transformer.v1.im' * 'transformer.i1.re';
+    'transformer.S1' = sqrt(('transformer.v1.re' * 'transformer.i1.re' - 'transformer.v1.im' * (-'transformer.i1.im')) ^ 2.0 + ('transformer.v1.re' * (-'transformer.i1.im') + 'transformer.v1.im' * 'transformer.i1.re') ^ 2.0);
+    'transformer.abs_v2' = sqrt('transformer.v2.re' ^ 2.0 + 'transformer.v2.im' ^ 2.0);
+    'transformer.arg_v2' = 'Modelica.Math.atan3'('transformer.v2.im', 'transformer.v2.re', 0.0);
+    'transformer.abs_i2' = sqrt('transformer.i2.re' ^ 2.0 + 'transformer.i2.im' ^ 2.0);
+    'transformer.arg_i2' = 'Modelica.Math.atan3'('transformer.i2.im', 'transformer.i2.re', 0.0);
+    'transformer.P2' = 'transformer.v2.re' * 'transformer.i2.re' - 'transformer.v2.im' * (-'transformer.i2.im');
+    'transformer.Q2' = 'transformer.v2.re' * (-'transformer.i2.im') + 'transformer.v2.im' * 'transformer.i2.re';
+    'transformer.S2' = sqrt(('transformer.v2.re' * 'transformer.i2.re' - 'transformer.v2.im' * (-'transformer.i2.im')) ^ 2.0 + ('transformer.v2.re' * (-'transformer.i2.im') + 'transformer.v2.im' * 'transformer.i2.re') ^ 2.0);
+    'loadResistor.abs_v' = sqrt('loadResistor.v.re' ^ 2.0 + 'loadResistor.v.im' ^ 2.0);
+    'loadResistor.arg_v' = 'Modelica.Math.atan3'('loadResistor.v.im', 'loadResistor.v.re', 0.0);
+    'loadResistor.abs_i' = sqrt('loadResistor.i.re' ^ 2.0 + 'loadResistor.i.im' ^ 2.0);
+    'loadResistor.arg_i' = 'Modelica.Math.atan3'('loadResistor.i.im', 'loadResistor.i.re', 0.0);
+    'loadResistor.P' = 'loadResistor.v.re' * 'loadResistor.i.re' - 'loadResistor.v.im' * (-'loadResistor.i.im');
+    'loadResistor.Q' = 'loadResistor.v.re' * (-'loadResistor.i.im') + 'loadResistor.v.im' * 'loadResistor.i.re';
+    'loadResistor.S' = sqrt(('loadResistor.v.re' * 'loadResistor.i.re' - 'loadResistor.v.im' * (-'loadResistor.i.im')) ^ 2.0 + ('loadResistor.v.re' * (-'loadResistor.i.im') + 'loadResistor.v.im' * 'loadResistor.i.re') ^ 2.0);
+    'loadResistor.pf' = cos('Modelica.Math.atan3'('loadResistor.Q', 'loadResistor.P', 0.0));
+    'loadInductor.abs_v' = sqrt('loadInductor.v.re' ^ 2.0 + 'loadInductor.v.im' ^ 2.0);
+    'loadInductor.arg_v' = 'Modelica.Math.atan3'('loadInductor.v.im', 'loadInductor.v.re', 0.0);
+    'loadInductor.abs_i' = sqrt('loadInductor.i.re' ^ 2.0 + 'loadInductor.i.im' ^ 2.0);
+    'loadInductor.arg_i' = 'Modelica.Math.atan3'('loadInductor.i.im', 'loadInductor.i.re', 0.0);
+    'loadInductor.P' = 'loadInductor.v.re' * 'loadInductor.i.re' - 'loadInductor.v.im' * (-'loadInductor.i.im');
+    'loadInductor.Q' = 'loadInductor.v.re' * (-'loadInductor.i.im') + 'loadInductor.v.im' * 'loadInductor.i.re';
+    'loadInductor.S' = sqrt(('loadInductor.v.re' * 'loadInductor.i.re' - 'loadInductor.v.im' * (-'loadInductor.i.im')) ^ 2.0 + ('loadInductor.v.re' * (-'loadInductor.i.im') + 'loadInductor.v.im' * 'loadInductor.i.re') ^ 2.0);
+    'loadInductor.pf' = cos('Modelica.Math.atan3'('loadInductor.Q', 'loadInductor.P', 0.0));
+    'loadCapacitor.abs_v' = sqrt('loadCapacitor.v.re' ^ 2.0 + 'loadCapacitor.v.im' ^ 2.0);
+    'loadCapacitor.arg_v' = 'Modelica.Math.atan3'('loadCapacitor.v.im', 'loadCapacitor.v.re', 0.0);
+    'loadCapacitor.abs_i' = sqrt('loadCapacitor.i.re' ^ 2.0 + 'loadCapacitor.i.im' ^ 2.0);
+    'loadCapacitor.arg_i' = 'Modelica.Math.atan3'('loadCapacitor.i.im', 'loadCapacitor.i.re', 0.0);
+    'loadCapacitor.P' = 'loadCapacitor.v.re' * 'loadCapacitor.i.re' - 'loadCapacitor.v.im' * (-'loadCapacitor.i.im');
+    'loadCapacitor.Q' = 'loadCapacitor.v.re' * (-'loadCapacitor.i.im') + 'loadCapacitor.v.im' * 'loadCapacitor.i.re';
+    'loadCapacitor.S' = sqrt(('loadCapacitor.v.re' * 'loadCapacitor.i.re' - 'loadCapacitor.v.im' * (-'loadCapacitor.i.im')) ^ 2.0 + ('loadCapacitor.v.re' * (-'loadCapacitor.i.im') + 'loadCapacitor.v.im' * 'loadCapacitor.i.re') ^ 2.0);
+    'loadCapacitor.pf' = cos('Modelica.Math.atan3'('loadCapacitor.Q', 'loadCapacitor.P', 0.0));
+    'currentSensor.abs_i' = sqrt('currentSensor.i.re' ^ 2.0 + 'currentSensor.i.im' ^ 2.0);
+    'currentSensor.arg_i' = 'Modelica.Math.atan3'('currentSensor.i.im', 'currentSensor.i.re', 0.0);
     'ground1.pin.v.re' = 'transformer.pin_n1.v.re';
     'ground1.pin.v.re' = 'voltageSource.pin_n.v.re';
     'ground1.pin.v.im' = 'transformer.pin_n1.v.im';
@@ -390,10 +390,14 @@ package 'MultipleResonance'
     'zi.i.im' = 'zi.pin_p.i.im';
     'zi.pin_p.reference.gamma' = 'zi.pin_n.reference.gamma';
     'zi.omega' = der('zi.pin_p.reference.gamma');
-    'transformer.v1.re' = -('transformer.omega' * 3e-5 * 'transformer.i1.im' + 'transformer.omega' * 5.203364296299078e-6 * 'transformer.i2.im');
-    'transformer.v1.im' = 'transformer.omega' * 3e-5 * 'transformer.i1.re' + 'transformer.omega' * 5.203364296299078e-6 * 'transformer.i2.re';
-    'transformer.v2.re' = -('transformer.omega' * 1e-6 * 'transformer.i2.im' + 'transformer.omega' * 5.203364296299078e-6 * 'transformer.i1.im');
-    'transformer.v2.im' = 'transformer.omega' * 1e-6 * 'transformer.i2.re' + 'transformer.omega' * 5.203364296299078e-6 * 'transformer.i1.re';
+    'transformer.v1.re' = 'transformer.pin_p1.v.re' - 'transformer.pin_n1.v.re';
+    'transformer.v1.im' = 'transformer.pin_p1.v.im' - 'transformer.pin_n1.v.im';
+    'transformer.v2.re' = 'transformer.pin_p2.v.re' - 'transformer.pin_n2.v.re';
+    'transformer.v2.im' = 'transformer.pin_p2.v.im' - 'transformer.pin_n2.v.im';
+    'transformer.v1.re' = ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 3e-5 - (0.0 * 0.0 + 1.0 * 'transformer.omega') * 0.0) * 'transformer.i1.re' - ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.omega') * 3e-5) * 'transformer.i1.im' + ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 5.203364296299078e-6 - (0.0 * 0.0 + 1.0 * 'transformer.omega') * 0.0) * 'transformer.i2.re' - ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.omega') * 5.203364296299078e-6) * 'transformer.i2.im';
+    'transformer.v1.im' = ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 3e-5 - (0.0 * 0.0 + 1.0 * 'transformer.omega') * 0.0) * 'transformer.i1.im' + ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.omega') * 3e-5) * 'transformer.i1.re' + ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 5.203364296299078e-6 - (0.0 * 0.0 + 1.0 * 'transformer.omega') * 0.0) * 'transformer.i2.im' + ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.omega') * 5.203364296299078e-6) * 'transformer.i2.re';
+    'transformer.v2.re' = ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 1e-6 - (0.0 * 0.0 + 1.0 * 'transformer.omega') * 0.0) * 'transformer.i2.re' - ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.omega') * 1e-6) * 'transformer.i2.im' + ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 5.203364296299078e-6 - (0.0 * 0.0 + 1.0 * 'transformer.omega') * 0.0) * 'transformer.i1.re' - ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.omega') * 5.203364296299078e-6) * 'transformer.i1.im';
+    'transformer.v2.im' = ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 1e-6 - (0.0 * 0.0 + 1.0 * 'transformer.omega') * 0.0) * 'transformer.i2.im' + ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.omega') * 1e-6) * 'transformer.i2.re' + ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 5.203364296299078e-6 - (0.0 * 0.0 + 1.0 * 'transformer.omega') * 0.0) * 'transformer.i1.im' + ((0.0 * 'transformer.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'transformer.omega') * 5.203364296299078e-6) * 'transformer.i1.re';
     'transformer.pin_p1.i.re' + 'transformer.pin_n1.i.re' = 0.0;
     'transformer.pin_p1.i.im' + 'transformer.pin_n1.i.im' = 0.0;
     'transformer.pin_p2.i.re' + 'transformer.pin_n2.i.re' = 0.0;
@@ -406,8 +410,8 @@ package 'MultipleResonance'
     'ground2.pin.v.re' = 0.0;
     'ground2.pin.v.im' = 0.0;
     'loadResistor.R_actual' = 5.0;
-    'loadResistor.v.re' = 'loadResistor.R_actual' * 'loadResistor.i.re';
-    'loadResistor.v.im' = 'loadResistor.R_actual' * 'loadResistor.i.im';
+    'loadResistor.v.re' = 'loadResistor.R_actual' * 'loadResistor.i.re' - 0.0 * 'loadResistor.i.im';
+    'loadResistor.v.im' = 'loadResistor.R_actual' * 'loadResistor.i.im' + 0.0 * 'loadResistor.i.re';
     'loadResistor.LossPower' = 'loadResistor.v.re' * 'loadResistor.i.re' - 'loadResistor.v.im' * (-'loadResistor.i.im');
     'loadResistor.T_heatPort' = 293.15;
     'loadResistor.pin_p.i.re' + 'loadResistor.pin_n.i.re' = 0.0;
@@ -418,8 +422,8 @@ package 'MultipleResonance'
     'loadResistor.i.im' = 'loadResistor.pin_p.i.im';
     'loadResistor.pin_p.reference.gamma' = 'loadResistor.pin_n.reference.gamma';
     'loadResistor.omega' = der('loadResistor.pin_p.reference.gamma');
-    'loadInductor.v.re' = -'loadInductor.omega' * 5e-6 * 'loadInductor.i.im';
-    'loadInductor.v.im' = 'loadInductor.omega' * 5e-6 * 'loadInductor.i.re';
+    'loadInductor.v.re' = ((0.0 * 'loadInductor.omega' - 1.0 * 0.0) * 5e-6 - (0.0 * 0.0 + 1.0 * 'loadInductor.omega') * 0.0) * 'loadInductor.i.re' - ((0.0 * 'loadInductor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'loadInductor.omega') * 5e-6) * 'loadInductor.i.im';
+    'loadInductor.v.im' = ((0.0 * 'loadInductor.omega' - 1.0 * 0.0) * 5e-6 - (0.0 * 0.0 + 1.0 * 'loadInductor.omega') * 0.0) * 'loadInductor.i.im' + ((0.0 * 'loadInductor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'loadInductor.omega') * 5e-6) * 'loadInductor.i.re';
     'loadInductor.pin_p.i.re' + 'loadInductor.pin_n.i.re' = 0.0;
     'loadInductor.pin_p.i.im' + 'loadInductor.pin_n.i.im' = 0.0;
     'loadInductor.v.re' = 'loadInductor.pin_p.v.re' - 'loadInductor.pin_n.v.re';
@@ -428,8 +432,8 @@ package 'MultipleResonance'
     'loadInductor.i.im' = 'loadInductor.pin_p.i.im';
     'loadInductor.pin_p.reference.gamma' = 'loadInductor.pin_n.reference.gamma';
     'loadInductor.omega' = der('loadInductor.pin_p.reference.gamma');
-    'loadCapacitor.i.re' = -'loadCapacitor.omega' * 5e-11 * 'loadCapacitor.v.im';
-    'loadCapacitor.i.im' = 'loadCapacitor.omega' * 5e-11 * 'loadCapacitor.v.re';
+    'loadCapacitor.i.re' = ((0.0 * 'loadCapacitor.omega' - 1.0 * 0.0) * 5e-11 - (0.0 * 0.0 + 1.0 * 'loadCapacitor.omega') * 0.0) * 'loadCapacitor.v.re' - ((0.0 * 'loadCapacitor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'loadCapacitor.omega') * 5e-11) * 'loadCapacitor.v.im';
+    'loadCapacitor.i.im' = ((0.0 * 'loadCapacitor.omega' - 1.0 * 0.0) * 5e-11 - (0.0 * 0.0 + 1.0 * 'loadCapacitor.omega') * 0.0) * 'loadCapacitor.v.im' + ((0.0 * 'loadCapacitor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'loadCapacitor.omega') * 5e-11) * 'loadCapacitor.v.re';
     'loadCapacitor.pin_p.i.re' + 'loadCapacitor.pin_n.i.re' = 0.0;
     'loadCapacitor.pin_p.i.im' + 'loadCapacitor.pin_n.i.im' = 0.0;
     'loadCapacitor.v.re' = 'loadCapacitor.pin_p.v.re' - 'loadCapacitor.pin_n.v.re';
