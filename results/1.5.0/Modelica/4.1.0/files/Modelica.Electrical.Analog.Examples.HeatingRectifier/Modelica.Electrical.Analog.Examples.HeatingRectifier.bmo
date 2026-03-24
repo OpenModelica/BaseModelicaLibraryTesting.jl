@@ -1,21 +1,5 @@
 //! base 0.1.0
 package 'HeatingRectifier'
-  function 'Modelica.Electrical.Analog.Semiconductors.exlin' "Exponential function linearly continued for x > Maxexp"
-    input Real 'x';
-    input Real 'Maxexp';
-    output Real 'z';
-  algorithm
-    'z' := if 'x' > 'Maxexp' then exp('Maxexp') * (1.0 + 'x' - 'Maxexp') else exp('x');
-  end 'Modelica.Electrical.Analog.Semiconductors.exlin';
-
-  function 'Modelica.Electrical.Analog.Semiconductors.pow' "Just a helper function for x^y in order that a symbolic engine can apply some transformations more easily"
-    input Real 'x';
-    input Real 'y';
-    output Real 'z';
-  algorithm
-    'z' := 'x' ^ 'y';
-  end 'Modelica.Electrical.Analog.Semiconductors.pow';
-
   model 'HeatingRectifier' "Heating rectifier"
     Real 'HeatingDiode1.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";
     Real 'HeatingDiode1.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -34,8 +18,8 @@ package 'HeatingRectifier'
     parameter Real 'HeatingDiode1.XTI' = 3.0 "Temperature exponent of saturation current";
     parameter Boolean 'HeatingDiode1.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'HeatingDiode1.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'HeatingDiode1.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'HeatingDiode1.T_heatPort' "Port temperature";
-    Real 'HeatingDiode1.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'HeatingDiode1.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'HeatingDiode1.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'HeatingDiode1.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'HeatingDiode1.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'HeatingDiode1.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'HeatingDiode1.vt_t'(unit = "V", quantity = "ElectricPotential") "Temperature voltage";
@@ -99,6 +83,8 @@ package 'HeatingRectifier'
   initial equation
     'HeatCapacitor1.T' = 293.15;
   equation
+    'HeatingDiode1.heatPort.T' = 'HeatingDiode1.T_heatPort';
+    'HeatingDiode1.heatPort.Q_flow' = -'HeatingDiode1.LossPower';
     'SineVoltage1.p.v' = 'HeatingDiode1.p.v';
     'R.n.v' = 'Capacitor1.n.v';
     'R.n.v' = 'G.p.v';
@@ -115,8 +101,8 @@ package 'HeatingRectifier'
     assert('HeatingDiode1.T_heatPort' > 0.0, "Temperature must be positive", AssertionLevel.error);
     'HeatingDiode1.htemp' = 'HeatingDiode1.T_heatPort';
     'HeatingDiode1.vt_t' = 1.380649e-23 * 'HeatingDiode1.htemp' / 1.602176634e-19;
-    'HeatingDiode1.id' = 1e-6 * ('Modelica.Electrical.Analog.Semiconductors.exlin'('HeatingDiode1.v' / 'HeatingDiode1.vt_t', 15.0) - 1.0);
-    'HeatingDiode1.i' = 'HeatingDiode1.id' * 'Modelica.Electrical.Analog.Semiconductors.pow'('HeatingDiode1.htemp' / 300.15, 3.0) * 'HeatingDiode1.auxp' + 'HeatingDiode1.v' / 1e8;
+    'HeatingDiode1.id' = 1e-6 * ((if 'HeatingDiode1.v' / 'HeatingDiode1.vt_t' > 15.0 then exp(15.0) * (1.0 + 'HeatingDiode1.v' / 'HeatingDiode1.vt_t' - 15.0) else exp('HeatingDiode1.v' / 'HeatingDiode1.vt_t')) - 1.0);
+    'HeatingDiode1.i' = 'HeatingDiode1.id' * ('HeatingDiode1.htemp' / 300.15) ^ 3.0 * 'HeatingDiode1.auxp' + 'HeatingDiode1.v' / 1e8;
     'HeatingDiode1.aux' = ('HeatingDiode1.htemp' / 300.15 - 1.0) * 1.11 / 'HeatingDiode1.vt_t';
     'HeatingDiode1.auxp' = exp('HeatingDiode1.aux');
     'HeatingDiode1.LossPower' = 'HeatingDiode1.i' * 'HeatingDiode1.v';

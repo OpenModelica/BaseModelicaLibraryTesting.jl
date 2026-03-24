@@ -12,8 +12,8 @@ package 'Resistor'
     Real 'resistor.i'(start = 0.0, unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'resistor.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'resistor.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'resistor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'resistor.T_heatPort' "Port temperature";
-    Real 'resistor.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'resistor.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'resistor.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'resistor.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'resistor.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'resistor.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'resistor.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -48,6 +48,8 @@ package 'Resistor'
     Real 'fixedTemperature.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'fixedTemperature.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
   equation
+    'resistor.heatPort.T' = 'resistor.T_heatPort';
+    'resistor.heatPort.Q_flow' = -'resistor.LossPower';
     'G.p.v' = 'resistor.n.v';
     'G.p.v' = 'SineVoltage1.n.v';
     'resistor.heatPort.T' = 'thermalConductor.port_a.T';

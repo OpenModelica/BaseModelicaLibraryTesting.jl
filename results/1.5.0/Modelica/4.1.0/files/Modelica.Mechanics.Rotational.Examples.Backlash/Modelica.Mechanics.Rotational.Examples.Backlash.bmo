@@ -53,7 +53,7 @@ package 'Backlash'
     parameter Real 'elastoBacklash.bMin'(displayUnit = "deg", unit = "rad", quantity = "Angle") = -0.39269908169872414 "Backlash in range bMin <= phi_rel - phi_rel0 <= bMax";
     Real 'elastoBacklash.tau_c'(unit = "N.m", quantity = "Torque");
     Real 'elastoBacklash.tau_d'(unit = "N.m", quantity = "Torque");
-    Real 'elastoBacklash.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'elastoBacklash.phi_rel';
+    Real 'elastoBacklash.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     constant Real 'elastoBacklash.bEps'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 1e-10 "Minimum backlash";
     Real 'inertia2.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'inertia2.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
@@ -87,7 +87,7 @@ package 'Backlash'
     parameter Real 'elastoBacklash2.bMin'(displayUnit = "deg", unit = "rad", quantity = "Angle") = -0.392699081698725 "Backlash in range bMin <= phi_rel - phi_rel0 <= bMax";
     Real 'elastoBacklash2.tau_c'(unit = "N.m", quantity = "Torque");
     Real 'elastoBacklash2.tau_d'(unit = "N.m", quantity = "Torque");
-    Real 'elastoBacklash2.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'elastoBacklash2.phi_rel';
+    Real 'elastoBacklash2.phi_diff'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     constant Real 'elastoBacklash2.bEps'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 1e-10 "Minimum backlash";
     Real 'inertia3.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'inertia3.flange_a.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
@@ -99,6 +99,8 @@ package 'Backlash'
     Real 'inertia3.w'(stateSelect = StateSelect.default, fixed = true, start = 0.0, unit = "rad/s", quantity = "AngularVelocity") "Absolute angular velocity of component (= der(phi))";
     Real 'inertia3.a'(unit = "rad/s2", quantity = "AngularAcceleration") "Absolute angular acceleration of component (= der(w))";
   equation
+    'elastoBacklash.phi_diff' = 'elastoBacklash.phi_rel';
+    'elastoBacklash2.phi_diff' = 'elastoBacklash2.phi_rel';
     'springDamper.flange_b.phi' = 'inertia1.flange_a.phi';
     'elastoBacklash.flange_b.phi' = 'inertia2.flange_a.phi';
     'fixed1.flange.phi' = 'springDamper.flange_a.phi';
@@ -136,7 +138,7 @@ package 'Backlash'
       'elastoBacklash.tau_d' = 50.0 * 'elastoBacklash.w_rel';
       'elastoBacklash.tau' = 'elastoBacklash.tau_c' + 'elastoBacklash.tau_d';
       'elastoBacklash.lossPower' = 'elastoBacklash.tau_d' * 'elastoBacklash.w_rel';
-    elseif true then
+    else
       'elastoBacklash.tau_c' = if 'elastoBacklash.phi_diff' > 0.39269908169872414 then 2e4 * ('elastoBacklash.phi_diff' - 0.39269908169872414) else if 'elastoBacklash.phi_diff' < (-0.39269908169872414) then 2e4 * ('elastoBacklash.phi_diff' + 0.39269908169872414) else 0.0;
       'elastoBacklash.tau_d' = 50.0 * 'elastoBacklash.w_rel';
       'elastoBacklash.tau' = if 'elastoBacklash.phi_diff' > 0.39269908169872414 then smooth(0, noEvent(if 'elastoBacklash.tau_c' + 'elastoBacklash.tau_d' <= 0.0 then 0.0 else 'elastoBacklash.tau_c' + min('elastoBacklash.tau_c', 'elastoBacklash.tau_d'))) else if 'elastoBacklash.phi_diff' < (-0.39269908169872414) then smooth(0, noEvent(if 'elastoBacklash.tau_c' + 'elastoBacklash.tau_d' >= 0.0 then 0.0 else 'elastoBacklash.tau_c' + max('elastoBacklash.tau_c', 'elastoBacklash.tau_d'))) else 0.0;
@@ -160,7 +162,7 @@ package 'Backlash'
       'elastoBacklash2.tau_d' = 50.0 * 'elastoBacklash2.w_rel';
       'elastoBacklash2.tau' = 'elastoBacklash2.tau_c' + 'elastoBacklash2.tau_d';
       'elastoBacklash2.lossPower' = 'elastoBacklash2.tau_d' * 'elastoBacklash2.w_rel';
-    elseif true then
+    else
       'elastoBacklash2.tau_c' = if 'elastoBacklash2.phi_diff' > 0.392699081698725 then 2e4 * ('elastoBacklash2.phi_diff' - 0.392699081698725) else if 'elastoBacklash2.phi_diff' < (-0.392699081698725) then 2e4 * ('elastoBacklash2.phi_diff' + 0.392699081698725) else 0.0;
       'elastoBacklash2.tau_d' = 50.0 * 'elastoBacklash2.w_rel';
       'elastoBacklash2.tau' = if 'elastoBacklash2.phi_diff' > 0.392699081698725 then if 'elastoBacklash2.tau_c' + 'elastoBacklash2.tau_d' <= 0.0 then 0.0 else 'elastoBacklash2.tau_c' + 'elastoBacklash2.tau_d' else if 'elastoBacklash2.phi_diff' < (-0.392699081698725) then if 'elastoBacklash2.tau_c' + 'elastoBacklash2.tau_d' >= 0.0 then 0.0 else 'elastoBacklash2.tau_c' + 'elastoBacklash2.tau_d' else 0.0;

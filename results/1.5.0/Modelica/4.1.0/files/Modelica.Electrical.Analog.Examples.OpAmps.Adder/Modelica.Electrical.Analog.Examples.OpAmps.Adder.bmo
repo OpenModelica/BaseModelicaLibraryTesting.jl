@@ -60,12 +60,12 @@ package 'Adder'
     parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'add.opAmp.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'NoHomotopy' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
     Real 'add.opAmp.vps'(unit = "V", quantity = "ElectricPotential") "Positive supply voltage";
     Real 'add.opAmp.vns'(unit = "V", quantity = "ElectricPotential") "Negative supply voltage";
-    Real 'add.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") = 'add.opAmp.in_p.v' - 'add.opAmp.in_n.v' "Input voltage difference";
-    Real 'add.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") = 'add.opAmp.out.v' "Output voltage to ground";
-    Real 'add.opAmp.p_in'(unit = "W", quantity = "Power") = 'add.opAmp.in_p.v' * 'add.opAmp.in_p.i' + 'add.opAmp.in_n.v' * 'add.opAmp.in_n.i' "Input power";
-    Real 'add.opAmp.p_out'(unit = "W", quantity = "Power") = 'add.opAmp.out.v' * 'add.opAmp.out.i' "Output power";
-    Real 'add.opAmp.p_s'(unit = "W", quantity = "Power") = -('add.opAmp.p_in' + 'add.opAmp.p_out') "Supply power";
-    Real 'add.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") = 'add.opAmp.p_s' / ('add.opAmp.vps' - 'add.opAmp.vns') "Supply current";
+    Real 'add.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") "Input voltage difference";
+    Real 'add.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") "Output voltage to ground";
+    Real 'add.opAmp.p_in'(unit = "W", quantity = "Power") "Input power";
+    Real 'add.opAmp.p_out'(unit = "W", quantity = "Power") "Output power";
+    Real 'add.opAmp.p_s'(unit = "W", quantity = "Power") "Supply power";
+    Real 'add.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") "Supply current";
     Real 'add.opAmp.in_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'add.opAmp.in_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'add.opAmp.in_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -73,8 +73,8 @@ package 'Adder'
     Real 'add.opAmp.out.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'add.opAmp.out.i'(fixed = false, start = 0.0, unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'add.opAmp.simplifiedExpr'(unit = "V", quantity = "ElectricPotential") "Simplified expression for homotopy-based initialization";
-    Real 'add.v1_2'(unit = "V", quantity = "ElectricPotential") = 'add.p1_2.v' - 'add.n1.v' "Voltage drop of port 1_2 (= p1_2.v - n1.v)";
-    Real 'add.i1_2'(unit = "A", quantity = "ElectricCurrent") = 'add.p1_2.i' "Current flowing from pos. to neg. pin of port 1_2";
+    Real 'add.v1_2'(unit = "V", quantity = "ElectricPotential") "Voltage drop of port 1_2 (= p1_2.v - n1.v)";
+    Real 'add.i1_2'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pos. to neg. pin of port 1_2";
     parameter Real 'add.k1'(min = 0.0) = 1.0 "Weight of input 1";
     parameter Real 'add.k2'(min = 0.0) = 1.0 "Weight of input 2";
     parameter Real 'add.R'(unit = "Ohm", quantity = "Resistance") = 1000.0 "Resistance at output of OpAmp";
@@ -125,6 +125,14 @@ package 'Adder'
     Real 'add.r.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'add.r.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
   equation
+    'add.opAmp.v_in' = 'add.opAmp.in_p.v' - 'add.opAmp.in_n.v';
+    'add.opAmp.v_out' = 'add.opAmp.out.v';
+    'add.opAmp.p_in' = 'add.opAmp.in_p.v' * 'add.opAmp.in_p.i' + 'add.opAmp.in_n.v' * 'add.opAmp.in_n.i';
+    'add.opAmp.p_out' = 'add.opAmp.out.v' * 'add.opAmp.out.i';
+    'add.opAmp.p_s' = -('add.opAmp.p_in' + 'add.opAmp.p_out');
+    'add.opAmp.i_s' = 'add.opAmp.p_s' / ('add.opAmp.vps' - 'add.opAmp.vns');
+    'add.v1_2' = 'add.p1_2.v' - 'add.n1.v';
+    'add.i1_2' = 'add.p1_2.i';
     'add.n1.v' = 'add.opAmp.in_p.v';
     'add.n1.v' = 'add.n2.v';
     'add.opAmp.in_p.i' - 'add.n1.i' - 'add.n2.i' = 0.0;

@@ -51,7 +51,7 @@ package 'ThyristorBehaviourTest'
     Real 'pulseCurrent.signalSource.y' "Connector of Real output signal";
     parameter Real 'pulseCurrent.signalSource.offset' = 0.0 "Offset of output signal y";
     parameter Real 'pulseCurrent.signalSource.startTime'(unit = "s", quantity = "Time") = 2e-5 "Output y = offset for time < startTime";
-    Real 'pulseCurrent.signalSource.T_width'(unit = "s", quantity = "Time") = 1e-5;
+    Real 'pulseCurrent.signalSource.T_width'(unit = "s", quantity = "Time");
     Real 'pulseCurrent.signalSource.T_start'(unit = "s", quantity = "Time") "Start time of current period";
     Integer 'pulseCurrent.signalSource.count' "Period count";
     parameter Real 'pulseCurrent.offset'(unit = "A", quantity = "ElectricCurrent") = 0.0 "Current offset";
@@ -97,6 +97,7 @@ package 'ThyristorBehaviourTest'
     Real 'inductor.i'(fixed = true, start = 0.0, unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Real 'inductor.L'(start = 1.0, unit = "H", quantity = "Inductance") = 2e-6 "Inductance";
   equation
+    'pulseCurrent.signalSource.T_width' = 1e-5;
     'inductor.n.v' = 'ground.p.v';
     'inductor.n.v' = 'sineVoltage.n.v';
     'sineVoltage.p.v' = 'thyristor_v4_1.Anode.v';

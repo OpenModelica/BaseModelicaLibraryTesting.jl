@@ -1,7 +1,7 @@
 //! base 0.1.0
 package 'IntegerNetwork1'
   function 'Modelica.Math.BooleanVectors.firstTrueIndex' "Returns the index of the first true element of a Boolean vector"
-    input Boolean[:] 'b';
+    input Boolean 'b'[:];
     output Integer 'index';
   algorithm
     'index' := 0;
@@ -39,7 +39,7 @@ package 'IntegerNetwork1'
     parameter Integer 'integerConstant.k'(start = 1) = 1 "Constant output value";
     Integer 'integerConstant.y' "Connector of Integer output signal";
     parameter Boolean 'showValue.use_numberPort' = true "= true, if numberPort enabled" annotation(Evaluate = true);
-    Integer 'showValue.number' = 0 "Number to visualize if use_numberPort=false (time varying)";
+    Integer 'showValue.number' "Number to visualize if use_numberPort=false (time varying)";
     Integer 'showValue.numberPort' "Number to be shown in diagram layer if use_numberPort = true";
     Integer 'showValue.showNumber';
     parameter Integer 'product.nu'(min = 0) = 2 "Number of input connections";
@@ -47,7 +47,7 @@ package 'IntegerNetwork1'
     Integer 'product.u[2]' "Vector of Integer input signals";
     Integer 'product.y' "Integer output signal";
     parameter Boolean 'showValue1.use_numberPort' = true "= true, if numberPort enabled" annotation(Evaluate = true);
-    Integer 'showValue1.number' = 0 "Number to visualize if use_numberPort=false (time varying)";
+    Integer 'showValue1.number' "Number to visualize if use_numberPort=false (time varying)";
     Integer 'showValue1.numberPort' "Number to be shown in diagram layer if use_numberPort = true";
     Integer 'showValue1.showNumber';
     Integer 'triggeredAdd.u' "Integer input signal";
@@ -65,7 +65,7 @@ package 'IntegerNetwork1'
     parameter Real 'booleanPulse1.Twidth'(unit = "s", quantity = "Time") = 0.5 "Width of one pulse";
     discrete Real 'booleanPulse1.pulseStart'(unit = "s", quantity = "Time") "Start time of pulse";
     parameter Boolean 'showValue2.use_numberPort' = true "= true, if numberPort enabled" annotation(Evaluate = true);
-    Integer 'showValue2.number' = 0 "Number to visualize if use_numberPort=false (time varying)";
+    Integer 'showValue2.number' "Number to visualize if use_numberPort=false (time varying)";
     Integer 'showValue2.numberPort' "Number to be shown in diagram layer if use_numberPort = true";
     Integer 'showValue2.showNumber';
     Integer 'multiSwitch1.expr[1]' "y = if u[i] then expr[i] elseif use_pre_as_default then pre(y) else y_default";
@@ -84,7 +84,7 @@ package 'IntegerNetwork1'
     parameter Real 'booleanPulse2.Twidth'(unit = "s", quantity = "Time") = 1.6 "Width of one pulse";
     discrete Real 'booleanPulse2.pulseStart'(unit = "s", quantity = "Time") "Start time of pulse";
     parameter Boolean 'showValue3.use_numberPort' = false "= true, if numberPort enabled" annotation(Evaluate = true);
-    Integer 'showValue3.number' = 'multiSwitch1.y' "Number to visualize if use_numberPort=false (time varying)";
+    Integer 'showValue3.number' "Number to visualize if use_numberPort=false (time varying)";
     Integer 'showValue3.showNumber';
   initial equation
     pre('triggeredAdd.y') = 0;
@@ -92,6 +92,10 @@ package 'IntegerNetwork1'
     pre('multiSwitch1.y') = 2;
     'booleanPulse2.pulseStart' = 0.0;
   equation
+    'showValue.number' = 0;
+    'showValue1.number' = 0;
+    'showValue2.number' = 0;
+    'showValue3.number' = 'multiSwitch1.y';
     'showValue.numberPort' = 'showValue.showNumber';
     'showValue1.numberPort' = 'showValue1.showNumber';
     'showValue2.numberPort' = 'showValue2.showNumber';
@@ -129,7 +133,7 @@ package 'IntegerNetwork1'
     'multiSwitch1.expr[1]' = 4;
     'multiSwitch1.expr[2]' = 6;
     'multiSwitch1.firstActiveIndex' = 'Modelica.Math.BooleanVectors.firstTrueIndex'({'multiSwitch1.u[1]', 'multiSwitch1.u[2]'});
-    'multiSwitch1.y' = if 'multiSwitch1.firstActiveIndex' > 0 then 'multiSwitch1.expr['multiSwitch1.firstActiveIndex']' else 2;
+    'multiSwitch1.y' = if 'multiSwitch1.firstActiveIndex' > 0 then 'multiSwitch1.expr[\'multiSwitch1.firstActiveIndex\']' else 2;
 
     when sample(0.0, 2.0) then
       'booleanPulse2.pulseStart' = time;

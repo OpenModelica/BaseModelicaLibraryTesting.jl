@@ -60,12 +60,12 @@ package 'Subtracter'
     parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'feedback.opAmp.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'NoHomotopy' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
     Real 'feedback.opAmp.vps'(unit = "V", quantity = "ElectricPotential") "Positive supply voltage";
     Real 'feedback.opAmp.vns'(unit = "V", quantity = "ElectricPotential") "Negative supply voltage";
-    Real 'feedback.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") = 'feedback.opAmp.in_p.v' - 'feedback.opAmp.in_n.v' "Input voltage difference";
-    Real 'feedback.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") = 'feedback.opAmp.out.v' "Output voltage to ground";
-    Real 'feedback.opAmp.p_in'(unit = "W", quantity = "Power") = 'feedback.opAmp.in_p.v' * 'feedback.opAmp.in_p.i' + 'feedback.opAmp.in_n.v' * 'feedback.opAmp.in_n.i' "Input power";
-    Real 'feedback.opAmp.p_out'(unit = "W", quantity = "Power") = 'feedback.opAmp.out.v' * 'feedback.opAmp.out.i' "Output power";
-    Real 'feedback.opAmp.p_s'(unit = "W", quantity = "Power") = -('feedback.opAmp.p_in' + 'feedback.opAmp.p_out') "Supply power";
-    Real 'feedback.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") = 'feedback.opAmp.p_s' / ('feedback.opAmp.vps' - 'feedback.opAmp.vns') "Supply current";
+    Real 'feedback.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") "Input voltage difference";
+    Real 'feedback.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") "Output voltage to ground";
+    Real 'feedback.opAmp.p_in'(unit = "W", quantity = "Power") "Input power";
+    Real 'feedback.opAmp.p_out'(unit = "W", quantity = "Power") "Output power";
+    Real 'feedback.opAmp.p_s'(unit = "W", quantity = "Power") "Supply power";
+    Real 'feedback.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") "Supply current";
     Real 'feedback.opAmp.in_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'feedback.opAmp.in_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'feedback.opAmp.in_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -73,8 +73,8 @@ package 'Subtracter'
     Real 'feedback.opAmp.out.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'feedback.opAmp.out.i'(fixed = false, start = 0.0, unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'feedback.opAmp.simplifiedExpr'(unit = "V", quantity = "ElectricPotential") "Simplified expression for homotopy-based initialization";
-    Real 'feedback.v1_2'(unit = "V", quantity = "ElectricPotential") = 'feedback.p1_2.v' - 'feedback.n1.v' "Voltage drop of port 1_2 (= p1_2.v - n1.v)";
-    Real 'feedback.i1_2'(unit = "A", quantity = "ElectricCurrent") = 'feedback.p1_2.i' "Current flowing from pos. to neg. pin of port 1_2";
+    Real 'feedback.v1_2'(unit = "V", quantity = "ElectricPotential") "Voltage drop of port 1_2 (= p1_2.v - n1.v)";
+    Real 'feedback.i1_2'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pos. to neg. pin of port 1_2";
     parameter Real 'feedback.k'(min = 0.0) = 1.0 "Desired amplification";
     parameter Real 'feedback.R1'(unit = "Ohm", quantity = "Resistance") = 1000.0 "Resistance at inputs of OpAmp";
     parameter Real 'feedback.R3'(unit = "Ohm", quantity = "Resistance") = 1000.0 "Calculated resistance to reach desired amplification k";
@@ -137,6 +137,14 @@ package 'Subtracter'
     Real 'feedback.r4.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'feedback.r4.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
   equation
+    'feedback.opAmp.v_in' = 'feedback.opAmp.in_p.v' - 'feedback.opAmp.in_n.v';
+    'feedback.opAmp.v_out' = 'feedback.opAmp.out.v';
+    'feedback.opAmp.p_in' = 'feedback.opAmp.in_p.v' * 'feedback.opAmp.in_p.i' + 'feedback.opAmp.in_n.v' * 'feedback.opAmp.in_n.i';
+    'feedback.opAmp.p_out' = 'feedback.opAmp.out.v' * 'feedback.opAmp.out.i';
+    'feedback.opAmp.p_s' = -('feedback.opAmp.p_in' + 'feedback.opAmp.p_out');
+    'feedback.opAmp.i_s' = 'feedback.opAmp.p_s' / ('feedback.opAmp.vps' - 'feedback.opAmp.vns');
+    'feedback.v1_2' = 'feedback.p1_2.v' - 'feedback.n1.v';
+    'feedback.i1_2' = 'feedback.p1_2.i';
     'feedback.n1.v' = 'feedback.r4.n.v';
     'feedback.n1.v' = 'feedback.n2.v';
     'feedback.r4.n.i' - 'feedback.n1.i' - 'feedback.n2.i' = 0.0;

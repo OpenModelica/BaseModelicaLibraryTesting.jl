@@ -1,5 +1,11 @@
 //! base 0.1.0
 package 'TestOpenTank'
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMin';
+  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
+
   function 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer' "Derivative of interpolated 1-dim. table where first column is time (but do not provide a derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
     input Integer 'icol';
@@ -18,18 +24,6 @@ package 'TestOpenTank'
   external "C" 'nextTimeEvent' = ModelicaStandardTables_CombiTimeTable_nextTimeEvent('tableID', 'timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getNextTimeEvent';
 
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    output Real 'timeMax';
-  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    output Real 'timeMin';
-  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
-
   function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2' "Interpolate 1-dim. table where first column is time (but do not provide a second derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
     input Integer 'icol';
@@ -40,6 +34,12 @@ package 'TestOpenTank'
   external "C" 'y' = ModelicaStandardTables_CombiTimeTable_getValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
     annotation(derivative(order = 1, noDerivative = 'nextTimeEvent', noDerivative = 'pre_nextTimeEvent') = 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer');
   end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMax';
+  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
 
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
@@ -53,9 +53,9 @@ package 'TestOpenTank'
     function constructor "Initialize 1-dim. table where first column is time"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
+      input Real 'table'[:, :];
       input Real 'startTime';
-      input Integer[:] 'columns';
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation';
       input Real 'shiftTime' = 0.0;
@@ -75,9 +75,9 @@ package 'TestOpenTank'
 end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
 
   model 'TestOpenTank' "Test the OpenTank model"
-    output Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'volumeFlow.V_flow' "Volume flow rate to tank";
-    output Real 'level'(unit = "m", quantity = "Length") = 'openTank.level' "Level in tank";
-    output Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'openTank.TTank' "Temperature in tank";
+    output Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate to tank";
+    output Real 'level'(unit = "m", quantity = "Length") "Level in tank";
+    output Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature in tank";
     parameter Real 'openTank.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'openTank.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
     parameter Real 'openTank.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
@@ -172,7 +172,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'volumeFlow.flowPort_b.H_flow'(unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'volumeFlow.useVolumeFlowInput' = true "Enable / disable volume flow input" annotation(Evaluate = true);
     parameter Real 'volumeFlow.constantVolumeFlow'(start = 1.0, unit = "m3/s", quantity = "VolumeFlowRate") = 1.0 "Volume flow rate";
-    Real 'volumeFlow.volumeFlow'(unit = "m3/s") = 'volumeFlow.internalVolumeFlow';
+    Real 'volumeFlow.volumeFlow'(unit = "m3/s");
     Real 'volumeFlow.internalVolumeFlow'(unit = "m3/s", quantity = "VolumeFlowRate");
     parameter Integer 'combiTimeTable.nout'(min = 1) = 1 "Number of outputs";
     Real 'combiTimeTable.y[1]' "Connector of Real output signals";
@@ -218,6 +218,10 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     Real 'combiTimeTable.timeScaled' "Scaled time";
     parameter Boolean 'combiTimeTable.isCsvExt' = false;
   equation
+    'V_flow' = 'volumeFlow.V_flow';
+    'level' = 'openTank.level';
+    'T' = 'openTank.TTank';
+    'volumeFlow.volumeFlow' = 'volumeFlow.internalVolumeFlow';
     'combiTimeTable.y[1]' = 'volumeFlow.volumeFlow';
     'openTank.flowPort.h' = 'volumeFlow.flowPort_b.h';
     assert(abs('openTank.flowPort.medium.rho' - 'volumeFlow.flowPort_b.medium.rho') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);

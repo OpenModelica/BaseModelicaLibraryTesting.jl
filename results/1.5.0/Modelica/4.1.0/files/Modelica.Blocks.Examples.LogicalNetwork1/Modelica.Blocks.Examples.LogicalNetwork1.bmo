@@ -1,5 +1,11 @@
 //! base 0.1.0
 package 'LogicalNetwork1'
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMin';
+  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
+
   function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
     input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
     input Real 'timeIn';
@@ -12,12 +18,6 @@ package 'LogicalNetwork1'
     output Real 'timeMax';
   external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    output Real 'timeMin';
-  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
 
   function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer' "Interpolate 1-dim. table where first column is time (but do not provide a derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
@@ -41,9 +41,9 @@ package 'LogicalNetwork1'
     function constructor "Initialize 1-dim. table where first column is time"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
+      input Real 'table'[:, :];
       input Real 'startTime';
-      input Integer[:] 'columns';
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation';
       input Real 'shiftTime' = 0.0;

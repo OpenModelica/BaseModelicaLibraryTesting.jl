@@ -122,14 +122,14 @@ package 'ThyristorBridge2mPulse_RLV_Characteristic'
     Real 'rectifier.powerAC[1]'(unit = "W", quantity = "Power") "AC power";
     Real 'rectifier.powerAC[2]'(unit = "W", quantity = "Power") "AC power";
     Real 'rectifier.powerAC[3]'(unit = "W", quantity = "Power") "AC power";
-    Real 'rectifier.powerTotalAC'(unit = "W", quantity = "Power") = 'rectifier.powerAC[1]' + 'rectifier.powerAC[2]' + 'rectifier.powerAC[3]' "AC total power";
+    Real 'rectifier.powerTotalAC'(unit = "W", quantity = "Power") "AC total power";
     Real 'rectifier.dc_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'rectifier.dc_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'rectifier.dc_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'rectifier.dc_n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'rectifier.vDC'(unit = "V", quantity = "ElectricPotential") = 'rectifier.dc_p.v' - 'rectifier.dc_n.v' "DC voltage";
-    Real 'rectifier.iDC'(unit = "A", quantity = "ElectricCurrent") = 'rectifier.dc_p.i' "DC current";
-    Real 'rectifier.powerDC'(unit = "W", quantity = "Power") = 'rectifier.vDC' * 'rectifier.iDC' "DC power";
+    Real 'rectifier.vDC'(unit = "V", quantity = "ElectricPotential") "DC voltage";
+    Real 'rectifier.iDC'(unit = "A", quantity = "ElectricCurrent") "DC current";
+    Real 'rectifier.powerDC'(unit = "W", quantity = "Power") "DC power";
     parameter Boolean 'rectifier.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'rectifier.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
     Real 'rectifier.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
@@ -762,6 +762,10 @@ package 'ThyristorBridge2mPulse_RLV_Characteristic'
     pre('pulse2m.twomPulse.timerNegative[2].entryTime') = 0.0;
     pre('pulse2m.twomPulse.timerNegative[3].entryTime') = 0.0;
   equation
+    'rectifier.powerTotalAC' = 'rectifier.powerAC[1]' + 'rectifier.powerAC[2]' + 'rectifier.powerAC[3]';
+    'rectifier.vDC' = 'rectifier.dc_p.v' - 'rectifier.dc_n.v';
+    'rectifier.iDC' = 'rectifier.dc_p.i';
+    'rectifier.powerDC' = 'rectifier.vDC' * 'rectifier.iDC';
     'sineVoltage.sineVoltage[1].p.v' = 'sineVoltage.plug_p.pin[1].v';
     'sineVoltage.sineVoltage[2].p.v' = 'sineVoltage.plug_p.pin[2].v';
     'sineVoltage.sineVoltage[3].p.v' = 'sineVoltage.plug_p.pin[3].v';

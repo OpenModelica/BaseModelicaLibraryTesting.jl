@@ -1,24 +1,5 @@
 //! base 0.1.0
 package 'GenerationOfFMUs'
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1' "Return state (with one derivative)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    output Real 's';
-  algorithm
-    's' := 'u'[1];
-    annotation(derivative(order = 1, noDerivative = 'u') = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1', InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1';
-
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1' "Return 1st derivative (der of state1)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    output Real 'sder1';
-  algorithm
-    'sder1' := 'u'[2];
-    annotation(InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1';
-
   model 'GenerationOfFMUs' "Example to demonstrate variants to generate FMUs (Functional Mock-up Units)"
     parameter Real 'sine12.amplitude' = 1.0 "Amplitude of sine wave";
     parameter Real 'sine12.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 2.0 "Frequency of sine wave";
@@ -622,7 +603,7 @@ package 'GenerationOfFMUs'
     'inverseCapacitor1.voltageToCurrent.y1' = 0.0;
     'inverseCapacitor1.voltageToCurrent.y2' = 0.0;
     'inverseCapacitor1.voltageToCurrent.u2' = 0.0;
-    'inverseCapacitor1.voltageToCurrent.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'inverseCapacitor1.voltageToCurrent.p', 'inverseCapacitor1.voltageToCurrent.u1'}, time);
+    'inverseCapacitor1.voltageToCurrent.u' = 'inverseCapacitor1.voltageToCurrent.p';
     'inverseCapacitor1.ground.p.v' = 0.0;
     'resistor2.voltageToCurrent1.v' = 'resistor2.voltageToCurrent1.pin_p.v' - 'resistor2.voltageToCurrent1.pin_n.v';
     'resistor2.voltageToCurrent1.i' = 'resistor2.voltageToCurrent1.pin_p.i';
@@ -722,7 +703,7 @@ package 'GenerationOfFMUs'
     'inverseInductor3.currentToVoltage.y1' = 0.0;
     'inverseInductor3.currentToVoltage.y2' = 0.0;
     'inverseInductor3.currentToVoltage.u2' = 0.0;
-    'inverseInductor3.currentToVoltage.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'inverseInductor3.currentToVoltage.f', 'inverseInductor3.currentToVoltage.u1'}, time);
+    'inverseInductor3.currentToVoltage.u' = 'inverseInductor3.currentToVoltage.f';
     'inverseInductor3.ground.p.v' = 0.0;
     'voltage4.v' = 'voltage4.p.v' - 'voltage4.n.v';
     0.0 = 'voltage4.p.i' + 'voltage4.n.i';

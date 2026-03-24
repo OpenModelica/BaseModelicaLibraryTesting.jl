@@ -1,34 +1,17 @@
 //! base 0.1.0
 package 'Rectifier'
   function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
-    input Real[:] 'x';
-    output Real[2] 'y';
+    input Real 'x'[:];
+    output Real 'y'[2];
     output Real 'y0';
     Integer 'm' = size('x', 1);
-    Real['m'] 'phi'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
-    Real[2, 'm'] 'TransformationMatrix' = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
+    Real 'phi'['m'](displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
+    Real 'TransformationMatrix'[2, 'm'] = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
   algorithm
     'y' := 'TransformationMatrix' * 'x';
     'y0' := 1.0 / 'm' * sum('x');
     annotation(Inline = true);
   end 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor';
-
-  function 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation' "Orientations of the resulting fundamental wave field phasors"
-    input Integer 'm';
-    output Real['m'] 'orientation'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm'));
-  algorithm
-    if mod('m', 2) == 0 then
-      if 'm' == 2 then
-        'orientation'[1] := 0.0;
-        'orientation'[2] := 1.5707963267948966;
-      elseif true then
-        'orientation'[1:integer('m' / 2.0)] := 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'(integer('m' / 2.0));
-        'orientation'[integer('m' / 2.0) + 1:'m'] := 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'(integer('m' / 2.0)) - fill(3.141592653589793 / 'm', integer('m' / 2.0));
-      end if;
-    elseif true then
-      'orientation' := {('k' - 1) * 2 * 3.141592653589793 / 'm' for 'k' in 1:'m'};
-    end if;
-  end 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation';
 
   model 'Rectifier' "Test example with polyphase components"
     parameter Integer 'm' = 3 "Number of phases" annotation(Evaluate = true);

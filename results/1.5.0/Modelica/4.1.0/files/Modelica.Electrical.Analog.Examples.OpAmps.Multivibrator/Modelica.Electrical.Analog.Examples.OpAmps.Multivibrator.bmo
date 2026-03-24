@@ -18,12 +18,12 @@ package 'Multivibrator'
     parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'opAmp.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'LowerLimit' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
     Real 'opAmp.vps'(unit = "V", quantity = "ElectricPotential") "Positive supply voltage";
     Real 'opAmp.vns'(unit = "V", quantity = "ElectricPotential") "Negative supply voltage";
-    Real 'opAmp.v_in'(unit = "V", quantity = "ElectricPotential") = 'opAmp.in_p.v' - 'opAmp.in_n.v' "Input voltage difference";
-    Real 'opAmp.v_out'(unit = "V", quantity = "ElectricPotential") = 'opAmp.out.v' "Output voltage to ground";
-    Real 'opAmp.p_in'(unit = "W", quantity = "Power") = 'opAmp.in_p.v' * 'opAmp.in_p.i' + 'opAmp.in_n.v' * 'opAmp.in_n.i' "Input power";
-    Real 'opAmp.p_out'(unit = "W", quantity = "Power") = 'opAmp.out.v' * 'opAmp.out.i' "Output power";
-    Real 'opAmp.p_s'(unit = "W", quantity = "Power") = -('opAmp.p_in' + 'opAmp.p_out') "Supply power";
-    Real 'opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") = 'opAmp.p_s' / ('opAmp.vps' - 'opAmp.vns') "Supply current";
+    Real 'opAmp.v_in'(unit = "V", quantity = "ElectricPotential") "Input voltage difference";
+    Real 'opAmp.v_out'(unit = "V", quantity = "ElectricPotential") "Output voltage to ground";
+    Real 'opAmp.p_in'(unit = "W", quantity = "Power") "Input power";
+    Real 'opAmp.p_out'(unit = "W", quantity = "Power") "Output power";
+    Real 'opAmp.p_s'(unit = "W", quantity = "Power") "Supply power";
+    Real 'opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") "Supply current";
     Real 'opAmp.in_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'opAmp.in_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'opAmp.in_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -88,6 +88,12 @@ package 'Multivibrator'
     Real 'c.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Real 'c.C'(start = 1.0, min = 0.0, unit = "F", quantity = "Capacitance") = 4.551196133134187e-5 "Capacitance";
   equation
+    'opAmp.v_in' = 'opAmp.in_p.v' - 'opAmp.in_n.v';
+    'opAmp.v_out' = 'opAmp.out.v';
+    'opAmp.p_in' = 'opAmp.in_p.v' * 'opAmp.in_p.i' + 'opAmp.in_n.v' * 'opAmp.in_n.i';
+    'opAmp.p_out' = 'opAmp.out.v' * 'opAmp.out.i';
+    'opAmp.p_s' = -('opAmp.p_in' + 'opAmp.p_out');
+    'opAmp.i_s' = 'opAmp.p_s' / ('opAmp.vps' - 'opAmp.vns');
     'ground.p.v' = 'c.n.v';
     'ground.p.v' = 'vOut.n.v';
     'ground.p.v' = 'r1.n.v';

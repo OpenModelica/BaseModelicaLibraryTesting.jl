@@ -1,324 +1,5 @@
 //! base 0.1.0
 package 'HeatingSystem'
-  function '$OMC$PositiveMax'
-    input Real 'flowValue';
-    input Real 'eps';
-    output Real 'positiveMax';
-  algorithm
-    'positiveMax' := max('flowValue', 'eps');
-  end '$OMC$PositiveMax';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.Medium.density' "Return the density from the thermodynamic state"
-    input 'heater.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154260364919865e-10 - ('state'.'T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.Medium.density';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'heater.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'heater.Medium.ThermodynamicState'('p', ('h' - 104929.29464256502 - ('p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15);
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.density' "Return the density from the thermodynamic state"
-    input 'heater.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154260364919865e-10 - ('state'.'T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.density';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.dynamicViscosity' "Dynamic viscosity of water"
-    input 'heater.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-  algorithm
-    'eta' := 8.9e-4;
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.dynamicViscosity';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.pressure' "Return the pressure from the thermodynamic state"
-    input 'heater.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  algorithm
-    'p' := 'state'.'p';
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.pressure';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / log10('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric' "Calculate mass flow rate as function of pressure drop due to friction"
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    output Real 'dm_flow_ddp_fric';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'lambda2';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'dRe_ddp';
-    Real 'aux1';
-    Real 'aux2';
-  algorithm
-    if 'dp_fric' >= 0.0 then
-      'rho' := 'rho_a';
-      'mu' := 'mu_a';
-    elseif true then
-      'rho' := 'rho_b';
-      'mu' := 'mu_b';
-    end if;
-
-    'lambda2' := abs('dp_fric') * 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' * 'mu') "Known as lambda2=f(dp)";
-    'aux1' := 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' ^ 2.0);
-    'Re' := 'lambda2' / 64.0 "Hagen-Poiseuille";
-    'dRe_ddp' := 'aux1' / 64.0 "Hagen-Poiseuille";
-
-    if 'Re' > 'Re1' then
-      'Re' := -2.0 * sqrt('lambda2') * log10(2.51 / sqrt('lambda2') + 0.27 * 'Delta') "Colebrook-White";
-      'aux2' := sqrt('aux1' * abs('dp_fric'));
-      'dRe_ddp' := 0.43429448190325176 * (5.02 / (2.0 * abs('dp_fric') * (2.51 / 'aux2' + 0.27 * 'Delta')) - 2.0 * log(2.51 / 'aux2' + 0.27 * 'Delta') * 'aux1' / (2.0 * 'aux2'));
-
-      if 'Re' < 'Re2' then
-        ('Re', 'dRe_ddp') := 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative'('lambda2', 'Re1', 'Re2', 'Delta', 'dp_fric');
-      end if;
-    end if;
-
-    'm_flow' := 'crossArea' / 'diameter' * 'mu' * (if 'dp_fric' >= 0.0 then 'Re' else -'Re');
-    'dm_flow_ddp_fric' := 'crossArea' / 'diameter' * 'mu' * 'dRe_ddp';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative' "Interpolation in log-log space using a cubic Hermite polynomial, where x=log10(lambda2), y=log10(Re)"
-    input Real 'lambda2';
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    output Real 'dRe_ddp';
-    Real 'x1' = log10(64.0 * 'Re1');
-    Real 'y1' = log10('Re1');
-    Real 'y1d' = 1.0;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x' = log10('lambda2');
-    Real 'y';
-    Real 'dy_dx';
-    Real 'aux3' = log10('aux2');
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'x2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'y2' = log10('aux5');
-    Real 'y2d' = 0.5 + 1.0900791495771618 / ('aux5' * 'aux4');
-  algorithm
-    ('y', 'dy_dx') := 'Modelica.Fluid.Utilities.cubicHermite_withDerivative'('x', 'x1', 'x2', 'y1', 'y2', 'y1d', 'y2d');
-    'Re' := 10.0 ^ 'y';
-    'dRe_ddp' := 'Re' / abs('dp_fric') * 'dy_dx';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2' "Cubic Hermite spline interpolation in transition region"
-    input Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta';
-    output Real 'lambda2';
-    Real 'x1' = log10('Re1');
-    Real 'y1' = log10(64.0 * 'Re1');
-    Real 'yd1' = 1.0;
-    Real 'aux1' = 1.1217826467560994;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x2' = log10('Re2');
-    Real 'dx' = log10('Re' / 'Re1');
-    Real 'aux3' = log10('aux2');
-    Real 'diff_x' = 'x2' - 'x1';
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'yd2' = 2.0 + 4.0 * 'aux1' / ('aux2' * 'aux3' * 'Re2' ^ 0.9);
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'y2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'm' = ('y2' - 'y1') / 'diff_x';
-    Real 'c2' = (3.0 * 'm' - 2.0 * 'yd1' - 'yd2') / 'diff_x';
-    Real 'c3' = ('yd1' + 'yd2' - 2.0 * 'm') / ('diff_x' * 'diff_x');
-  algorithm
-    'lambda2' := 64.0 * 'Re1' * ('Re' / 'Re1') ^ ('yd1' + 'dx' * ('c2' + 'dx' * 'c3'));
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.heater.heatTransfer.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'heater.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.HeatingSystem.heater.heatTransfer.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'pipe.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'pipe.Medium.ThermodynamicState'('p', ('h' - 104929.29464256502 - ('p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15);
-  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.density' "Return the density from the thermodynamic state"
-    input 'pipe.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154260364919865e-10 - ('state'.'T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
-  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.density';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.dynamicViscosity' "Dynamic viscosity of water"
-    input 'pipe.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-  algorithm
-    'eta' := 8.9e-4;
-  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.dynamicViscosity';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.pressure' "Return the pressure from the thermodynamic state"
-    input 'pipe.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  algorithm
-    'p' := 'state'.'p';
-  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.pressure';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
   function 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
     input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -338,210 +19,15 @@ package 'HeatingSystem'
     Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
     Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
   algorithm
     'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
     'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
     'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / log10('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
     'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric' "Calculate mass flow rate as function of pressure drop due to friction"
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    output Real 'dm_flow_ddp_fric';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'lambda2';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'dRe_ddp';
-    Real 'aux1';
-    Real 'aux2';
-  algorithm
-    if 'dp_fric' >= 0.0 then
-      'rho' := 'rho_a';
-      'mu' := 'mu_a';
-    elseif true then
-      'rho' := 'rho_b';
-      'mu' := 'mu_b';
-    end if;
-
-    'lambda2' := abs('dp_fric') * 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' * 'mu') "Known as lambda2=f(dp)";
-    'aux1' := 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' ^ 2.0);
-    'Re' := 'lambda2' / 64.0 "Hagen-Poiseuille";
-    'dRe_ddp' := 'aux1' / 64.0 "Hagen-Poiseuille";
-
-    if 'Re' > 'Re1' then
-      'Re' := -2.0 * sqrt('lambda2') * log10(2.51 / sqrt('lambda2') + 0.27 * 'Delta') "Colebrook-White";
-      'aux2' := sqrt('aux1' * abs('dp_fric'));
-      'dRe_ddp' := 0.43429448190325176 * (5.02 / (2.0 * abs('dp_fric') * (2.51 / 'aux2' + 0.27 * 'Delta')) - 2.0 * log(2.51 / 'aux2' + 0.27 * 'Delta') * 'aux1' / (2.0 * 'aux2'));
-
-      if 'Re' < 'Re2' then
-        ('Re', 'dRe_ddp') := 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative'('lambda2', 'Re1', 'Re2', 'Delta', 'dp_fric');
-      end if;
-    end if;
-
-    'm_flow' := 'crossArea' / 'diameter' * 'mu' * (if 'dp_fric' >= 0.0 then 'Re' else -'Re');
-    'dm_flow_ddp_fric' := 'crossArea' / 'diameter' * 'mu' * 'dRe_ddp';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative' "Interpolation in log-log space using a cubic Hermite polynomial, where x=log10(lambda2), y=log10(Re)"
-    input Real 'lambda2';
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    output Real 'dRe_ddp';
-    Real 'x1' = log10(64.0 * 'Re1');
-    Real 'y1' = log10('Re1');
-    Real 'y1d' = 1.0;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x' = log10('lambda2');
-    Real 'y';
-    Real 'dy_dx';
-    Real 'aux3' = log10('aux2');
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'x2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'y2' = log10('aux5');
-    Real 'y2d' = 0.5 + 1.0900791495771618 / ('aux5' * 'aux4');
-  algorithm
-    ('y', 'dy_dx') := 'Modelica.Fluid.Utilities.cubicHermite_withDerivative'('x', 'x1', 'x2', 'y1', 'y2', 'y1d', 'y2d');
-    'Re' := 10.0 ^ 'y';
-    'dRe_ddp' := 'Re' / abs('dp_fric') * 'dy_dx';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2' "Cubic Hermite spline interpolation in transition region"
-    input Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta';
-    output Real 'lambda2';
-    Real 'x1' = log10('Re1');
-    Real 'y1' = log10(64.0 * 'Re1');
-    Real 'yd1' = 1.0;
-    Real 'aux1' = 1.1217826467560994;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x2' = log10('Re2');
-    Real 'dx' = log10('Re' / 'Re1');
-    Real 'aux3' = log10('aux2');
-    Real 'diff_x' = 'x2' - 'x1';
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'yd2' = 2.0 + 4.0 * 'aux1' / ('aux2' * 'aux3' * 'Re2' ^ 0.9);
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'y2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'm' = ('y2' - 'y1') / 'diff_x';
-    Real 'c2' = (3.0 * 'm' - 2.0 * 'yd1' - 'yd2') / 'diff_x';
-    Real 'c3' = ('yd1' + 'yd2' - 2.0 * 'm') / ('diff_x' * 'diff_x');
-  algorithm
-    'lambda2' := 64.0 * 'Re1' * ('Re' / 'Re1') ^ ('yd1' + 'dx' * ('c2' + 'dx' * 'c3'));
-  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.heatTransfer.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'pipe.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.heatTransfer.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pump.efficiencyCharacteristic'
-    input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
-    input Real 'eta_nominal' = 0.8;
-    output Real 'eta';
-  algorithm
-    'eta' := 'eta_nominal';
-  end 'Modelica.Fluid.Examples.HeatingSystem.pump.efficiencyCharacteristic';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pump.flowCharacteristic'
-    input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
-    input Real[3] 'V_flow_nominal'(unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1.0016729001588132e-5, 1.5025093502382197e-5};
-    input Real[3] 'head_nominal'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {4.085688385570253, 2.0428441927851266, 0.0};
-    output Real 'head'(unit = "m", quantity = "Length");
-    Real[3] 'V_flow_nominal2' = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
-    Real 'V_flow_min'(unit = "m3/s", quantity = "VolumeFlowRate") = min('V_flow_nominal');
-    Real 'V_flow_max'(unit = "m3/s", quantity = "VolumeFlowRate") = max('V_flow_nominal');
-    Real[3] 'c' = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
-  algorithm
-    assert(max({'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[1], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[2], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[3]}) <= (-2.2250738585072014e-308), "Wrong pump curve -- head_nominal must be monotonically decreasing with increasing V_flow_nominal", AssertionLevel.warning);
-
-    if 'V_flow' < 'V_flow_min' then
-      'head' := max('head_nominal') + ('V_flow' - 'V_flow_min') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_min');
-    elseif 'V_flow' > 'V_flow_max' then
-      'head' := min('head_nominal') + ('V_flow' - 'V_flow_max') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_max');
-    elseif true then
-      'head' := 'c'[1] + 'V_flow' * ('c'[2] + 'V_flow' * 'c'[3]);
-    end if;
-  end 'Modelica.Fluid.Examples.HeatingSystem.pump.flowCharacteristic';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pump.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'pump.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'pump.Medium.ThermodynamicState'('p', ('h' - 104929.29464256502 - ('p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15);
-  end 'Modelica.Fluid.Examples.HeatingSystem.pump.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.pump.heatTransfer.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'pump.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.HeatingSystem.pump.heatTransfer.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.density' "Return the density from the thermodynamic state"
-    input 'radiator.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154260364919865e-10 - ('state'.'T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.density';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'radiator.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'radiator.Medium.ThermodynamicState'('p', ('h' - 104929.29464256502 - ('p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15);
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.density' "Return the density from the thermodynamic state"
-    input 'radiator.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154260364919865e-10 - ('state'.'T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.density';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.dynamicViscosity' "Dynamic viscosity of water"
-    input 'radiator.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-  algorithm
-    'eta' := 8.9e-4;
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.dynamicViscosity';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.pressure' "Return the pressure from the thermodynamic state"
-    input 'radiator.flowModel.Medium.ThermodynamicState' 'state';
-    output Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-  algorithm
-    'p' := 'state'.'p';
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.pressure';
 
   function 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -570,7 +56,7 @@ package 'HeatingSystem'
     Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
     Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
     Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
     Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
   algorithm
     'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
@@ -580,462 +66,70 @@ package 'HeatingSystem'
       'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
       'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif true then
+    else
       ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      elseif true then
+      else
         'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+  function 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
     input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
     input Real 'length'(unit = "m", quantity = "Length");
     input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
     input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
     input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
     input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * exp(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / log10('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.Internal.m_flow_of_dp_fric' "Calculate mass flow rate as function of pressure drop due to friction"
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
     output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    output Real 'dm_flow_ddp_fric';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'lambda2';
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
     Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'dRe_ddp';
-    Real 'aux1';
-    Real 'aux2';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
   algorithm
-    if 'dp_fric' >= 0.0 then
-      'rho' := 'rho_a';
-      'mu' := 'mu_a';
-    elseif true then
-      'rho' := 'rho_b';
-      'mu' := 'mu_b';
-    end if;
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
 
-    'lambda2' := abs('dp_fric') * 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' * 'mu') "Known as lambda2=f(dp)";
-    'aux1' := 2.0 * 'diameter' ^ 3.0 * 'rho' / ('length' * 'mu' ^ 2.0);
-    'Re' := 'lambda2' / 64.0 "Hagen-Poiseuille";
-    'dRe_ddp' := 'aux1' / 64.0 "Hagen-Poiseuille";
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
-    if 'Re' > 'Re1' then
-      'Re' := -2.0 * sqrt('lambda2') * log10(2.51 / sqrt('lambda2') + 0.27 * 'Delta') "Colebrook-White";
-      'aux2' := sqrt('aux1' * abs('dp_fric'));
-      'dRe_ddp' := 0.43429448190325176 * (5.02 / (2.0 * abs('dp_fric') * (2.51 / 'aux2' + 0.27 * 'Delta')) - 2.0 * log(2.51 / 'aux2' + 0.27 * 'Delta') * 'aux1' / (2.0 * 'aux2'));
-
-      if 'Re' < 'Re2' then
-        ('Re', 'dRe_ddp') := 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative'('lambda2', 'Re1', 'Re2', 'Delta', 'dp_fric');
-      end if;
-    end if;
-
-    'm_flow' := 'crossArea' / 'diameter' * 'mu' * (if 'dp_fric' >= 0.0 then 'Re' else -'Re');
-    'dm_flow_ddp_fric' := 'crossArea' / 'diameter' * 'mu' * 'dRe_ddp';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.Internal.m_flow_of_dp_fric';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative' "Interpolation in log-log space using a cubic Hermite polynomial, where x=log10(lambda2), y=log10(Re)"
-    input Real 'lambda2';
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta'(min = 0.0);
-    input Real 'dp_fric'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    output Real 'dRe_ddp';
-    Real 'x1' = log10(64.0 * 'Re1');
-    Real 'y1' = log10('Re1');
-    Real 'y1d' = 1.0;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x' = log10('lambda2');
-    Real 'y';
-    Real 'dy_dx';
-    Real 'aux3' = log10('aux2');
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'x2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'y2' = log10('aux5');
-    Real 'y2d' = 0.5 + 1.0900791495771618 / ('aux5' * 'aux4');
-  algorithm
-    ('y', 'dy_dx') := 'Modelica.Fluid.Utilities.cubicHermite_withDerivative'('x', 'x1', 'x2', 'y1', 'y2', 'y1d', 'y2d');
-    'Re' := 10.0 ^ 'y';
-    'dRe_ddp' := 'Re' / abs('dp_fric') * 'dy_dx';
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.Internal.m_flow_of_dp_fric.interpolateInRegion2_withDerivative';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2' "Cubic Hermite spline interpolation in transition region"
-    input Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re1'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Re2'(unit = "1", quantity = "ReynoldsNumber");
-    input Real 'Delta';
-    output Real 'lambda2';
-    Real 'x1' = log10('Re1');
-    Real 'y1' = log10(64.0 * 'Re1');
-    Real 'yd1' = 1.0;
-    Real 'aux1' = 1.1217826467560994;
-    Real 'aux2' = 'Delta' / 3.7 + 5.74 / 'Re2' ^ 0.9;
-    Real 'x2' = log10('Re2');
-    Real 'dx' = log10('Re' / 'Re1');
-    Real 'aux3' = log10('aux2');
-    Real 'diff_x' = 'x2' - 'x1';
-    Real 'L2' = 0.25 * ('Re2' / 'aux3') ^ 2.0;
-    Real 'yd2' = 2.0 + 4.0 * 'aux1' / ('aux2' * 'aux3' * 'Re2' ^ 0.9);
-    Real 'aux4' = 2.51 / sqrt('L2') + 0.27 * 'Delta';
-    Real 'y2' = log10('L2');
-    Real 'aux5' = -2.0 * sqrt('L2') * log10('aux4');
-    Real 'm' = ('y2' - 'y1') / 'diff_x';
-    Real 'c2' = (3.0 * 'm' - 2.0 * 'yd1' - 'yd2') / 'diff_x';
-    Real 'c3' = ('yd1' + 'yd2' - 2.0 * 'm') / ('diff_x' * 'diff_x');
-  algorithm
-    'lambda2' := 64.0 * 'Re1' * ('Re' / 'Re1') ^ ('yd1' + 'dx' * ('c2' + 'dx' * 'c3'));
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.heatTransfer.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'radiator.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.heatTransfer.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_forward.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'sensor_T_forward.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'sensor_T_forward.Medium.ThermodynamicState'('p', ('h' - 104929.29464256502 - ('p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15);
-  end 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_forward.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_forward.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'sensor_T_forward.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_forward.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_return.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'sensor_T_return.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'sensor_T_return.Medium.ThermodynamicState'('p', ('h' - 104929.29464256502 - ('p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15);
-  end 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_return.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_return.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'sensor_T_return.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_return.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.tank.Medium.density' "Return the density from the thermodynamic state"
-    input 'tank.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154260364919865e-10 - ('state'.'T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
-  end 'Modelica.Fluid.Examples.HeatingSystem.tank.Medium.density';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.tank.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'tank.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'tank.Medium.ThermodynamicState'('p', ('h' - 104929.29464256502 - ('p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15);
-  end 'Modelica.Fluid.Examples.HeatingSystem.tank.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.tank.heatTransfer.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'tank.heatTransfer.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.HeatingSystem.tank.heatTransfer.Medium.temperature';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.valve.valveCharacteristic'
-    input Real 'pos'(max = 1.0, min = 0.0);
-    output Real 'rc';
-  algorithm
-    'rc' := 'pos';
-  end 'Modelica.Fluid.Examples.HeatingSystem.valve.valveCharacteristic';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.density' "Return the density from the thermodynamic state"
-    input 'valve.Medium.ThermodynamicState' 'state';
-    output Real 'd'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-  algorithm
-    'd' := (1.0 + ('state'.'p' - 101325.0) * 4.5154260364919865e-10 - ('state'.'T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
-  end 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.density';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.setState_phX' "Set the thermodynamic state record from p and h (X not needed)"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'h'(nominal = 1e6, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy");
-    input Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {1.0};
-    output 'valve.Medium.ThermodynamicState' 'state';
-  algorithm
-    'state' := 'valve.Medium.ThermodynamicState'('p', ('h' - 104929.29464256502 - ('p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15);
-  end 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.setState_phX';
-
-  function 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.temperature' "Return the temperature from the thermodynamic state"
-    input 'valve.Medium.ThermodynamicState' 'state';
-    output Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  algorithm
-    'T' := 'state'.'T';
-  end 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.temperature';
-
-  function 'Modelica.Fluid.Utilities.cubicHermite_withDerivative' "Evaluate a cubic Hermite spline, return value and derivative"
-    input Real 'x';
-    input Real 'x1';
-    input Real 'x2';
-    input Real 'y1';
-    input Real 'y2';
-    input Real 'y1d';
-    input Real 'y2d';
-    output Real 'y';
-    output Real 'dy_dx';
-    Real 'h';
-    Real 't';
-    Real 'h00';
-    Real 'h10';
-    Real 'h01';
-    Real 'h11';
-    Real 'h00d';
-    Real 'h10d';
-    Real 'h01d';
-    Real 'h11d';
-    Real 'aux3';
-    Real 'aux2';
-  algorithm
-    'h' := 'x2' - 'x1';
-
-    if abs('h') > 0.0 then
-      't' := ('x' - 'x1') / 'h';
-      'aux3' := 't' ^ 3.0;
-      'aux2' := 't' ^ 2.0;
-      'h00' := 2.0 * 'aux3' - 3.0 * 'aux2' + 1.0;
-      'h10' := 'aux3' - 2.0 * 'aux2' + 't';
-      'h01' := 3.0 * 'aux2' - 2.0 * 'aux3';
-      'h11' := 'aux3' - 'aux2';
-      'h00d' := 6.0 * ('aux2' - 't');
-      'h10d' := 3.0 * 'aux2' - 4.0 * 't' + 1.0;
-      'h01d' := 6.0 * ('t' - 'aux2');
-      'h11d' := 3.0 * 'aux2' - 2.0 * 't';
-      'y' := 'y1' * 'h00' + 'h' * 'y1d' * 'h10' + 'y2' * 'h01' + 'h' * 'y2d' * 'h11';
-      'dy_dx' := 'y1' * 'h00d' / 'h' + 'y1d' * 'h10d' + 'y2' * 'h01d' / 'h' + 'y2d' * 'h11d';
-    elseif true then
-      'y' := ('y1' + 'y2') / 2.0;
-      'dy_dx' := sign('y2' - 'y1') * 1e60;
-    end if;
-    annotation(smoothOrder = 3);
-  end 'Modelica.Fluid.Utilities.cubicHermite_withDerivative';
-
-  function 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero' "Evaluate polynomial of order 3 that passes the origin with a predefined derivative"
-    input Real 'x';
-    input Real 'x1';
-    input Real 'y1';
-    input Real 'y1d';
-    input Real 'y0d';
-    output Real 'y';
-    Real 'a1';
-    Real 'a2';
-    Real 'a3';
-    Real 'xx';
-  algorithm
-    'a1' := 'x1' * 'y0d';
-    'a2' := 3.0 * 'y1' - 'x1' * 'y1d' - 2.0 * 'a1';
-    'a3' := 'y1' - 'a2' - 'a1';
-    'xx' := 'x' / 'x1';
-    'y' := 'xx' * ('a1' + 'xx' * ('a2' + 'xx' * 'a3'));
-    annotation(smoothOrder = 3);
-  end 'Modelica.Fluid.Utilities.evaluatePoly3_derivativeAtZero';
-
-  function 'Modelica.Fluid.Utilities.regFun3' "Co-monotonic and C1 smooth regularization function"
-    input Real 'x';
-    input Real 'x0';
-    input Real 'x1';
-    input Real 'y0';
-    input Real 'y1';
-    input Real 'y0d';
-    input Real 'y1d';
-    output Real 'y';
-    output Real 'c';
-    Real 'h0';
-    Real 'Delta0';
-    Real 'xstar';
-    Real 'mu';
-    Real 'eta';
-    Real 'omega';
-    Real 'rho';
-    Real 'theta0';
-    Real 'mu_tilde';
-    Real 'eta_tilde';
-    Real 'xi1';
-    Real 'xi2';
-    Real 'a1';
-    Real 'a2';
-    Real 'const12';
-    Real 'const3';
-    Real 'aux01';
-    Real 'aux02';
-    Boolean 'useSingleCubicPolynomial' = false;
-  algorithm
-    assert('x0' < 'x1', "regFun3(): Data points not sorted appropriately (x0 = " + String('x0') + " > x1 = " + String('x1') + "). Please flip arguments.", AssertionLevel.error);
-
-    if 'y0d' * 'y1d' >= 0.0 then
-    elseif true then
-      assert(abs('y0d') < 2.220446049250313e-16 or abs('y1d') < 2.220446049250313e-16, "regFun3(): Derivatives at data points do not allow co-monotone interpolation, as both are non-zero, of opposite sign and have an absolute value larger than machine eps (y0d = " + String('y0d') + ", y1d = " + String('y1d') + "). Please correct arguments.", AssertionLevel.error);
-    end if;
-
-    'h0' := 'x1' - 'x0';
-    'Delta0' := ('y1' - 'y0') / 'h0';
-
-    if abs('Delta0') <= 0.0 then
-      'y' := 'y0' + 'Delta0' * ('x' - 'x0');
-      'c' := 0.0;
-    elseif abs('y1d' + 'y0d' - 2.0 * 'Delta0') < 2.220446049250313e-14 then
-      'y' := 'y0' + ('x' - 'x0') * ('y0d' + ('x' - 'x0') / 'h0' * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d') + ('x' - 'x0') * ('y0d' + 'y1d' - 2.0 * 'Delta0') / 'h0'));
-      'aux01' := ('x0' + 'x1') / 2.0;
-      'c' := 3.0 * ('y0d' + 'y1d' - 2.0 * 'Delta0') * ('aux01' - 'x0') ^ 2.0 / 'h0' ^ 2.0 + 2.0 * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d')) * ('aux01' - 'x0') / 'h0' + 'y0d';
-    elseif true then
-      'xstar' := 0.3333333333333333 * (6.0 * 'x0' * 'Delta0' - (3.0 * 'x0' * 'y0d' + 3.0 * 'x0' * 'y1d') - 2.0 * 'h0' * 'y0d' - 'h0' * 'y1d' + 3.0 * 'h0' * 'Delta0') / (2.0 * 'Delta0' - ('y0d' + 'y1d'));
-      'mu' := 'xstar' - 'x0';
-      'eta' := 'x1' - 'xstar';
-      'omega' := 3.0 * ('y0d' + 'y1d' - 2.0 * 'Delta0') * ('xstar' - 'x0') ^ 2.0 / 'h0' ^ 2.0 + 2.0 * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d')) * ('xstar' - 'x0') / 'h0' + 'y0d';
-      'aux01' := 0.25 * sign('Delta0') * min(abs('omega'), abs('Delta0')) "Slope c if not using plain cubic S0";
-
-      if abs('y0d' - 'y1d') <= 2.220446049250313e-14 then
-        'aux02' := 'y0d';
-
-        if 'y1' > 'y0' + 'y0d' * ('x1' - 'x0') then
-          'useSingleCubicPolynomial' := true;
-        end if;
-      elseif abs('y1d' + 'y0d' - 2.0 * 'Delta0') < 2.220446049250313e-14 then
-        'aux02' := (6.0 * 'Delta0' * ('y1d' + 'y0d' - 1.5 * 'Delta0') - 'y1d' * 'y0d' - 'y1d' ^ 2.0 - 'y0d' ^ 2.0) * (if 'y1d' + 'y0d' - 2.0 * 'Delta0' >= 0.0 then 1.0 else -1.0) * 1e60;
-      elseif true then
-        'aux02' := (6.0 * 'Delta0' * ('y1d' + 'y0d' - 1.5 * 'Delta0') - 'y1d' * 'y0d' - 'y1d' ^ 2.0 - 'y0d' ^ 2.0) / (3.0 * ('y1d' + 'y0d' - 2.0 * 'Delta0'));
-      end if;
-
-      if ((('mu' > 0.0 and 'eta' < 'h0') and 'Delta0' * 'omega' <= 0.0 or abs('aux01') < abs('aux02') and 'aux02' * 'Delta0' >= 0.0) or abs('aux01') < abs(0.1 * 'Delta0')) and not 'useSingleCubicPolynomial' then
-        'c' := 'aux01';
-
-        if abs('c') < abs('aux02') and 'aux02' * 'Delta0' >= 0.0 then
-          'c' := 'aux02';
-        end if;
-
-        if abs('c') < abs(0.1 * 'Delta0') then
-          'c' := 0.1 * 'Delta0';
-        end if;
-
-        'theta0' := ('y0d' * 'mu' + 'y1d' * 'eta') / 'h0';
-
-        if abs('theta0' - 'c') < 1e-6 * abs('c') then
-          'c' := 0.999999 * 'theta0';
-        end if;
-
-        'rho' := 3.0 * ('Delta0' - 'c') / ('theta0' - 'c');
-        'mu_tilde' := 'rho' * 'mu';
-        'eta_tilde' := 'rho' * 'eta';
-        'xi1' := 'x0' + 'mu_tilde';
-        'xi2' := 'x1' - 'eta_tilde';
-        'a1' := ('y0d' - 'c') / max('mu_tilde' ^ 2.0, 2.220446049250313e-14);
-        'a2' := ('y1d' - 'c') / max('eta_tilde' ^ 2.0, 2.220446049250313e-14);
-        'const12' := 'y0' - 'a1' / 3.0 * ('x0' - 'xi1') ^ 3.0 - 'c' * 'x0';
-        'const3' := 'y1' - 'a2' / 3.0 * ('x1' - 'xi2') ^ 3.0 - 'c' * 'x1';
-
-        if 'x' < 'xi1' then
-          'y' := 'a1' / 3.0 * ('x' - 'xi1') ^ 3.0 + 'c' * 'x' + 'const12';
-        elseif 'x' < 'xi2' then
-          'y' := 'c' * 'x' + 'const12';
-        elseif true then
-          'y' := 'a2' / 3.0 * ('x' - 'xi2') ^ 3.0 + 'c' * 'x' + 'const3';
-        end if;
-      elseif true then
-        'y' := 'y0' + ('x' - 'x0') * ('y0d' + ('x' - 'x0') / 'h0' * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d') + ('x' - 'x0') * ('y0d' + 'y1d' - 2.0 * 'Delta0') / 'h0'));
-        'aux01' := ('x0' + 'x1') / 2.0;
-        'c' := 3.0 * ('y0d' + 'y1d' - 2.0 * 'Delta0') * ('aux01' - 'x0') ^ 2.0 / 'h0' ^ 2.0 + 2.0 * (3.0 * 'Delta0' - (2.0 * 'y0d' + 'y1d')) * ('aux01' - 'x0') / 'h0' + 'y0d';
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
       end if;
     end if;
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Utilities.regFun3';
-
-  function 'Modelica.Fluid.Utilities.regRoot' "Anti-symmetric square root approximation with finite derivative in the origin"
-    input Real 'x';
-    input Real 'delta' = 0.01;
-    output Real 'y';
-  algorithm
-    'y' := 'x' / ('x' * 'x' + 'delta' * 'delta') ^ 0.25;
-    annotation(derivative(order = 1, zeroDerivative = 'delta') = 'Modelica.Fluid.Utilities.regRoot_der');
-  end 'Modelica.Fluid.Utilities.regRoot';
-
-  function 'Modelica.Fluid.Utilities.regRoot_der' "Derivative of regRoot"
-    input Real 'x';
-    input Real 'delta' = 0.01;
-    input Real 'dx';
-    output Real 'dy';
-  algorithm
-    'dy' := 'dx' * 0.5 * ('x' * 'x' + 2.0 * 'delta' * 'delta') / ('x' * 'x' + 'delta' * 'delta') ^ 1.25;
-  end 'Modelica.Fluid.Utilities.regRoot_der';
-
-  function 'Modelica.Fluid.Utilities.regSquare2' "Anti-symmetric approximation of square with discontinuous factor so that the first derivative is non-zero and is continuous"
-    input Real 'x';
-    input Real 'x_small'(min = 0.0) = 0.01;
-    input Real 'k1'(min = 0.0) = 1.0;
-    input Real 'k2'(min = 0.0) = 1.0;
-    input Boolean 'use_yd0' = false;
-    input Real 'yd0'(min = 0.0) = 1.0;
-    output Real 'y';
-  algorithm
-    'y' := smooth(2, if 'x' >= 'x_small' then 'k1' * 'x' ^ 2.0 else if 'x' <= (-'x_small') then -'k2' * 'x' ^ 2.0 else if 'k1' >= 'k2' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('x', 'x_small', 'k1', 'k2', 'use_yd0', 'yd0') else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'x', 'x_small', 'k2', 'k1', 'use_yd0', 'yd0'));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Fluid.Utilities.regSquare2';
-
-  function 'Modelica.Fluid.Utilities.regStep' "Approximation of a general step, such that the characteristic is continuous and differentiable"
-    input Real 'x';
-    input Real 'y1';
-    input Real 'y2';
-    input Real 'x_small'(min = 0.0) = 1e-5;
-    output Real 'y';
-  algorithm
-    'y' := smooth(1, if 'x' > 'x_small' then 'y1' else if 'x' < (-'x_small') then 'y2' else if 'x_small' > 0.0 then 'x' / 'x_small' * (('x' / 'x_small') ^ 2.0 - 3.0) * ('y2' - 'y1') / 4.0 + ('y1' + 'y2') / 2.0 else ('y1' + 'y2') / 2.0);
-  end 'Modelica.Fluid.Utilities.regStep';
+  end 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
   function 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility' "Interpolating with two 3-order polynomials with a prescribed derivative at x=0"
     input Real 'x';
@@ -1060,7 +154,7 @@ package 'HeatingSystem'
 
     if 'x' <= 'x2' then
       'y' := -'k2' * 'x' ^ 2.0;
-    elseif true then
+    else
       'y1' := 'k1' * 'x1' ^ 2.0;
       'y2' := -'k2' * 'x2' ^ 2.0;
       'y1d' := 'k1' * 2.0 * 'x1';
@@ -1068,7 +162,7 @@ package 'HeatingSystem'
 
       if 'use_yd0' then
         'y0d' := 'yd0';
-      elseif true then
+      else
         'w' := 'x2' / 'x1';
         'y0d' := ((3.0 * 'y2' - 'x2' * 'y2d') / 'w' - (3.0 * 'y1' - 'x1' * 'y1d') * 'w') / (2.0 * 'x1' * (1.0 - 'w'));
       end if;
@@ -1086,122 +180,143 @@ package 'HeatingSystem'
     annotation(smoothOrder = 2);
   end 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility';
 
-  function 'Modelica.Math.Matrices.solve' "Solve real system of linear equations A*x=b with a b vector (Gaussian elimination with partial pivoting)"
-    input Real[:, size('A', 1)] 'A';
-    input Real[size('A', 1)] 'b';
-    output Real[size('b', 1)] 'x';
-    Integer 'info';
+  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
   algorithm
-    ('x', 'info') := 'Modelica.Math.Matrices.LAPACK.dgesv_vec'('A', 'b');
-    assert('info' == 0, "Solving a linear system of equations with function\n\"Matrices.solve\" is not possible, because the system has either\nno or infinitely many solutions (A is singular).", AssertionLevel.error);
-  end 'Modelica.Math.Matrices.solve';
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow';
 
-  function 'Modelica.Math.Matrices.LAPACK.dgesv_vec' "Solve real system of linear equations A*x=b with a b vector"
-    input Real[:, size('A', 1)] 'A';
-    input Real[size('A', 1)] 'b';
-    output Real[size('A', 1)] 'x' = 'b';
-    output Integer 'info';
-    Integer 'n' = size('A', 1);
-    Integer 'nrhs' = 1;
-    Real[size('A', 1), size('A', 1)] 'Awork' = 'A';
-    Integer 'lda' = max(1, size('A', 1));
-    Integer 'ldb' = max(1, size('b', 1));
-    Integer[size('A', 1)] 'ipiv';
-  external "FORTRAN 77" dgesv('n', 'nrhs', 'Awork', 'lda', 'ipiv', 'x', 'ldb', 'info') annotation(Library = "lapack", LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Math.Matrices.LAPACK.dgesv_vec';
+  function 'Modelica.Fluid.Examples.HeatingSystem.pump.flowCharacteristic'
+    input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
+    input Real 'V_flow_nominal'[3](unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1.0016729001588132e-5, 1.5025093502382197e-5};
+    input Real 'head_nominal'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {4.085688385570253, 2.0428441927851266, 0.0};
+    output Real 'head'(unit = "m", quantity = "Length");
+    Real 'V_flow_nominal2'[3] = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
+    Real 'V_flow_min'(unit = "m3/s", quantity = "VolumeFlowRate") = min('V_flow_nominal');
+    Real 'V_flow_max'(unit = "m3/s", quantity = "VolumeFlowRate") = max('V_flow_nominal');
+    Real 'c'[3] = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
+  algorithm
+    assert(max({'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[1], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[2], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[3]}) <= (-2.2250738585072014e-308), "Wrong pump curve -- head_nominal must be monotonically decreasing with increasing V_flow_nominal", AssertionLevel.warning);
+
+    if 'V_flow' < 'V_flow_min' then
+      'head' := max('head_nominal') + ('V_flow' - 'V_flow_min') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_min');
+    elseif 'V_flow' > 'V_flow_max' then
+      'head' := min('head_nominal') + ('V_flow' - 'V_flow_max') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_max');
+    else
+      'head' := 'c'[1] + 'V_flow' * ('c'[2] + 'V_flow' * 'c'[3]);
+    end if;
+  end 'Modelica.Fluid.Examples.HeatingSystem.pump.flowCharacteristic';
+
+  function 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow';
 
   type 'Modelica.Fluid.Types.Dynamics' = enumeration('DynamicFreeInitial', 'FixedInitial', 'SteadyStateInitial', 'SteadyState');
 
   type 'Modelica.Fluid.Types.CheckValveHomotopyType' = enumeration('Open', 'Closed', 'NoHomotopy');
 
-  record 'valve.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'valve.Medium.ThermodynamicState';
-
   type 'Modelica.Fluid.Types.CvTypes' = enumeration('Av', 'Kv', 'Cv', 'OpPoint');
 
   type 'Modelica.Fluid.Types.ModelStructure' = enumeration('av_vb', 'a_v_b', 'av_b', 'a_vb');
-
-  record 'tank.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'tank.heatTransfer.Medium.ThermodynamicState';
-
-  record 'tank.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'tank.Medium.ThermodynamicState';
-
-  record 'pump.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pump.heatTransfer.Medium.ThermodynamicState';
-
-  record 'pump.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pump.Medium.ThermodynamicState';
-
-  record 'heater.flowModel.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'heater.flowModel.Medium.ThermodynamicState';
-
-  record 'heater.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'heater.heatTransfer.Medium.ThermodynamicState';
-
-  record 'heater.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'heater.Medium.ThermodynamicState';
-
-  record 'radiator.flowModel.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'radiator.flowModel.Medium.ThermodynamicState';
-
-  record 'radiator.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'radiator.heatTransfer.Medium.ThermodynamicState';
-
-  record 'radiator.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'radiator.Medium.ThermodynamicState';
-
-  record 'sensor_T_forward.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'sensor_T_forward.Medium.ThermodynamicState';
-
-  record 'sensor_T_return.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'sensor_T_return.Medium.ThermodynamicState';
-
-  record 'pipe.flowModel.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pipe.flowModel.Medium.ThermodynamicState';
-
-  record 'pipe.heatTransfer.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pipe.heatTransfer.Medium.ThermodynamicState';
-
-  record 'pipe.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pipe.Medium.ThermodynamicState';
-
-  record 'pump.monitoring.Medium.ThermodynamicState'
-    Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-  end 'pump.monitoring.Medium.ThermodynamicState';
 
   model 'HeatingSystem' "Simple model of a heating system"
     Real 'tank.level'(stateSelect = StateSelect.prefer, start = 1.0, min = 0.0, unit = "m", quantity = "Length") "Level height of tank";
@@ -1211,7 +326,7 @@ package 'HeatingSystem'
     parameter Real 'tank.p_ambient'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 101325.0 "Tank surface pressure";
     parameter Real 'tank.T_ambient'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Tank surface Temperature";
     parameter Real 'tank.level_start'(min = 0.0, unit = "m", quantity = "Length") = 1.0 "Start value of tank level";
-    Real 'tank.fluidVolume'(unit = "m3", quantity = "Volume") = 'tank.V' "Volume";
+    Real 'tank.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'SteadyStateInitial' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'tank.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'FixedInitial' "Formulation of substance balance" annotation(Evaluate = true);
@@ -1233,8 +348,8 @@ package 'HeatingSystem'
     Real 'tank.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'tank.medium.preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'tank.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'tank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'tank.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'tank.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'tank.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'tank.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'tank.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'tank.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'tank.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'tank.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -1265,8 +380,8 @@ package 'HeatingSystem'
     Real 'tank.ports_H_flow[2]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate");
     parameter Boolean 'tank.use_HeatTransfer' = true "= true to use the HeatTransfer model";
     parameter Integer 'tank.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'tank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'tank.medium.state.p' "Absolute pressure of medium";
-    Real 'tank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'tank.medium.state.T' "Temperature of medium";
+    Real 'tank.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'tank.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'tank.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'tank.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'tank.heatTransfer.use_k' = true "= true to use k value for thermal isolation";
@@ -1294,7 +409,7 @@ package 'HeatingSystem'
     constant Real 'tank.Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 100.0 "cf. suddenExpansion";
     Real 'tank.m_flow_turbulent[1]'(unit = "kg/s", quantity = "MassFlowRate");
     Real 'tank.m_flow_turbulent[2]'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'tank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") = 'tank.level' "Level of fluid in the vessel for treating heights of ports";
+    Real 'tank.fluidLevel'(min = 0.0, unit = "m", quantity = "Length") "Level of fluid in the vessel for treating heights of ports";
     parameter Real 'tank.fluidLevel_max'(min = 0.0, unit = "m", quantity = "Length") = 2.0 "Maximum level of fluid in the vessel";
     parameter Real 'tank.vesselArea'(unit = "m2", quantity = "Area") = 0.01 "Area of the vessel used to relate to cross flow area of ports";
     Real 'tank.portsData_diameter_internal[1]';
@@ -1340,7 +455,7 @@ package 'HeatingSystem'
     parameter Boolean 'pump.use_powerCharacteristic' = false "Use powerCharacteristic (vs. efficiencyCharacteristic)" annotation(Evaluate = true);
     parameter Boolean 'pump.checkValve' = false "= true to prevent reverse flow" annotation(Evaluate = true);
     parameter Real 'pump.V'(unit = "m3", quantity = "Volume") = 0.0 "Volume inside the pump" annotation(Evaluate = true);
-    Real 'pump.fluidVolume'(unit = "m3", quantity = "Volume") = 0.0 "Volume";
+    Real 'pump.fluidVolume'(unit = "m3", quantity = "Volume") "Volume";
     parameter 'Modelica.Fluid.Types.Dynamics' 'pump.energyDynamics' = 'Modelica.Fluid.Types.Dynamics'.'SteadyState' "Formulation of energy balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'pump.massDynamics' = 'Modelica.Fluid.Types.Dynamics'.'SteadyState' "Formulation of mass balance" annotation(Evaluate = true);
     parameter 'Modelica.Fluid.Types.Dynamics' 'pump.substanceDynamics' = 'Modelica.Fluid.Types.Dynamics'.'SteadyState' "Formulation of substance balance" annotation(Evaluate = true);
@@ -1362,8 +477,8 @@ package 'HeatingSystem'
     Real 'pump.medium.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'pump.medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'pump.medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'pump.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'pump.medium.T' - 273.15 "Temperature of medium in [degC]";
-    Real 'pump.medium.p_bar'(unit = "bar", quantity = "Pressure") = 'pump.medium.p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'pump.medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'pump.medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'pump.U'(unit = "J", quantity = "Energy") "Internal energy of fluid";
     Real 'pump.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of fluid";
     Real 'pump.mb_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flows across boundaries";
@@ -1373,8 +488,8 @@ package 'HeatingSystem'
     parameter Boolean 'pump.initialize_p' = true "= true to set up initial equations for pressure";
     parameter Boolean 'pump.use_HeatTransfer' = false "= true to use a HeatTransfer model, e.g., for a housing";
     parameter Integer 'pump.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'pump.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pump.medium.state.p' "Absolute pressure of medium";
-    Real 'pump.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pump.medium.state.T' "Temperature of medium";
+    Real 'pump.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'pump.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'pump.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'pump.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'pump.heatTransfer.use_k' = false "= true to use k value for thermal isolation";
@@ -1384,23 +499,23 @@ package 'HeatingSystem'
     Real 'pump.heatTransfer.heatPorts[1].Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'pump.heatTransfer.Ts[1]'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperatures defined by fluid states";
     parameter Real 'pump.g'(unit = "m/s2", quantity = "Acceleration") = 9.80665 "Constant gravity acceleration";
-    Real 'pump.rho'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 'pump.medium.d';
-    Real 'pump.dp_pump'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pump.port_b.p' - 'pump.port_a.p' "Pressure change";
-    Real 'pump.head'(unit = "m", quantity = "Length") = 'pump.dp_pump' / ('pump.rho' * 9.80665) "Pump head";
-    Real 'pump.m_flow'(unit = "kg/s", quantity = "MassFlowRate") = 'pump.port_a.m_flow' "Mass flow rate (total)";
-    Real 'pump.m_flow_single'(unit = "kg/s", quantity = "MassFlowRate") = 'pump.m_flow' "Mass flow rate (single pump)";
+    Real 'pump.rho'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'pump.dp_pump'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure change";
+    Real 'pump.head'(unit = "m", quantity = "Length") "Pump head";
+    Real 'pump.m_flow'(unit = "kg/s", quantity = "MassFlowRate") "Mass flow rate (total)";
+    Real 'pump.m_flow_single'(unit = "kg/s", quantity = "MassFlowRate") "Mass flow rate (single pump)";
     Real 'pump.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate (total)";
     Real 'pump.V_flow_single'(start = 1.0016729001588132e-5, unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate (single pump)";
     Real 'pump.N'(start = 1500.0, unit = "rev/min", quantity = "AngularVelocity") "Shaft rotational speed";
     Real 'pump.W_single'(unit = "W", quantity = "Power") "Power Consumption (single pump)";
-    Real 'pump.W_total'(unit = "W", quantity = "Power") = 'pump.W_single' "Power Consumption (total)";
+    Real 'pump.W_total'(unit = "W", quantity = "Power") "Power Consumption (total)";
     Real 'pump.eta' "Global Efficiency";
     constant Real 'pump.unit_m_flow'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") = 1.0;
     Real 'pump.s'(start = 0.01) "Curvilinear abscissa for the flow curve in parametric form (either mass flow rate or head)";
     Real 'pump.monitoring.state_in.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'pump.monitoring.state_in.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
-    Real 'pump.monitoring.state.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pump.medium.state.p' "Absolute pressure of medium";
-    Real 'pump.monitoring.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pump.medium.state.T' "Temperature of medium";
+    Real 'pump.monitoring.state.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'pump.monitoring.state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     constant Real 'pump.unitHead'(unit = "m", quantity = "Length") = 1.0;
     constant Real 'pump.unitMassFlowRate'(unit = "kg/s", quantity = "MassFlowRate") = 1.0;
     parameter Real 'pump.p_a_nominal'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.1e5 "Nominal inlet pressure for predefined pump characteristics";
@@ -1430,9 +545,9 @@ package 'HeatingSystem'
     parameter Boolean 'valve.show_V_flow' = true "= true, if volume flow rate at inflowing port is computed";
     Real 'valve.m_flow'(start = 0.01, max = 1e5, min = 0.0, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rate in design flow direction";
     Real 'valve.dp'(start = 18000.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure difference between port_a and port_b (= port_a.p - port_b.p)";
-    Real 'valve.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") = 'valve.m_flow' / 'Modelica.Fluid.Utilities.regStep'('valve.m_flow', 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.density'('valve.state_a'), 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.density'('valve.state_b'), 1e-4) "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
-    Real 'valve.port_a_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('valve.port_a.m_flow', 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.temperature'('valve.state_a'), 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.temperature'('Modelica.Fluid.Examples.HeatingSystem.valve.Medium.setState_phX'('valve.port_a.p', 'valve.port_a.h_outflow', fill(0.0, 0))), 1e-4) "Temperature close to port_a, if show_T = true";
-    Real 'valve.port_b_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'Modelica.Fluid.Utilities.regStep'('valve.port_b.m_flow', 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.temperature'('valve.state_b'), 'Modelica.Fluid.Examples.HeatingSystem.valve.Medium.temperature'('Modelica.Fluid.Examples.HeatingSystem.valve.Medium.setState_phX'('valve.port_b.p', 'valve.port_b.h_outflow', fill(0.0, 0))), 1e-4) "Temperature close to port_b, if show_T = true";
+    Real 'valve.V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate at inflowing port (positive when flow from port_a to port_b)";
+    Real 'valve.port_a_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_a, if show_T = true";
+    Real 'valve.port_b_T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature close to port_b, if show_T = true";
     Real 'valve.state_a.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'valve.state_a.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'valve.state_b.p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
@@ -1459,7 +574,7 @@ package 'HeatingSystem'
     Real 'valve.minLimiter.y' "Connector of Real output signal";
     constant Real 'valve.Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0 "cf. straight pipe for fully open valve -- dp_turbulent increases for closing valve";
     parameter Boolean 'valve.use_Re' = false "= true, if turbulent region is defined by Re, otherwise by m_flow_small" annotation(Evaluate = true);
-    Real 'valve.dp_turbulent'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    Real 'valve.dp_turbulent'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'valve.relativeFlowCoefficient';
     output Real 'm_flow'(unit = "kg/s");
     parameter Boolean 'sensor_m_flow.allowFlowReversal' = true "= true to allow flow reversal, false restricts to design direction (port_a -> port_b)" annotation(Evaluate = true);
@@ -1553,8 +668,8 @@ package 'HeatingSystem'
     Real 'heater.mediums[1].state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'heater.mediums[1].preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'heater.mediums[1].standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'heater.mediums[1].T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'heater.mediums[1].T' - 273.15 "Temperature of medium in [degC]";
-    Real 'heater.mediums[1].p_bar'(unit = "bar", quantity = "Pressure") = 'heater.mediums[1].p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'heater.mediums[1].T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'heater.mediums[1].p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'heater.mb_flows[1]'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rate, source or sink";
     Real 'heater.Hb_flows[1]'(unit = "W", quantity = "EnthalpyFlowRate") "Enthalpy flow rate, source or sink";
     Real 'heater.Qb_flows[1]'(unit = "W", quantity = "Power") "Heat flow rate, source or sink";
@@ -1587,12 +702,12 @@ package 'HeatingSystem'
     Real 'heater.statesFM[3].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'heater.flowModel.from_dp' = true "= true, use m_flow = f(dp), otherwise dp = f(m_flow)" annotation(Evaluate = true);
     parameter Integer 'heater.flowModel.n' = 3 "Number of discrete flow volumes";
-    Real 'heater.flowModel.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'heater.statesFM[1].p' "Absolute pressure of medium";
-    Real 'heater.flowModel.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'heater.statesFM[1].T' "Temperature of medium";
-    Real 'heater.flowModel.states[2].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'heater.statesFM[2].p' "Absolute pressure of medium";
-    Real 'heater.flowModel.states[2].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'heater.statesFM[2].T' "Temperature of medium";
-    Real 'heater.flowModel.states[3].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'heater.statesFM[3].p' "Absolute pressure of medium";
-    Real 'heater.flowModel.states[3].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'heater.statesFM[3].T' "Temperature of medium";
+    Real 'heater.flowModel.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'heater.flowModel.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
+    Real 'heater.flowModel.states[2].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'heater.flowModel.states[2].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
+    Real 'heater.flowModel.states[3].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'heater.flowModel.states[3].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'heater.flowModel.vs[1]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
     Real 'heater.flowModel.vs[2]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
     Real 'heater.flowModel.vs[3]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
@@ -1659,7 +774,7 @@ package 'HeatingSystem'
     parameter Boolean 'heater.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'heater.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
     Real 'heater.flowModel.diameters[2]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'heater.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow'('heater.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'heater.flowModel.pathLengths_internal[1]', 'heater.flowModel.diameters[1]', ('heater.flowModel.crossAreas[1]' + 'heater.flowModel.crossAreas[2]') / 2.0, ('heater.flowModel.roughnesses[1]' + 'heater.flowModel.roughnesses[2]') / 2.0, 'heater.flowModel.m_flow_small', 'heater.flowModel.Res_turbulent_internal[1]') + 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow'('heater.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'heater.flowModel.pathLengths_internal[2]', 'heater.flowModel.diameters[2]', ('heater.flowModel.crossAreas[2]' + 'heater.flowModel.crossAreas[3]') / 2.0, ('heater.flowModel.roughnesses[2]' + 'heater.flowModel.roughnesses[3]') / 2.0, 'heater.flowModel.m_flow_small', 'heater.flowModel.Res_turbulent_internal[2]') "Pressure loss for nominal conditions";
+    Real 'heater.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
     Real 'heater.m_flows[1]'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rates of fluid across segment boundaries";
     Real 'heater.m_flows[2]'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rates of fluid across segment boundaries";
     Real 'heater.H_flows[1]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate") "Enthalpy flow rates of fluid across segment boundaries";
@@ -1685,8 +800,8 @@ package 'HeatingSystem'
     Real 'heater.heatPorts[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'heater.heatPorts[1].Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     parameter Integer 'heater.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'heater.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'heater.mediums[1].state.p' "Absolute pressure of medium";
-    Real 'heater.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'heater.mediums[1].state.T' "Temperature of medium";
+    Real 'heater.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'heater.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'heater.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'heater.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'heater.heatTransfer.use_k' = true "= true to use k value for thermal isolation";
@@ -1747,8 +862,8 @@ package 'HeatingSystem'
     Real 'radiator.mediums[1].state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'radiator.mediums[1].preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'radiator.mediums[1].standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'radiator.mediums[1].T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'radiator.mediums[1].T' - 273.15 "Temperature of medium in [degC]";
-    Real 'radiator.mediums[1].p_bar'(unit = "bar", quantity = "Pressure") = 'radiator.mediums[1].p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'radiator.mediums[1].T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'radiator.mediums[1].p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'radiator.mb_flows[1]'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rate, source or sink";
     Real 'radiator.Hb_flows[1]'(unit = "W", quantity = "EnthalpyFlowRate") "Enthalpy flow rate, source or sink";
     Real 'radiator.Qb_flows[1]'(unit = "W", quantity = "Power") "Heat flow rate, source or sink";
@@ -1781,12 +896,12 @@ package 'HeatingSystem'
     Real 'radiator.statesFM[3].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'radiator.flowModel.from_dp' = true "= true, use m_flow = f(dp), otherwise dp = f(m_flow)" annotation(Evaluate = true);
     parameter Integer 'radiator.flowModel.n' = 3 "Number of discrete flow volumes";
-    Real 'radiator.flowModel.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'radiator.statesFM[1].p' "Absolute pressure of medium";
-    Real 'radiator.flowModel.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'radiator.statesFM[1].T' "Temperature of medium";
-    Real 'radiator.flowModel.states[2].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'radiator.statesFM[2].p' "Absolute pressure of medium";
-    Real 'radiator.flowModel.states[2].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'radiator.statesFM[2].T' "Temperature of medium";
-    Real 'radiator.flowModel.states[3].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'radiator.statesFM[3].p' "Absolute pressure of medium";
-    Real 'radiator.flowModel.states[3].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'radiator.statesFM[3].T' "Temperature of medium";
+    Real 'radiator.flowModel.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'radiator.flowModel.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
+    Real 'radiator.flowModel.states[2].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'radiator.flowModel.states[2].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
+    Real 'radiator.flowModel.states[3].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'radiator.flowModel.states[3].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'radiator.flowModel.vs[1]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
     Real 'radiator.flowModel.vs[2]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
     Real 'radiator.flowModel.vs[3]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
@@ -1853,7 +968,7 @@ package 'HeatingSystem'
     parameter Boolean 'radiator.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'radiator.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
     Real 'radiator.flowModel.diameters[2]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'radiator.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow'('radiator.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'radiator.flowModel.pathLengths_internal[1]', 'radiator.flowModel.diameters[1]', ('radiator.flowModel.crossAreas[1]' + 'radiator.flowModel.crossAreas[2]') / 2.0, ('radiator.flowModel.roughnesses[1]' + 'radiator.flowModel.roughnesses[2]') / 2.0, 'radiator.flowModel.m_flow_small', 'radiator.flowModel.Res_turbulent_internal[1]') + 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow'('radiator.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'radiator.flowModel.pathLengths_internal[2]', 'radiator.flowModel.diameters[2]', ('radiator.flowModel.crossAreas[2]' + 'radiator.flowModel.crossAreas[3]') / 2.0, ('radiator.flowModel.roughnesses[2]' + 'radiator.flowModel.roughnesses[3]') / 2.0, 'radiator.flowModel.m_flow_small', 'radiator.flowModel.Res_turbulent_internal[2]') "Pressure loss for nominal conditions";
+    Real 'radiator.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
     Real 'radiator.m_flows[1]'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rates of fluid across segment boundaries";
     Real 'radiator.m_flows[2]'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rates of fluid across segment boundaries";
     Real 'radiator.H_flows[1]'(nominal = 1000.0, max = 1e8, min = -1e8, unit = "W", quantity = "EnthalpyFlowRate") "Enthalpy flow rates of fluid across segment boundaries";
@@ -1879,8 +994,8 @@ package 'HeatingSystem'
     Real 'radiator.heatPorts[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'radiator.heatPorts[1].Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     parameter Integer 'radiator.heatTransfer.n' = 1 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'radiator.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'radiator.mediums[1].state.p' "Absolute pressure of medium";
-    Real 'radiator.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'radiator.mediums[1].state.T' "Temperature of medium";
+    Real 'radiator.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'radiator.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'radiator.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'radiator.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
     parameter Boolean 'radiator.heatTransfer.use_k' = true "= true to use k value for thermal isolation";
@@ -1960,8 +1075,8 @@ package 'HeatingSystem'
     Real 'pipe.mediums[1].state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'pipe.mediums[1].preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'pipe.mediums[1].standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'pipe.mediums[1].T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'pipe.mediums[1].T' - 273.15 "Temperature of medium in [degC]";
-    Real 'pipe.mediums[1].p_bar'(unit = "bar", quantity = "Pressure") = 'pipe.mediums[1].p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'pipe.mediums[1].T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'pipe.mediums[1].p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'pipe.mediums[2].p'(stateSelect = StateSelect.prefer, nominal = 1e5, start = 1.3e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
     Real 'pipe.mediums[2].h'(start = 334959.5523620477, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
     Real 'pipe.mediums[2].d'(nominal = 1.0, start = 1.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density of medium";
@@ -1974,8 +1089,8 @@ package 'HeatingSystem'
     Real 'pipe.mediums[2].state.T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'pipe.mediums[2].preferredMediumStates' = true "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
     parameter Boolean 'pipe.mediums[2].standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
-    Real 'pipe.mediums[2].T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") = 'pipe.mediums[2].T' - 273.15 "Temperature of medium in [degC]";
-    Real 'pipe.mediums[2].p_bar'(unit = "bar", quantity = "Pressure") = 'pipe.mediums[2].p' / 1e5 "Absolute pressure of medium in [bar]";
+    Real 'pipe.mediums[2].T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'pipe.mediums[2].p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
     Real 'pipe.mb_flows[1]'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rate, source or sink";
     Real 'pipe.mb_flows[2]'(max = 1e5, min = -1e5, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rate, source or sink";
     Real 'pipe.Hb_flows[1]'(unit = "W", quantity = "EnthalpyFlowRate") "Enthalpy flow rate, source or sink";
@@ -2015,10 +1130,10 @@ package 'HeatingSystem'
     Real 'pipe.statesFM[2].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     parameter Boolean 'pipe.flowModel.from_dp' = true "= true, use m_flow = f(dp), otherwise dp = f(m_flow)" annotation(Evaluate = true);
     parameter Integer 'pipe.flowModel.n' = 2 "Number of discrete flow volumes";
-    Real 'pipe.flowModel.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pipe.statesFM[1].p' "Absolute pressure of medium";
-    Real 'pipe.flowModel.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pipe.statesFM[1].T' "Temperature of medium";
-    Real 'pipe.flowModel.states[2].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pipe.statesFM[2].p' "Absolute pressure of medium";
-    Real 'pipe.flowModel.states[2].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pipe.statesFM[2].T' "Temperature of medium";
+    Real 'pipe.flowModel.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'pipe.flowModel.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
+    Real 'pipe.flowModel.states[2].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'pipe.flowModel.states[2].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'pipe.flowModel.vs[1]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
     Real 'pipe.flowModel.vs[2]'(unit = "m/s", quantity = "Velocity") "Mean velocities of fluid flow";
     parameter Real 'pipe.flowModel.nParallel' = 1.0 "Number of identical parallel flow devices";
@@ -2066,7 +1181,7 @@ package 'HeatingSystem'
     parameter Boolean 'pipe.flowModel.constantPressureLossCoefficient' = false "= true, if the pressure loss does not depend on fluid states" annotation(Evaluate = true);
     parameter Boolean 'pipe.flowModel.continuousFlowReversal' = false "= true, if the pressure loss is continuous around zero flow" annotation(Evaluate = true);
     Real 'pipe.flowModel.diameters[1]'(unit = "m", quantity = "Length") "Mean diameters between segments";
-    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]') "Pressure loss for nominal conditions";
+    Real 'pipe.flowModel.dp_fric_nominal'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure loss for nominal conditions";
     Real 'pipe.m_flows[1]'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rates of fluid across segment boundaries";
     Real 'pipe.m_flows[2]'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rates of fluid across segment boundaries";
     Real 'pipe.m_flows[3]'(start = 0.0, max = 1e5, min = -1e60, unit = "kg/s", quantity = "MassFlowRate.Liquid linear water") "Mass flow rates of fluid across segment boundaries";
@@ -2087,10 +1202,10 @@ package 'HeatingSystem'
     Real 'pipe.roughnessesFM[2]'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") "Average heights of surface asperities";
     parameter Boolean 'pipe.use_HeatTransfer' = false "= true to use the HeatTransfer model";
     parameter Integer 'pipe.heatTransfer.n' = 2 "Number of heat transfer segments" annotation(Evaluate = true);
-    Real 'pipe.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pipe.mediums[1].state.p' "Absolute pressure of medium";
-    Real 'pipe.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pipe.mediums[1].state.T' "Temperature of medium";
-    Real 'pipe.heatTransfer.states[2].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'pipe.mediums[2].state.p' "Absolute pressure of medium";
-    Real 'pipe.heatTransfer.states[2].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'pipe.mediums[2].state.T' "Temperature of medium";
+    Real 'pipe.heatTransfer.states[1].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'pipe.heatTransfer.states[1].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
+    Real 'pipe.heatTransfer.states[2].p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'pipe.heatTransfer.states[2].T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
     Real 'pipe.heatTransfer.surfaceAreas[1]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'pipe.heatTransfer.surfaceAreas[2]'(unit = "m2", quantity = "Area") "Heat transfer areas";
     Real 'pipe.heatTransfer.Q_flows[1]'(unit = "W", quantity = "Power") "Heat flow rates";
@@ -2134,6 +1249,64 @@ package 'HeatingSystem'
     der('pipe.mediums[1].p') = 0.0;
     der('pipe.mediums[2].p') = 0.0;
   equation
+    'tank.fluidVolume' = 'tank.V';
+    'tank.medium.T_degC' = 'tank.medium.T' - 273.15;
+    'tank.medium.p_bar' = 'tank.medium.p' / 1e5;
+    'tank.heatTransfer.states[1].p' = 'tank.medium.state.p';
+    'tank.heatTransfer.states[1].T' = 'tank.medium.state.T';
+    'tank.fluidLevel' = 'tank.level';
+    'pump.fluidVolume' = 0.0;
+    'pump.medium.T_degC' = 'pump.medium.T' - 273.15;
+    'pump.medium.p_bar' = 'pump.medium.p' / 1e5;
+    'pump.heatTransfer.states[1].p' = 'pump.medium.state.p';
+    'pump.heatTransfer.states[1].T' = 'pump.medium.state.T';
+    'pump.rho' = 'pump.medium.d';
+    'pump.dp_pump' = 'pump.port_b.p' - 'pump.port_a.p';
+    'pump.head' = 'pump.dp_pump' / ('pump.rho' * 9.80665);
+    'pump.m_flow' = 'pump.port_a.m_flow';
+    'pump.m_flow_single' = 'pump.m_flow';
+    'pump.W_total' = 'pump.W_single';
+    'pump.monitoring.state.p' = 'pump.medium.state.p';
+    'pump.monitoring.state.T' = 'pump.medium.state.T';
+    'valve.V_flow' = 'valve.m_flow' / smooth(1, if 'valve.m_flow' > 1e-4 then (1.0 + ('valve.state_a.p' - 101325.0) * 4.5154260364919865e-10 - ('valve.state_a.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385 else if 'valve.m_flow' < (-1e-4) then (1.0 + ('valve.state_b.p' - 101325.0) * 4.5154260364919865e-10 - ('valve.state_b.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385 else if 1e-4 > 0.0 then 'valve.m_flow' / 1e-4 * (('valve.m_flow' / 1e-4) ^ 2.0 - 3.0) * ((1.0 + ('valve.state_b.p' - 101325.0) * 4.5154260364919865e-10 - ('valve.state_b.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385 - (1.0 + ('valve.state_a.p' - 101325.0) * 4.5154260364919865e-10 - ('valve.state_a.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385) / 4.0 + ((1.0 + ('valve.state_a.p' - 101325.0) * 4.5154260364919865e-10 - ('valve.state_a.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385 + (1.0 + ('valve.state_b.p' - 101325.0) * 4.5154260364919865e-10 - ('valve.state_b.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385) / 2.0 else ((1.0 + ('valve.state_a.p' - 101325.0) * 4.5154260364919865e-10 - ('valve.state_a.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385 + (1.0 + ('valve.state_b.p' - 101325.0) * 4.5154260364919865e-10 - ('valve.state_b.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385) / 2.0);
+    'valve.port_a_T' = smooth(1, if 'valve.port_a.m_flow' > 1e-4 then 'valve.state_a.T' else if 'valve.port_a.m_flow' < (-1e-4) then ('valve.port_a.h_outflow' - 104929.29464256502 - ('valve.port_a.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15 else if 1e-4 > 0.0 then 'valve.port_a.m_flow' / 1e-4 * (('valve.port_a.m_flow' / 1e-4) ^ 2.0 - 3.0) * (('valve.port_a.h_outflow' - 104929.29464256502 - ('valve.port_a.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15 - 'valve.state_a.T') / 4.0 + ('valve.state_a.T' + ('valve.port_a.h_outflow' - 104929.29464256502 - ('valve.port_a.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15) / 2.0 else ('valve.state_a.T' + ('valve.port_a.h_outflow' - 104929.29464256502 - ('valve.port_a.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15) / 2.0);
+    'valve.port_b_T' = smooth(1, if 'valve.port_b.m_flow' > 1e-4 then 'valve.state_b.T' else if 'valve.port_b.m_flow' < (-1e-4) then ('valve.port_b.h_outflow' - 104929.29464256502 - ('valve.port_b.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15 else if 1e-4 > 0.0 then 'valve.port_b.m_flow' / 1e-4 * (('valve.port_b.m_flow' / 1e-4) ^ 2.0 - 3.0) * (('valve.port_b.h_outflow' - 104929.29464256502 - ('valve.port_b.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15 - 'valve.state_b.T') / 4.0 + ('valve.state_b.T' + ('valve.port_b.h_outflow' - 104929.29464256502 - ('valve.port_b.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15) / 2.0 else ('valve.state_b.T' + ('valve.port_b.h_outflow' - 104929.29464256502 - ('valve.port_b.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15) / 2.0);
+    'valve.dp_turbulent' = 1.0;
+    'heater.mediums[1].T_degC' = 'heater.mediums[1].T' - 273.15;
+    'heater.mediums[1].p_bar' = 'heater.mediums[1].p' / 1e5;
+    'heater.flowModel.states[1].p' = 'heater.statesFM[1].p';
+    'heater.flowModel.states[1].T' = 'heater.statesFM[1].T';
+    'heater.flowModel.states[2].p' = 'heater.statesFM[2].p';
+    'heater.flowModel.states[2].T' = 'heater.statesFM[2].T';
+    'heater.flowModel.states[3].p' = 'heater.statesFM[3].p';
+    'heater.flowModel.states[3].T' = 'heater.statesFM[3].T';
+    'heater.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow'('heater.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'heater.flowModel.pathLengths_internal[1]', 'heater.flowModel.diameters[1]', ('heater.flowModel.crossAreas[1]' + 'heater.flowModel.crossAreas[2]') / 2.0, ('heater.flowModel.roughnesses[1]' + 'heater.flowModel.roughnesses[2]') / 2.0, 'heater.flowModel.m_flow_small', 'heater.flowModel.Res_turbulent_internal[1]') + 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.WallFriction.pressureLoss_m_flow'('heater.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'heater.flowModel.pathLengths_internal[2]', 'heater.flowModel.diameters[2]', ('heater.flowModel.crossAreas[2]' + 'heater.flowModel.crossAreas[3]') / 2.0, ('heater.flowModel.roughnesses[2]' + 'heater.flowModel.roughnesses[3]') / 2.0, 'heater.flowModel.m_flow_small', 'heater.flowModel.Res_turbulent_internal[2]');
+    'heater.heatTransfer.states[1].p' = 'heater.mediums[1].state.p';
+    'heater.heatTransfer.states[1].T' = 'heater.mediums[1].state.T';
+    'radiator.mediums[1].T_degC' = 'radiator.mediums[1].T' - 273.15;
+    'radiator.mediums[1].p_bar' = 'radiator.mediums[1].p' / 1e5;
+    'radiator.flowModel.states[1].p' = 'radiator.statesFM[1].p';
+    'radiator.flowModel.states[1].T' = 'radiator.statesFM[1].T';
+    'radiator.flowModel.states[2].p' = 'radiator.statesFM[2].p';
+    'radiator.flowModel.states[2].T' = 'radiator.statesFM[2].T';
+    'radiator.flowModel.states[3].p' = 'radiator.statesFM[3].p';
+    'radiator.flowModel.states[3].T' = 'radiator.statesFM[3].T';
+    'radiator.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow'('radiator.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'radiator.flowModel.pathLengths_internal[1]', 'radiator.flowModel.diameters[1]', ('radiator.flowModel.crossAreas[1]' + 'radiator.flowModel.crossAreas[2]') / 2.0, ('radiator.flowModel.roughnesses[1]' + 'radiator.flowModel.roughnesses[2]') / 2.0, 'radiator.flowModel.m_flow_small', 'radiator.flowModel.Res_turbulent_internal[1]') + 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.WallFriction.pressureLoss_m_flow'('radiator.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'radiator.flowModel.pathLengths_internal[2]', 'radiator.flowModel.diameters[2]', ('radiator.flowModel.crossAreas[2]' + 'radiator.flowModel.crossAreas[3]') / 2.0, ('radiator.flowModel.roughnesses[2]' + 'radiator.flowModel.roughnesses[3]') / 2.0, 'radiator.flowModel.m_flow_small', 'radiator.flowModel.Res_turbulent_internal[2]');
+    'radiator.heatTransfer.states[1].p' = 'radiator.mediums[1].state.p';
+    'radiator.heatTransfer.states[1].T' = 'radiator.mediums[1].state.T';
+    'pipe.mediums[1].T_degC' = 'pipe.mediums[1].T' - 273.15;
+    'pipe.mediums[1].p_bar' = 'pipe.mediums[1].p' / 1e5;
+    'pipe.mediums[2].T_degC' = 'pipe.mediums[2].T' - 273.15;
+    'pipe.mediums[2].p_bar' = 'pipe.mediums[2].p' / 1e5;
+    'pipe.flowModel.states[1].p' = 'pipe.statesFM[1].p';
+    'pipe.flowModel.states[1].T' = 'pipe.statesFM[1].T';
+    'pipe.flowModel.states[2].p' = 'pipe.statesFM[2].p';
+    'pipe.flowModel.states[2].T' = 'pipe.statesFM[2].T';
+    'pipe.flowModel.dp_fric_nominal' = 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow'('pipe.flowModel.m_flow_nominal', 998.3298937621773, 998.3298937621773, 8.9e-4, 8.9e-4, 'pipe.flowModel.pathLengths_internal[1]', 'pipe.flowModel.diameters[1]', ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') / 2.0, ('pipe.flowModel.roughnesses[1]' + 'pipe.flowModel.roughnesses[2]') / 2.0, 'pipe.flowModel.m_flow_small', 'pipe.flowModel.Res_turbulent_internal[1]');
+    'pipe.heatTransfer.states[1].p' = 'pipe.mediums[1].state.p';
+    'pipe.heatTransfer.states[1].T' = 'pipe.mediums[1].state.T';
+    'pipe.heatTransfer.states[2].p' = 'pipe.mediums[2].state.p';
+    'pipe.heatTransfer.states[2].T' = 'pipe.mediums[2].state.T';
     'tank.portsData_diameter[1]' = 'tank.portsData_diameter_internal[1]';
     'tank.portsData_diameter[2]' = 'tank.portsData_diameter_internal[2]';
     'tank.portsData_height[1]' = 'tank.portsData_height_internal[1]';
@@ -2191,7 +1364,7 @@ package 'HeatingSystem'
     assert('tank.medium.X[1]' >= (-1e-5) and 'tank.medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('tank.medium.X[1]') + "of substance " + "Liquid linear water" + "\nof medium " + "Liquid linear water" + " is not in the range 0..1", AssertionLevel.error);
     assert('tank.medium.p' >= 0.0, "Pressure (= " + String('tank.medium.p') + " Pa) of medium \"" + "Liquid linear water" + "\" is negative\n(Temperature = " + String('tank.medium.T') + " K)", AssertionLevel.error);
     'tank.heatTransfer.surfaceAreas[1]' = 0.01 + 0.3544907701811032 * 'tank.level';
-    'tank.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.HeatingSystem.tank.heatTransfer.Medium.temperature'('tank.heatTransfer.states[1]');
+    'tank.heatTransfer.Ts[1]' = 'tank.heatTransfer.states[1].T';
     'tank.heatTransfer.Ts[1]' = 'tank.heatTransfer.heatPorts[1].T';
     'tank.heatTransfer.Q_flows[1]' = 'tank.heatTransfer.heatPorts[1].Q_flow' + 10.0 * 'tank.heatTransfer.surfaceAreas[1]' * (293.15 - 'tank.heatTransfer.heatPorts[1].T');
     'tank.portAreas[1]' = 0.7853981633974483 * 'tank.portsData_diameter[1]' ^ 2.0;
@@ -2214,20 +1387,20 @@ package 'HeatingSystem'
     'tank.Hb_flow' = 'tank.ports_H_flow[1]' + 'tank.ports_H_flow[2]' + 'tank.ports_E_flow[1]' + 'tank.ports_E_flow[2]';
     'tank.Qb_flow' = 'tank.heatTransfer.Q_flows[1]';
     assert('tank.fluidLevel' <= 2.0, "Vessel is overflowing (fluidLevel > fluidLevel_max = " + String('tank.fluidLevel') + ")", AssertionLevel.error);
-    'tank.portInDensities[1]' = 'Modelica.Fluid.Examples.HeatingSystem.tank.Medium.density'('Modelica.Fluid.Examples.HeatingSystem.tank.Medium.setState_phX'('tank.vessel_ps_static[1]', 'radiator.port_b.h_outflow', fill(0.0, 0)));
-    'tank.portVelocities[1]' = smooth(0, 'tank.ports[1].m_flow' / 'tank.portAreas[1]' / 'Modelica.Fluid.Examples.HeatingSystem.tank.Medium.density'('Modelica.Fluid.Examples.HeatingSystem.tank.Medium.setState_phX'('tank.vessel_ps_static[1]', if 'tank.ports[1].m_flow' > 0.0 then 'radiator.port_b.h_outflow' else 'tank.ports[1].h_outflow', fill(0.0, 0))));
-    'tank.ports_penetration[1]' = 'Modelica.Fluid.Utilities.regStep'('tank.fluidLevel' - 'tank.portsData_height[1]' - 0.1 * 'tank.portsData_diameter[1]', 1.0, 0.001, 0.1 * 'tank.portsData_diameter[1]');
+    'tank.portInDensities[1]' = (1.0 + ('tank.vessel_ps_static[1]' - 101325.0) * 4.5154260364919865e-10 - (('radiator.port_b.h_outflow' - 104929.29464256502 - ('tank.vessel_ps_static[1]' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15 - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'tank.portVelocities[1]' = smooth(0, 'tank.ports[1].m_flow' / 'tank.portAreas[1]' / ((1.0 + ('tank.vessel_ps_static[1]' - 101325.0) * 4.5154260364919865e-10 - (((if 'tank.ports[1].m_flow' > 0.0 then 'radiator.port_b.h_outflow' else 'tank.ports[1].h_outflow') - 104929.29464256502 - ('tank.vessel_ps_static[1]' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15 - 298.15) * 2.571314017648316e-4) * 997.0480319717385));
+    'tank.ports_penetration[1]' = smooth(1, if 'tank.fluidLevel' - 'tank.portsData_height[1]' - 0.1 * 'tank.portsData_diameter[1]' > 0.1 * 'tank.portsData_diameter[1]' then 1.0 else if 'tank.fluidLevel' - 'tank.portsData_height[1]' - 0.1 * 'tank.portsData_diameter[1]' < (-0.1 * 'tank.portsData_diameter[1]') then 0.001 else if 0.1 * 'tank.portsData_diameter[1]' > 0.0 then ('tank.fluidLevel' - 'tank.portsData_height[1]' - 0.1 * 'tank.portsData_diameter[1]') / (0.1 * 'tank.portsData_diameter[1]') * ((('tank.fluidLevel' - 'tank.portsData_height[1]' - 0.1 * 'tank.portsData_diameter[1]') / (0.1 * 'tank.portsData_diameter[1]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'tank.m_flow_turbulent[1]' = 1e-4;
     'tank.regularFlow[1]' = 'tank.fluidLevel' >= 'tank.portsData_height[1]';
     'tank.inFlow[1]' = not 'tank.regularFlow[1]' and ('tank.s[1]' > 0.0 or 'tank.portsData_height[1]' >= 2.0);
 
     if 'tank.regularFlow[1]' then
-      'tank.ports[1].p' = 'tank.vessel_ps_static[1]' + 0.5 / 'tank.portAreas[1]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('tank.ports[1].m_flow', 'tank.m_flow_turbulent[1]', ('tank.portsData_zeta_in[1]' - 1.0 + 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.portInDensities[1]' * 'tank.ports_penetration[1]', ('tank.portsData_zeta_out[1]' + 1.0 - 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[1]', false, 1.0);
+      'tank.ports[1].p' = 'tank.vessel_ps_static[1]' + 0.5 / 'tank.portAreas[1]' ^ 2.0 * smooth(2, if 'tank.ports[1].m_flow' >= 'tank.m_flow_turbulent[1]' then ('tank.portsData_zeta_in[1]' - 1.0 + 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.portInDensities[1]' * 'tank.ports_penetration[1]' * 'tank.ports[1].m_flow' ^ 2.0 else if 'tank.ports[1].m_flow' <= (-'tank.m_flow_turbulent[1]') then -('tank.portsData_zeta_out[1]' + 1.0 - 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[1]' * 'tank.ports[1].m_flow' ^ 2.0 else if ('tank.portsData_zeta_in[1]' - 1.0 + 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.portInDensities[1]' * 'tank.ports_penetration[1]' >= ('tank.portsData_zeta_out[1]' + 1.0 - 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[1]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('tank.ports[1].m_flow', 'tank.m_flow_turbulent[1]', ('tank.portsData_zeta_in[1]' - 1.0 + 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.portInDensities[1]' * 'tank.ports_penetration[1]', ('tank.portsData_zeta_out[1]' + 1.0 - 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[1]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'tank.ports[1].m_flow', 'tank.m_flow_turbulent[1]', ('tank.portsData_zeta_out[1]' + 1.0 - 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[1]', ('tank.portsData_zeta_in[1]' - 1.0 + 'tank.portAreas[1]' ^ 2.0 / 1e-4) / 'tank.portInDensities[1]' * 'tank.ports_penetration[1]', false, 1.0));
       'tank.s[1]' = 'tank.fluidLevel' - 'tank.portsData_height[1]';
     elseif 'tank.inFlow[1]' then
       'tank.ports[1].p' = 'tank.vessel_ps_static[1]';
       'tank.s[1]' = 'tank.ports[1].m_flow';
-    elseif true then
+    else
       'tank.ports[1].m_flow' = 0.0;
       'tank.s[1]' = ('tank.ports[1].p' - 'tank.vessel_ps_static[1]') / 101325.0 * ('tank.portsData_height[1]' - 'tank.fluidLevel');
     end if;
@@ -2235,20 +1408,20 @@ package 'HeatingSystem'
     'tank.ports[1].h_outflow' = 'tank.medium.h';
     'tank.ports_H_flow[1]' = smooth(0, 'tank.ports[1].m_flow' * (if 'tank.ports[1].m_flow' > 0.0 then 'radiator.port_b.h_outflow' else 'tank.ports[1].h_outflow')) "Enthalpy flow";
     'tank.ports_E_flow[1]' = 'tank.ports[1].m_flow' * (0.5 * 'tank.portVelocities[1]' * 'tank.portVelocities[1]' + 9.80665 * 'tank.portsData_height[1]') "Flow of kinetic and potential energy";
-    'tank.portInDensities[2]' = 'Modelica.Fluid.Examples.HeatingSystem.tank.Medium.density'('Modelica.Fluid.Examples.HeatingSystem.tank.Medium.setState_phX'('tank.vessel_ps_static[2]', 'tank.ports[2].h_outflow', fill(0.0, 0)));
-    'tank.portVelocities[2]' = smooth(0, 'tank.ports[2].m_flow' / 'tank.portAreas[2]' / 'Modelica.Fluid.Examples.HeatingSystem.tank.Medium.density'('Modelica.Fluid.Examples.HeatingSystem.tank.Medium.setState_phX'('tank.vessel_ps_static[2]', 'tank.ports[2].h_outflow', fill(0.0, 0))));
-    'tank.ports_penetration[2]' = 'Modelica.Fluid.Utilities.regStep'('tank.fluidLevel' - 'tank.portsData_height[2]' - 0.1 * 'tank.portsData_diameter[2]', 1.0, 0.001, 0.1 * 'tank.portsData_diameter[2]');
+    'tank.portInDensities[2]' = (1.0 + ('tank.vessel_ps_static[2]' - 101325.0) * 4.5154260364919865e-10 - (('tank.ports[2].h_outflow' - 104929.29464256502 - ('tank.vessel_ps_static[2]' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15 - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'tank.portVelocities[2]' = smooth(0, 'tank.ports[2].m_flow' / 'tank.portAreas[2]' / ((1.0 + ('tank.vessel_ps_static[2]' - 101325.0) * 4.5154260364919865e-10 - (('tank.ports[2].h_outflow' - 104929.29464256502 - ('tank.vessel_ps_static[2]' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15 - 298.15) * 2.571314017648316e-4) * 997.0480319717385));
+    'tank.ports_penetration[2]' = smooth(1, if 'tank.fluidLevel' - 'tank.portsData_height[2]' - 0.1 * 'tank.portsData_diameter[2]' > 0.1 * 'tank.portsData_diameter[2]' then 1.0 else if 'tank.fluidLevel' - 'tank.portsData_height[2]' - 0.1 * 'tank.portsData_diameter[2]' < (-0.1 * 'tank.portsData_diameter[2]') then 0.001 else if 0.1 * 'tank.portsData_diameter[2]' > 0.0 then ('tank.fluidLevel' - 'tank.portsData_height[2]' - 0.1 * 'tank.portsData_diameter[2]') / (0.1 * 'tank.portsData_diameter[2]') * ((('tank.fluidLevel' - 'tank.portsData_height[2]' - 0.1 * 'tank.portsData_diameter[2]') / (0.1 * 'tank.portsData_diameter[2]')) ^ 2.0 - 3.0) * (0.001 - 1.0) / 4.0 + (1.0 + 0.001) / 2.0 else (1.0 + 0.001) / 2.0);
     'tank.m_flow_turbulent[2]' = 1e-4;
     'tank.regularFlow[2]' = 'tank.fluidLevel' >= 'tank.portsData_height[2]';
     'tank.inFlow[2]' = not 'tank.regularFlow[2]' and ('tank.s[2]' > 0.0 or 'tank.portsData_height[2]' >= 2.0);
 
     if 'tank.regularFlow[2]' then
-      'tank.ports[2].p' = 'tank.vessel_ps_static[2]' + 0.5 / 'tank.portAreas[2]' ^ 2.0 * 'Modelica.Fluid.Utilities.regSquare2'('tank.ports[2].m_flow', 'tank.m_flow_turbulent[2]', ('tank.portsData_zeta_in[2]' - 1.0 + 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.portInDensities[2]' * 'tank.ports_penetration[2]', ('tank.portsData_zeta_out[2]' + 1.0 - 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[2]', false, 1.0);
+      'tank.ports[2].p' = 'tank.vessel_ps_static[2]' + 0.5 / 'tank.portAreas[2]' ^ 2.0 * smooth(2, if 'tank.ports[2].m_flow' >= 'tank.m_flow_turbulent[2]' then ('tank.portsData_zeta_in[2]' - 1.0 + 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.portInDensities[2]' * 'tank.ports_penetration[2]' * 'tank.ports[2].m_flow' ^ 2.0 else if 'tank.ports[2].m_flow' <= (-'tank.m_flow_turbulent[2]') then -('tank.portsData_zeta_out[2]' + 1.0 - 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[2]' * 'tank.ports[2].m_flow' ^ 2.0 else if ('tank.portsData_zeta_in[2]' - 1.0 + 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.portInDensities[2]' * 'tank.ports_penetration[2]' >= ('tank.portsData_zeta_out[2]' + 1.0 - 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[2]' then 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'('tank.ports[2].m_flow', 'tank.m_flow_turbulent[2]', ('tank.portsData_zeta_in[2]' - 1.0 + 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.portInDensities[2]' * 'tank.ports_penetration[2]', ('tank.portsData_zeta_out[2]' + 1.0 - 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[2]', false, 1.0) else -'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility'(-'tank.ports[2].m_flow', 'tank.m_flow_turbulent[2]', ('tank.portsData_zeta_out[2]' + 1.0 - 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.medium.d' / 'tank.ports_penetration[2]', ('tank.portsData_zeta_in[2]' - 1.0 + 'tank.portAreas[2]' ^ 2.0 / 1e-4) / 'tank.portInDensities[2]' * 'tank.ports_penetration[2]', false, 1.0));
       'tank.s[2]' = 'tank.fluidLevel' - 'tank.portsData_height[2]';
     elseif 'tank.inFlow[2]' then
       'tank.ports[2].p' = 'tank.vessel_ps_static[2]';
       'tank.s[2]' = 'tank.ports[2].m_flow';
-    elseif true then
+    else
       'tank.ports[2].m_flow' = 0.0;
       'tank.s[2]' = ('tank.ports[2].p' - 'tank.vessel_ps_static[2]') / 101325.0 * ('tank.portsData_height[2]' - 'tank.fluidLevel');
     end if;
@@ -2271,11 +1444,11 @@ package 'HeatingSystem'
     assert('pump.medium.X[1]' >= (-1e-5) and 'pump.medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('pump.medium.X[1]') + "of substance " + "Liquid linear water" + "\nof medium " + "Liquid linear water" + " is not in the range 0..1", AssertionLevel.error);
     assert('pump.medium.p' >= 0.0, "Pressure (= " + String('pump.medium.p') + " Pa) of medium \"" + "Liquid linear water" + "\" is negative\n(Temperature = " + String('pump.medium.T') + " K)", AssertionLevel.error);
     'pump.heatTransfer.surfaceAreas[1]' = 0.0;
-    'pump.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.HeatingSystem.pump.heatTransfer.Medium.temperature'('pump.heatTransfer.states[1]');
+    'pump.heatTransfer.Ts[1]' = 'pump.heatTransfer.states[1].T';
     'pump.heatTransfer.Ts[1]' = 'pump.heatTransfer.heatPorts[1].T';
     'pump.heatTransfer.Q_flows[1]' = 'pump.heatTransfer.heatPorts[1].Q_flow';
-    'pump.monitoring.state_in.p' = ('Modelica.Fluid.Examples.HeatingSystem.pump.Medium.setState_phX'('pump.port_a.p', 'tank.ports[2].h_outflow', fill(0.0, 0))).p;
-    'pump.monitoring.state_in.T' = ('Modelica.Fluid.Examples.HeatingSystem.pump.Medium.setState_phX'('pump.port_a.p', 'tank.ports[2].h_outflow', fill(0.0, 0))).T;
+    'pump.monitoring.state_in.p' = 'pump.port_a.p';
+    'pump.monitoring.state_in.T' = ('tank.ports[2].h_outflow' - 104929.29464256502 - ('pump.port_a.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
     'pump.dp_pump' = 'pump.p_set_internal' - 'pump.port_a.p';
     'pump.m_flow_set_internal' = 0.01;
     'pump.p_set_internal' = 1.3e5;
@@ -2283,7 +1456,7 @@ package 'HeatingSystem'
     'pump.V_flow_single' = 'pump.V_flow';
     'pump.head' = homotopy(('pump.N' / 1500.0) ^ 2.0 * 'Modelica.Fluid.Examples.HeatingSystem.pump.flowCharacteristic'('pump.V_flow_single' * 1500.0 / 'pump.N', {0.0, 1.0016729001588132e-5, 1.5025093502382197e-5}, {4.085688385570253, 2.0428441927851266, 0.0}), 'pump.N' / 1500.0 * (2.0428441927851266 + ('pump.V_flow_single' - 1.0016729001588132e-5) * (-353501.6204990155)));
     'pump.s' = 0.0;
-    'pump.eta' = homotopy('Modelica.Fluid.Examples.HeatingSystem.pump.efficiencyCharacteristic'('pump.V_flow_single' * (1500.0 / 'pump.N'), 0.8), 0.8);
+    'pump.eta' = homotopy(0.8, 0.8);
     'pump.W_single' = homotopy('pump.dp_pump' * 'pump.V_flow_single' / 'pump.eta', 'pump.dp_pump' * 1.0016729001588132e-5 / 'pump.eta');
     'pump.Wb_flow' = 'pump.W_total';
     'pump.Qb_flow' = 'pump.heatTransfer.Q_flows[1]';
@@ -2297,14 +1470,14 @@ package 'HeatingSystem'
     0.0 = 'pump.Hb_flow' + 'pump.Qb_flow' + 'pump.Wb_flow';
     0.0 = 'pump.mb_flow';
     'valve.minLimiter.y' = smooth(0, noEvent(if 'valve.minLimiter.u' < 0.001 then 0.001 else 'valve.minLimiter.u'));
-    'valve.relativeFlowCoefficient' = 'Modelica.Fluid.Examples.HeatingSystem.valve.valveCharacteristic'('valve.opening_actual');
-    'valve.m_flow' = homotopy('valve.relativeFlowCoefficient' * 'valve.Av' * sqrt('Modelica.Fluid.Examples.HeatingSystem.valve.Medium.density'('valve.state_a')) * 'Modelica.Fluid.Utilities.regRoot'('valve.dp', 'valve.dp_turbulent'), 'valve.relativeFlowCoefficient' * 0.01 * 'valve.dp' / 1e4);
+    'valve.relativeFlowCoefficient' = 'valve.opening_actual';
+    'valve.m_flow' = homotopy('valve.relativeFlowCoefficient' * 'valve.Av' * sqrt((1.0 + ('valve.state_a.p' - 101325.0) * 4.5154260364919865e-10 - ('valve.state_a.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385) * ('valve.dp' / ('valve.dp' * 'valve.dp' + 'valve.dp_turbulent' * 'valve.dp_turbulent') ^ 0.25), 'valve.relativeFlowCoefficient' * 0.01 * 'valve.dp' / 1e4);
     'valve.port_a.h_outflow' = 'radiator.port_a.h_outflow';
     'valve.port_b.h_outflow' = 'pipe.port_b.h_outflow';
-    'valve.state_a.p' = ('Modelica.Fluid.Examples.HeatingSystem.valve.Medium.setState_phX'('valve.port_a.p', 'pipe.port_b.h_outflow', fill(0.0, 0))).p;
-    'valve.state_a.T' = ('Modelica.Fluid.Examples.HeatingSystem.valve.Medium.setState_phX'('valve.port_a.p', 'pipe.port_b.h_outflow', fill(0.0, 0))).T;
-    'valve.state_b.p' = ('Modelica.Fluid.Examples.HeatingSystem.valve.Medium.setState_phX'('valve.port_b.p', 'radiator.port_a.h_outflow', fill(0.0, 0))).p;
-    'valve.state_b.T' = ('Modelica.Fluid.Examples.HeatingSystem.valve.Medium.setState_phX'('valve.port_b.p', 'radiator.port_a.h_outflow', fill(0.0, 0))).T;
+    'valve.state_a.p' = 'valve.port_a.p';
+    'valve.state_a.T' = ('pipe.port_b.h_outflow' - 104929.29464256502 - ('valve.port_a.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
+    'valve.state_b.p' = 'valve.port_b.p';
+    'valve.state_b.T' = ('radiator.port_a.h_outflow' - 104929.29464256502 - ('valve.port_b.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
     'valve.dp' = 'valve.port_a.p' - 'valve.port_b.p';
     'valve.m_flow' = 'valve.port_a.m_flow';
     assert('valve.m_flow' > (-1e-4), "Reversing flow occurs even though allowFlowReversal is false", AssertionLevel.error);
@@ -2347,12 +1520,12 @@ package 'HeatingSystem'
     'heater.flowModel.dheights[2]' = 'heater.dheightsFM[2]';
     'heater.flowModel.pathLengths[1]' = 'heater.pathLengths[1]';
     'heater.flowModel.pathLengths[2]' = 'heater.pathLengths[2]';
-    'heater.flowModel.rhos[1]' = 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.density'('heater.flowModel.states[1]');
-    'heater.flowModel.rhos[2]' = 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.density'('heater.flowModel.states[2]');
-    'heater.flowModel.rhos[3]' = 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.density'('heater.flowModel.states[3]');
-    'heater.flowModel.mus[1]' = 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.dynamicViscosity'('heater.flowModel.states[1]');
-    'heater.flowModel.mus[2]' = 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.dynamicViscosity'('heater.flowModel.states[2]');
-    'heater.flowModel.mus[3]' = 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.dynamicViscosity'('heater.flowModel.states[3]');
+    'heater.flowModel.rhos[1]' = (1.0 + ('heater.flowModel.states[1].p' - 101325.0) * 4.5154260364919865e-10 - ('heater.flowModel.states[1].T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'heater.flowModel.rhos[2]' = (1.0 + ('heater.flowModel.states[2].p' - 101325.0) * 4.5154260364919865e-10 - ('heater.flowModel.states[2].T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'heater.flowModel.rhos[3]' = (1.0 + ('heater.flowModel.states[3].p' - 101325.0) * 4.5154260364919865e-10 - ('heater.flowModel.states[3].T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'heater.flowModel.mus[1]' = 8.9e-4;
+    'heater.flowModel.mus[2]' = 8.9e-4;
+    'heater.flowModel.mus[3]' = 8.9e-4;
     'heater.flowModel.pathLengths_internal[1]' = 'heater.flowModel.pathLengths[1]';
     'heater.flowModel.pathLengths_internal[2]' = 'heater.flowModel.pathLengths[2]';
     'heater.flowModel.Res_turbulent_internal[1]' = 4000.0;
@@ -2367,8 +1540,8 @@ package 'HeatingSystem'
     'heater.flowModel.mus_act[2]' = noEvent(if 'heater.flowModel.m_flows[2]' > 0.0 then 'heater.flowModel.mus[2]' else 'heater.flowModel.mus[3]');
     'heater.flowModel.Ib_flows[1]' = 0.0;
     'heater.flowModel.Ib_flows[2]' = 0.0;
-    'heater.flowModel.Fs_p[1]' = 0.5 * ('heater.flowModel.crossAreas[1]' + 'heater.flowModel.crossAreas[2]') * ('Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.pressure'('heater.flowModel.states[2]') - 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.pressure'('heater.flowModel.states[1]'));
-    'heater.flowModel.Fs_p[2]' = 0.5 * ('heater.flowModel.crossAreas[2]' + 'heater.flowModel.crossAreas[3]') * ('Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.pressure'('heater.flowModel.states[3]') - 'Modelica.Fluid.Examples.HeatingSystem.heater.flowModel.Medium.pressure'('heater.flowModel.states[2]'));
+    'heater.flowModel.Fs_p[1]' = 0.5 * ('heater.flowModel.crossAreas[1]' + 'heater.flowModel.crossAreas[2]') * ('heater.flowModel.states[2].p' - 'heater.flowModel.states[1].p');
+    'heater.flowModel.Fs_p[2]' = 0.5 * ('heater.flowModel.crossAreas[2]' + 'heater.flowModel.crossAreas[3]') * ('heater.flowModel.states[3].p' - 'heater.flowModel.states[2].p');
     'heater.flowModel.dps_fg[1]' = 'heater.flowModel.Fs_fg[1]' * 2.0 / ('heater.flowModel.crossAreas[1]' + 'heater.flowModel.crossAreas[2]');
     'heater.flowModel.dps_fg[2]' = 'heater.flowModel.Fs_fg[2]' * 2.0 / ('heater.flowModel.crossAreas[2]' + 'heater.flowModel.crossAreas[3]');
     'heater.flowModel.Is[1]' = 'heater.flowModel.m_flows[1]' * 'heater.flowModel.pathLengths[1]';
@@ -2377,7 +1550,7 @@ package 'HeatingSystem'
     0.0 = 'heater.flowModel.Ib_flows[2]' - 'heater.flowModel.Fs_p[2]' - 'heater.flowModel.Fs_fg[2]';
     'heater.vs[1]' = 0.5 * ('heater.m_flows[1]' + 'heater.m_flows[2]') / 'heater.mediums[1].d' / 7.853981633974484e-5;
     'heater.heatTransfer.surfaceAreas[1]' = 0.06283185307179587;
-    'heater.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.HeatingSystem.heater.heatTransfer.Medium.temperature'('heater.heatTransfer.states[1]');
+    'heater.heatTransfer.Ts[1]' = 'heater.heatTransfer.states[1].T';
     'heater.heatTransfer.vs[1]' = 'heater.vs[1]';
     'heater.heatTransfer.lengths[1]' = 2.0;
     'heater.heatTransfer.dimensions[1]' = 0.01;
@@ -2407,10 +1580,10 @@ package 'HeatingSystem'
     'heater.port_b.m_flow' = -'heater.m_flows[2]';
     'heater.port_a.h_outflow' = 'heater.mediums[1].h';
     'heater.port_b.h_outflow' = 'heater.mediums[1].h';
-    'heater.state_a.p' = ('Modelica.Fluid.Examples.HeatingSystem.heater.Medium.setState_phX'('heater.port_a.p', 'sensor_m_flow.port_b.h_outflow', fill(0.0, 0))).p;
-    'heater.state_a.T' = ('Modelica.Fluid.Examples.HeatingSystem.heater.Medium.setState_phX'('heater.port_a.p', 'sensor_m_flow.port_b.h_outflow', fill(0.0, 0))).T;
-    'heater.state_b.p' = ('Modelica.Fluid.Examples.HeatingSystem.heater.Medium.setState_phX'('heater.port_b.p', 'pipe.port_a.h_outflow', fill(0.0, 0))).p;
-    'heater.state_b.T' = ('Modelica.Fluid.Examples.HeatingSystem.heater.Medium.setState_phX'('heater.port_b.p', 'pipe.port_a.h_outflow', fill(0.0, 0))).T;
+    'heater.state_a.p' = 'heater.port_a.p';
+    'heater.state_a.T' = ('sensor_m_flow.port_b.h_outflow' - 104929.29464256502 - ('heater.port_a.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
+    'heater.state_b.p' = 'heater.port_b.p';
+    'heater.state_b.T' = ('pipe.port_a.h_outflow' - 104929.29464256502 - ('heater.port_b.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
     'heater.statesFM[1].p' = 'heater.state_a.p';
     'heater.statesFM[1].T' = 'heater.state_a.T';
     'heater.statesFM[2].p' = 'heater.mediums[1].state.p';
@@ -2419,9 +1592,9 @@ package 'HeatingSystem'
     'heater.statesFM[3].T' = 'heater.state_b.T';
     'heater.m_flows[1]' = 'heater.flowModel.m_flows[1]';
     'heater.m_flows[2]' = 'heater.flowModel.m_flows[2]';
-    'heater.vsFM[1]' = 'heater.m_flows[1]' / 'Modelica.Fluid.Examples.HeatingSystem.heater.Medium.density'('heater.state_a') / 7.853981633974484e-5;
+    'heater.vsFM[1]' = 'heater.m_flows[1]' / ((1.0 + ('heater.state_a.p' - 101325.0) * 4.5154260364919865e-10 - ('heater.state_a.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385) / 7.853981633974484e-5;
     'heater.vsFM[2]' = 'heater.vs[1]';
-    'heater.vsFM[3]' = 'heater.m_flows[2]' / 'Modelica.Fluid.Examples.HeatingSystem.heater.Medium.density'('heater.state_b') / 7.853981633974484e-5;
+    'heater.vsFM[3]' = 'heater.m_flows[2]' / ((1.0 + ('heater.state_b.p' - 101325.0) * 4.5154260364919865e-10 - ('heater.state_b.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385) / 7.853981633974484e-5;
     'heater.ms[1]' = 'heater.fluidVolumes[1]' * 'heater.mediums[1].d';
     'heater.Us[1]' = 'heater.ms[1]' * 'heater.mediums[1].u';
     der('heater.Us[1]') = 'heater.Hb_flows[1]' + 'heater.Wb_flows[1]' + 'heater.Qb_flows[1]';
@@ -2453,12 +1626,12 @@ package 'HeatingSystem'
     'radiator.flowModel.dheights[2]' = 'radiator.dheightsFM[2]';
     'radiator.flowModel.pathLengths[1]' = 'radiator.pathLengths[1]';
     'radiator.flowModel.pathLengths[2]' = 'radiator.pathLengths[2]';
-    'radiator.flowModel.rhos[1]' = 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.density'('radiator.flowModel.states[1]');
-    'radiator.flowModel.rhos[2]' = 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.density'('radiator.flowModel.states[2]');
-    'radiator.flowModel.rhos[3]' = 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.density'('radiator.flowModel.states[3]');
-    'radiator.flowModel.mus[1]' = 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.dynamicViscosity'('radiator.flowModel.states[1]');
-    'radiator.flowModel.mus[2]' = 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.dynamicViscosity'('radiator.flowModel.states[2]');
-    'radiator.flowModel.mus[3]' = 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.dynamicViscosity'('radiator.flowModel.states[3]');
+    'radiator.flowModel.rhos[1]' = (1.0 + ('radiator.flowModel.states[1].p' - 101325.0) * 4.5154260364919865e-10 - ('radiator.flowModel.states[1].T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'radiator.flowModel.rhos[2]' = (1.0 + ('radiator.flowModel.states[2].p' - 101325.0) * 4.5154260364919865e-10 - ('radiator.flowModel.states[2].T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'radiator.flowModel.rhos[3]' = (1.0 + ('radiator.flowModel.states[3].p' - 101325.0) * 4.5154260364919865e-10 - ('radiator.flowModel.states[3].T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'radiator.flowModel.mus[1]' = 8.9e-4;
+    'radiator.flowModel.mus[2]' = 8.9e-4;
+    'radiator.flowModel.mus[3]' = 8.9e-4;
     'radiator.flowModel.pathLengths_internal[1]' = 'radiator.flowModel.pathLengths[1]';
     'radiator.flowModel.pathLengths_internal[2]' = 'radiator.flowModel.pathLengths[2]';
     'radiator.flowModel.Res_turbulent_internal[1]' = 4000.0;
@@ -2473,8 +1646,8 @@ package 'HeatingSystem'
     'radiator.flowModel.mus_act[2]' = noEvent(if 'radiator.flowModel.m_flows[2]' > 0.0 then 'radiator.flowModel.mus[2]' else 'radiator.flowModel.mus[3]');
     'radiator.flowModel.Ib_flows[1]' = 0.0;
     'radiator.flowModel.Ib_flows[2]' = 0.0;
-    'radiator.flowModel.Fs_p[1]' = 0.5 * ('radiator.flowModel.crossAreas[1]' + 'radiator.flowModel.crossAreas[2]') * ('Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.pressure'('radiator.flowModel.states[2]') - 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.pressure'('radiator.flowModel.states[1]'));
-    'radiator.flowModel.Fs_p[2]' = 0.5 * ('radiator.flowModel.crossAreas[2]' + 'radiator.flowModel.crossAreas[3]') * ('Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.pressure'('radiator.flowModel.states[3]') - 'Modelica.Fluid.Examples.HeatingSystem.radiator.flowModel.Medium.pressure'('radiator.flowModel.states[2]'));
+    'radiator.flowModel.Fs_p[1]' = 0.5 * ('radiator.flowModel.crossAreas[1]' + 'radiator.flowModel.crossAreas[2]') * ('radiator.flowModel.states[2].p' - 'radiator.flowModel.states[1].p');
+    'radiator.flowModel.Fs_p[2]' = 0.5 * ('radiator.flowModel.crossAreas[2]' + 'radiator.flowModel.crossAreas[3]') * ('radiator.flowModel.states[3].p' - 'radiator.flowModel.states[2].p');
     'radiator.flowModel.dps_fg[1]' = 'radiator.flowModel.Fs_fg[1]' * 2.0 / ('radiator.flowModel.crossAreas[1]' + 'radiator.flowModel.crossAreas[2]');
     'radiator.flowModel.dps_fg[2]' = 'radiator.flowModel.Fs_fg[2]' * 2.0 / ('radiator.flowModel.crossAreas[2]' + 'radiator.flowModel.crossAreas[3]');
     'radiator.flowModel.Is[1]' = 'radiator.flowModel.m_flows[1]' * 'radiator.flowModel.pathLengths[1]';
@@ -2483,7 +1656,7 @@ package 'HeatingSystem'
     0.0 = 'radiator.flowModel.Ib_flows[2]' - 'radiator.flowModel.Fs_p[2]' - 'radiator.flowModel.Fs_fg[2]';
     'radiator.vs[1]' = 0.5 * ('radiator.m_flows[1]' + 'radiator.m_flows[2]') / 'radiator.mediums[1].d' / 7.853981633974484e-5;
     'radiator.heatTransfer.surfaceAreas[1]' = 0.3141592653589793;
-    'radiator.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.HeatingSystem.radiator.heatTransfer.Medium.temperature'('radiator.heatTransfer.states[1]');
+    'radiator.heatTransfer.Ts[1]' = 'radiator.heatTransfer.states[1].T';
     'radiator.heatTransfer.vs[1]' = 'radiator.vs[1]';
     'radiator.heatTransfer.lengths[1]' = 10.0;
     'radiator.heatTransfer.dimensions[1]' = 0.01;
@@ -2513,10 +1686,10 @@ package 'HeatingSystem'
     'radiator.port_b.m_flow' = -'radiator.m_flows[2]';
     'radiator.port_a.h_outflow' = 'radiator.mediums[1].h';
     'radiator.port_b.h_outflow' = 'radiator.mediums[1].h';
-    'radiator.state_a.p' = ('Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.setState_phX'('radiator.port_a.p', 'valve.port_b.h_outflow', fill(0.0, 0))).p;
-    'radiator.state_a.T' = ('Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.setState_phX'('radiator.port_a.p', 'valve.port_b.h_outflow', fill(0.0, 0))).T;
-    'radiator.state_b.p' = ('Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.setState_phX'('radiator.port_b.p', 'tank.ports[1].h_outflow', fill(0.0, 0))).p;
-    'radiator.state_b.T' = ('Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.setState_phX'('radiator.port_b.p', 'tank.ports[1].h_outflow', fill(0.0, 0))).T;
+    'radiator.state_a.p' = 'radiator.port_a.p';
+    'radiator.state_a.T' = ('valve.port_b.h_outflow' - 104929.29464256502 - ('radiator.port_a.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
+    'radiator.state_b.p' = 'radiator.port_b.p';
+    'radiator.state_b.T' = ('tank.ports[1].h_outflow' - 104929.29464256502 - ('radiator.port_b.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
     'radiator.statesFM[1].p' = 'radiator.state_a.p';
     'radiator.statesFM[1].T' = 'radiator.state_a.T';
     'radiator.statesFM[2].p' = 'radiator.mediums[1].state.p';
@@ -2525,17 +1698,17 @@ package 'HeatingSystem'
     'radiator.statesFM[3].T' = 'radiator.state_b.T';
     'radiator.m_flows[1]' = 'radiator.flowModel.m_flows[1]';
     'radiator.m_flows[2]' = 'radiator.flowModel.m_flows[2]';
-    'radiator.vsFM[1]' = 'radiator.m_flows[1]' / 'Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.density'('radiator.state_a') / 7.853981633974484e-5;
+    'radiator.vsFM[1]' = 'radiator.m_flows[1]' / ((1.0 + ('radiator.state_a.p' - 101325.0) * 4.5154260364919865e-10 - ('radiator.state_a.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385) / 7.853981633974484e-5;
     'radiator.vsFM[2]' = 'radiator.vs[1]';
-    'radiator.vsFM[3]' = 'radiator.m_flows[2]' / 'Modelica.Fluid.Examples.HeatingSystem.radiator.Medium.density'('radiator.state_b') / 7.853981633974484e-5;
+    'radiator.vsFM[3]' = 'radiator.m_flows[2]' / ((1.0 + ('radiator.state_b.p' - 101325.0) * 4.5154260364919865e-10 - ('radiator.state_b.T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385) / 7.853981633974484e-5;
     'radiator.ms[1]' = 'radiator.fluidVolumes[1]' * 'radiator.mediums[1].d';
     'radiator.Us[1]' = 'radiator.ms[1]' * 'radiator.mediums[1].u';
     der('radiator.Us[1]') = 'radiator.Hb_flows[1]' + 'radiator.Wb_flows[1]' + 'radiator.Qb_flows[1]';
     der('radiator.ms[1]') = 'radiator.mb_flows[1]';
-    'sensor_T_forward.T' = 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_forward.Medium.temperature'('Modelica.Fluid.Examples.HeatingSystem.sensor_T_forward.Medium.setState_phX'('sensor_T_forward.port.p', ('$OMC$PositiveMax'(-'pipe.port_a.m_flow', 1e-7) * 'pipe.port_a.h_outflow' + '$OMC$PositiveMax'(-'heater.port_b.m_flow', 1e-7) * 'heater.port_b.h_outflow') / ('$OMC$PositiveMax'(-'pipe.port_a.m_flow', 1e-7) + '$OMC$PositiveMax'(-'heater.port_b.m_flow', 1e-7)), fill(0.0, 0)));
+    'sensor_T_forward.T' = ((max(-'pipe.port_a.m_flow', 1e-7) * 'pipe.port_a.h_outflow' + max(-'heater.port_b.m_flow', 1e-7) * 'heater.port_b.h_outflow') / (max(-'pipe.port_a.m_flow', 1e-7) + max(-'heater.port_b.m_flow', 1e-7)) - 104929.29464256502 - ('sensor_T_forward.port.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
     'sensor_T_forward.port.m_flow' = 0.0;
     'sensor_T_forward.port.h_outflow' = 84019.86712782076;
-    'sensor_T_return.T' = 'Modelica.Fluid.Examples.HeatingSystem.sensor_T_return.Medium.temperature'('Modelica.Fluid.Examples.HeatingSystem.sensor_T_return.Medium.setState_phX'('sensor_T_return.port.p', ('$OMC$PositiveMax'(-'tank.ports[1].m_flow', 1e-7) * 'tank.ports[1].h_outflow' + '$OMC$PositiveMax'(-'radiator.port_b.m_flow', 1e-7) * 'radiator.port_b.h_outflow') / ('$OMC$PositiveMax'(-'tank.ports[1].m_flow', 1e-7) + '$OMC$PositiveMax'(-'radiator.port_b.m_flow', 1e-7)), fill(0.0, 0)));
+    'sensor_T_return.T' = ((max(-'tank.ports[1].m_flow', 1e-7) * 'tank.ports[1].h_outflow' + max(-'radiator.port_b.m_flow', 1e-7) * 'radiator.port_b.h_outflow') / (max(-'tank.ports[1].m_flow', 1e-7) + max(-'radiator.port_b.m_flow', 1e-7)) - 104929.29464256502 - ('sensor_T_return.port.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
     'sensor_T_return.port.m_flow' = 0.0;
     'sensor_T_return.port.h_outflow' = 84019.86712782076;
     'handle.y' = 0.1 + (if time < 2000.0 then 0.0 else 0.9);
@@ -2571,10 +1744,10 @@ package 'HeatingSystem'
     'pipe.flowModel.roughnesses[2]' = 'pipe.roughnessesFM[2]';
     'pipe.flowModel.dheights[1]' = 'pipe.dheightsFM[1]';
     'pipe.flowModel.pathLengths[1]' = 'pipe.pathLengths[1]';
-    'pipe.flowModel.rhos[1]' = 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.density'('pipe.flowModel.states[1]');
-    'pipe.flowModel.rhos[2]' = 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.density'('pipe.flowModel.states[2]');
-    'pipe.flowModel.mus[1]' = 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.dynamicViscosity'('pipe.flowModel.states[1]');
-    'pipe.flowModel.mus[2]' = 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.dynamicViscosity'('pipe.flowModel.states[2]');
+    'pipe.flowModel.rhos[1]' = (1.0 + ('pipe.flowModel.states[1].p' - 101325.0) * 4.5154260364919865e-10 - ('pipe.flowModel.states[1].T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'pipe.flowModel.rhos[2]' = (1.0 + ('pipe.flowModel.states[2].p' - 101325.0) * 4.5154260364919865e-10 - ('pipe.flowModel.states[2].T' - 298.15) * 2.571314017648316e-4) * 997.0480319717385;
+    'pipe.flowModel.mus[1]' = 8.9e-4;
+    'pipe.flowModel.mus[2]' = 8.9e-4;
     'pipe.flowModel.pathLengths_internal[1]' = 'pipe.flowModel.pathLengths[1]';
     'pipe.flowModel.Res_turbulent_internal[1]' = 4000.0;
     'pipe.flowModel.diameters[1]' = 0.5 * ('pipe.flowModel.dimensions[1]' + 'pipe.flowModel.dimensions[2]');
@@ -2582,7 +1755,7 @@ package 'HeatingSystem'
     'pipe.flowModel.rhos_act[1]' = noEvent(if 'pipe.flowModel.m_flows[1]' > 0.0 then 'pipe.flowModel.rhos[1]' else 'pipe.flowModel.rhos[2]');
     'pipe.flowModel.mus_act[1]' = noEvent(if 'pipe.flowModel.m_flows[1]' > 0.0 then 'pipe.flowModel.mus[1]' else 'pipe.flowModel.mus[2]');
     'pipe.flowModel.Ib_flows[1]' = 0.0;
-    'pipe.flowModel.Fs_p[1]' = 0.5 * ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') * ('Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.pressure'('pipe.flowModel.states[2]') - 'Modelica.Fluid.Examples.HeatingSystem.pipe.flowModel.Medium.pressure'('pipe.flowModel.states[1]'));
+    'pipe.flowModel.Fs_p[1]' = 0.5 * ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]') * ('pipe.flowModel.states[2].p' - 'pipe.flowModel.states[1].p');
     'pipe.flowModel.dps_fg[1]' = 'pipe.flowModel.Fs_fg[1]' * 2.0 / ('pipe.flowModel.crossAreas[1]' + 'pipe.flowModel.crossAreas[2]');
     'pipe.flowModel.Is[1]' = 'pipe.flowModel.m_flows[1]' * 'pipe.flowModel.pathLengths[1]';
     0.0 = 'pipe.flowModel.Ib_flows[1]' - 'pipe.flowModel.Fs_p[1]' - 'pipe.flowModel.Fs_fg[1]';
@@ -2590,8 +1763,8 @@ package 'HeatingSystem'
     'pipe.vs[2]' = 0.5 * ('pipe.m_flows[2]' + 'pipe.m_flows[3]') / 'pipe.mediums[2].d' / 7.853981633974484e-5;
     'pipe.heatTransfer.surfaceAreas[1]' = 0.15707963267948966;
     'pipe.heatTransfer.surfaceAreas[2]' = 0.15707963267948966;
-    'pipe.heatTransfer.Ts[1]' = 'Modelica.Fluid.Examples.HeatingSystem.pipe.heatTransfer.Medium.temperature'('pipe.heatTransfer.states[1]');
-    'pipe.heatTransfer.Ts[2]' = 'Modelica.Fluid.Examples.HeatingSystem.pipe.heatTransfer.Medium.temperature'('pipe.heatTransfer.states[2]');
+    'pipe.heatTransfer.Ts[1]' = 'pipe.heatTransfer.states[1].T';
+    'pipe.heatTransfer.Ts[2]' = 'pipe.heatTransfer.states[2].T';
     'pipe.heatTransfer.vs[1]' = 'pipe.vs[1]';
     'pipe.heatTransfer.vs[2]' = 'pipe.vs[2]';
     'pipe.heatTransfer.lengths[1]' = 5.0;
@@ -2627,10 +1800,10 @@ package 'HeatingSystem'
     'pipe.port_b.m_flow' = -'pipe.m_flows[3]';
     'pipe.port_a.h_outflow' = 'pipe.mediums[1].h';
     'pipe.port_b.h_outflow' = 'pipe.mediums[2].h';
-    'pipe.state_a.p' = ('Modelica.Fluid.Examples.HeatingSystem.pipe.Medium.setState_phX'('pipe.port_a.p', 'heater.port_b.h_outflow', fill(0.0, 0))).p;
-    'pipe.state_a.T' = ('Modelica.Fluid.Examples.HeatingSystem.pipe.Medium.setState_phX'('pipe.port_a.p', 'heater.port_b.h_outflow', fill(0.0, 0))).T;
-    'pipe.state_b.p' = ('Modelica.Fluid.Examples.HeatingSystem.pipe.Medium.setState_phX'('pipe.port_b.p', 'pipe.port_b.h_outflow', fill(0.0, 0))).p;
-    'pipe.state_b.T' = ('Modelica.Fluid.Examples.HeatingSystem.pipe.Medium.setState_phX'('pipe.port_b.p', 'pipe.port_b.h_outflow', fill(0.0, 0))).T;
+    'pipe.state_a.p' = 'pipe.port_a.p';
+    'pipe.state_a.T' = ('heater.port_b.h_outflow' - 104929.29464256502 - ('pipe.port_a.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
+    'pipe.state_b.p' = 'pipe.port_b.p';
+    'pipe.state_b.T' = ('pipe.port_b.h_outflow' - 104929.29464256502 - ('pipe.port_b.p' - 101325.0) * 9.260700016004721e-4) / 4181.885502948851 + 298.15;
     'pipe.statesFM[1].p' = 'pipe.mediums[1].state.p';
     'pipe.statesFM[1].T' = 'pipe.mediums[1].state.T';
     'pipe.statesFM[2].p' = 'pipe.mediums[2].state.p';

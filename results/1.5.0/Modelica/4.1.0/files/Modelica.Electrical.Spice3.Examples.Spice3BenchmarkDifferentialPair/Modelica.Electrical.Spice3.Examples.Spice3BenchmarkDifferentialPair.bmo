@@ -4,7 +4,7 @@ package 'Spice3BenchmarkDifferentialPair'
     input 'Modelica.Electrical.Spice3.Internal.Bjt.Bjt' 'in_p3';
     input 'Modelica.Electrical.Spice3.Internal.Bjt.BjtModelLineParams' 'in_p';
     input 'Modelica.Electrical.Spice3.Internal.Bjt.BjtCalc' 'in_c';
-    input Real[6] 'in_m_pVoltageValues'(unit = {"V", "V", "V", "V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential", "ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    input Real 'in_m_pVoltageValues'[6](unit = {"V", "V", "V", "V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential", "ElectricPotential", "ElectricPotential", "ElectricPotential"});
     output 'Modelica.Electrical.Spice3.Internal.Bjt.CurrentsCapacitances' 'out_cc';
     Real 'vce'(unit = "V", quantity = "ElectricPotential");
     Real 'vbe'(unit = "V", quantity = "ElectricPotential");
@@ -90,7 +90,7 @@ package 'Spice3BenchmarkDifferentialPair'
       'qb' := 'q1';
       'dqbdve' := 'q1' * 'qb' * 'in_p'.'m_invEarlyVoltR';
       'dqbdvc' := 'q1' * 'qb' * 'in_p'.'m_invEarlyVoltF';
-    elseif true then
+    else
       'q2' := 'in_p'.'m_invRollOffF' * 'cbe' + 'in_p'.'m_invRollOffR' * 'cbc';
       'arg' := max(0.0, 1.0 + 4.0 * 'q2');
       'sqarg' := 1.0;
@@ -194,10 +194,10 @@ package 'Spice3BenchmarkDifferentialPair'
 
     if 'vcs' < 0.0 then
       'arg' := 1.0 - 'vcs' / 'in_p'.'m_potentialSubstrate';
-      'sarg' := exp(-'in_p'.'m_exponentialSubstrate' * log('arg'));
+      'sarg' := exp(-'in_p'.'m_exponentialSubstrate' * 'Modelica.Math.log'('arg'));
       'out_cc'.'capcs' := 'in_p3'.'m_CScap' * 'sarg';
       'chargecs' := 'in_p'.'m_potentialSubstrate' * 'in_p3'.'m_CScap' * (1.0 - 'arg' * 'sarg') / (1.0 - 'in_p'.'m_exponentialSubstrate');
-    elseif true then
+    else
       'out_cc'.'capcs' := 'in_p3'.'m_CScap' * (1.0 + 'in_p'.'m_exponentialSubstrate' * 'vcs' / 'in_p'.'m_potentialSubstrate');
       'chargecs' := 'vcs' * 'in_p3'.'m_CScap' * (1.0 + 'in_p'.'m_exponentialSubstrate' * 'vcs' / (2.0 * 'in_p'.'m_potentialSubstrate'));
     end if;
@@ -205,98 +205,6 @@ package 'Spice3BenchmarkDifferentialPair'
     'out_cc'.'iXX' := 1.0;
     annotation(smoothOrder(normallyConstant = 'in_p3') = 1);
   end 'Modelica.Electrical.Spice3.Internal.Bjt.bjtNoBypassCode';
-
-  function 'Modelica.Electrical.Spice3.Internal.Functions.junction2SPICE3BJT' "Junction current and conductance calculation"
-    input Real 'voltage'(unit = "V", quantity = "ElectricPotential");
-    input Real 'temp'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'ncoeff1';
-    input Real 'ncoeff2';
-    input Real 'satcur1'(unit = "A", quantity = "ElectricCurrent");
-    input Real 'satcur2'(unit = "A", quantity = "ElectricCurrent");
-    output Real 'current1'(unit = "A", quantity = "ElectricCurrent");
-    output Real 'cond1'(unit = "S", quantity = "Conductance");
-    output Real 'current2'(unit = "A", quantity = "ElectricCurrent");
-    output Real 'cond2'(unit = "S", quantity = "Conductance");
-    Real 'vte'(unit = "V", quantity = "ElectricPotential");
-    Real 'vtn'(unit = "V", quantity = "ElectricPotential");
-    Real 'evd';
-  algorithm
-    'vtn' := 8.617251692337959e-5 * 'temp' * 'ncoeff1';
-    'vte' := 8.617251692337959e-5 * 'temp' * 'ncoeff2';
-
-    if 'voltage' > (-5.0 * 'vtn') then
-      'evd' := exp('voltage' / 'vtn');
-      'current1' := 'satcur1' * ('evd' - 1.0) + 1e-12 * 'voltage';
-      'cond1' := 'satcur1' * 'evd' / 'vtn' + 1e-12;
-
-      if 'satcur2' == 0.0 then
-        'current2' := 0.0;
-        'cond2' := 0.0;
-      elseif true then
-        'evd' := exp('voltage' / 'vte');
-        'current2' := 'satcur2' * ('evd' - 1.0);
-        'cond2' := 'satcur2' * 'evd' / 'vte';
-      end if;
-    elseif true then
-      'cond1' := 1e-12 - 'satcur1' / 'voltage';
-      'current1' := 'cond1' * 'voltage';
-      'cond2' := -'satcur2' / 'voltage';
-      'current2' := -'satcur2';
-    end if;
-  end 'Modelica.Electrical.Spice3.Internal.Functions.junction2SPICE3BJT';
-
-  function 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapRevised' "Junction capacity"
-    input Real 'capin'(min = -1e60, unit = "F", quantity = "Capacitance");
-    input Real 'voltage'(unit = "V", quantity = "ElectricPotential");
-    input Real 'depcap'(unit = "V", quantity = "ElectricPotential");
-    input Real 'mj';
-    input Real 'phij';
-    input Real 'f1'(unit = "V", quantity = "ElectricPotential");
-    input Real 'f2';
-    input Real 'f3';
-    output Real 'capout'(min = -1e60, unit = "F", quantity = "Capacitance");
-    output Real 'charge'(unit = "C", quantity = "ElectricCharge");
-    Real 'arg';
-    Real 'sarg';
-    Real 'czof2';
-  algorithm
-    if 'voltage' < 'depcap' then
-      'arg' := 1.0 - 'voltage' / 'phij';
-
-      if 'mj' == 0.5 then
-        'sarg' := 1.0 / sqrt('arg');
-      elseif true then
-        'sarg' := exp(-'mj' * log('arg'));
-      end if;
-
-      'capout' := 'capin' * 'sarg';
-      'charge' := 'phij' * ('capin' * (1.0 - 'arg' * 'sarg') / (1.0 - 'mj'));
-    elseif true then
-      'czof2' := 'capin' / 'f2';
-      'capout' := 'czof2' * ('f3' + 'mj' * 'voltage' / 'phij');
-      'charge' := 'capin' * 'f1' + 'czof2' * ('f3' * ('voltage' - 'depcap') + 'mj' / (2.0 * 'phij') * ('voltage' ^ 2.0 - 'depcap' ^ 2.0));
-    end if;
-  end 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapRevised';
-
-  function 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapTransTime' "Junction capacitance transittime calculation"
-    input Real 'capin'(min = -1e60, unit = "F", quantity = "Capacitance");
-    input Real 'voltage'(unit = "V", quantity = "ElectricPotential");
-    input Real 'depcap'(unit = "V", quantity = "ElectricPotential");
-    input Real 'mj';
-    input Real 'phij';
-    input Real 'f1'(unit = "V", quantity = "ElectricPotential");
-    input Real 'f2';
-    input Real 'f3';
-    input Real 'transittime'(unit = "s", quantity = "Time");
-    input Real 'conduct'(unit = "S", quantity = "Conductance");
-    input Real 'current'(unit = "A", quantity = "ElectricCurrent");
-    output Real 'capout'(min = -1e60, unit = "F", quantity = "Capacitance");
-    output Real 'charge'(unit = "C", quantity = "ElectricCharge");
-  algorithm
-    ('capout', 'charge') := 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapRevised'('capin', 'voltage', 'depcap', 'mj', 'phij', 'f1', 'f2', 'f3');
-    'capout' := 'capout' + 'transittime' * 'conduct';
-    'charge' := 'charge' + 'transittime' * 'current';
-  end 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapTransTime';
 
   record 'Modelica.Electrical.Spice3.Internal.Bjt.Bjt'
     Real 'm_dTemp'(nominal = 300.0, start = 300.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");

@@ -1,45 +1,27 @@
 //! base 0.1.0
 package 'BatteryDischargeCharge'
-  function 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue' "Second derivative of interpolated 1-dim. table defined by matrix"
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
     input Real 'u';
-    input Real 'der_u';
-    input Real 'der2_u';
-    output Real 'der2_y';
-  external "C" 'der2_y' = ModelicaStandardTables_CombiTable1D_getDer2Value('tableID', 'icol', 'u', 'der_u', 'der2_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
 
-  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValue' "Derivative of interpolated 1-dim. table defined by matrix"
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer' "Interpolate 1-dim. table defined by matrix (but do not provide a derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
     input Real 'u';
-    input Real 'der_u';
-    output Real 'der_y';
-  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 2) = 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue');
-  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValue';
-
-  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    input Real 'der_u';
-    output Real 'der_y';
-  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer';
 
   function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     output Real 'uMax';
   external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMin';
-  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
 
   function 'Modelica.Blocks.Tables.Internal.getTable1DValue' "Interpolate 1-dim. table defined by matrix"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
@@ -50,29 +32,30 @@ package 'BatteryDischargeCharge'
     annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValue');
   end 'Modelica.Blocks.Tables.Internal.getTable1DValue';
 
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer' "Interpolate 1-dim. table defined by matrix (but do not provide a derivative function)"
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
     input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
 
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMin';
+  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValue' "Derivative of interpolated 1-dim. table defined by matrix"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
     input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
-
-  function 'Modelica.Math.BooleanVectors.oneTrue' "Returns true, if exactly one element of the Boolean input vector is true (\"xor\")"
-    input Boolean[:] 'b';
-    output Boolean 'result';
-  algorithm
-    'result' := sum(if 'b'['i'] then 1 else 0 for 'i' in 1:size('b', 1)) == 1;
-  end 'Modelica.Math.BooleanVectors.oneTrue';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 2) = 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue');
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValue';
 
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
@@ -86,8 +69,8 @@ package 'BatteryDischargeCharge'
     function constructor "Initialize 1-dim. table defined by matrix"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
-      input Integer[:] 'columns';
+      input Real 'table'[:, :];
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
       input Boolean 'verboseRead' = true;
@@ -155,7 +138,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'cellData1.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance at T_ref";
     parameter Real 'cellData1.Idis'(unit = "A", quantity = "ElectricCurrent") = 0.0 "Self-discharge current at SOC = SOCmax" annotation(Evaluate = true);
     parameter Real 'cellData1.R0'(unit = "Ohm", quantity = "Resistance") = 0.0035 "Inner resistance without parallel C";
-    Real 'battery1.displaySOC' = 'battery1.SOC' "SOC for display";
+    Real 'battery1.displaySOC' "SOC for display";
     parameter Integer 'battery1.Ns'(min = 1) = 10 "Number of serial connected cells";
     parameter Integer 'battery1.Np'(min = 1) = 2 "Number of parallel connected cells";
     constant String 'battery1.cellData.CellType' = "Cell Data" "Indicates cell type";
@@ -185,9 +168,9 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'battery1.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'battery1.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'battery1.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'battery1.i'(unit = "A", quantity = "ElectricCurrent") = 'battery1.p.i' "Current into the battery";
-    Real 'battery1.power'(unit = "W", quantity = "Power") = 'battery1.v' * 'battery1.i' "Power to the battery";
-    Real 'battery1.SOC'(fixed = true, start = 0.95) = 'battery1.limIntegrator.y' "State of charge";
+    Real 'battery1.i'(unit = "A", quantity = "ElectricCurrent") "Current into the battery";
+    Real 'battery1.power'(unit = "W", quantity = "Power") "Power to the battery";
+    Real 'battery1.SOC'(fixed = true, start = 0.95) "State of charge";
     Real 'battery1.currentSensor.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'battery1.currentSensor.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'battery1.currentSensor.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -247,8 +230,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'battery1.selfDischarge.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'battery1.selfDischarge.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'battery1.selfDischarge.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'battery1.selfDischarge.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'battery1.selfDischarge.T_heatPort' "Port temperature";
-    Real 'battery1.selfDischarge.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'battery1.selfDischarge.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'battery1.selfDischarge.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'battery1.selfDischarge.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'battery1.selfDischarge.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'battery1.selfDischarge.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'battery1.selfDischarge.G_actual'(unit = "S", quantity = "Conductance") "Actual conductance = G_ref/(1 + alpha*(T_heatPort - T_ref))";
@@ -263,8 +246,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'battery1.r0.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'battery1.r0.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'battery1.r0.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'battery1.r0.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'battery1.r0.T_heatPort' "Port temperature";
-    Real 'battery1.r0.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'battery1.r0.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'battery1.r0.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'battery1.r0.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'battery1.r0.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'battery1.r0.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'battery1.r0.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -454,7 +437,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'cellData2.rcData[2].T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Reference temperature";
     parameter Real 'cellData2.rcData[2].alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance at T_ref";
     parameter Real 'cellData2.rcData[2].C'(min = 0.0, unit = "F", quantity = "Capacitance") = 28571.42857142857 "Capacitance of RC-element (=T/R)";
-    Real 'battery2.displaySOC' = 'battery2.SOC' "SOC for display";
+    Real 'battery2.displaySOC' "SOC for display";
     parameter Integer 'battery2.Ns'(min = 1) = 10 "Number of serial connected cells";
     parameter Integer 'battery2.Np'(min = 1) = 2 "Number of parallel connected cells";
     constant String 'battery2.cellData.CellType' = "Example data" "Indicates cell type";
@@ -603,9 +586,9 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'battery2.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'battery2.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'battery2.n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'battery2.i'(unit = "A", quantity = "ElectricCurrent") = 'battery2.p.i' "Current into the battery";
-    Real 'battery2.power'(unit = "W", quantity = "Power") = 'battery2.v' * 'battery2.i' "Power to the battery";
-    Real 'battery2.SOC'(fixed = true, start = 0.95) = 'battery2.limIntegrator.y' "State of charge";
+    Real 'battery2.i'(unit = "A", quantity = "ElectricCurrent") "Current into the battery";
+    Real 'battery2.power'(unit = "W", quantity = "Power") "Power to the battery";
+    Real 'battery2.SOC'(fixed = true, start = 0.95) "State of charge";
     Real 'battery2.currentSensor.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'battery2.currentSensor.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'battery2.currentSensor.n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -719,8 +702,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'battery2.selfDischarge.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'battery2.selfDischarge.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'battery2.selfDischarge.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'battery2.selfDischarge.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'battery2.selfDischarge.T_heatPort' "Port temperature";
-    Real 'battery2.selfDischarge.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'battery2.selfDischarge.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'battery2.selfDischarge.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'battery2.selfDischarge.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'battery2.selfDischarge.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'battery2.selfDischarge.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'battery2.selfDischarge.G_actual'(unit = "S", quantity = "Conductance") "Actual conductance = G_ref/(1 + alpha*(T_heatPort - T_ref))";
@@ -735,8 +718,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'battery2.r0.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'battery2.r0.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'battery2.r0.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'battery2.r0.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'battery2.r0.T_heatPort' "Port temperature";
-    Real 'battery2.r0.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'battery2.r0.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'battery2.r0.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'battery2.r0.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'battery2.r0.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'battery2.r0.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'battery2.r0.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -758,8 +741,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'battery2.resistor[1].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'battery2.resistor[1].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'battery2.resistor[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'battery2.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'battery2.resistor[1].T_heatPort' "Port temperature";
-    Real 'battery2.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'battery2.resistor[1].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'battery2.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'battery2.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'battery2.resistor[1].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'battery2.resistor[1].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'battery2.resistor[1].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -774,8 +757,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'battery2.resistor[2].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'battery2.resistor[2].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'battery2.resistor[2].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'battery2.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'battery2.resistor[2].T_heatPort' "Port temperature";
-    Real 'battery2.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'battery2.resistor[2].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'battery2.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'battery2.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'battery2.resistor[2].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'battery2.resistor[2].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'battery2.resistor[2].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -839,6 +822,26 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'energy1.y' = 0.0;
     'energy2.y' = 0.0;
   equation
+    'battery1.displaySOC' = 'battery1.SOC';
+    'battery1.i' = 'battery1.p.i';
+    'battery1.power' = 'battery1.v' * 'battery1.i';
+    'battery1.SOC' = 'battery1.limIntegrator.y';
+    'battery1.selfDischarge.heatPort.T' = 'battery1.selfDischarge.T_heatPort';
+    'battery1.selfDischarge.heatPort.Q_flow' = -'battery1.selfDischarge.LossPower';
+    'battery1.r0.heatPort.T' = 'battery1.r0.T_heatPort';
+    'battery1.r0.heatPort.Q_flow' = -'battery1.r0.LossPower';
+    'battery2.displaySOC' = 'battery2.SOC';
+    'battery2.i' = 'battery2.p.i';
+    'battery2.power' = 'battery2.v' * 'battery2.i';
+    'battery2.SOC' = 'battery2.limIntegrator.y';
+    'battery2.selfDischarge.heatPort.T' = 'battery2.selfDischarge.T_heatPort';
+    'battery2.selfDischarge.heatPort.Q_flow' = -'battery2.selfDischarge.LossPower';
+    'battery2.r0.heatPort.T' = 'battery2.r0.T_heatPort';
+    'battery2.r0.heatPort.Q_flow' = -'battery2.r0.LossPower';
+    'battery2.resistor[1].heatPort.T' = 'battery2.resistor[1].T_heatPort';
+    'battery2.resistor[1].heatPort.Q_flow' = -'battery2.resistor[1].LossPower';
+    'battery2.resistor[2].heatPort.T' = 'battery2.resistor[2].T_heatPort';
+    'battery2.resistor[2].heatPort.Q_flow' = -'battery2.resistor[2].LossPower';
     'battery1.r0.n.v' = 'battery1.n.v';
     'battery1.gainV.y' = 'battery1.ocv.v';
     'battery1.ocv_soc.y[1]' = 'battery1.gainV.u';
@@ -932,8 +935,8 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     'powerSensor2.nc.i' + 'battery2.p.i' = 0.0;
     'powerSensor2.voltageSensor.n.i' - 'powerSensor2.nv.i' = 0.0;
     'powerSensor2.currentSensor.n.i' - 'powerSensor2.nc.i' = 0.0;
-    'pulseSeries.on1' = 'Modelica.Math.BooleanVectors.oneTrue'({time >= 60.0 and time < 120.0, time >= 180.0 and time < 240.0, time >= 300.0 and time < 360.0, time >= 420.0 and time < 480.0, time >= 540.0 and time < 600.0, time >= 660.0 and time < 720.0, time >= 780.0 and time < 840.0});
-    'pulseSeries.on2' = 'Modelica.Math.BooleanVectors.oneTrue'({time >= 960.0 and time < 1020.0, time >= 1080.0 and time < 1140.0, time >= 1200.0 and time < 1260.0, time >= 1320.0 and time < 1380.0, time >= 1440.0 and time < 1500.0, time >= 1560.0 and time < 1620.0, time >= 1680.0 and time < 1740.0});
+    'pulseSeries.on1' = sum(if time >= ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})[(1:7)['i']] and time < ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})[(1:7)['i']] + 60.0 then 1 else 0 for 'i' in 1:size({time >= ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})['k'] and time < ({60.0, 180.0, 300.0, 420.0, 540.0, 660.0, 780.0})['k'] + 60.0 for 'k' in 1:7}, 1)) == 1;
+    'pulseSeries.on2' = sum(if time >= ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})[(1:7)['i']] and time < ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})[(1:7)['i']] + 60.0 then 1 else 0 for 'i' in 1:size({time >= ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})['k'] and time < ({960.0, 1080.0, 1200.0, 1320.0, 1440.0, 1560.0, 1680.0})['k'] + 60.0 for 'k' in 1:7}, 1)) == 1;
     'pulseSeries.y' = if 'pulseSeries.on1' then 1.0 else if 'pulseSeries.on2' then -1.0 else 0.0;
     'battery1.currentSensor.p.v' = 'battery1.currentSensor.n.v';
     'battery1.currentSensor.p.i' = 'battery1.currentSensor.i';
@@ -992,7 +995,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
       'battery2.ocv_soc.y[1]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer'('battery2.ocv_soc.tableID', 1, 'battery2.ocv_soc.u');
     elseif 'battery2.ocv_soc.smoothness' == 'Modelica.Blocks.Types.Smoothness'.'LinearSegments' then
       'battery2.ocv_soc.y[1]' = 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2'('battery2.ocv_soc.tableID', 1, 'battery2.ocv_soc.u');
-    elseif true then
+    else
       'battery2.ocv_soc.y[1]' = 'Modelica.Blocks.Tables.Internal.getTable1DValue'('battery2.ocv_soc.tableID', 1, 'battery2.ocv_soc.u');
     end if;
 

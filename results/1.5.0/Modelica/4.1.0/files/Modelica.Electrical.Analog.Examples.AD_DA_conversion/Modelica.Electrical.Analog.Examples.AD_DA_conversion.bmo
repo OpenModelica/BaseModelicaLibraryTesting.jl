@@ -113,7 +113,7 @@ package 'AD_DA_conversion'
 
     if 'pulse.sampling' then
       'pulse.y' = if time < 0.0 or time >= 'pulse.T0' + 1e-5 then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' else 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'';
-    elseif true then
+    else
       'pulse.y' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
     end if;
 
@@ -145,7 +145,7 @@ package 'AD_DA_conversion'
       'aD_Converter.z' := if 'aD_Converter.u' > 0.0 then integer('aD_Converter.u' / 10.0 * 127.0 + 0.5) else 0;
 
       for 'i' in 1:7 loop
-        'aD_Converter.y['i']' := if mod('aD_Converter.z', 2) > 0 then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' else 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
+        'aD_Converter.y[\'i\']' := if mod('aD_Converter.z', 2) > 0 then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' else 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
         'aD_Converter.z' := div('aD_Converter.z', 2);
       end for;
     end when;
@@ -154,7 +154,7 @@ package 'AD_DA_conversion'
       'dA_Converter.y' := 0.0;
 
       for 'i' in 1:7 loop
-        'dA_Converter.y' := if 'dA_Converter.x['i']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' or 'dA_Converter.x['i']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'' then 'dA_Converter.y' + 2.0 ^ ('i' - 1) else 'dA_Converter.y';
+        'dA_Converter.y' := if 'dA_Converter.x[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' or 'dA_Converter.x[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'' then 'dA_Converter.y' + 2.0 ^ ('i' - 1) else 'dA_Converter.y';
       end for;
 
       'dA_Converter.vout' := 'dA_Converter.y' * 10.0 / 127.0;

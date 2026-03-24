@@ -1,7 +1,7 @@
 //! base 0.1.0
 package 'Interaction1'
   function 'Modelica.Blocks.Examples.Interaction1.timeTable.getInterpolationCoefficients' "Determine interpolation coefficients and next time event"
-    input Real[:, 2] 'table';
+    input Real 'table'[:, 2];
     input Real 'offset';
     input Real 'startTimeScaled';
     input Real 'timeScaled';
@@ -30,7 +30,7 @@ package 'Interaction1'
     elseif 'nrow' < 2 then
       'a' := 0.0;
       'b' := 'offset' + 'table'[1,'columns'];
-    elseif true then
+    else
       'tp' := 'tp' - 'shiftTimeScaled';
 
       while 'next' < 'nrow' and 'tp' >= 'table'['next',1] loop
@@ -51,7 +51,7 @@ package 'Interaction1'
       if 'dt' <= 'TimeEps' * abs('table'['next',1]) then
         'a' := 0.0;
         'b' := 'offset' + 'table'['next','columns'];
-      elseif true then
+      else
         'a' := ('table'['next','columns'] - 'table'['next0','columns']) / 'dt';
         'b' := 'offset' + 'table'['next0','columns'] - 'a' * 'table'['next0',1];
       end if;
@@ -59,6 +59,12 @@ package 'Interaction1'
 
     'b' := 'b' - 'a' * 'shiftTimeScaled';
   end 'Modelica.Blocks.Examples.Interaction1.timeTable.getInterpolationCoefficients';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMin';
+  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
 
   function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
     input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
@@ -72,12 +78,6 @@ package 'Interaction1'
     output Real 'timeMax';
   external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
-
-  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
-    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
-    output Real 'timeMin';
-  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
 
   function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer' "Interpolate 1-dim. table where first column is time (but do not provide a derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
@@ -101,9 +101,9 @@ package 'Interaction1'
     function constructor "Initialize 1-dim. table where first column is time"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
+      input Real 'table'[:, :];
       input Real 'startTime';
-      input Integer[:] 'columns';
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation';
       input Real 'shiftTime' = 0.0;
@@ -124,7 +124,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
 
   model 'Interaction1' "Demonstrates the usage of blocks from Modelica.Blocks.Interaction.Show"
     parameter Boolean 'integerValue.use_numberPort' = true "= true, if numberPort enabled" annotation(Evaluate = true);
-    Integer 'integerValue.number' = 0 "Number to visualize if use_numberPort=false (time varying)";
+    Integer 'integerValue.number' "Number to visualize if use_numberPort=false (time varying)";
     Integer 'integerValue.numberPort' "Number to be shown in diagram layer if use_numberPort = true";
     Integer 'integerValue.showNumber';
     parameter Real 'integerTable.table[1,1]' = 0.0 "Table matrix (first column: time; second column: y)";
@@ -211,7 +211,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     discrete Real 'timeTable.nextEventScaled'(fixed = true, start = 0.0) "Next scaled event instant";
     Real 'timeTable.timeScaled' "Scaled time";
     parameter Boolean 'realValue.use_numberPort' = true "= true, if numberPort enabled" annotation(Evaluate = true);
-    Real 'realValue.number' = 0.0 "Number to visualize if use_numberPort=false (time varying)";
+    Real 'realValue.number' "Number to visualize if use_numberPort=false (time varying)";
     parameter Integer 'realValue.significantDigits'(min = 1) = 2 "Number of significant digits to be shown";
     Real 'realValue.numberPort' "Number to be shown in diagram layer if use_numberPort = true";
     Real 'realValue.showNumber';
@@ -281,7 +281,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     parameter Real 'booleanTable.realToBoolean.threshold' = 0.5 "Output signal y is true, if input u >= threshold";
     parameter Integer 'booleanTable.n' = 9 "Number of table points";
     parameter Boolean 'booleanValue.use_activePort' = true "= true, if activePort enabled" annotation(Evaluate = true);
-    Boolean 'booleanValue.active' = false "Boolean variable to visualize if use_activePort=false (time varying)";
+    Boolean 'booleanValue.active' "Boolean variable to visualize if use_activePort=false (time varying)";
     Boolean 'booleanValue.activePort' "Boolean variable to be shown in diagram layer if use_activePort = true";
     Boolean 'booleanValue.showActive';
     parameter Real 'start.buttonTimeTable[1]'(unit = "s", quantity = "Time") = 1.0 "Time instants where button is pressed";
@@ -390,6 +390,9 @@ end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
     pre('stop.pre_reset[1]') = false;
     pre('stop.reset[1]') = false;
   equation
+    'integerValue.number' = 0;
+    'realValue.number' = 0.0;
+    'booleanValue.active' = false;
     'integerValue.numberPort' = 'integerValue.showNumber';
     'integerTable.combiTimeTable.y[1]' = 'integerTable.realToInteger.u';
     'integerTable.realToInteger.y' = 'integerTable.y';

@@ -36,12 +36,12 @@ package 'HighPass'
     parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'derivative.opAmp.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'NoHomotopy' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
     Real 'derivative.opAmp.vps'(unit = "V", quantity = "ElectricPotential") "Positive supply voltage";
     Real 'derivative.opAmp.vns'(unit = "V", quantity = "ElectricPotential") "Negative supply voltage";
-    Real 'derivative.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") = 'derivative.opAmp.in_p.v' - 'derivative.opAmp.in_n.v' "Input voltage difference";
-    Real 'derivative.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") = 'derivative.opAmp.out.v' "Output voltage to ground";
-    Real 'derivative.opAmp.p_in'(unit = "W", quantity = "Power") = 'derivative.opAmp.in_p.v' * 'derivative.opAmp.in_p.i' + 'derivative.opAmp.in_n.v' * 'derivative.opAmp.in_n.i' "Input power";
-    Real 'derivative.opAmp.p_out'(unit = "W", quantity = "Power") = 'derivative.opAmp.out.v' * 'derivative.opAmp.out.i' "Output power";
-    Real 'derivative.opAmp.p_s'(unit = "W", quantity = "Power") = -('derivative.opAmp.p_in' + 'derivative.opAmp.p_out') "Supply power";
-    Real 'derivative.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") = 'derivative.opAmp.p_s' / ('derivative.opAmp.vps' - 'derivative.opAmp.vns') "Supply current";
+    Real 'derivative.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") "Input voltage difference";
+    Real 'derivative.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") "Output voltage to ground";
+    Real 'derivative.opAmp.p_in'(unit = "W", quantity = "Power") "Input power";
+    Real 'derivative.opAmp.p_out'(unit = "W", quantity = "Power") "Output power";
+    Real 'derivative.opAmp.p_s'(unit = "W", quantity = "Power") "Supply power";
+    Real 'derivative.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") "Supply current";
     Real 'derivative.opAmp.in_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'derivative.opAmp.in_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'derivative.opAmp.in_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -54,7 +54,7 @@ package 'HighPass'
     parameter Real 'derivative.R2'(unit = "Ohm", quantity = "Resistance") = 1000.0 "Calculated resistance to reach k";
     parameter Real 'derivative.T'(unit = "s", quantity = "Time") = 0.15915494309189535 "Time constant";
     parameter Real 'derivative.C'(min = 0.0, unit = "F", quantity = "Capacitance") = 1.5915494309189535e-4 "Calculated capacitance to reach T";
-    Real 'derivative.v'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential") = 'derivative.c.v' "Capacitor voltage = state";
+    Real 'derivative.v'(fixed = true, start = 0.0, unit = "V", quantity = "ElectricPotential") "Capacitor voltage = state";
     parameter Real 'derivative.r1.R'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 1000.0 "Resistance at temperature T_ref";
     parameter Real 'derivative.r1.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15 "Reference temperature";
     parameter Real 'derivative.r1.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -119,6 +119,13 @@ package 'HighPass'
     parameter Real 'vIn.offset'(unit = "V", quantity = "ElectricPotential") = 0.0 "Voltage offset";
     parameter Real 'vIn.startTime'(unit = "s", quantity = "Time") = -0.035 "Time offset";
   equation
+    'derivative.opAmp.v_in' = 'derivative.opAmp.in_p.v' - 'derivative.opAmp.in_n.v';
+    'derivative.opAmp.v_out' = 'derivative.opAmp.out.v';
+    'derivative.opAmp.p_in' = 'derivative.opAmp.in_p.v' * 'derivative.opAmp.in_p.i' + 'derivative.opAmp.in_n.v' * 'derivative.opAmp.in_n.i';
+    'derivative.opAmp.p_out' = 'derivative.opAmp.out.v' * 'derivative.opAmp.out.i';
+    'derivative.opAmp.p_s' = -('derivative.opAmp.p_in' + 'derivative.opAmp.p_out');
+    'derivative.opAmp.i_s' = 'derivative.opAmp.p_s' / ('derivative.opAmp.vps' - 'derivative.opAmp.vns');
+    'derivative.v' = 'derivative.c.v';
     'derivative.n1.v' = 'derivative.opAmp.in_p.v';
     'derivative.n1.v' = 'derivative.n2.v';
     'derivative.opAmp.in_p.i' - 'derivative.n1.i' - 'derivative.n2.i' = 0.0;

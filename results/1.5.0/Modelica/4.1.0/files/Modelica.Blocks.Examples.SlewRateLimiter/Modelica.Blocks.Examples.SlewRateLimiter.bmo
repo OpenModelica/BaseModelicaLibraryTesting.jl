@@ -5,10 +5,10 @@ package 'SlewRateLimiter'
   model 'SlewRateLimiter' "Demonstrate usage of Nonlinear.SlewRateLimiter"
     parameter Real 'vMax'(unit = "m/s", quantity = "Velocity") = 2.0 "Max. velocity";
     parameter Real 'aMax'(unit = "m/s2", quantity = "Acceleration") = 20.0 "Max. acceleration";
-    Real 's'(unit = "m", quantity = "Length") = 'positionStep.y' "Reference position";
-    Real 'sSmoothed'(unit = "m", quantity = "Length") = 'positionSmoothed.y' "Smoothed position";
-    Real 'vLimited'(unit = "m/s", quantity = "Velocity") = 'limit_a.y' "Limited velocity";
-    Real 'aLimited'(unit = "m/s2", quantity = "Acceleration") = 'a.y' "Limited acceleration";
+    Real 's'(unit = "m", quantity = "Length") "Reference position";
+    Real 'sSmoothed'(unit = "m", quantity = "Length") "Smoothed position";
+    Real 'vLimited'(unit = "m/s", quantity = "Velocity") "Limited velocity";
+    Real 'aLimited'(unit = "m/s2", quantity = "Acceleration") "Limited acceleration";
     parameter Real 'positionStep.height' = 1.0 "Height of step";
     Real 'positionStep.y' "Connector of Real output signal";
     parameter Real 'positionStep.offset' = 0.0 "Offset of output signal y";
@@ -21,7 +21,7 @@ package 'SlewRateLimiter'
     parameter 'Modelica.Blocks.Types.Init' 'limit_v.initType' = 'Modelica.Blocks.Types.Init'.'InitialOutput' "Type of initialization (SteadyState implies y = u)" annotation(Evaluate = true);
     parameter Real 'limit_v.y_start' = 0.0 "Initial or guess value of output (= state)";
     parameter Boolean 'limit_v.strict' = false "= true, if strict limits with noEvent(..)" annotation(Evaluate = true);
-    Real 'limit_v.val' = ('limit_v.u' - 'limit_v.y') / 1e-4;
+    Real 'limit_v.val';
     Real 'v.u' "Connector of Real input signal";
     Real 'v.y' "Connector of Real output signal";
     Real 'limit_a.u' "Connector of Real input signal";
@@ -32,7 +32,7 @@ package 'SlewRateLimiter'
     parameter 'Modelica.Blocks.Types.Init' 'limit_a.initType' = 'Modelica.Blocks.Types.Init'.'InitialOutput' "Type of initialization (SteadyState implies y = u)" annotation(Evaluate = true);
     parameter Real 'limit_a.y_start' = 0.0 "Initial or guess value of output (= state)";
     parameter Boolean 'limit_a.strict' = false "= true, if strict limits with noEvent(..)" annotation(Evaluate = true);
-    Real 'limit_a.val' = ('limit_a.u' - 'limit_a.y') / 1e-4;
+    Real 'limit_a.val';
     parameter Real 'positionSmoothed.k' = 1.0 "Integrator gain";
     parameter Boolean 'positionSmoothed.use_reset' = false "= true, if reset port enabled" annotation(Evaluate = true);
     parameter Boolean 'positionSmoothed.use_set' = false "= true, if set port enabled and used as reinitialization value when reset" annotation(Evaluate = true);
@@ -49,6 +49,12 @@ package 'SlewRateLimiter'
     'limit_a.y' = 0.0;
     'positionSmoothed.y' = 0.0;
   equation
+    's' = 'positionStep.y';
+    'sSmoothed' = 'positionSmoothed.y';
+    'vLimited' = 'limit_a.y';
+    'aLimited' = 'a.y';
+    'limit_v.val' = ('limit_v.u' - 'limit_v.y') / 1e-4;
+    'limit_a.val' = ('limit_a.u' - 'limit_a.y') / 1e-4;
     'positionStep.y' = 'limit_v.u';
     'limit_v.y' = 'v.u';
     'v.y' = 'limit_a.u';

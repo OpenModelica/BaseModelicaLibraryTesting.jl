@@ -1,24 +1,5 @@
 //! base 0.1.0
 package 'GenerationOfFMUs'
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1' "Return state (with one derivative)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    output Real 's';
-  algorithm
-    's' := 'u'[1];
-    annotation(derivative(order = 1, noDerivative = 'u') = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1', InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1';
-
-  function 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1' "Return 1st derivative (der of state1)"
-    input Real[2] 'u';
-    input Real 'dummy';
-    input Real 'dummy_der';
-    output Real 'sder1';
-  algorithm
-    'sder1' := 'u'[2];
-    annotation(InlineAfterIndexReduction = true);
-  end 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1der1';
-
   model 'GenerationOfFMUs' "Example to demonstrate variants to generate FMUs (Functional Mock-up Units)"
     parameter Real 'sine1.amplitude' = 1000.0 "Amplitude of sine wave";
     parameter Real 'sine1.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 2.0 "Frequency of sine wave";
@@ -259,7 +240,7 @@ package 'GenerationOfFMUs'
     'inverseCapacity.temperatureToHeatFlow.y1' = 0.0;
     'inverseCapacity.temperatureToHeatFlow.y2' = 0.0;
     'inverseCapacity.temperatureToHeatFlow.u2' = 0.0;
-    'inverseCapacity.temperatureToHeatFlow.u' = 'Modelica.Blocks.Interfaces.Adaptors.Functions.state1'({'inverseCapacity.temperatureToHeatFlow.p', 'inverseCapacity.temperatureToHeatFlow.u1'}, time);
+    'inverseCapacity.temperatureToHeatFlow.u' = 'inverseCapacity.temperatureToHeatFlow.p';
     'conductor.temperatureToHeatFlow1.y' = 'conductor.temperatureToHeatFlow1.heatPort.Q_flow' "output = flow = heat flow";
     'conductor.temperatureToHeatFlow1.u' = 'conductor.temperatureToHeatFlow1.heatPort.T' "input = potential = temperature";
     'conductor.temperatureToHeatFlow1.y' = -'conductor.temperatureToHeatFlow1.f';

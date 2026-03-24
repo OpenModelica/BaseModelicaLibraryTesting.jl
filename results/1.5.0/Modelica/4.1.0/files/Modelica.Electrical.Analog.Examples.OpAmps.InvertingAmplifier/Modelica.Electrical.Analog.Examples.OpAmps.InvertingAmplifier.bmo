@@ -63,12 +63,12 @@ package 'InvertingAmplifier'
     parameter 'Modelica.Blocks.Types.LimiterHomotopy' 'gain.opAmp.homotopyType' = 'Modelica.Blocks.Types.LimiterHomotopy'.'NoHomotopy' "Simplified model for homotopy-based initialization" annotation(Evaluate = true);
     Real 'gain.opAmp.vps'(unit = "V", quantity = "ElectricPotential") "Positive supply voltage";
     Real 'gain.opAmp.vns'(unit = "V", quantity = "ElectricPotential") "Negative supply voltage";
-    Real 'gain.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") = 'gain.opAmp.in_p.v' - 'gain.opAmp.in_n.v' "Input voltage difference";
-    Real 'gain.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") = 'gain.opAmp.out.v' "Output voltage to ground";
-    Real 'gain.opAmp.p_in'(unit = "W", quantity = "Power") = 'gain.opAmp.in_p.v' * 'gain.opAmp.in_p.i' + 'gain.opAmp.in_n.v' * 'gain.opAmp.in_n.i' "Input power";
-    Real 'gain.opAmp.p_out'(unit = "W", quantity = "Power") = 'gain.opAmp.out.v' * 'gain.opAmp.out.i' "Output power";
-    Real 'gain.opAmp.p_s'(unit = "W", quantity = "Power") = -('gain.opAmp.p_in' + 'gain.opAmp.p_out') "Supply power";
-    Real 'gain.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") = 'gain.opAmp.p_s' / ('gain.opAmp.vps' - 'gain.opAmp.vns') "Supply current";
+    Real 'gain.opAmp.v_in'(unit = "V", quantity = "ElectricPotential") "Input voltage difference";
+    Real 'gain.opAmp.v_out'(unit = "V", quantity = "ElectricPotential") "Output voltage to ground";
+    Real 'gain.opAmp.p_in'(unit = "W", quantity = "Power") "Input power";
+    Real 'gain.opAmp.p_out'(unit = "W", quantity = "Power") "Output power";
+    Real 'gain.opAmp.p_s'(unit = "W", quantity = "Power") "Supply power";
+    Real 'gain.opAmp.i_s'(unit = "A", quantity = "ElectricCurrent") "Supply current";
     Real 'gain.opAmp.in_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'gain.opAmp.in_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'gain.opAmp.in_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
@@ -108,6 +108,12 @@ package 'InvertingAmplifier'
     Real 'gain.r2.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'gain.r2.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
   equation
+    'gain.opAmp.v_in' = 'gain.opAmp.in_p.v' - 'gain.opAmp.in_n.v';
+    'gain.opAmp.v_out' = 'gain.opAmp.out.v';
+    'gain.opAmp.p_in' = 'gain.opAmp.in_p.v' * 'gain.opAmp.in_p.i' + 'gain.opAmp.in_n.v' * 'gain.opAmp.in_n.i';
+    'gain.opAmp.p_out' = 'gain.opAmp.out.v' * 'gain.opAmp.out.i';
+    'gain.opAmp.p_s' = -('gain.opAmp.p_in' + 'gain.opAmp.p_out');
+    'gain.opAmp.i_s' = 'gain.opAmp.p_s' / ('gain.opAmp.vps' - 'gain.opAmp.vns');
     'gain.opAmp.out.v' = 'gain.p2.v';
     'gain.opAmp.out.v' = 'gain.r2.p.v';
     'gain.r1.n.v' = 'gain.r2.n.v';

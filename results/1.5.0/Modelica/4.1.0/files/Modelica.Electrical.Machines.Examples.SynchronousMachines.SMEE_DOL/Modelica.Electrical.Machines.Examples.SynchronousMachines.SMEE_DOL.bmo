@@ -1,25 +1,12 @@
 //! base 0.1.0
 package 'SMEE_DOL'
-  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
-    input Real[:] 'x';
-    output Real[2] 'y';
-    output Real 'y0';
-    Integer 'm' = size('x', 1);
-    Real['m'] 'phi'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
-    Real[2, 'm'] 'TransformationMatrix' = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
-  algorithm
-    'y' := 'TransformationMatrix' * 'x';
-    'y0' := 1.0 / 'm' * sum('x');
-    annotation(Inline = true);
-  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor';
-
   function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
-    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
-    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
+    input Real 'v'[3](unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    input Real 'i'[3](unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
     output Real 'p'(unit = "W", quantity = "Power");
     constant Integer 'm' = 3;
-    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
-    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
+    Real 'v_'[2](unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
+    Real 'i_'[2](unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
   algorithm
     'v_' := {0.0, 0.0};
     'i_' := {0.0, 0.0};
@@ -33,23 +20,6 @@ package 'SMEE_DOL'
     annotation(Inline = true);
   end 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower';
 
-  function 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation' "Orientations of the resulting fundamental wave field phasors"
-    input Integer 'm';
-    output Real['m'] 'orientation'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm'));
-  algorithm
-    if mod('m', 2) == 0 then
-      if 'm' == 2 then
-        'orientation'[1] := 0.0;
-        'orientation'[2] := 1.5707963267948966;
-      elseif true then
-        'orientation'[1:integer('m' / 2.0)] := 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'(integer('m' / 2.0));
-        'orientation'[integer('m' / 2.0) + 1:'m'] := 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'(integer('m' / 2.0)) - fill(3.141592653589793 / 'm', integer('m' / 2.0));
-      end if;
-    elseif true then
-      'orientation' := {('k' - 1) * 2 * 3.141592653589793 / 'm' for 'k' in 1:'m'};
-    end if;
-  end 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation';
-
   function 'Modelica.Math.wrapAngle' "Wrap angle to interval ]-pi,pi] or [0,2*pi["
     input Real 'u'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     input Boolean 'positiveRange' = false;
@@ -61,6 +31,19 @@ package 'SMEE_DOL'
       'y' := 'y' - 6.283185307179586;
     end if;
   end 'Modelica.Math.wrapAngle';
+
+  function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
+    input Real 'x'[:];
+    output Real 'y'[2];
+    output Real 'y0';
+    Integer 'm' = size('x', 1);
+    Real 'phi'['m'](displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
+    Real 'TransformationMatrix'[2, 'm'] = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
+  algorithm
+    'y' := 'TransformationMatrix' * 'x';
+    'y0' := 1.0 / 'm' * sum('x');
+    annotation(Inline = true);
+  end 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor';
 
   model 'SMEE_DOL' "Test example: ElectricalExcitedSynchronousMachine starting direct on line"
     constant Integer 'm' = 3 "Number of phases";
@@ -88,10 +71,10 @@ package 'SMEE_DOL'
     parameter Real 'smee.frictionParameters.linear' = 0.001 "Linear angular velocity range with respect to reference angular velocity";
     parameter Real 'smee.frictionParameters.wLinear'(unit = "rad/s", quantity = "AngularVelocity") = 0.15707963267948966 "Linear angular velocity range";
     parameter Real 'smee.frictionParameters.tauLinear'(unit = "N.m", quantity = "Torque") = 0.0 "Torque corresponding with linear angular velocity range";
-    Real 'smee.phiMechanical'(fixed = true, start = -1.5707963267948966, displayUnit = "deg", unit = "rad", quantity = "Angle") = 'smee.flange.phi' - 'smee.internalSupport.phi' "Mechanical angle of rotor against stator";
-    Real 'smee.wMechanical'(fixed = true, start = 0.0, displayUnit = "rev/min", unit = "rad/s", quantity = "AngularVelocity") = der('smee.phiMechanical') "Mechanical angular velocity of rotor against stator";
-    Real 'smee.tauElectrical'(unit = "N.m", quantity = "Torque") = 'smee.inertiaRotor.flange_a.tau' "Electromagnetic torque";
-    Real 'smee.tauShaft'(unit = "N.m", quantity = "Torque") = -'smee.flange.tau' "Shaft torque";
+    Real 'smee.phiMechanical'(fixed = true, start = -1.5707963267948966, displayUnit = "deg", unit = "rad", quantity = "Angle") "Mechanical angle of rotor against stator";
+    Real 'smee.wMechanical'(fixed = true, start = 0.0, displayUnit = "rev/min", unit = "rad/s", quantity = "AngularVelocity") "Mechanical angular velocity of rotor against stator";
+    Real 'smee.tauElectrical'(unit = "N.m", quantity = "Torque") "Electromagnetic torque";
+    Real 'smee.tauShaft'(unit = "N.m", quantity = "Torque") "Shaft torque";
     Real 'smee.flange.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'smee.flange.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
     Real 'smee.inertiaRotor.flange_a.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
@@ -131,7 +114,7 @@ package 'SMEE_DOL'
     parameter Real 'smee.friction.frictionParameters.tauLinear'(unit = "N.m", quantity = "Torque") = 0.0 "Torque corresponding with linear angular velocity range";
     parameter Boolean 'smee.friction.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'smee.friction.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'smee.friction.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'smee.friction.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'smee.friction.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.friction.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'smee.internalSupport.phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Absolute rotation angle of flange";
     Real 'smee.internalSupport.tau'(unit = "N.m", quantity = "Torque") "Cut torque in the flange";
@@ -147,27 +130,27 @@ package 'SMEE_DOL'
     parameter Real 'smee.strayLoadParameters.wRef'(min = 2.2250738585072014e-308, displayUnit = "rev/min", unit = "rad/s", quantity = "AngularVelocity") = 157.07963267948966 "Reference angular velocity that PRef refers to";
     parameter Real 'smee.strayLoadParameters.power_w'(min = 2.2250738585072014e-308) = 1.0 "Exponent of stray load loss torque w.r.t. angular velocity";
     parameter Real 'smee.strayLoadParameters.tauRef'(unit = "N.m", quantity = "Torque") = 0.0 "Reference stray load torque at reference angular velocity and reference current";
-    Real 'smee.powerBalance.powerStator'(unit = "W", quantity = "Power") = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('smee.vs', 'smee.is') "Electrical power (stator)";
-    Real 'smee.powerBalance.powerMechanical'(unit = "W", quantity = "Power") = 'smee.wMechanical' * 'smee.tauShaft' "Mechanical power";
-    Real 'smee.powerBalance.powerInertiaStator'(unit = "W", quantity = "Power") = 0.29 * 'smee.inertiaStator.a' * 'smee.inertiaStator.w' "Stator inertia power";
-    Real 'smee.powerBalance.powerInertiaRotor'(unit = "W", quantity = "Power") = 0.29 * 'smee.inertiaRotor.a' * 'smee.inertiaRotor.w' "Rotor inertia power";
-    Real 'smee.powerBalance.lossPowerTotal'(unit = "W", quantity = "Power") = 'smee.powerBalance.lossPowerStatorWinding' + 'smee.powerBalance.lossPowerStatorCore' + 'smee.powerBalance.lossPowerRotorCore' + 'smee.powerBalance.lossPowerStrayLoad' + 'smee.powerBalance.lossPowerFriction' + 'smee.powerBalance.lossPowerRotorWinding' + 'smee.powerBalance.lossPowerExcitation' + 'smee.powerBalance.lossPowerBrush' "Total loss power";
-    Real 'smee.powerBalance.lossPowerStatorWinding'(unit = "W", quantity = "Power") = 'smee.rs.resistor[1].LossPower' + 'smee.rs.resistor[2].LossPower' + 'smee.rs.resistor[3].LossPower' "Stator copper losses";
-    Real 'smee.powerBalance.lossPowerStatorCore'(unit = "W", quantity = "Power") = 'smee.statorCore.lossPower' "Stator core losses";
-    Real 'smee.powerBalance.lossPowerRotorCore'(unit = "W", quantity = "Power") = 0.0 "Rotor core losses";
-    Real 'smee.powerBalance.lossPowerStrayLoad'(unit = "W", quantity = "Power") = 'smee.strayLoad.lossPower' "Stray load losses";
-    Real 'smee.powerBalance.lossPowerFriction'(unit = "W", quantity = "Power") = 'smee.friction.lossPower' "Friction losses";
-    Real 'smee.powerBalance.lossPowerRotorWinding'(unit = "W", quantity = "Power") = 'smee.damperCageLossPower' "Rotor copper losses";
-    Real 'smee.powerBalance.powerExcitation'(unit = "W", quantity = "Power") = 'smee.ve' * 'smee.ie' "Electrical excitation power";
-    Real 'smee.powerBalance.lossPowerExcitation'(unit = "W", quantity = "Power") = 'smee.re.LossPower' "Excitation losses";
-    Real 'smee.powerBalance.lossPowerBrush'(unit = "W", quantity = "Power") = 'smee.brush.lossPower' "Brush losses";
+    Real 'smee.powerBalance.powerStator'(unit = "W", quantity = "Power") "Electrical power (stator)";
+    Real 'smee.powerBalance.powerMechanical'(unit = "W", quantity = "Power") "Mechanical power";
+    Real 'smee.powerBalance.powerInertiaStator'(unit = "W", quantity = "Power") "Stator inertia power";
+    Real 'smee.powerBalance.powerInertiaRotor'(unit = "W", quantity = "Power") "Rotor inertia power";
+    Real 'smee.powerBalance.lossPowerTotal'(unit = "W", quantity = "Power") "Total loss power";
+    Real 'smee.powerBalance.lossPowerStatorWinding'(unit = "W", quantity = "Power") "Stator copper losses";
+    Real 'smee.powerBalance.lossPowerStatorCore'(unit = "W", quantity = "Power") "Stator core losses";
+    Real 'smee.powerBalance.lossPowerRotorCore'(unit = "W", quantity = "Power") "Rotor core losses";
+    Real 'smee.powerBalance.lossPowerStrayLoad'(unit = "W", quantity = "Power") "Stray load losses";
+    Real 'smee.powerBalance.lossPowerFriction'(unit = "W", quantity = "Power") "Friction losses";
+    Real 'smee.powerBalance.lossPowerRotorWinding'(unit = "W", quantity = "Power") "Rotor copper losses";
+    Real 'smee.powerBalance.powerExcitation'(unit = "W", quantity = "Power") "Electrical excitation power";
+    Real 'smee.powerBalance.lossPowerExcitation'(unit = "W", quantity = "Power") "Excitation losses";
+    Real 'smee.powerBalance.lossPowerBrush'(unit = "W", quantity = "Power") "Brush losses";
     Real 'smee.vs[1]'(unit = "V", quantity = "ElectricPotential") "Stator instantaneous voltages";
     Real 'smee.vs[2]'(unit = "V", quantity = "ElectricPotential") "Stator instantaneous voltages";
     Real 'smee.vs[3]'(unit = "V", quantity = "ElectricPotential") "Stator instantaneous voltages";
     Real 'smee.is[1]'(unit = "A", quantity = "ElectricCurrent") "Stator instantaneous currents";
     Real 'smee.is[2]'(unit = "A", quantity = "ElectricCurrent") "Stator instantaneous currents";
     Real 'smee.is[3]'(unit = "A", quantity = "ElectricCurrent") "Stator instantaneous currents";
-    Real 'smee.i_0_s'(stateSelect = StateSelect.prefer, unit = "A", quantity = "ElectricCurrent") = 'smee.spacePhasorS.zero.i' "Stator zero-sequence current";
+    Real 'smee.i_0_s'(stateSelect = StateSelect.prefer, unit = "A", quantity = "ElectricCurrent") "Stator zero-sequence current";
     Real 'smee.idq_ss[1]'(unit = "A", quantity = "ElectricCurrent") "Stator space phasor current / stator fixed frame";
     Real 'smee.idq_ss[2]'(unit = "A", quantity = "ElectricCurrent") "Stator space phasor current / stator fixed frame";
     Real 'smee.idq_sr[1]'(stateSelect = StateSelect.prefer, unit = "A", quantity = "ElectricCurrent") "Stator space phasor current / rotor fixed frame";
@@ -242,8 +225,8 @@ package 'SMEE_DOL'
     Real 'smee.rs.resistor[1].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'smee.rs.resistor[1].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'smee.rs.resistor[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'smee.rs.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'smee.rs.resistor[1].T_heatPort' "Port temperature";
-    Real 'smee.rs.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'smee.rs.resistor[1].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'smee.rs.resistor[1].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'smee.rs.resistor[1].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.rs.resistor[1].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'smee.rs.resistor[1].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'smee.rs.resistor[1].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -258,8 +241,8 @@ package 'SMEE_DOL'
     Real 'smee.rs.resistor[2].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'smee.rs.resistor[2].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'smee.rs.resistor[2].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'smee.rs.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'smee.rs.resistor[2].T_heatPort' "Port temperature";
-    Real 'smee.rs.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'smee.rs.resistor[2].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'smee.rs.resistor[2].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'smee.rs.resistor[2].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.rs.resistor[2].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'smee.rs.resistor[2].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'smee.rs.resistor[2].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -274,8 +257,8 @@ package 'SMEE_DOL'
     Real 'smee.rs.resistor[3].i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'smee.rs.resistor[3].useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'smee.rs.resistor[3].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'smee.rs.resistor[3].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'smee.rs.resistor[3].T_heatPort' "Port temperature";
-    Real 'smee.rs.resistor[3].heatPort.Q_flow'(unit = "W", quantity = "Power") = -'smee.rs.resistor[3].LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'smee.rs.resistor[3].heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'smee.rs.resistor[3].heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.rs.resistor[3].LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'smee.rs.resistor[3].T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'smee.rs.resistor[3].R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -311,15 +294,15 @@ package 'SMEE_DOL'
     parameter Real 'smee.statorCore.turnsRatio'(min = 2.2250738585072014e-308) = 1.0 "Effective number of stator turns / effective number of rotor turns (if used as rotor core)";
     parameter Boolean 'smee.statorCore.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'smee.statorCore.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'smee.statorCore.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'smee.statorCore.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'smee.statorCore.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.statorCore.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'smee.statorCore.spacePhasor.v_[1]'(unit = "V", quantity = "ElectricPotential") "1=real, 2=imaginary part";
     Real 'smee.statorCore.spacePhasor.v_[2]'(unit = "V", quantity = "ElectricPotential") "1=real, 2=imaginary part";
     Real 'smee.statorCore.spacePhasor.i_[1]'(unit = "A", quantity = "ElectricCurrent") "1=real, 2=imaginary part";
     Real 'smee.statorCore.spacePhasor.i_[2]'(unit = "A", quantity = "ElectricCurrent") "1=real, 2=imaginary part";
-    Real 'smee.statorCore.w'(unit = "rad/s", quantity = "AngularVelocity") = 314.1592653589793 "Remagnetization angular velocity";
+    Real 'smee.statorCore.w'(unit = "rad/s", quantity = "AngularVelocity") "Remagnetization angular velocity";
     Real 'smee.statorCore.Gc'(unit = "S", quantity = "Conductance") "Variable core loss conductance";
-    Real 'smee.statorCore.wLimit'(unit = "rad/s", quantity = "AngularVelocity") = noEvent(max(noEvent(abs('smee.statorCore.w')), 'smee.statorCore.coreParameters.wMin')) "Limited angular velocity";
+    Real 'smee.statorCore.wLimit'(unit = "rad/s", quantity = "AngularVelocity") "Limited angular velocity";
     constant Integer 'smee.spacePhasorS.m' = 3 "Number of phases";
     parameter Real 'smee.spacePhasorS.turnsRatio' = 1.0 "Turns ratio";
     Real 'smee.spacePhasorS.v[1]'(unit = "V", quantity = "ElectricPotential") "Instantaneous phase voltages";
@@ -397,19 +380,19 @@ package 'SMEE_DOL'
     parameter Real 'smee.strayLoad.strayLoadParameters.tauRef'(unit = "N.m", quantity = "Torque") = 0.0 "Reference stray load torque at reference angular velocity and reference current";
     parameter Boolean 'smee.strayLoad.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'smee.strayLoad.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'smee.strayLoad.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'smee.strayLoad.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'smee.strayLoad.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.strayLoad.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
-    Real 'smee.strayLoad.iRMS'(unit = "A", quantity = "ElectricCurrent") = sqrt('smee.strayLoad.i[1]' ^ 2.0 / 3.0 + 'smee.strayLoad.i[2]' ^ 2.0 / 3.0 + 'smee.strayLoad.i[3]' ^ 2.0 / 3.0);
+    Real 'smee.strayLoad.iRMS'(unit = "A", quantity = "ElectricCurrent");
     parameter Boolean 'smee.thermalAmbient.useDamperCage'(start = true) = true "Enable / disable damper cage" annotation(Evaluate = true);
     parameter Integer 'smee.thermalAmbient.m' = 3 "Number of stator phases" annotation(Evaluate = true);
     parameter Boolean 'smee.thermalAmbient.useTemperatureInputs' = false "If true, temperature inputs are used; else, temperatures are constant" annotation(Evaluate = true);
     constant Real 'smee.thermalAmbient.TDefault'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Default temperature";
     parameter Real 'smee.thermalAmbient.Ts'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Temperature of stator windings";
-    Real 'smee.thermalAmbient.Q_flowStatorWinding'(unit = "W", quantity = "Power") = 'smee.thermalAmbient.temperatureStatorWinding.port.Q_flow' "Heat flow rate of stator windings";
-    Real 'smee.thermalAmbient.Q_flowStatorCore'(unit = "W", quantity = "Power") = 'smee.thermalAmbient.temperatureStatorCore.port.Q_flow' "Heat flow rate of stator core losses";
-    Real 'smee.thermalAmbient.Q_flowRotorCore'(unit = "W", quantity = "Power") = 'smee.thermalAmbient.temperatureRotorCore.port.Q_flow' "Heat flow rate of stator core losses";
-    Real 'smee.thermalAmbient.Q_flowStrayLoad'(unit = "W", quantity = "Power") = 'smee.thermalAmbient.temperatureStrayLoad.port.Q_flow' "Heat flow rate of stray load losses";
-    Real 'smee.thermalAmbient.Q_flowFriction'(unit = "W", quantity = "Power") = 'smee.thermalAmbient.temperatureFriction.port.Q_flow' "Heat flow rate of friction losses";
+    Real 'smee.thermalAmbient.Q_flowStatorWinding'(unit = "W", quantity = "Power") "Heat flow rate of stator windings";
+    Real 'smee.thermalAmbient.Q_flowStatorCore'(unit = "W", quantity = "Power") "Heat flow rate of stator core losses";
+    Real 'smee.thermalAmbient.Q_flowRotorCore'(unit = "W", quantity = "Power") "Heat flow rate of stator core losses";
+    Real 'smee.thermalAmbient.Q_flowStrayLoad'(unit = "W", quantity = "Power") "Heat flow rate of stray load losses";
+    Real 'smee.thermalAmbient.Q_flowFriction'(unit = "W", quantity = "Power") "Heat flow rate of friction losses";
     parameter Integer 'smee.thermalAmbient.thermalPort.m' = 3 "Number of stator phases" annotation(Evaluate = true);
     Real 'smee.thermalAmbient.thermalPort.heatPortStatorWinding[1].T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'smee.thermalAmbient.thermalPort.heatPortStatorWinding[1].Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
@@ -460,9 +443,9 @@ package 'SMEE_DOL'
     Real 'smee.thermalAmbient.thermalCollectorStator.port_b.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     parameter Real 'smee.thermalAmbient.Tr'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Temperature of damper cage (optional)";
     parameter Real 'smee.thermalAmbient.Te'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Temperature of excitation";
-    Real 'smee.thermalAmbient.Q_flowRotorWinding'(unit = "W", quantity = "Power") = 'smee.thermalAmbient.temperatureRotorWinding.port.Q_flow' "Heat flow rate of damper cage (optional)";
-    Real 'smee.thermalAmbient.Q_flowExcitation'(unit = "W", quantity = "Power") = 'smee.thermalAmbient.temperatureExcitation.port.Q_flow' "Heat flow rate of excitation";
-    Real 'smee.thermalAmbient.Q_flowTotal'(unit = "W", quantity = "Power") = 'smee.thermalAmbient.Q_flowStatorWinding' + 'smee.thermalAmbient.Q_flowRotorWinding' + 'smee.thermalAmbient.Q_flowExcitation' + 'smee.thermalAmbient.Q_flowStatorCore' + 'smee.thermalAmbient.Q_flowRotorCore' + 'smee.thermalAmbient.Q_flowStrayLoad' + 'smee.thermalAmbient.Q_flowFriction';
+    Real 'smee.thermalAmbient.Q_flowRotorWinding'(unit = "W", quantity = "Power") "Heat flow rate of damper cage (optional)";
+    Real 'smee.thermalAmbient.Q_flowExcitation'(unit = "W", quantity = "Power") "Heat flow rate of excitation";
+    Real 'smee.thermalAmbient.Q_flowTotal'(unit = "W", quantity = "Power");
     Real 'smee.thermalAmbient.temperatureRotorWinding.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'smee.thermalAmbient.temperatureRotorWinding.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.thermalAmbient.temperatureRotorWinding.T'(unit = "K");
@@ -563,8 +546,8 @@ package 'SMEE_DOL'
     parameter Real 'smee.TeOperational'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Operational excitation temperature";
     parameter Real 'smee.brushParameters.V'(unit = "V", quantity = "ElectricPotential") = 0.0 "Total voltage drop of brushes for currents > ILinear";
     parameter Real 'smee.brushParameters.ILinear'(start = 0.01, unit = "A", quantity = "ElectricCurrent") = 0.01 "Current indicating linear voltage region of brush voltage drop";
-    Real 'smee.ve'(unit = "V", quantity = "ElectricPotential") = 'smee.pin_ep.v' - 'smee.pin_en.v' "Excitation voltage";
-    Real 'smee.ie'(unit = "A", quantity = "ElectricCurrent") = 'smee.pin_ep.i' "Excitation current";
+    Real 'smee.ve'(unit = "V", quantity = "ElectricPotential") "Excitation voltage";
+    Real 'smee.ie'(unit = "A", quantity = "ElectricCurrent") "Excitation current";
     parameter Real 'smee.damperCage.Lrsigmad'(unit = "H", quantity = "Inductance") = 1.5915493566466348e-4 "Stray inductance in d-axis per phase translated to stator";
     parameter Real 'smee.damperCage.Lrsigmaq'(unit = "H", quantity = "Inductance") = 1.5915494385937605e-4 "Stray inductance in q-axis per phase translated to stator";
     parameter Real 'smee.damperCage.Rrd'(unit = "Ohm", quantity = "Resistance") = 0.039999997556176274 "Resistance in d-axis per phase translated to stator at T_ref";
@@ -573,15 +556,15 @@ package 'SMEE_DOL'
     parameter Real 'smee.damperCage.alpha'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of both resistances in d- and q-axis at T_ref";
     parameter Boolean 'smee.damperCage.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'smee.damperCage.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'smee.damperCage.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'smee.damperCage.T_heatPort' "Port temperature";
-    Real 'smee.damperCage.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'smee.damperCage.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'smee.damperCage.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'smee.damperCage.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.damperCage.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'smee.damperCage.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'smee.damperCage.Rrd_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = Rrd*(1 + alpha*(T_heatPort - T_ref))";
     Real 'smee.damperCage.Rrq_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = Rrq*(1 + alpha*(T_heatPort - T_ref))";
     Real 'smee.damperCage.i[1]'(unit = "A", quantity = "ElectricCurrent") "Currents out from damper";
     Real 'smee.damperCage.i[2]'(unit = "A", quantity = "ElectricCurrent") "Currents out from damper";
-    Real 'smee.damperCage.lossPower'(unit = "W", quantity = "Power") = 'smee.damperCage.LossPower' "Damper losses";
+    Real 'smee.damperCage.lossPower'(unit = "W", quantity = "Power") "Damper losses";
     Real 'smee.damperCage.spacePhasor_r.v_[1]'(unit = "V", quantity = "ElectricPotential") "1=real, 2=imaginary part";
     Real 'smee.damperCage.spacePhasor_r.v_[2]'(unit = "V", quantity = "ElectricPotential") "1=real, 2=imaginary part";
     Real 'smee.damperCage.spacePhasor_r.i_[1]'(unit = "A", quantity = "ElectricCurrent") "1=real, 2=imaginary part";
@@ -608,8 +591,8 @@ package 'SMEE_DOL'
     Real 'smee.re.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing from pin p to pin n";
     parameter Boolean 'smee.re.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'smee.re.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'smee.re.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'smee.re.T_heatPort' "Port temperature";
-    Real 'smee.re.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'smee.re.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'smee.re.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'smee.re.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.re.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'smee.re.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'smee.re.R_actual'(unit = "Ohm", quantity = "Resistance") "Actual resistance = R*(1 + alpha*(T_heatPort - T_ref))";
@@ -634,7 +617,7 @@ package 'SMEE_DOL'
     parameter Real 'smee.brush.brushParameters.ILinear'(start = 0.01, unit = "A", quantity = "ElectricCurrent") = 0.01 "Current indicating linear voltage region of brush voltage drop";
     parameter Boolean 'smee.brush.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'smee.brush.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'smee.brush.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'smee.brush.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'smee.brush.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'smee.brush.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     parameter Real 'smee.turnsRatio' = 9.428090415820634 "Stator current / excitation current";
     parameter Real 'smee.Lesigma'(unit = "H", quantity = "Inductance") = 0.00477464829275686 * 'smee.turnsRatio' ^ 2.0 * 3.0 / 2.0 * 0.02499999999999991 / 0.9750000000000001;
@@ -1184,6 +1167,53 @@ package 'SMEE_DOL'
     'smee.is[2]' = 0.0;
     'smee.ie' = 0.0;
   equation
+    'smee.phiMechanical' = 'smee.flange.phi' - 'smee.internalSupport.phi';
+    'smee.wMechanical' = der('smee.phiMechanical');
+    'smee.tauElectrical' = 'smee.inertiaRotor.flange_a.tau';
+    'smee.tauShaft' = -'smee.flange.tau';
+    'smee.friction.heatPort.Q_flow' = -'smee.friction.lossPower';
+    'smee.powerBalance.powerStator' = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('smee.vs', 'smee.is');
+    'smee.powerBalance.powerMechanical' = 'smee.wMechanical' * 'smee.tauShaft';
+    'smee.powerBalance.powerInertiaStator' = 0.29 * 'smee.inertiaStator.a' * 'smee.inertiaStator.w';
+    'smee.powerBalance.powerInertiaRotor' = 0.29 * 'smee.inertiaRotor.a' * 'smee.inertiaRotor.w';
+    'smee.powerBalance.lossPowerTotal' = 'smee.powerBalance.lossPowerStatorWinding' + 'smee.powerBalance.lossPowerStatorCore' + 'smee.powerBalance.lossPowerRotorCore' + 'smee.powerBalance.lossPowerStrayLoad' + 'smee.powerBalance.lossPowerFriction' + 'smee.powerBalance.lossPowerRotorWinding' + 'smee.powerBalance.lossPowerExcitation' + 'smee.powerBalance.lossPowerBrush';
+    'smee.powerBalance.lossPowerStatorWinding' = 'smee.rs.resistor[1].LossPower' + 'smee.rs.resistor[2].LossPower' + 'smee.rs.resistor[3].LossPower';
+    'smee.powerBalance.lossPowerStatorCore' = 'smee.statorCore.lossPower';
+    'smee.powerBalance.lossPowerRotorCore' = 0.0;
+    'smee.powerBalance.lossPowerStrayLoad' = 'smee.strayLoad.lossPower';
+    'smee.powerBalance.lossPowerFriction' = 'smee.friction.lossPower';
+    'smee.powerBalance.lossPowerRotorWinding' = 'smee.damperCageLossPower';
+    'smee.powerBalance.powerExcitation' = 'smee.ve' * 'smee.ie';
+    'smee.powerBalance.lossPowerExcitation' = 'smee.re.LossPower';
+    'smee.powerBalance.lossPowerBrush' = 'smee.brush.lossPower';
+    'smee.i_0_s' = 'smee.spacePhasorS.zero.i';
+    'smee.rs.resistor[1].heatPort.T' = 'smee.rs.resistor[1].T_heatPort';
+    'smee.rs.resistor[1].heatPort.Q_flow' = -'smee.rs.resistor[1].LossPower';
+    'smee.rs.resistor[2].heatPort.T' = 'smee.rs.resistor[2].T_heatPort';
+    'smee.rs.resistor[2].heatPort.Q_flow' = -'smee.rs.resistor[2].LossPower';
+    'smee.rs.resistor[3].heatPort.T' = 'smee.rs.resistor[3].T_heatPort';
+    'smee.rs.resistor[3].heatPort.Q_flow' = -'smee.rs.resistor[3].LossPower';
+    'smee.statorCore.heatPort.Q_flow' = -'smee.statorCore.lossPower';
+    'smee.statorCore.w' = 314.1592653589793;
+    'smee.statorCore.wLimit' = noEvent(max(noEvent(abs('smee.statorCore.w')), 'smee.statorCore.coreParameters.wMin'));
+    'smee.strayLoad.heatPort.Q_flow' = -'smee.strayLoad.lossPower';
+    'smee.strayLoad.iRMS' = sqrt(sum('smee.strayLoad.i' .^ 2.0 / size('smee.strayLoad.i', 1)));
+    'smee.thermalAmbient.Q_flowStatorWinding' = 'smee.thermalAmbient.temperatureStatorWinding.port.Q_flow';
+    'smee.thermalAmbient.Q_flowStatorCore' = 'smee.thermalAmbient.temperatureStatorCore.port.Q_flow';
+    'smee.thermalAmbient.Q_flowRotorCore' = 'smee.thermalAmbient.temperatureRotorCore.port.Q_flow';
+    'smee.thermalAmbient.Q_flowStrayLoad' = 'smee.thermalAmbient.temperatureStrayLoad.port.Q_flow';
+    'smee.thermalAmbient.Q_flowFriction' = 'smee.thermalAmbient.temperatureFriction.port.Q_flow';
+    'smee.thermalAmbient.Q_flowRotorWinding' = 'smee.thermalAmbient.temperatureRotorWinding.port.Q_flow';
+    'smee.thermalAmbient.Q_flowExcitation' = 'smee.thermalAmbient.temperatureExcitation.port.Q_flow';
+    'smee.thermalAmbient.Q_flowTotal' = 'smee.thermalAmbient.Q_flowStatorWinding' + 'smee.thermalAmbient.Q_flowRotorWinding' + 'smee.thermalAmbient.Q_flowExcitation' + 'smee.thermalAmbient.Q_flowStatorCore' + 'smee.thermalAmbient.Q_flowRotorCore' + 'smee.thermalAmbient.Q_flowStrayLoad' + 'smee.thermalAmbient.Q_flowFriction';
+    'smee.ve' = 'smee.pin_ep.v' - 'smee.pin_en.v';
+    'smee.ie' = 'smee.pin_ep.i';
+    'smee.damperCage.heatPort.T' = 'smee.damperCage.T_heatPort';
+    'smee.damperCage.heatPort.Q_flow' = -'smee.damperCage.LossPower';
+    'smee.damperCage.lossPower' = 'smee.damperCage.LossPower';
+    'smee.re.heatPort.T' = 'smee.re.T_heatPort';
+    'smee.re.heatPort.Q_flow' = -'smee.re.LossPower';
+    'smee.brush.heatPort.Q_flow' = -'smee.brush.lossPower';
     'smee.rs.resistor[1].p.v' = 'smee.rs.plug_p.pin[1].v';
     'smee.rs.resistor[2].p.v' = 'smee.rs.plug_p.pin[2].v';
     'smee.rs.resistor[3].p.v' = 'smee.rs.plug_p.pin[3].v';

@@ -11,7 +11,7 @@ package 'PID_Controller'
     Real 'PI.u_s' "Connector of setpoint input signal";
     Real 'PI.u_m' "Connector of measurement input signal";
     Real 'PI.y' "Connector of actuator output signal";
-    Real 'PI.controlError' = 'PI.u_s' - 'PI.u_m' "Control error (set point - measurement)";
+    Real 'PI.controlError' "Control error (set point - measurement)";
     parameter 'Modelica.Blocks.Types.SimpleController' 'PI.controllerType' = 'Modelica.Blocks.Types.SimpleController'.'PI' "Type of controller";
     parameter Real 'PI.k' = 100.0 "Gain of controller, must be non-zero";
     parameter Real 'PI.Ti'(min = 2.2250738585072014e-308, unit = "s", quantity = "Time") = 0.1 "Time constant of Integrator block";
@@ -175,6 +175,7 @@ package 'PID_Controller'
     'integrator.y' = 0.0;
     der('spring.w_rel') = 0.0;
   equation
+    'PI.controlError' = 'PI.u_s' - 'PI.u_m';
     'PI.u_s' = 'PI.addI.u1';
     'PI.u_s' = 'PI.addP.u1';
     'PI.addP.y' = 'PI.P.u';

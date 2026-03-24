@@ -1,13 +1,5 @@
 //! base 0.1.0
 package 'HeatingMOSInverter'
-  function 'Modelica.Electrical.Analog.Semiconductors.pow' "Just a helper function for x^y in order that a symbolic engine can apply some transformations more easily"
-    input Real 'x';
-    input Real 'y';
-    output Real 'z';
-  algorithm
-    'z' := 'x' ^ 'y';
-  end 'Modelica.Electrical.Analog.Semiconductors.pow';
-
   model 'HeatingMOSInverter' "Heating MOS Inverter"
     Real 'G.p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'G.p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
@@ -71,8 +63,8 @@ package 'HeatingMOSInverter'
     parameter Real 'H_PMOS.kk2' = 6.2e-4 "Fitting parameter for K2";
     parameter Boolean 'H_PMOS.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'H_PMOS.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'H_PMOS.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'H_PMOS.T_heatPort' "Port temperature";
-    Real 'H_PMOS.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'H_PMOS.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'H_PMOS.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'H_PMOS.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'H_PMOS.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'H_PMOS.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'H_PMOS.v';
@@ -109,8 +101,8 @@ package 'HeatingMOSInverter'
     parameter Real 'H_NMOS.kk2' = 6e-4 "Fitting parameter for K2";
     parameter Boolean 'H_NMOS.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'H_NMOS.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
-    Real 'H_NMOS.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 'H_NMOS.T_heatPort' "Port temperature";
-    Real 'H_NMOS.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'H_NMOS.LossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'H_NMOS.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
+    Real 'H_NMOS.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'H_NMOS.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
     Real 'H_NMOS.T_heatPort'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of heatPort";
     Real 'H_NMOS.v';
@@ -159,6 +151,10 @@ package 'HeatingMOSInverter'
   initial equation
     'HeatCapacitor1.T' = 293.15;
   equation
+    'H_PMOS.heatPort.T' = 'H_PMOS.T_heatPort';
+    'H_PMOS.heatPort.Q_flow' = -'H_PMOS.LossPower';
+    'H_NMOS.heatPort.T' = 'H_NMOS.T_heatPort';
+    'H_NMOS.heatPort.Q_flow' = -'H_NMOS.LossPower';
     'V.n.v' = 'G.p.v';
     'V.n.v' = 'H_NMOS.S.v';
     'V.n.v' = 'H_NMOS.B.v';
@@ -210,7 +206,7 @@ package 'HeatingMOSInverter'
     'H_PMOS.ubs' = smooth(0, if 'H_PMOS.B.v' < 'H_PMOS.us' then 0.0 else 'H_PMOS.B.v' - 'H_PMOS.us');
     'H_PMOS.ugst' = ('H_PMOS.G.v' - 'H_PMOS.us' - 'H_PMOS.vt_t' + 'H_PMOS.k2_t' * 'H_PMOS.ubs') * 0.839;
     'H_PMOS.id' = smooth(0, if 'H_PMOS.ugst' >= 0.0 then 'H_PMOS.uds' * 'H_PMOS.gds' else if 'H_PMOS.ugst' < 'H_PMOS.uds' then 'H_PMOS.uds' * 'H_PMOS.gds' - 'H_PMOS.v' * 'H_PMOS.uds' * ('H_PMOS.ugst' - 'H_PMOS.uds' / 2.0) else 'H_PMOS.uds' * 'H_PMOS.gds' - 'H_PMOS.v' * 'H_PMOS.ugst' * 'H_PMOS.ugst' / 2.0);
-    'H_PMOS.beta_t' = 1.05e-5 * 'Modelica.Electrical.Analog.Semiconductors.pow'('H_PMOS.T_heatPort' / 300.15, -1.5);
+    'H_PMOS.beta_t' = 1.05e-5 * ('H_PMOS.T_heatPort' / 300.15) ^ (-1.5);
     'H_PMOS.vt_t' = (-1.0) * (1.0 + ('H_PMOS.T_heatPort' - 300.15) * (-0.0029));
     'H_PMOS.k2_t' = 0.41 * (1.0 + ('H_PMOS.T_heatPort' - 300.15) * 6.2e-4);
     'H_PMOS.G.i' = 0.0;
@@ -227,7 +223,7 @@ package 'HeatingMOSInverter'
     'H_NMOS.ubs' = smooth(0, if 'H_NMOS.B.v' > 'H_NMOS.us' then 0.0 else 'H_NMOS.B.v' - 'H_NMOS.us');
     'H_NMOS.ugst' = ('H_NMOS.G.v' - 'H_NMOS.us' - 'H_NMOS.vt_t' + 'H_NMOS.k2_t' * 'H_NMOS.ubs') * 0.7311;
     'H_NMOS.id' = smooth(0, if 'H_NMOS.ugst' <= 0.0 then 'H_NMOS.uds' * 'H_NMOS.gds' else if 'H_NMOS.ugst' > 'H_NMOS.uds' then 'H_NMOS.v' * 'H_NMOS.uds' * ('H_NMOS.ugst' - 'H_NMOS.uds' / 2.0) + 'H_NMOS.uds' * 'H_NMOS.gds' else 'H_NMOS.v' * 'H_NMOS.ugst' * 'H_NMOS.ugst' / 2.0 + 'H_NMOS.uds' * 'H_NMOS.gds');
-    'H_NMOS.beta_t' = 4.1e-5 * 'Modelica.Electrical.Analog.Semiconductors.pow'('H_NMOS.T_heatPort' / 300.15, -1.5);
+    'H_NMOS.beta_t' = 4.1e-5 * ('H_NMOS.T_heatPort' / 300.15) ^ (-1.5);
     'H_NMOS.vt_t' = 0.8 * (1.0 + ('H_NMOS.T_heatPort' - 300.15) * (-0.00696));
     'H_NMOS.k2_t' = 1.144 * (1.0 + ('H_NMOS.T_heatPort' - 300.15) * 6e-4);
     'H_NMOS.G.i' = 0.0;

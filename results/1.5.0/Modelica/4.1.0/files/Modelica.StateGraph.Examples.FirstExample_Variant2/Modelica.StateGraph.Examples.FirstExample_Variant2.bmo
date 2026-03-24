@@ -13,11 +13,11 @@ package 'FirstExample_Variant2'
     Boolean 'initialStep.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'initialStep.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'initialStep.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'initialStep.outerStatePort.localActive' = 'initialStep.localActive';
+    Boolean 'initialStep.outerStatePort.localActive';
     Boolean 'initialStep.newActive' "Value of active in the next iteration";
     Boolean 'initialStep.oldActive' "Value of active when CompositeStep was aborted";
-    Boolean 'transition1.condition' = true "= true, if transition may fire (time varying expression)";
-    Boolean 'transition1.localCondition' = 'transition1.condition' "= true, if transition may fire";
+    Boolean 'transition1.condition' "= true, if transition may fire (time varying expression)";
+    Boolean 'transition1.localCondition' "= true, if transition may fire";
     parameter Boolean 'transition1.enableTimer' = true "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'transition1.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 1.0 "Wait time before transition fires";
     Real 'transition1.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -40,12 +40,12 @@ package 'FirstExample_Variant2'
     Boolean 'step.outerStatePort.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'step.outerStatePort.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
     Real 'step.outerStatePort.subgraphStatePort.activeSteps' "Number of active steps in the CompositeStep";
-    Boolean 'step.outerStatePort.localActive' = 'step.localActive';
+    Boolean 'step.outerStatePort.localActive';
     Boolean 'step.newActive' "Value of active in the next iteration";
     Boolean 'step.oldActive' "Value of active when CompositeStep was aborted";
     Boolean 'step.active';
     Boolean 'transition2.condition';
-    Boolean 'transition2.localCondition' = 'transition2.condition' "= true, if transition may fire";
+    Boolean 'transition2.localCondition' "= true, if transition may fire";
     parameter Boolean 'transition2.enableTimer' = false "= true, if timer is enabled" annotation(Evaluate = true);
     parameter Real 'transition2.waitTime'(min = 0.0, unit = "s", quantity = "Time") = 0.0 "Wait time before transition fires";
     Real 'transition2.t'(unit = "s", quantity = "Time") "Actual waiting time (transition will fire when t > waitTime)";
@@ -63,8 +63,8 @@ package 'FirstExample_Variant2'
     parameter Real 'greaterEqual.threshold' = 1.0 "Comparison with respect to threshold";
     Real 'greaterEqual.u' "Connector of Real input signal";
     Boolean 'greaterEqual.y' "Connector of Boolean output signal";
-    Boolean 'stateGraphRoot.suspend' = false "= true, if suspend transition of CompositeStep fires";
-    Boolean 'stateGraphRoot.resume' = false "= true, if resume transition of CompositeStep fires";
+    Boolean 'stateGraphRoot.suspend' "= true, if suspend transition of CompositeStep fires";
+    Boolean 'stateGraphRoot.resume' "= true, if resume transition of CompositeStep fires";
     Boolean 'stateGraphRoot.subgraphStatePort.suspend' "= true, if suspend transition of CompositeStep fires";
     Boolean 'stateGraphRoot.subgraphStatePort.resume' "= true, if resume transition of CompositeStep fires";
     Real 'stateGraphRoot.subgraphStatePort.activeStepsDummy' "Dummy variable in order that connector fulfills restriction of connector";
@@ -83,6 +83,13 @@ package 'FirstExample_Variant2'
     pre('transition2.enableFire') = false;
     pre('timer.entryTime') = 0.0;
   equation
+    'initialStep.outerStatePort.localActive' = 'initialStep.localActive';
+    'transition1.condition' = true;
+    'transition1.localCondition' = 'transition1.condition';
+    'step.outerStatePort.localActive' = 'step.localActive';
+    'transition2.localCondition' = 'transition2.condition';
+    'stateGraphRoot.suspend' = false;
+    'stateGraphRoot.resume' = false;
     'step.outerStatePort.subgraphStatePort.activeStepsDummy' = 'stateGraphRoot.subgraphStatePort.activeStepsDummy';
     'step.outerStatePort.subgraphStatePort.activeStepsDummy' = 'initialStep.outerStatePort.subgraphStatePort.activeStepsDummy';
     'step.outerStatePort.subgraphStatePort.resume' = 'stateGraphRoot.subgraphStatePort.resume';
@@ -104,7 +111,7 @@ package 'FirstExample_Variant2'
     'initialStep.outerStatePort.subgraphStatePort.activeSteps' = if 'initialStep.outerStatePort.localActive' then 1.0 else 0.0;
     'initialStep.active' = 'initialStep.localActive';
     'initialStep.localActive' = pre('initialStep.newActive');
-    'initialStep.newActive' = if 'initialStep.outerStatePort.subgraphStatePort.resume' then 'initialStep.oldActive' else (max({'initialStep.inPort[1].set'}) or 'initialStep.localActive' and not max({'initialStep.outPort[1].reset'})) and not 'initialStep.outerStatePort.subgraphStatePort.suspend';
+    'initialStep.newActive' = if 'initialStep.outerStatePort.subgraphStatePort.resume' then 'initialStep.oldActive' else (size({'initialStep.inPort[1].set'}, 1) > 0 and max({'initialStep.inPort[1].set'}) or 'initialStep.localActive' and not (size({'initialStep.outPort[1].reset'}, 1) > 0 and max({'initialStep.outPort[1].reset'}))) and not 'initialStep.outerStatePort.subgraphStatePort.suspend';
 
     when 'initialStep.outerStatePort.subgraphStatePort.suspend' then
       'initialStep.oldActive' = 'initialStep.localActive';
@@ -126,7 +133,7 @@ package 'FirstExample_Variant2'
     'step.outerStatePort.subgraphStatePort.activeSteps' = if 'step.outerStatePort.localActive' then 1.0 else 0.0;
     'step.active' = 'step.localActive';
     'step.localActive' = pre('step.newActive');
-    'step.newActive' = if 'step.outerStatePort.subgraphStatePort.resume' then 'step.oldActive' else (max({'step.inPort[1].set'}) or 'step.localActive' and not max({'step.outPort[1].reset'})) and not 'step.outerStatePort.subgraphStatePort.suspend';
+    'step.newActive' = if 'step.outerStatePort.subgraphStatePort.resume' then 'step.oldActive' else (size({'step.inPort[1].set'}, 1) > 0 and max({'step.inPort[1].set'}) or 'step.localActive' and not (size({'step.outPort[1].reset'}, 1) > 0 and max({'step.outPort[1].reset'}))) and not 'step.outerStatePort.subgraphStatePort.suspend';
 
     when 'step.outerStatePort.subgraphStatePort.suspend' then
       'step.oldActive' = 'step.localActive';

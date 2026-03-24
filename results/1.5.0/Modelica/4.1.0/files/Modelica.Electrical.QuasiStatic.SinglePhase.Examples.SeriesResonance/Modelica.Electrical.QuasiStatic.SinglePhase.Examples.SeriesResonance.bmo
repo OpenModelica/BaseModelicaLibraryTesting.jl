@@ -1,13 +1,5 @@
 //! base 0.1.0
 package 'SeriesResonance'
-  function 'Complex.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Complex.\'constructor\'.fromReal';
-
   function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
     input Real 'u1';
     input Real 'u2';
@@ -16,72 +8,18 @@ package 'SeriesResonance'
     constant Real 'pi2' = 6.283185307179586;
     Real 'w';
   algorithm
-    'w' := atan2('u1', 'u2');
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
 
     if 'y0' == 0.0 then
       'y' := 'w';
-    elseif true then
+    else
       'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
     end if;
   end 'Modelica.Math.atan3';
 
-  function 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexCurrent.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexElectricPotential.\'constructor\'.fromReal';
-
-  function 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal' "Construct Complex from Real"
-    input Real 're';
-    input Real 'im' = 0.0;
-    output 'Complex' 'result';
-  algorithm
-    annotation(Inline = true);
-  end 'Modelica.Units.SI.ComplexVoltage.\'constructor\'.fromReal';
-
-  record 'Complex'
-    Real 're';
-    Real 'im';
-  end 'Complex';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexInput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexInput';
-
-  record 'Modelica.ComplexBlocks.Interfaces.ComplexOutput'
-    Real 're';
-    Real 'im';
-  end 'Modelica.ComplexBlocks.Interfaces.ComplexOutput';
-
-  record 'Modelica.Units.SI.ComplexCurrent'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexCurrent';
-
-  record 'Modelica.Units.SI.ComplexElectricPotential'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexElectricPotential';
-
-  record 'Modelica.Units.SI.ComplexVoltage'
-    Real 're';
-    Real 'im';
-  end 'Modelica.Units.SI.ComplexVoltage';
-
   model 'SeriesResonance' "Series resonance circuit"
-    output Real 'I_abs'(unit = "A", quantity = "ElectricCurrent") = 'complexToPolar.len' "Current";
-    output Real 'I_arg'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'complexToPolar.phi' "Current phase";
+    output Real 'I_abs'(unit = "A", quantity = "ElectricCurrent") "Current";
+    output Real 'I_arg'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Current phase";
     parameter Real 'V.k'(start = 1.0) = 1.0 "Constant output value";
     Real 'V.y' "Connector of Real output signal";
     parameter Real 'phi.k'(start = 1.0) = 0.0 "Constant output value";
@@ -104,17 +42,17 @@ package 'SeriesResonance'
     Real 'voltageSource.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'voltageSource.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'voltageSource.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
-    Real 'voltageSource.abs_v'(unit = "V", quantity = "ElectricPotential") = sqrt('voltageSource.v.re' ^ 2.0 + 'voltageSource.v.im' ^ 2.0) "Magnitude of complex voltage";
-    Real 'voltageSource.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('voltageSource.v.im', 'voltageSource.v.re', 0.0) "Argument of complex voltage";
+    Real 'voltageSource.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'voltageSource.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
     Real 'voltageSource.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
     Real 'voltageSource.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
-    Real 'voltageSource.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('voltageSource.i.re' ^ 2.0 + 'voltageSource.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'voltageSource.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('voltageSource.i.im', 'voltageSource.i.re', 0.0) "Argument of complex current";
-    Real 'voltageSource.P'(unit = "W", quantity = "Power") = 'voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im') "Active power";
-    Real 'voltageSource.Q'(unit = "var", quantity = "Power") = 'voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re' "Reactive power";
-    Real 'voltageSource.S'(unit = "V.A", quantity = "Power") = sqrt(('voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im')) ^ 2.0 + ('voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re') ^ 2.0) "Magnitude of complex apparent power";
-    Real 'voltageSource.pf' = cos('Modelica.Math.atan3'('voltageSource.Q', 'voltageSource.P', 0.0)) "Power factor";
-    Real 'voltageSource.gamma'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") = 'voltageSource.pin_p.reference.gamma';
+    Real 'voltageSource.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'voltageSource.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'voltageSource.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'voltageSource.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'voltageSource.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'voltageSource.pf' "Power factor";
+    Real 'voltageSource.gamma'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'voltageSource.f'(unit = "Hz");
     Real 'voltageSource.V.re' "Real part of complex number";
     Real 'voltageSource.V.im' "Imaginary part of complex number";
@@ -136,16 +74,16 @@ package 'SeriesResonance'
     Real 'resistor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'resistor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'resistor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
-    Real 'resistor.abs_v'(unit = "V", quantity = "ElectricPotential") = sqrt('resistor.v.re' ^ 2.0 + 'resistor.v.im' ^ 2.0) "Magnitude of complex voltage";
-    Real 'resistor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('resistor.v.im', 'resistor.v.re', 0.0) "Argument of complex voltage";
+    Real 'resistor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'resistor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
     Real 'resistor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
     Real 'resistor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
-    Real 'resistor.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('resistor.i.re' ^ 2.0 + 'resistor.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'resistor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('resistor.i.im', 'resistor.i.re', 0.0) "Argument of complex current";
-    Real 'resistor.P'(unit = "W", quantity = "Power") = 'resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im') "Active power";
-    Real 'resistor.Q'(unit = "var", quantity = "Power") = 'resistor.v.re' * (-'resistor.i.im') + 'resistor.v.im' * 'resistor.i.re' "Reactive power";
-    Real 'resistor.S'(unit = "V.A", quantity = "Power") = sqrt(('resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im')) ^ 2.0 + ('resistor.v.re' * (-'resistor.i.im') + 'resistor.v.im' * 'resistor.i.re') ^ 2.0) "Magnitude of complex apparent power";
-    Real 'resistor.pf' = cos('Modelica.Math.atan3'('resistor.Q', 'resistor.P', 0.0)) "Power factor";
+    Real 'resistor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'resistor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'resistor.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'resistor.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'resistor.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'resistor.pf' "Power factor";
     parameter Real 'resistor.R_ref'(start = 1.0, unit = "Ohm", quantity = "Resistance") = 0.1 "Reference resistance at T_ref";
     parameter Real 'resistor.T_ref'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Reference temperature";
     parameter Real 'resistor.alpha_ref'(unit = "1/K", quantity = "LinearTemperatureCoefficient") = 0.0 "Temperature coefficient of resistance (R_actual = R_ref*(1 + alpha_ref*(heatPort.T - T_ref))";
@@ -167,16 +105,16 @@ package 'SeriesResonance'
     Real 'inductor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'inductor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'inductor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
-    Real 'inductor.abs_v'(unit = "V", quantity = "ElectricPotential") = sqrt('inductor.v.re' ^ 2.0 + 'inductor.v.im' ^ 2.0) "Magnitude of complex voltage";
-    Real 'inductor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('inductor.v.im', 'inductor.v.re', 0.0) "Argument of complex voltage";
+    Real 'inductor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'inductor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
     Real 'inductor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
     Real 'inductor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
-    Real 'inductor.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('inductor.i.re' ^ 2.0 + 'inductor.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'inductor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('inductor.i.im', 'inductor.i.re', 0.0) "Argument of complex current";
-    Real 'inductor.P'(unit = "W", quantity = "Power") = 'inductor.v.re' * 'inductor.i.re' - 'inductor.v.im' * (-'inductor.i.im') "Active power";
-    Real 'inductor.Q'(unit = "var", quantity = "Power") = 'inductor.v.re' * (-'inductor.i.im') + 'inductor.v.im' * 'inductor.i.re' "Reactive power";
-    Real 'inductor.S'(unit = "V.A", quantity = "Power") = sqrt(('inductor.v.re' * 'inductor.i.re' - 'inductor.v.im' * (-'inductor.i.im')) ^ 2.0 + ('inductor.v.re' * (-'inductor.i.im') + 'inductor.v.im' * 'inductor.i.re') ^ 2.0) "Magnitude of complex apparent power";
-    Real 'inductor.pf' = cos('Modelica.Math.atan3'('inductor.Q', 'inductor.P', 0.0)) "Power factor";
+    Real 'inductor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'inductor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'inductor.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'inductor.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'inductor.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'inductor.pf' "Power factor";
     parameter Real 'inductor.L'(start = 1.0, unit = "H", quantity = "Inductance") = 0.15915494309189535 "Inductance";
     Real 'capacitor.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
     Real 'capacitor.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
@@ -191,16 +129,16 @@ package 'SeriesResonance'
     Real 'capacitor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'capacitor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'capacitor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
-    Real 'capacitor.abs_v'(unit = "V", quantity = "ElectricPotential") = sqrt('capacitor.v.re' ^ 2.0 + 'capacitor.v.im' ^ 2.0) "Magnitude of complex voltage";
-    Real 'capacitor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('capacitor.v.im', 'capacitor.v.re', 0.0) "Argument of complex voltage";
+    Real 'capacitor.abs_v'(unit = "V", quantity = "ElectricPotential") "Magnitude of complex voltage";
+    Real 'capacitor.arg_v'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex voltage";
     Real 'capacitor.i.re'(unit = "A", quantity = "ElectricCurrent") "Real part of complex number";
     Real 'capacitor.i.im'(unit = "A", quantity = "ElectricCurrent") "Imaginary part of complex number";
-    Real 'capacitor.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('capacitor.i.re' ^ 2.0 + 'capacitor.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'capacitor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('capacitor.i.im', 'capacitor.i.re', 0.0) "Argument of complex current";
-    Real 'capacitor.P'(unit = "W", quantity = "Power") = 'capacitor.v.re' * 'capacitor.i.re' - 'capacitor.v.im' * (-'capacitor.i.im') "Active power";
-    Real 'capacitor.Q'(unit = "var", quantity = "Power") = 'capacitor.v.re' * (-'capacitor.i.im') + 'capacitor.v.im' * 'capacitor.i.re' "Reactive power";
-    Real 'capacitor.S'(unit = "V.A", quantity = "Power") = sqrt(('capacitor.v.re' * 'capacitor.i.re' - 'capacitor.v.im' * (-'capacitor.i.im')) ^ 2.0 + ('capacitor.v.re' * (-'capacitor.i.im') + 'capacitor.v.im' * 'capacitor.i.re') ^ 2.0) "Magnitude of complex apparent power";
-    Real 'capacitor.pf' = cos('Modelica.Math.atan3'('capacitor.Q', 'capacitor.P', 0.0)) "Power factor";
+    Real 'capacitor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'capacitor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
+    Real 'capacitor.P'(unit = "W", quantity = "Power") "Active power";
+    Real 'capacitor.Q'(unit = "var", quantity = "Power") "Reactive power";
+    Real 'capacitor.S'(unit = "V.A", quantity = "Power") "Magnitude of complex apparent power";
+    Real 'capacitor.pf' "Power factor";
     parameter Real 'capacitor.C'(start = 1.0, min = 0.0, unit = "F", quantity = "Capacitance") = 0.15915494309189535 "Capacitance";
     Real 'currentSensor.omega'(unit = "rad/s", quantity = "AngularVelocity") "Angular velocity of reference frame";
     Real 'currentSensor.pin_p.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
@@ -215,8 +153,8 @@ package 'SeriesResonance'
     Real 'currentSensor.pin_n.reference.gamma'(displayUnit = "deg", unit = "rad", quantity = "Angle");
     Real 'currentSensor.i.re'(unit = "A") "Real part of complex number";
     Real 'currentSensor.i.im'(unit = "A") "Imaginary part of complex number";
-    Real 'currentSensor.abs_i'(unit = "A", quantity = "ElectricCurrent") = sqrt('currentSensor.i.re' ^ 2.0 + 'currentSensor.i.im' ^ 2.0) "Magnitude of complex current";
-    Real 'currentSensor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 'Modelica.Math.atan3'('currentSensor.i.im', 'currentSensor.i.re', 0.0) "Argument of complex current";
+    Real 'currentSensor.abs_i'(unit = "A", quantity = "ElectricCurrent") "Magnitude of complex current";
+    Real 'currentSensor.arg_i'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of complex current";
     Real 'currentSensor.v.re'(unit = "V", quantity = "ElectricPotential") "Real part of complex number";
     Real 'currentSensor.v.im'(unit = "V", quantity = "ElectricPotential") "Imaginary part of complex number";
     Real 'polarToComplex.y.re' "Real part of complex number";
@@ -229,6 +167,43 @@ package 'SeriesResonance'
     Real 'complexToPolar.u.im' "Imaginary part of complex number";
     parameter Boolean 'complexToPolar.useConjugateInput' = false "If true, input is processed conjugate complex";
   equation
+    'I_abs' = 'complexToPolar.len';
+    'I_arg' = 'complexToPolar.phi';
+    'voltageSource.abs_v' = sqrt('voltageSource.v.re' ^ 2.0 + 'voltageSource.v.im' ^ 2.0);
+    'voltageSource.arg_v' = 'Modelica.Math.atan3'('voltageSource.v.im', 'voltageSource.v.re', 0.0);
+    'voltageSource.abs_i' = sqrt('voltageSource.i.re' ^ 2.0 + 'voltageSource.i.im' ^ 2.0);
+    'voltageSource.arg_i' = 'Modelica.Math.atan3'('voltageSource.i.im', 'voltageSource.i.re', 0.0);
+    'voltageSource.P' = 'voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im');
+    'voltageSource.Q' = 'voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re';
+    'voltageSource.S' = sqrt(('voltageSource.v.re' * 'voltageSource.i.re' - 'voltageSource.v.im' * (-'voltageSource.i.im')) ^ 2.0 + ('voltageSource.v.re' * (-'voltageSource.i.im') + 'voltageSource.v.im' * 'voltageSource.i.re') ^ 2.0);
+    'voltageSource.pf' = cos('Modelica.Math.atan3'('voltageSource.Q', 'voltageSource.P', 0.0));
+    'voltageSource.gamma' = 'voltageSource.pin_p.reference.gamma';
+    'resistor.abs_v' = sqrt('resistor.v.re' ^ 2.0 + 'resistor.v.im' ^ 2.0);
+    'resistor.arg_v' = 'Modelica.Math.atan3'('resistor.v.im', 'resistor.v.re', 0.0);
+    'resistor.abs_i' = sqrt('resistor.i.re' ^ 2.0 + 'resistor.i.im' ^ 2.0);
+    'resistor.arg_i' = 'Modelica.Math.atan3'('resistor.i.im', 'resistor.i.re', 0.0);
+    'resistor.P' = 'resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im');
+    'resistor.Q' = 'resistor.v.re' * (-'resistor.i.im') + 'resistor.v.im' * 'resistor.i.re';
+    'resistor.S' = sqrt(('resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im')) ^ 2.0 + ('resistor.v.re' * (-'resistor.i.im') + 'resistor.v.im' * 'resistor.i.re') ^ 2.0);
+    'resistor.pf' = cos('Modelica.Math.atan3'('resistor.Q', 'resistor.P', 0.0));
+    'inductor.abs_v' = sqrt('inductor.v.re' ^ 2.0 + 'inductor.v.im' ^ 2.0);
+    'inductor.arg_v' = 'Modelica.Math.atan3'('inductor.v.im', 'inductor.v.re', 0.0);
+    'inductor.abs_i' = sqrt('inductor.i.re' ^ 2.0 + 'inductor.i.im' ^ 2.0);
+    'inductor.arg_i' = 'Modelica.Math.atan3'('inductor.i.im', 'inductor.i.re', 0.0);
+    'inductor.P' = 'inductor.v.re' * 'inductor.i.re' - 'inductor.v.im' * (-'inductor.i.im');
+    'inductor.Q' = 'inductor.v.re' * (-'inductor.i.im') + 'inductor.v.im' * 'inductor.i.re';
+    'inductor.S' = sqrt(('inductor.v.re' * 'inductor.i.re' - 'inductor.v.im' * (-'inductor.i.im')) ^ 2.0 + ('inductor.v.re' * (-'inductor.i.im') + 'inductor.v.im' * 'inductor.i.re') ^ 2.0);
+    'inductor.pf' = cos('Modelica.Math.atan3'('inductor.Q', 'inductor.P', 0.0));
+    'capacitor.abs_v' = sqrt('capacitor.v.re' ^ 2.0 + 'capacitor.v.im' ^ 2.0);
+    'capacitor.arg_v' = 'Modelica.Math.atan3'('capacitor.v.im', 'capacitor.v.re', 0.0);
+    'capacitor.abs_i' = sqrt('capacitor.i.re' ^ 2.0 + 'capacitor.i.im' ^ 2.0);
+    'capacitor.arg_i' = 'Modelica.Math.atan3'('capacitor.i.im', 'capacitor.i.re', 0.0);
+    'capacitor.P' = 'capacitor.v.re' * 'capacitor.i.re' - 'capacitor.v.im' * (-'capacitor.i.im');
+    'capacitor.Q' = 'capacitor.v.re' * (-'capacitor.i.im') + 'capacitor.v.im' * 'capacitor.i.re';
+    'capacitor.S' = sqrt(('capacitor.v.re' * 'capacitor.i.re' - 'capacitor.v.im' * (-'capacitor.i.im')) ^ 2.0 + ('capacitor.v.re' * (-'capacitor.i.im') + 'capacitor.v.im' * 'capacitor.i.re') ^ 2.0);
+    'capacitor.pf' = cos('Modelica.Math.atan3'('capacitor.Q', 'capacitor.P', 0.0));
+    'currentSensor.abs_i' = sqrt('currentSensor.i.re' ^ 2.0 + 'currentSensor.i.im' ^ 2.0);
+    'currentSensor.arg_i' = 'Modelica.Math.atan3'('currentSensor.i.im', 'currentSensor.i.re', 0.0);
     'f.y' = 'voltageSource.f';
     'polarToComplex.y.re' = 'voltageSource.V.re';
     'polarToComplex.y.im' = 'voltageSource.V.im';
@@ -280,8 +255,8 @@ package 'SeriesResonance'
     'ground.pin.v.re' = 0.0;
     'ground.pin.v.im' = 0.0;
     'resistor.R_actual' = 0.1;
-    'resistor.v.re' = 'resistor.R_actual' * 'resistor.i.re';
-    'resistor.v.im' = 'resistor.R_actual' * 'resistor.i.im';
+    'resistor.v.re' = 'resistor.R_actual' * 'resistor.i.re' - 0.0 * 'resistor.i.im';
+    'resistor.v.im' = 'resistor.R_actual' * 'resistor.i.im' + 0.0 * 'resistor.i.re';
     'resistor.LossPower' = 'resistor.v.re' * 'resistor.i.re' - 'resistor.v.im' * (-'resistor.i.im');
     'resistor.T_heatPort' = 293.15;
     'resistor.pin_p.i.re' + 'resistor.pin_n.i.re' = 0.0;
@@ -292,8 +267,8 @@ package 'SeriesResonance'
     'resistor.i.im' = 'resistor.pin_p.i.im';
     'resistor.pin_p.reference.gamma' = 'resistor.pin_n.reference.gamma';
     'resistor.omega' = der('resistor.pin_p.reference.gamma');
-    'inductor.v.re' = -'inductor.omega' * 0.15915494309189535 * 'inductor.i.im';
-    'inductor.v.im' = 'inductor.omega' * 0.15915494309189535 * 'inductor.i.re';
+    'inductor.v.re' = ((0.0 * 'inductor.omega' - 1.0 * 0.0) * 0.15915494309189535 - (0.0 * 0.0 + 1.0 * 'inductor.omega') * 0.0) * 'inductor.i.re' - ((0.0 * 'inductor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.omega') * 0.15915494309189535) * 'inductor.i.im';
+    'inductor.v.im' = ((0.0 * 'inductor.omega' - 1.0 * 0.0) * 0.15915494309189535 - (0.0 * 0.0 + 1.0 * 'inductor.omega') * 0.0) * 'inductor.i.im' + ((0.0 * 'inductor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'inductor.omega') * 0.15915494309189535) * 'inductor.i.re';
     'inductor.pin_p.i.re' + 'inductor.pin_n.i.re' = 0.0;
     'inductor.pin_p.i.im' + 'inductor.pin_n.i.im' = 0.0;
     'inductor.v.re' = 'inductor.pin_p.v.re' - 'inductor.pin_n.v.re';
@@ -302,8 +277,8 @@ package 'SeriesResonance'
     'inductor.i.im' = 'inductor.pin_p.i.im';
     'inductor.pin_p.reference.gamma' = 'inductor.pin_n.reference.gamma';
     'inductor.omega' = der('inductor.pin_p.reference.gamma');
-    'capacitor.i.re' = -'capacitor.omega' * 0.15915494309189535 * 'capacitor.v.im';
-    'capacitor.i.im' = 'capacitor.omega' * 0.15915494309189535 * 'capacitor.v.re';
+    'capacitor.i.re' = ((0.0 * 'capacitor.omega' - 1.0 * 0.0) * 0.15915494309189535 - (0.0 * 0.0 + 1.0 * 'capacitor.omega') * 0.0) * 'capacitor.v.re' - ((0.0 * 'capacitor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'capacitor.omega') * 0.15915494309189535) * 'capacitor.v.im';
+    'capacitor.i.im' = ((0.0 * 'capacitor.omega' - 1.0 * 0.0) * 0.15915494309189535 - (0.0 * 0.0 + 1.0 * 'capacitor.omega') * 0.0) * 'capacitor.v.im' + ((0.0 * 'capacitor.omega' - 1.0 * 0.0) * 0.0 + (0.0 * 0.0 + 1.0 * 'capacitor.omega') * 0.15915494309189535) * 'capacitor.v.re';
     'capacitor.pin_p.i.re' + 'capacitor.pin_n.i.re' = 0.0;
     'capacitor.pin_p.i.im' + 'capacitor.pin_n.i.im' = 0.0;
     'capacitor.v.re' = 'capacitor.pin_p.v.re' - 'capacitor.pin_n.v.re';

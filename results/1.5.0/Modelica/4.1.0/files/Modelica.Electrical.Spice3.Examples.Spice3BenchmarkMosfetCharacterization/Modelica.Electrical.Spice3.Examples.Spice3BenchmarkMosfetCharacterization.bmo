@@ -1,127 +1,5 @@
 //! base 0.1.0
 package 'Spice3BenchmarkMosfetCharacterization'
-  function 'Modelica.Electrical.Spice3.Internal.Functions.junction2SPICE3MOSFETRevised' "Junction current and conductance calculation"
-    input Real 'voltage'(unit = "V", quantity = "ElectricPotential");
-    input Real 'temp'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'ncoeff';
-    input Real 'satcur'(unit = "A", quantity = "ElectricCurrent");
-    output Real 'out_current'(unit = "A", quantity = "ElectricCurrent");
-    output Real 'out_cond'(unit = "S", quantity = "Conductance");
-    Real 'vte'(unit = "V", quantity = "ElectricPotential");
-    Real 'max_exponent';
-    Real 'evbd';
-    Real 'evd';
-    constant Real 'max_exp' = 50.0;
-    constant Real 'max_current'(unit = "A", quantity = "ElectricCurrent") = 1e4;
-  algorithm
-    if 'satcur' > 1e-101 then
-      'vte' := 8.617251692337959e-5 * 'temp' * 'ncoeff';
-      'max_exponent' := log('max_current' / 'satcur');
-      'max_exponent' := min('max_exp', 'max_exponent');
-
-      if 'voltage' <= 0.0 then
-        'out_cond' := 'satcur' / 'vte';
-        'out_current' := 'out_cond' * 'voltage';
-        'out_cond' := 'out_cond' + 1e-12;
-      elseif 'voltage' >= 'max_exponent' * 'vte' then
-        'evd' := exp('max_exponent');
-        'out_cond' := 'satcur' * 'evd' / 'vte';
-        'out_current' := 'satcur' * ('evd' - 1.0) + 'out_cond' * ('voltage' - 'max_exponent' * 'vte');
-      elseif true then
-        'evbd' := exp('voltage' / 'vte');
-        'out_cond' := 'satcur' * 'evbd' / 'vte' + 1e-12;
-        'out_current' := 'satcur' * ('evbd' - 1.0);
-      end if;
-    elseif true then
-      'out_current' := 0.0;
-      'out_cond' := 0.0;
-    end if;
-  end 'Modelica.Electrical.Spice3.Internal.Functions.junction2SPICE3MOSFETRevised';
-
-  function 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapRevised' "Junction capacity"
-    input Real 'capin'(min = -1e60, unit = "F", quantity = "Capacitance");
-    input Real 'voltage'(unit = "V", quantity = "ElectricPotential");
-    input Real 'depcap'(unit = "V", quantity = "ElectricPotential");
-    input Real 'mj';
-    input Real 'phij';
-    input Real 'f1'(unit = "V", quantity = "ElectricPotential");
-    input Real 'f2';
-    input Real 'f3';
-    output Real 'capout'(min = -1e60, unit = "F", quantity = "Capacitance");
-    output Real 'charge'(unit = "C", quantity = "ElectricCharge");
-    Real 'arg';
-    Real 'sarg';
-    Real 'czof2';
-  algorithm
-    if 'voltage' < 'depcap' then
-      'arg' := 1.0 - 'voltage' / 'phij';
-
-      if 'mj' == 0.5 then
-        'sarg' := 1.0 / sqrt('arg');
-      elseif true then
-        'sarg' := exp(-'mj' * log('arg'));
-      end if;
-
-      'capout' := 'capin' * 'sarg';
-      'charge' := 'phij' * ('capin' * (1.0 - 'arg' * 'sarg') / (1.0 - 'mj'));
-    elseif true then
-      'czof2' := 'capin' / 'f2';
-      'capout' := 'czof2' * ('f3' + 'mj' * 'voltage' / 'phij');
-      'charge' := 'capin' * 'f1' + 'czof2' * ('f3' * ('voltage' - 'depcap') + 'mj' / (2.0 * 'phij') * ('voltage' ^ 2.0 - 'depcap' ^ 2.0));
-    end if;
-  end 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapRevised';
-
-  function 'Modelica.Electrical.Spice3.Internal.Mos.mosCalcDEVqmeyer' "Calculation of Meyer capacities"
-    input Real 'vgs'(unit = "V", quantity = "ElectricPotential");
-    input Real 'vgd'(unit = "V", quantity = "ElectricPotential");
-    input Real 'vgb'(unit = "V", quantity = "ElectricPotential");
-    input 'Modelica.Electrical.Spice3.Internal.Mos.MosCalc' 'in_c';
-    output 'Modelica.Electrical.Spice3.Internal.Mos.DEVqmeyer' 'out_qm';
-    Real 'vds'(unit = "V", quantity = "ElectricPotential");
-    Real 'vddif'(unit = "V", quantity = "ElectricPotential");
-    Real 'vddif1'(unit = "V", quantity = "ElectricPotential");
-    Real 'vddif2'(unit = "V2", quantity = "ElectricalPotential2");
-    Real 'vgst'(unit = "V", quantity = "ElectricPotential");
-  algorithm
-    'vgst' := 'vgs' - 'in_c'.'m_von';
-
-    if 'vgst' <= (-'in_c'.'m_tPhi') then
-      'out_qm'.'qm_capgb' := 'in_c'.'m_capOx' / 2.0;
-      'out_qm'.'qm_capgs' := 0.0;
-      'out_qm'.'qm_capgd' := 0.0;
-    elseif 'vgst' <= (-'in_c'.'m_tPhi' / 2.0) then
-      'out_qm'.'qm_capgb' := -'vgst' * 'in_c'.'m_capOx' / (2.0 * 'in_c'.'m_tPhi');
-      'out_qm'.'qm_capgs' := 0.0;
-      'out_qm'.'qm_capgd' := 0.0;
-    elseif 'vgst' <= 0.0 then
-      'out_qm'.'qm_capgb' := -'vgst' * 'in_c'.'m_capOx' / (2.0 * 'in_c'.'m_tPhi');
-      'out_qm'.'qm_capgs' := 'vgst' * 'in_c'.'m_capOx' / (1.5 * 'in_c'.'m_tPhi') + 'in_c'.'m_capOx' / 3.0;
-      'out_qm'.'qm_capgd' := 0.0;
-    elseif true then
-      'vds' := 'vgs' - 'vgd';
-
-      if 'in_c'.'m_vdsat' <= 'vds' then
-        'out_qm'.'qm_capgs' := 'in_c'.'m_capOx' / 3.0;
-        'out_qm'.'qm_capgd' := 0.0;
-        'out_qm'.'qm_capgb' := 0.0;
-      elseif true then
-        'vddif' := 2.0 * 'in_c'.'m_vdsat' - 'vds';
-        'vddif1' := 'in_c'.'m_vdsat' - 'vds';
-        'vddif2' := 'vddif' * 'vddif';
-        'out_qm'.'qm_capgd' := 'in_c'.'m_capOx' * (1.0 - 'in_c'.'m_vdsat' * 'in_c'.'m_vdsat' / 'vddif2') / 3.0;
-        'out_qm'.'qm_capgs' := 'in_c'.'m_capOx' * (1.0 - 'vddif1' * 'vddif1' / 'vddif2') / 3.0;
-        'out_qm'.'qm_capgb' := 0.0;
-      end if;
-    end if;
-
-    'out_qm'.'qm_qgs' := 0.0;
-    'out_qm'.'qm_qgb' := 0.0;
-    'out_qm'.'qm_qgd' := 0.0;
-    'out_qm'.'qm_vgs' := 0.0;
-    'out_qm'.'qm_vgb' := 0.0;
-    'out_qm'.'qm_vgd' := 0.0;
-  end 'Modelica.Electrical.Spice3.Internal.Mos.mosCalcDEVqmeyer';
-
   function 'Modelica.Electrical.Spice3.Internal.Mos.mosCalcNoBypassCode' "Calculation of currents and capacities (level 1)"
     input 'Modelica.Electrical.Spice3.Internal.Mosfet.Mosfet' 'in_m';
     input Integer 'in_m_type';
@@ -130,7 +8,7 @@ package 'Spice3BenchmarkMosfetCharacterization'
     input 'Modelica.Electrical.Spice3.Internal.SpiceConstants' 'in_C';
     input 'Modelica.Electrical.Spice3.Internal.Mos.MosModelLineVariables' 'in_vp';
     input Boolean 'in_m_bInit';
-    input Real[4] 'in_m_pVoltageValues'(unit = {"V", "V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    input Real 'in_m_pVoltageValues'[4](unit = {"V", "V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential", "ElectricPotential"});
     output 'Modelica.Electrical.Spice3.Internal.Mos.CurrrentsCapacitances' 'out_cc';
     Real 'vbd'(unit = "V", quantity = "ElectricPotential");
     Real 'vgd'(unit = "V", quantity = "ElectricPotential");
@@ -151,7 +29,7 @@ package 'Spice3BenchmarkMosfetCharacterization'
 
     if 'int_c'.'m_vds' >= 0.0 then
       'vbd' := 'int_c'.'m_vbs' - 'int_c'.'m_vds';
-    elseif true then
+    else
       'int_c'.'m_vbs' := 'vbd' + 'int_c'.'m_vds';
     end if;
 
@@ -164,7 +42,7 @@ package 'Spice3BenchmarkMosfetCharacterization'
 
     if 'int_c'.'m_mode' == 1 then
       'int_c' := 'Modelica.Electrical.Spice3.Internal.Mos1.drainCur'('int_c'.'m_vbs', 'int_c'.'m_vgs', 'int_c'.'m_vds', 'int_c', 'in_p', 'in_C', 'in_vp', 'in_m_type');
-    elseif true then
+    else
       'int_c' := 'Modelica.Electrical.Spice3.Internal.Mos1.drainCur'('vbd', 'vgd', -'int_c'.'m_vds', 'int_c', 'in_p', 'in_C', 'in_vp', 'in_m_type');
     end if;
 
@@ -190,7 +68,7 @@ package 'Spice3BenchmarkMosfetCharacterization'
 
     if 'int_c'.'m_mode' > 0 then
       'qm' := 'Modelica.Electrical.Spice3.Internal.Mos.mosCalcDEVqmeyer'('int_c'.'m_vgs', 'vgd', 'vgb', 'int_c');
-    elseif true then
+    else
       'qm' := 'Modelica.Electrical.Spice3.Internal.Mos.mosCalcDEVqmeyer'('vgd', 'int_c'.'m_vgs', 'vgb', 'int_c');
       'hlp' := 'qm'.'qm_capgd';
       'qm'.'qm_capgd' := 'qm'.'qm_capgs';
@@ -204,58 +82,6 @@ package 'Spice3BenchmarkMosfetCharacterization'
     'out_cc'.'cGD' := if 'in_m_bInit' then -1e40 else 'int_c'.'m_capgd';
     'out_cc'.'cGS' := if 'in_m_bInit' then -1e40 else 'int_c'.'m_capgs';
   end 'Modelica.Electrical.Spice3.Internal.Mos.mosCalcNoBypassCode';
-
-  function 'Modelica.Electrical.Spice3.Internal.Mos1.drainCur' "Drain current calculation"
-    input Real 'vb'(unit = "V", quantity = "ElectricPotential");
-    input Real 'vg'(unit = "V", quantity = "ElectricPotential");
-    input Real 'vds'(unit = "V", quantity = "ElectricPotential");
-    input 'Modelica.Electrical.Spice3.Internal.Mos1.Mos1Calc' 'in_c';
-    input 'Modelica.Electrical.Spice3.Internal.Mos1.Mos1ModelLineParams' 'in_p';
-    input 'Modelica.Electrical.Spice3.Internal.SpiceConstants' 'in_C';
-    input 'Modelica.Electrical.Spice3.Internal.Mos.MosModelLineVariables' 'in_vp';
-    input Integer 'in_m_type';
-    output 'Modelica.Electrical.Spice3.Internal.Mos1.Mos1Calc' 'out_c';
-    Real 'arg';
-    Real 'betap';
-    Real 'sarg';
-    Real 'vgst'(unit = "V", quantity = "ElectricPotential");
-  algorithm
-    'out_c' := 'in_c';
-
-    if 'vb' <= 0.0 then
-      'sarg' := sqrt('out_c'.'m_tPhi' - 'vb');
-    elseif true then
-      'sarg' := sqrt('out_c'.'m_tPhi');
-      'sarg' := 'sarg' - 'vb' / ('sarg' + 'sarg');
-      'sarg' := max(0.0, 'sarg');
-    end if;
-
-    'out_c'.'m_von' := 'out_c'.'m_tVbi' * 'in_m_type' + 'in_vp'.'m_gamma' * 'sarg';
-    'vgst' := 'vg' - 'out_c'.'m_von';
-    'out_c'.'m_vdsat' := max('vgst', 0.0);
-    'arg' := if 'sarg' <= 0.0 then 0.0 else 'in_vp'.'m_gamma' / ('sarg' + 'sarg');
-
-    if 'vgst' <= 0.0 then
-      'out_c'.'m_cdrain' := 0.0;
-      'out_c'.'m_gm' := 0.0;
-      'out_c'.'m_gds' := 0.0;
-      'out_c'.'m_gmbs' := 0.0;
-    elseif true then
-      'betap' := 'out_c'.'m_Beta' * (1.0 + 'in_p'.'m_lambda' * 'vds');
-
-      if 'vgst' <= 'vds' then
-        'out_c'.'m_cdrain' := 'betap' * 'vgst' * 'vgst' * 0.5;
-        'out_c'.'m_gm' := 'betap' * 'vgst';
-        'out_c'.'m_gds' := 'in_p'.'m_lambda' * 'out_c'.'m_Beta' * 'vgst' * 'vgst' * 0.5;
-        'out_c'.'m_gmbs' := 'out_c'.'m_gm' * 'arg';
-      elseif true then
-        'out_c'.'m_cdrain' := 'betap' * 'vds' * ('vgst' - 0.5 * 'vds');
-        'out_c'.'m_gm' := 'betap' * 'vds';
-        'out_c'.'m_gds' := 'betap' * ('vgst' - 'vds') + 'in_p'.'m_lambda' * 'out_c'.'m_Beta' * 'vds' * ('vgst' - 0.5 * 'vds');
-        'out_c'.'m_gmbs' := 'out_c'.'m_gm' * 'arg';
-      end if;
-    end if;
-  end 'Modelica.Electrical.Spice3.Internal.Mos1.drainCur';
 
   record 'Modelica.Electrical.Spice3.Internal.Mosfet.Mosfet'
     Real 'm_dTemp'(nominal = 300.0, start = 300.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
@@ -402,7 +228,7 @@ package 'Spice3BenchmarkMosfetCharacterization'
     constant Real 'CONSTboltz'(unit = "J/K", quantity = "HeatCapacity") = 1.3806226e-23;
     constant Real 'REFTEMP'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.15;
     constant Real 'CONSTroot2' = sqrt(2.0);
-    constant Real 'CONSTvt0'(unit = "(J)/(A.s)") = 1.380649e-23 * (27.0 - (-273.15)) / 1.6021918e-19;
+    constant Real 'CONSTvt0'(unit = "(J)/(A.s)") = 1.380649e-23 * 'Modelica.Units.Conversions.from_degC'(27.0) / 1.6021918e-19;
     constant Real 'CONSTKoverQ'(unit = "(J/K)/(A.s)") = 1.380649e-23 / 1.6021918e-19;
     constant Real 'CONSTe' = exp(1.0);
     constant Real 'CKTgmin'(unit = "S", quantity = "Conductance") = 1e-12;
@@ -437,82 +263,6 @@ package 'Spice3BenchmarkMosfetCharacterization'
     Real 'cBD'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
     Real 'm_capgd'(min = -1e60, unit = "F", quantity = "Capacitance");
   end 'Modelica.Electrical.Spice3.Internal.Mos.CurrrentsCapacitances';
-
-  record 'Modelica.Electrical.Spice3.Internal.Mos.DEVqmeyer'
-    Real 'qm_capgb'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'qm_capgs'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'qm_capgd'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'qm_qgs'(start = 0.0, unit = "C", quantity = "ElectricCharge");
-    Real 'qm_qgb'(start = 0.0, unit = "C", quantity = "ElectricCharge");
-    Real 'qm_qgd'(start = 0.0, unit = "C", quantity = "ElectricCharge");
-    Real 'qm_vgs'(start = 0.0, unit = "V", quantity = "ElectricPotential");
-    Real 'qm_vgb'(start = 0.0, unit = "V", quantity = "ElectricPotential");
-    Real 'qm_vgd'(start = 0.0, unit = "V", quantity = "ElectricPotential");
-  end 'Modelica.Electrical.Spice3.Internal.Mos.DEVqmeyer';
-
-  record 'Modelica.Electrical.Spice3.Internal.Mos.MosCalc'
-    Real 'm_vds'(unit = "V", quantity = "ElectricPotential");
-    Real 'm_vgs'(unit = "V", quantity = "ElectricPotential");
-    Real 'm_vbs'(unit = "V", quantity = "ElectricPotential");
-    Real 'm_cbs'(unit = "A", quantity = "ElectricCurrent");
-    Real 'm_gbs'(unit = "S", quantity = "Conductance");
-    Real 'm_cbd'(unit = "A", quantity = "ElectricCurrent");
-    Real 'm_gbd'(unit = "S", quantity = "Conductance");
-    Real 'm_cdrain'(unit = "A", quantity = "ElectricCurrent");
-    Real 'm_gds'(unit = "S", quantity = "Conductance");
-    Real 'm_gm'(unit = "A/V2", quantity = "Transconductance");
-    Real 'm_gmbs'(unit = "A/V2", quantity = "Transconductance");
-    Real 'm_capbsb'(min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_chargebsb'(unit = "C", quantity = "ElectricCharge");
-    Real 'm_capbss'(min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_chargebss'(unit = "C", quantity = "ElectricCharge");
-    Real 'm_capbdb'(min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_chargebdb'(unit = "C", quantity = "ElectricCharge");
-    Real 'm_capbds'(min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_chargebds'(unit = "C", quantity = "ElectricCharge");
-    Real 'm_Beta';
-    Real 'm_capGSovl'(min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_capGDovl'(min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_capGBovl'(min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_capOx'(min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_von'(unit = "V", quantity = "ElectricPotential");
-    Real 'm_vdsat'(unit = "V", quantity = "ElectricPotential");
-    Integer 'm_mode'(start = 1);
-    Real 'm_lEff'(unit = "m", quantity = "Length");
-    Real 'm_sourceResistance'(unit = "Ohm", quantity = "Resistance");
-    Real 'm_drainResistance'(unit = "Ohm", quantity = "Resistance");
-    Real 'm_tTransconductance'(start = 0.0, unit = "A/V2", quantity = "Transconductance");
-    Real 'm_tSurfMob'(start = 0.0, unit = "cm2/(V.s)", quantity = "AreaPerVoltageSecond");
-    Real 'm_tPhi'(start = 0.7, unit = "V", quantity = "ElectricPotential");
-    Real 'm_tVto'(start = 1.0, unit = "V", quantity = "ElectricPotential");
-    Real 'm_tSatCurDens'(start = 0.0, unit = "A/m2", quantity = "CurrentDensity");
-    Real 'm_tDrainSatCur'(start = 0.0, unit = "A", quantity = "ElectricCurrent");
-    Real 'm_tSourceSatCur'(start = 0.0, unit = "A", quantity = "ElectricCurrent");
-    Real 'm_tCBDb'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_tCBDs'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_tCBSb'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_tCBSs'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_tCj'(start = 0.0, unit = "F/m2", quantity = "CapacitancePerArea");
-    Real 'm_tCjsw'(start = 0.0, min = 0.0, unit = "F/m", quantity = "Permittivity");
-    Real 'm_tBulkPot'(start = 0.7, unit = "V", quantity = "ElectricPotential");
-    Real 'm_tDepCap'(start = 0.35, unit = "V", quantity = "ElectricPotential");
-    Real 'm_tVbi'(start = 1.0, unit = "V", quantity = "ElectricPotential");
-    Real 'm_VBScrit'(start = 0.7, unit = "V", quantity = "ElectricPotential");
-    Real 'm_VBDcrit'(start = 0.7, unit = "V", quantity = "ElectricPotential");
-    Real 'm_f1b'(start = 0.0, unit = "V", quantity = "ElectricPotential");
-    Real 'm_f2b'(start = 0.0);
-    Real 'm_f3b'(start = 0.0);
-    Real 'm_f1s'(start = 0.0, unit = "V", quantity = "ElectricPotential");
-    Real 'm_f2s'(start = 0.0);
-    Real 'm_f3s'(start = 0.0);
-    Real 'm_dVt'(start = 0.0, unit = "V", quantity = "ElectricPotential");
-    Real 'm_capgd'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_capgs'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_capgb'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_qgs'(start = 0.0, unit = "C", quantity = "ElectricCharge");
-    Real 'm_qgd'(start = 0.0, unit = "C", quantity = "ElectricCharge");
-    Real 'm_qgb'(start = 0.0, unit = "C", quantity = "ElectricCharge");
-  end 'Modelica.Electrical.Spice3.Internal.Mos.MosCalc';
 
   record 'Modelica.Electrical.Spice3.Internal.Mos1.Mos1ModelLineParams'
     Real 'm_jctSatCurDensity'(start = 0.0);
@@ -564,6 +314,18 @@ package 'Spice3BenchmarkMosfetCharacterization'
     Real 'm_transconductanceIsGiven';
     Real 'm_tnom'(nominal = 300.0, start = 300.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
   end 'Modelica.Electrical.Spice3.Internal.Mos1.Mos1ModelLineParams';
+
+  record 'Modelica.Electrical.Spice3.Internal.Mos.DEVqmeyer'
+    Real 'qm_capgb'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
+    Real 'qm_capgs'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
+    Real 'qm_capgd'(start = 0.0, min = -1e60, unit = "F", quantity = "Capacitance");
+    Real 'qm_qgs'(start = 0.0, unit = "C", quantity = "ElectricCharge");
+    Real 'qm_qgb'(start = 0.0, unit = "C", quantity = "ElectricCharge");
+    Real 'qm_qgd'(start = 0.0, unit = "C", quantity = "ElectricCharge");
+    Real 'qm_vgs'(start = 0.0, unit = "V", quantity = "ElectricPotential");
+    Real 'qm_vgb'(start = 0.0, unit = "V", quantity = "ElectricPotential");
+    Real 'qm_vgd'(start = 0.0, unit = "V", quantity = "ElectricPotential");
+  end 'Modelica.Electrical.Spice3.Internal.Mos.DEVqmeyer';
 
   model 'Spice3BenchmarkMosfetCharacterization' "Mos output characteristics"
     Real 'VDS.v'(unit = "V", quantity = "ElectricPotential") "Voltage drop of the two pins (= p.v - n.v)";

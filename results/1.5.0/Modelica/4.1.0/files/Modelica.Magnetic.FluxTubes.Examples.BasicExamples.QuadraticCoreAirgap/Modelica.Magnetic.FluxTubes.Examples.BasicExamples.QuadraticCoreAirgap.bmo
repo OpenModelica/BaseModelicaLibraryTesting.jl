@@ -23,7 +23,7 @@ package 'QuadraticCoreAirgap'
     parameter Real 'excitingCoil.N' = 500.0 "Number of turns";
     Real 'excitingCoil.Psi'(unit = "Wb", quantity = "MagneticFlux") "Flux linkage";
     Real 'excitingCoil.L_stat'(unit = "H", quantity = "Inductance") "Static inductance abs(Psi/i)";
-    Real 'excitingCoil.eps' = 2.220446049250313e-14;
+    Real 'excitingCoil.eps';
     Real 'leftLeg.port_p.V_m'(unit = "A", quantity = "MagneticPotential") "Magnetic potential at the port";
     Real 'leftLeg.port_p.Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnetic flux flowing into the port";
     Real 'leftLeg.port_n.V_m'(unit = "A", quantity = "MagneticPotential") "Magnetic potential at the port";
@@ -135,7 +135,7 @@ package 'QuadraticCoreAirgap'
     parameter Real 'measuringCoil.N' = 1.0 "Number of turns";
     Real 'measuringCoil.Psi'(unit = "Wb", quantity = "MagneticFlux") "Flux linkage";
     Real 'measuringCoil.L_stat'(unit = "H", quantity = "Inductance") "Static inductance abs(Psi/i)";
-    Real 'measuringCoil.eps' = 2.220446049250313e-14;
+    Real 'measuringCoil.eps';
     Real 'lowerYoke.port_p.V_m'(unit = "A", quantity = "MagneticPotential") "Magnetic potential at the port";
     Real 'lowerYoke.port_p.Phi'(unit = "Wb", quantity = "MagneticFlux") "Magnetic flux flowing into the port";
     Real 'lowerYoke.port_n.V_m'(unit = "A", quantity = "MagneticPotential") "Magnetic potential at the port";
@@ -201,8 +201,11 @@ package 'QuadraticCoreAirgap'
     Real 'leakage.G_m'(unit = "H", quantity = "Permeance") "Magnetic permeance";
     parameter Real 'leakage.c_usefulFlux'(start = 0.7, max = 0.9999999999999998, min = 2.220446049250313e-16, unit = "1", quantity = "CouplingCoefficient") = 0.9 "Ratio useful flux/(leakage flux + useful flux) = useful flux/total flux";
     Real 'leakage.R_mUsefulTot'(unit = "H-1", quantity = "Reluctance");
-    Real 'usefulReluctance.y' = 1.0 / 'airGap.G_m' "Value of Real output";
+    Real 'usefulReluctance.y' "Value of Real output";
   equation
+    'excitingCoil.eps' = 2.220446049250313e-14;
+    'measuringCoil.eps' = 2.220446049250313e-14;
+    'usefulReluctance.y' = 1.0 / 'airGap.G_m';
     'excitingCoil.port_p.V_m' = 'leftLeg.port_p.V_m';
     'leftLeg.port_n.V_m' = 'upperYoke.port_p.V_m';
     'upperYoke.port_n.V_m' = 'rightLeg.port_p.V_m';

@@ -52,14 +52,14 @@ package 'ThyristorCenterTap2Pulse_RL'
     Real 'rectifier.ac_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
     Real 'rectifier.ac_n.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'rectifier.ac_n.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'rectifier.vAC'(unit = "V", quantity = "ElectricPotential") = 'rectifier.ac_p.v' - 'rectifier.ac_n.v' "AC voltages";
-    Real 'rectifier.iAC'(unit = "A", quantity = "ElectricCurrent") = 'rectifier.ac_p.i' "AC currents";
-    Real 'rectifier.powerAC'(unit = "W", quantity = "Power") = 'rectifier.vAC' * 'rectifier.iAC' "AC power";
+    Real 'rectifier.vAC'(unit = "V", quantity = "ElectricPotential") "AC voltages";
+    Real 'rectifier.iAC'(unit = "A", quantity = "ElectricCurrent") "AC currents";
+    Real 'rectifier.powerAC'(unit = "W", quantity = "Power") "AC power";
     Real 'rectifier.dc_p.v'(unit = "V", quantity = "ElectricPotential") "Potential at the pin";
     Real 'rectifier.dc_p.i'(unit = "A", quantity = "ElectricCurrent") "Current flowing into the pin";
-    Real 'rectifier.vDC'(unit = "V", quantity = "ElectricPotential") = 'rectifier.dc_p.v' "DC potential";
-    Real 'rectifier.iDC'(unit = "A", quantity = "ElectricCurrent") = 'rectifier.dc_p.i' "DC current";
-    Real 'rectifier.powerDC'(unit = "W", quantity = "Power") = 'rectifier.vDC' * 'rectifier.iDC' "DC power";
+    Real 'rectifier.vDC'(unit = "V", quantity = "ElectricPotential") "DC potential";
+    Real 'rectifier.iDC'(unit = "A", quantity = "ElectricCurrent") "DC current";
+    Real 'rectifier.powerDC'(unit = "W", quantity = "Power") "DC power";
     parameter Boolean 'rectifier.useHeatPort' = false "= true, if heatPort is enabled" annotation(Evaluate = true);
     parameter Real 'rectifier.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Fixed device temperature if useHeatPort = false";
     Real 'rectifier.LossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort";
@@ -277,6 +277,12 @@ package 'ThyristorCenterTap2Pulse_RL'
     pre('pulse2.twoPulse.timerPositive[1].entryTime') = 0.0;
     pre('pulse2.twoPulse.timerNegative[1].entryTime') = 0.0;
   equation
+    'rectifier.vAC' = 'rectifier.ac_p.v' - 'rectifier.ac_n.v';
+    'rectifier.iAC' = 'rectifier.ac_p.i';
+    'rectifier.powerAC' = 'rectifier.vAC' * 'rectifier.iAC';
+    'rectifier.vDC' = 'rectifier.dc_p.v';
+    'rectifier.iDC' = 'rectifier.dc_p.i';
+    'rectifier.powerDC' = 'rectifier.vDC' * 'rectifier.iDC';
     'rectifier.enableLogic.internalEnable[1]' = 'rectifier.enableLogic.booleanReplicator.y[1]';
     'rectifier.enableLogic.enableConstantSource.y' = 'rectifier.enableLogic.booleanReplicator.u';
     'rectifier.ac_p.v' = 'rectifier.thyristor_p.p.v';

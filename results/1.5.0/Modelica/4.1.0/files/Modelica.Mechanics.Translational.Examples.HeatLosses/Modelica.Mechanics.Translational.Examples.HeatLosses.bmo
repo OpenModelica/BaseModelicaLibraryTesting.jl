@@ -1,14 +1,5 @@
 //! base 0.1.0
 package 'HeatLosses'
-  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    input Real 'der_u';
-    output Real 'der_y';
-  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
-
   function 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2' "Interpolate 1-dim. table defined by matrix (but do not provide a second derivative function)"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
@@ -18,6 +9,15 @@ package 'HeatLosses'
     annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer');
   end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
 
+  function 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer' "Derivative of interpolated 1-dim. table defined by matrix (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    input Real 'der_u';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
+
   type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
 
   class 'Modelica.Blocks.Types.ExternalCombiTable1D'
@@ -26,8 +26,8 @@ package 'HeatLosses'
     function constructor "Initialize 1-dim. table defined by matrix"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
-      input Integer[:] 'columns';
+      input Real 'table'[:, :];
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
       input Boolean 'verboseRead' = true;
@@ -71,7 +71,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'springDamper.s_rel0'(unit = "m", quantity = "Length") = 0.0 "Unstretched spring length";
     parameter Boolean 'springDamper.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'springDamper.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'springDamper.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'springDamper.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'springDamper.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'springDamper.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'springDamper.f_c'(unit = "N", quantity = "Force") "Spring force";
     Real 'springDamper.f_d'(unit = "N", quantity = "Force") "Damping force";
@@ -87,7 +87,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'damper.d'(start = 0.0, min = 0.0, unit = "N.s/m", quantity = "TranslationalDampingConstant") = 10.0 "Damping constant";
     parameter Boolean 'damper.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'damper.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'damper.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'damper.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'damper.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'damper.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     parameter StateSelect 'elastoGap.stateSelect' = StateSelect.prefer "Priority to use s_rel and v_rel as states";
     parameter Real 'elastoGap.s_nominal'(min = 0.0, unit = "m", quantity = "Length") = 1e-4 "Nominal value of s_rel (used for scaling)";
@@ -106,7 +106,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'elastoGap.n'(min = 1.0) = 1.0 "Exponent of spring force ( f_c = -f_ref*|(s_rel-s_rel0)/s_ref|^n )";
     parameter Boolean 'elastoGap.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'elastoGap.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'elastoGap.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'elastoGap.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'elastoGap.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'elastoGap.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Boolean 'elastoGap.contact' "= true, if contact, otherwise no contact";
     Real 'elastoGap.f_c'(unit = "N", quantity = "Force") "Spring force";
@@ -149,7 +149,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'supportFriction.s_support'(unit = "m", quantity = "Length") "Absolute position of support flange";
     parameter Boolean 'supportFriction.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'supportFriction.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'supportFriction.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'supportFriction.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'supportFriction.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'supportFriction.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     parameter Real 'supportFriction.f_pos[1,1]' = 0.0 "Positive sliding friction characteristic [N] as function of v [m/s] (v>=0)";
     parameter Real 'supportFriction.f_pos[1,2]' = 1.0 "Positive sliding friction characteristic [N] as function of v [m/s] (v>=0)";
@@ -208,7 +208,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     Real 'brake.s_support'(unit = "m", quantity = "Length") "Absolute position of support flange";
     parameter Boolean 'brake.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'brake.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'brake.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'brake.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'brake.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'brake.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     parameter Real 'brake.mu_pos[1,1]' = 0.0 "Positive sliding friction coefficient [-] as function of v [m/s] (v>=0)";
     parameter Real 'brake.mu_pos[1,2]' = 0.5 "Positive sliding friction coefficient [-] as function of v [m/s] (v>=0)";
@@ -288,7 +288,7 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'massWithStopAndFriction.fexp'(start = 2.0, min = 0.0, unit = "s/m") = 2.0 "Exponential decay";
     parameter Boolean 'massWithStopAndFriction.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'massWithStopAndFriction.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'massWithStopAndFriction.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'massWithStopAndFriction.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'massWithStopAndFriction.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'massWithStopAndFriction.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Integer 'massWithStopAndFriction.stopped' "Mode of stop (-1: hard stop at flange_a, 0: no stop, +1: hard stop at flange_b";
     Real 'convection.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from solid -> fluid";
@@ -320,11 +320,18 @@ end 'Modelica.Blocks.Types.ExternalCombiTable1D';
     parameter Real 'springDamper1.s_rel0'(unit = "m", quantity = "Length") = 0.0 "Unstretched spring length";
     parameter Boolean 'springDamper1.useHeatPort' = true "= true, if heatPort is enabled" annotation(Evaluate = true);
     Real 'springDamper1.heatPort.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
-    Real 'springDamper1.heatPort.Q_flow'(unit = "W", quantity = "Power") = -'springDamper1.lossPower' "Heat flow rate (positive if flowing from outside into the component)";
+    Real 'springDamper1.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'springDamper1.lossPower'(unit = "W", quantity = "Power") "Loss power leaving component via heatPort (> 0, if heat is flowing out of component)";
     Real 'springDamper1.f_c'(unit = "N", quantity = "Force") "Spring force";
     Real 'springDamper1.f_d'(unit = "N", quantity = "Force") "Damping force";
   equation
+    'springDamper.heatPort.Q_flow' = -'springDamper.lossPower';
+    'damper.heatPort.Q_flow' = -'damper.lossPower';
+    'elastoGap.heatPort.Q_flow' = -'elastoGap.lossPower';
+    'supportFriction.heatPort.Q_flow' = -'supportFriction.lossPower';
+    'brake.heatPort.Q_flow' = -'brake.lossPower';
+    'massWithStopAndFriction.heatPort.Q_flow' = -'massWithStopAndFriction.lossPower';
+    'springDamper1.heatPort.Q_flow' = -'springDamper1.lossPower';
     'mass1.flange_b.s' = 'springDamper.flange_a.s';
     'sine1.y' = 'force.f';
     'elastoGap.flange_b.s' = 'mass1.flange_a.s';
