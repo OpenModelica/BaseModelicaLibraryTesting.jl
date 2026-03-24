@@ -15,12 +15,12 @@
         exp_ok || @warn "Export error: $exp_err"
 
         if exp_ok
-            par_ok, _, par_err, ode_prob = run_parse(bm_path, model_dir, TEST_MODEL_CHUA)
-            @test par_ok
-            par_ok || @warn "Parse error: $par_err"
+            par = run_parse(bm_path, model_dir, TEST_MODEL_CHUA)
+            @test par.success
+            par.success || @warn "Parse error: $(par.error)"
 
-            if par_ok
-                sim_ok, _, sim_err, _ = run_simulate(ode_prob, model_dir, TEST_MODEL_CHUA)
+            if par.success
+                sim_ok, _, sim_err, _ = run_simulate(par.ode_prob, model_dir, TEST_MODEL_CHUA)
                 @test sim_ok
                 sim_ok || @warn "Simulation error: $sim_err"
             end

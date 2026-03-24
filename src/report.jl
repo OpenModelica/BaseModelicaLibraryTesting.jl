@@ -99,10 +99,12 @@ Write an `index.html` overview report to `results_root` and return its path.
 """
 function generate_report(results::Vector{ModelResult}, results_root::String,
                          info::RunInfo; csv_max_size_mb::Int = CSV_MAX_SIZE_MB)
-    n     = length(results)
-    n_exp = count(r -> r.export_success, results)
-    n_par = count(r -> r.parse_success,  results)
-    n_sim = count(r -> r.sim_success,    results)
+    n       = length(results)
+    n_exp   = count(r -> r.export_success, results)
+    n_antlr = count(r -> r.antlr_success,  results)
+    n_mtk   = count(r -> r.mtk_success,    results)
+    n_ode   = count(r -> r.ode_success,    results)
+    n_sim   = count(r -> r.sim_success,    results)
 
     # Comparison summary (only models where cmp_total > 0)
     cmp_results  = filter(r -> r.cmp_total > 0, results)
@@ -114,13 +116,31 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
     cmp_summary_row = n_cmp_models > 0 ? """
   <tr><td>Reference Comparison (MAP-LIB)</td><td>$n_cmp_pass</td><td>$n_cmp_models</td><td>$(pct(n_cmp_pass,n_cmp_models))</td></tr>""" : ""
 
-    rows = join(["""    <tr data-exp="$(r.export_success ? "pass" : "fail")" data-par="$(r.parse_success ? "pass" : "fail")" data-sim="$(r.sim_success ? "pass" : "fail")" data-cmp="$(_cmp_status(r))">
+    rows = join([begin
+        antlr_status = !r.export_success ? "na" : (r.antlr_success ? "pass" : "fail")
+        mtk_status   = !r.antlr_success  ? "na" : (r.mtk_success   ? "pass" : "fail")
+        ode_status   = !r.mtk_success    ? "na" : (r.ode_success    ? "pass" : "fail")
+
+        antlr_cell = antlr_status == "na" ? """<td class="na">—</td>""" :
+            _status_cell(r.antlr_success, r.antlr_time,
+                         rel_log_file_or_nothing(results_root, r.name, "antlr"))
+        mtk_cell   = mtk_status == "na" ? """<td class="na">—</td>""" :
+            _status_cell(r.mtk_success, r.mtk_time,
+                         rel_log_file_or_nothing(results_root, r.name, "mtk"))
+        ode_cell   = ode_status == "na" ? """<td class="na">—</td>""" :
+            _status_cell(r.ode_success, r.ode_time,
+                         rel_log_file_or_nothing(results_root, r.name, "ode"))
+
+        """    <tr data-exp="$(r.export_success ? "pass" : "fail")" data-antlr="$(antlr_status)" data-mtk="$(mtk_status)" data-ode="$(ode_status)" data-sim="$(r.sim_success ? "pass" : "fail")" data-cmp="$(_cmp_status(r))">
       <td><a href="files/$(r.name)/$(r.name).bmo">$(r.name).bmo</a></td>
       $(_status_cell(r.export_success, r.export_time, rel_log_file_or_nothing(results_root, r.name, "export")))
-      $(_status_cell(r.parse_success,  r.parse_time,  rel_log_file_or_nothing(results_root, r.name, "parsing")))
+      $(antlr_cell)
+      $(mtk_cell)
+      $(ode_cell)
       $(_status_cell(r.sim_success,    r.sim_time,    rel_log_file_or_nothing(results_root, r.name, "sim")))
       $(_cmp_cell(r, results_root, csv_max_size_mb))
-    </tr>""" for r in results], "\n")
+    </tr>"""
+    end for r in results], "\n")
 
     bm_sha_link = isempty(info.bm_sha) ? "" :
         """ (<a href="https://github.com/SciML/BaseModelica.jl/commit/$(info.bm_sha)">$(info.bm_sha)</a>)"""
@@ -168,9 +188,11 @@ Total run time: $(time_str)</p>
 
 <table style="width:auto; margin-bottom:1.5em;">
   <tr><th>Stage</th><th>Passed</th><th>Total</th><th>Rate</th></tr>
-  <tr><td>Base Modelica Export (OpenModelica)</td><td>$n_exp</td><td>$n</td>    <td>$(pct(n_exp,n))</td></tr>
-  <tr><td>Parsing (BaseModelica.jl)</td>          <td>$n_par</td><td>$n_exp</td><td>$(pct(n_par,n_exp))</td></tr>
-  <tr><td>Simulation (MTK.jl)</td>                <td>$n_sim</td><td>$n_par</td><td>$(pct(n_sim,n_par))</td></tr>$cmp_summary_row
+  <tr><td>Base Modelica Export (OpenModelica)</td><td>$n_exp</td><td>$n</td>       <td>$(pct(n_exp,n))</td></tr>
+  <tr><td>Base Modelica Parse - ANTLR</td>                   <td>$n_antlr</td><td>$n_exp</td><td>$(pct(n_antlr,n_exp))</td></tr>
+  <tr><td>Base Modelica Parse - BM→MTK</td>                  <td>$n_mtk</td><td>$n_antlr</td><td>$(pct(n_mtk,n_antlr))</td></tr>
+  <tr><td>Base Modelica Parse - ODEProblem</td>              <td>$n_ode</td><td>$n_mtk</td>  <td>$(pct(n_ode,n_mtk))</td></tr>
+  <tr><td>Simulation (MTK.jl)</td>                <td>$n_sim</td><td>$n_ode</td>  <td>$(pct(n_sim,n_ode))</td></tr>$cmp_summary_row
 </table>
 
 <table id="model-table">
@@ -178,16 +200,20 @@ Total run time: $(time_str)</p>
     <tr>
       <th>Model</th>
       <th>BM Export</th>
-      <th>BM Parse</th>
-      <th>MTK Sim</th>
-      <th>Ref Cmp</th>
+      <th>ANTLR</th>
+      <th>BM→MTK</th>
+      <th>ODEProblem</th>
+      <th>MTK Simulation</th>
+      <th>Result Comparison</th>
     </tr>
     <tr class="filter-row">
       <th><input id="f-name" type="text" placeholder="regex…" oninput="applyFilters()"/></th>
-      <th><select id="f-exp" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
-      <th><select id="f-par" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
-      <th><select id="f-sim" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
-      <th><select id="f-cmp" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+      <th><select id="f-exp"   onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+      <th><select id="f-antlr" onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+      <th><select id="f-mtk"   onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+      <th><select id="f-ode"   onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+      <th><select id="f-sim"   onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
+      <th><select id="f-cmp"   onchange="applyFilters()"><option value="all">All</option><option value="pass">Pass</option><option value="fail">Fail</option></select></th>
     </tr>
   </thead>
   <tbody id="model-rows">
@@ -206,17 +232,21 @@ function applyFilters() {
     nameInput.classList.add('invalid');
     return;
   }
-  var exp = document.getElementById('f-exp').value;
-  var par = document.getElementById('f-par').value;
-  var sim = document.getElementById('f-sim').value;
-  var cmp = document.getElementById('f-cmp').value;
+  var exp   = document.getElementById('f-exp').value;
+  var antlr = document.getElementById('f-antlr').value;
+  var mtk   = document.getElementById('f-mtk').value;
+  var ode   = document.getElementById('f-ode').value;
+  var sim   = document.getElementById('f-sim').value;
+  var cmp   = document.getElementById('f-cmp').value;
   document.querySelectorAll('#model-rows tr').forEach(function(row) {
     var name = row.cells[0] ? row.cells[0].textContent : '';
     var show = (!nameRe || nameRe.test(name)) &&
-               (exp === 'all' || row.dataset.exp === exp) &&
-               (par === 'all' || row.dataset.par === par) &&
-               (sim === 'all' || row.dataset.sim === sim) &&
-               (cmp === 'all' || row.dataset.cmp === cmp);
+               (exp   === 'all' || row.dataset.exp   === exp) &&
+               (antlr === 'all' || row.dataset.antlr === antlr) &&
+               (mtk   === 'all' || row.dataset.mtk   === mtk) &&
+               (ode   === 'all' || row.dataset.ode   === ode) &&
+               (sim   === 'all' || row.dataset.sim   === sim) &&
+               (cmp   === 'all' || row.dataset.cmp   === cmp);
     row.style.display = show ? '' : 'none';
   });
 }

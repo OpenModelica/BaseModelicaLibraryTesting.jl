@@ -106,9 +106,15 @@ struct ModelResult
     export_success :: Bool
     export_time    :: Float64
     export_error   :: String
-    parse_success  :: Bool
-    parse_time     :: Float64
+    parse_success  :: Bool    # true iff all three parse sub-steps succeeded
+    parse_time     :: Float64 # total parse time (sum of three sub-steps)
     parse_error    :: String
+    antlr_success  :: Bool    # Phase 2a: ANTLR parser
+    antlr_time     :: Float64
+    mtk_success    :: Bool    # Phase 2b: Base Modelica → ModelingToolkit conversion
+    mtk_time       :: Float64
+    ode_success    :: Bool    # Phase 2c: ODEProblem generation
+    ode_time       :: Float64
     sim_success    :: Bool
     sim_time       :: Float64
     sim_error      :: String

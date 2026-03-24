@@ -43,6 +43,12 @@ function write_summary(
                 "\"export_time\":$(@sprintf "%.3f" r.export_time)," *
                 "\"parse\":$(r.parse_success)," *
                 "\"parse_time\":$(@sprintf "%.3f" r.parse_time)," *
+                "\"antlr\":$(r.antlr_success)," *
+                "\"antlr_time\":$(@sprintf "%.3f" r.antlr_time)," *
+                "\"mtk\":$(r.mtk_success)," *
+                "\"mtk_time\":$(@sprintf "%.3f" r.mtk_time)," *
+                "\"ode\":$(r.ode_success)," *
+                "\"ode_time\":$(@sprintf "%.3f" r.ode_time)," *
                 "\"sim\":$(r.sim_success)," *
                 "\"sim_time\":$(@sprintf "%.3f" r.sim_time)," *
                 "\"cmp_total\":$(r.cmp_total)," *
@@ -77,7 +83,9 @@ Parsed contents of a single `summary.json` file.
 - `total_time_s` — wall-clock duration of the full test run in seconds
 - `solver`       — fully-qualified solver name, e.g. `"DifferentialEquations.Rodas5P"`
 - `models`       — vector of per-model dicts; each has keys
-                   `"name"`, `"export"`, `"parse"`, `"sim"`, `"cmp_total"`, `"cmp_pass"`
+                   `"name"`, `"export"`, `"parse"`,
+                   `"antlr"`, `"mtk"`, `"ode"` (parse sub-steps),
+                   `"sim"`, `"cmp_total"`, `"cmp_pass"`
 """
 struct RunSummary
     library      :: String
@@ -124,7 +132,7 @@ function load_summary(results_root::String)::Union{RunSummary,Nothing}
 
     models = Dict{String,Any}[]
     for m in eachmatch(
-        r"\{\"name\":\"([^\"]*)\",\"export\":(true|false),\"export_time\":([\d.]+),\"parse\":(true|false),\"parse_time\":([\d.]+),\"sim\":(true|false),\"sim_time\":([\d.]+),\"cmp_total\":(\d+),\"cmp_pass\":(\d+)\}",
+        r"\{\"name\":\"([^\"]*)\",\"export\":(true|false),\"export_time\":([\d.]+),\"parse\":(true|false),\"parse_time\":([\d.]+),\"antlr\":(true|false),\"antlr_time\":([\d.]+),\"mtk\":(true|false),\"mtk_time\":([\d.]+),\"ode\":(true|false),\"ode_time\":([\d.]+),\"sim\":(true|false),\"sim_time\":([\d.]+),\"cmp_total\":(\d+),\"cmp_pass\":(\d+)\}",
         txt)
         push!(models, Dict{String,Any}(
             "name"        => string(m.captures[1]),
@@ -132,10 +140,16 @@ function load_summary(results_root::String)::Union{RunSummary,Nothing}
             "export_time" => parse(Float64, m.captures[3]),
             "parse"       => m.captures[4] == "true",
             "parse_time"  => parse(Float64, m.captures[5]),
-            "sim"         => m.captures[6] == "true",
-            "sim_time"    => parse(Float64, m.captures[7]),
-            "cmp_total"   => parse(Int, m.captures[8]),
-            "cmp_pass"    => parse(Int, m.captures[9]),
+            "antlr"       => m.captures[6] == "true",
+            "antlr_time"  => parse(Float64, m.captures[7]),
+            "mtk"         => m.captures[8] == "true",
+            "mtk_time"    => parse(Float64, m.captures[9]),
+            "ode"         => m.captures[10] == "true",
+            "ode_time"    => parse(Float64, m.captures[11]),
+            "sim"         => m.captures[12] == "true",
+            "sim_time"    => parse(Float64, m.captures[13]),
+            "cmp_total"   => parse(Int, m.captures[14]),
+            "cmp_pass"    => parse(Int, m.captures[15]),
         ))
     end
     return RunSummary(

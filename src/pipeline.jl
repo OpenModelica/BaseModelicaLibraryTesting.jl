@@ -73,12 +73,20 @@ function test_model(omc::OMJulia.OMCSession,
     # Phase 1 ──────────────────────────────────────────────────────────────────
     exp_ok, exp_t, exp_err = run_export(omc, model, model_dir, bm_path)
     exp_ok || return ModelResult(
-        model, false, exp_t, exp_err, false, 0.0, "", false, 0.0, "", 0, 0, 0, "")
+        model, false, exp_t, exp_err,
+        false, 0.0, "",
+        false, 0.0, false, 0.0, false, 0.0,
+        false, 0.0, "", 0, 0, 0, "")
 
     # Phase 2 ──────────────────────────────────────────────────────────────────
-    par_ok, par_t, par_err, ode_prob = run_parse(bm_path, model_dir, model)
-    par_ok || return ModelResult(
-        model, true, exp_t, exp_err, false, par_t, par_err, false, 0.0, "", 0, 0, 0, "")
+    par = run_parse(bm_path, model_dir, model)
+    par.success || return ModelResult(
+        model, true, exp_t, exp_err,
+        false, par.time, par.error,
+        par.antlr_success, par.antlr_time,
+        par.mtk_success,   par.mtk_time,
+        par.ode_success,   par.ode_time,
+        false, 0.0, "", 0, 0, 0, "")
 
     # Resolve reference CSV and comparison signals early so phase 3 can filter
     # the CSV output to only the signals that will actually be verified.
@@ -96,7 +104,7 @@ function test_model(omc::OMJulia.OMCSession,
     end
 
     # Phase 3 ──────────────────────────────────────────────────────────────────
-    sim_ok, sim_t, sim_err, sol = run_simulate(ode_prob, model_dir, model;
+    sim_ok, sim_t, sim_err, sol = run_simulate(par.ode_prob, model_dir, model;
                                                settings = sim_settings,
                                                csv_max_size_mb, cmp_signals)
 
@@ -114,8 +122,11 @@ function test_model(omc::OMJulia.OMCSession,
 
     return ModelResult(
         model,
-        true,   exp_t, exp_err,
-        true,   par_t, par_err,
+        true,  exp_t,    exp_err,
+        true,  par.time, par.error,
+        par.antlr_success, par.antlr_time,
+        par.mtk_success,   par.mtk_time,
+        par.ode_success,   par.ode_time,
         sim_ok, sim_t, sim_err,
         cmp_total, cmp_pass, cmp_skip, cmp_csv)
 end
