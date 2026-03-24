@@ -30,4 +30,3 @@ const TEST_MODEL_CHUA = "Modelica.Electrical.Analog.Examples.ChuaCircuit"
 
 include("unit_helpers.jl")
 include("chua_circuit.jl")
-include("subtracter.jl")
