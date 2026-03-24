@@ -13,7 +13,7 @@ package 'TestTwoPhaseStates'
     constant Real 'n1' = 6.978267;
     constant Real 'n2' = 2.599096;
     constant Real 'n3' = -0.998254;
-    constant Real[30] 'nn' = {1.3293046, 1.7018363, 5.2246158, 8.7127675, -1.8525999, -0.40452437, -2.2156845, -10.124111, -9.5000611, 0.9340469, 0.2440949, 1.6511057, 4.9874687, 4.3786606, 0.0, 0.018660751, -0.76736002, -0.27297694, -0.91783782, 0.0, -0.12961068, 0.37283344, -0.43083393, 0.0, 0.0, 0.044809953, -0.1120316, 0.13333849, 0.0, 0.0};
+    constant Real 'nn'[30] = {1.3293046, 1.7018363, 5.2246158, 8.7127675, -1.8525999, -0.40452437, -2.2156845, -10.124111, -9.5000611, 0.9340469, 0.2440949, 1.6511057, 4.9874687, 4.3786606, 0.0, 0.018660751, -0.76736002, -0.27297694, -0.91783782, 0.0, -0.12961068, 0.37283344, -0.43083393, 0.0, 0.0, 0.044809953, -0.1120316, 0.13333849, 0.0, 0.0};
     constant Real 'lamstar'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 0.4945;
     constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
     constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;
@@ -42,11 +42,11 @@ package 'TestTwoPhaseStates'
     constant Real 'lambdastar'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0;
     Real 'lambdaREL';
     Real 'deltaTREL';
-    constant Real[:] 'C' = {0.642857, -4.11717, -6.17937, 0.00308976, 0.0822994, 10.0932};
-    constant Real[:] 'dpar' = {0.0701309, 0.011852, 0.00169937, -1.02};
-    constant Real[:] 'b' = {-0.39707, 0.400302, 1.06};
-    constant Real[:] 'B' = {-0.171587, 2.39219};
-    constant Real[:] 'a' = {0.0102811, 0.0299621, 0.0156146, -0.00422464};
+    constant Real 'C'[:] = {0.642857, -4.11717, -6.17937, 0.00308976, 0.0822994, 10.0932};
+    constant Real 'dpar'[:] = {0.0701309, 0.011852, 0.00169937, -1.02};
+    constant Real 'b'[:] = {-0.39707, 0.400302, 1.06};
+    constant Real 'B'[:] = {-0.171587, 2.39219};
+    constant Real 'a'[:] = {0.0102811, 0.0299621, 0.0156146, -0.00422464};
     Real 'Q';
     Real 'S';
     Real 'lambdaREL2';
@@ -250,7 +250,7 @@ package 'TestTwoPhaseStates'
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     output Real 'dtsat'(unit = "K/Pa");
     Real 'pi';
-    Real[49] 'o';
+    Real 'o'[49];
   algorithm
     'pi' := max(2.2250738585072014e-308, 'p' * 1e-6);
     'o'[1] := 'pi' ^ 0.75;
@@ -342,7 +342,7 @@ package 'TestTwoPhaseStates'
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     Real 'pi';
-    Real[20] 'o';
+    Real 'o'[20];
   algorithm
     assert('p' > 611.657, "IF97 medium function tsat called with too low pressure\np = " + String('p') + " Pa <= " + "611.657" + " Pa (triple point pressure)", AssertionLevel.error);
     'pi' := min('p', 2.2064e7) * 1e-6;
@@ -414,7 +414,7 @@ package 'TestTwoPhaseStates'
     constant Real 'n1' = 0.978197;
     constant Real 'n2' = 0.579829;
     constant Real 'n3' = -0.202354;
-    constant Real[42] 'nn' = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
+    constant Real 'nn'[42] = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
     constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
     constant Real 'etastar'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 5.5071e-5;
     constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;

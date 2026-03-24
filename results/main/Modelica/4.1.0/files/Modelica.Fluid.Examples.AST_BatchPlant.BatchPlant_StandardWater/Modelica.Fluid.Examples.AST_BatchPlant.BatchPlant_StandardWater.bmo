@@ -261,7 +261,7 @@ package 'BatchPlant_StandardWater'
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     Real 'pi';
-    Real[20] 'o';
+    Real 'o'[20];
   algorithm
     assert('p' > 611.657, "IF97 medium function tsat called with too low pressure\np = " + String('p') + " Pa <= " + "611.657" + " Pa (triple point pressure)", AssertionLevel.error);
     'pi' := min('p', 2.2064e7) * 1e-6;
@@ -291,13 +291,13 @@ package 'BatchPlant_StandardWater'
 
   function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P1.flowCharacteristic'
     input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
-    input Real[3] 'V_flow_nominal'(unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1e-4, 1.5e-4};
-    input Real[3] 'head_nominal'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {10.0, 5.0, 0.0};
+    input Real 'V_flow_nominal'[3](unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1e-4, 1.5e-4};
+    input Real 'head_nominal'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {10.0, 5.0, 0.0};
     output Real 'head'(unit = "m", quantity = "Length");
-    Real[3] 'V_flow_nominal2' = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
+    Real 'V_flow_nominal2'[3] = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
     Real 'V_flow_min'(unit = "m3/s", quantity = "VolumeFlowRate") = min('V_flow_nominal');
     Real 'V_flow_max'(unit = "m3/s", quantity = "VolumeFlowRate") = max('V_flow_nominal');
-    Real[3] 'c' = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
+    Real 'c'[3] = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
   algorithm
     assert(max({'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[1], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[2], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[3]}) <= (-2.2250738585072014e-308), "Wrong pump curve -- head_nominal must be monotonically decreasing with increasing V_flow_nominal", AssertionLevel.warning);
 
@@ -409,13 +409,13 @@ package 'BatchPlant_StandardWater'
 
   function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P2.flowCharacteristic'
     input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
-    input Real[3] 'V_flow_nominal'(unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1e-4, 1.5e-4};
-    input Real[3] 'head_nominal'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {10.0, 5.0, 0.0};
+    input Real 'V_flow_nominal'[3](unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1e-4, 1.5e-4};
+    input Real 'head_nominal'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {10.0, 5.0, 0.0};
     output Real 'head'(unit = "m", quantity = "Length");
-    Real[3] 'V_flow_nominal2' = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
+    Real 'V_flow_nominal2'[3] = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
     Real 'V_flow_min'(unit = "m3/s", quantity = "VolumeFlowRate") = min('V_flow_nominal');
     Real 'V_flow_max'(unit = "m3/s", quantity = "VolumeFlowRate") = max('V_flow_nominal');
-    Real[3] 'c' = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
+    Real 'c'[3] = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
   algorithm
     assert(max({'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[1], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[2], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[3]}) <= (-2.2250738585072014e-308), "Wrong pump curve -- head_nominal must be monotonically decreasing with increasing V_flow_nominal", AssertionLevel.warning);
 
@@ -482,7 +482,7 @@ package 'BatchPlant_StandardWater'
   function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat' "Region 4 saturation pressure as a function of temperature"
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     output Real 'p_sat'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real[8] 'o';
+    Real 'o'[8];
     Real 'Tlim' = min('T', 647.096);
   algorithm
     assert('T' >= 273.16, "IF97 medium function psat: input temperature (= 273.16 K).\nlower than the triple point temperature 273.16 K", AssertionLevel.error);
@@ -802,7 +802,7 @@ package 'BatchPlant_StandardWater'
     constant Real 'n1' = 0.978197;
     constant Real 'n2' = 0.579829;
     constant Real 'n3' = -0.202354;
-    constant Real[42] 'nn' = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
+    constant Real 'nn'[42] = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
     constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
     constant Real 'etastar'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 5.5071e-5;
     constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;

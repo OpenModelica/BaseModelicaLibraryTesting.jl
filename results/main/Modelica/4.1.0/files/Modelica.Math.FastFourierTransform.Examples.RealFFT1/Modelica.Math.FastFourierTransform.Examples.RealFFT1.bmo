@@ -4,12 +4,12 @@ package 'RealFFT1'
     input Real 't_computed';
     input String 'fileName';
     input Real 'f_max'(unit = "Hz", quantity = "Frequency");
-    input Real[:] 'amplitudes';
-    input Real[:] 'phases' = fill(0.0, 0);
+    input Real 'amplitudes'[:];
+    input Real 'phases'[:] = fill(0.0, 0);
     input String 'format' = "4";
     output Boolean 'success';
     Integer 'nA' = size('amplitudes', 1);
-    Real[3 * size('amplitudes', 1), if size('phases', 1) == 0 then 2 else 3] 'fA';
+    Real 'fA'[3 * size('amplitudes', 1), if size('phases', 1) == 0 then 2 else 3];
     Real 'f';
   algorithm
     assert(size('phases', 1) == 0 or size('phases', 1) == size('amplitudes', 1), "Input vector phases has the wrong size", AssertionLevel.error);
@@ -35,17 +35,17 @@ package 'RealFFT1'
   end 'Modelica.Math.FastFourierTransform.realFFTwriteToFile';
 
   function 'Modelica.Math.FastFourierTransform.realFFT' "Return amplitude and phase vectors for a real FFT"
-    input Real[:] 'u';
+    input Real 'u'[:];
     input Integer 'nfi';
     output Integer 'info';
-    output Real['nfi'] 'amplitudes';
-    output Real['nfi'] 'phases';
+    output Real 'amplitudes'['nfi'];
+    output Real 'phases'['nfi'];
     Integer 'nu' = size('u', 1);
     Integer 'nf' = div(size('u', 1), 2) + 1;
     Real 'u_DC';
-    Real[size('u', 1)] 'u2';
-    Real[div(size('u', 1), 2) + 1] 'A';
-    Real[div(size('u', 1), 2) + 1] 'Phi';
+    Real 'u2'[size('u', 1)];
+    Real 'A'[div(size('u', 1), 2) + 1];
+    Real 'Phi'[div(size('u', 1), 2) + 1];
     Real 'Aeps';
   algorithm
     assert('nfi' > 0 and 'nfi' <= div(size('u', 1), 2) + 1, "Argument nfi is out of range", AssertionLevel.error);

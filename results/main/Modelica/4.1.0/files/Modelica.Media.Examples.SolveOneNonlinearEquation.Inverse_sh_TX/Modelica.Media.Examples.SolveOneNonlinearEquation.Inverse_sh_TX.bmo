@@ -104,9 +104,9 @@ package 'Inverse_sh_TX'
   function 'Modelica.Media.Examples.SolveOneNonlinearEquation.Inverse_sh_TX.Medium.specificEntropyOfpTX' "Return specific entropy from pressure, temperature and mass fractions"
     input Real 'p'(nominal = 1e6, start = 1e6, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 500.0, start = 500.0, max = 6000.0, min = 200.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[4] 'X'(nominal = {0.1, 0.1, 0.1, 0.1}, max = {1.0, 1.0, 1.0, 1.0}, min = {0.0, 0.0, 0.0, 0.0}, unit = {"kg/kg", "kg/kg", "kg/kg", "kg/kg"}, quantity = {"MassFraction", "MassFraction", "MassFraction", "MassFraction"});
+    input Real 'X'[4](nominal = {0.1, 0.1, 0.1, 0.1}, max = {1.0, 1.0, 1.0, 1.0}, min = {0.0, 0.0, 0.0, 0.0}, unit = {"kg/kg", "kg/kg", "kg/kg", "kg/kg"}, quantity = {"MassFraction", "MassFraction", "MassFraction", "MassFraction"});
     output Real 's'(nominal = 1000.0, max = 1e7, min = -1e7, unit = "J/(kg.K)", quantity = "SpecificEntropy");
-    Real[4] 'Y'(each unit = "mol/mol") = 'Modelica.Media.Examples.SolveOneNonlinearEquation.Inverse_sh_TX.Medium.massToMoleFractions'('X', {0.0280134, 0.0319988, 0.01801528, 0.0440095});
+    Real 'Y'[4](each unit = "mol/mol") = 'Modelica.Media.Examples.SolveOneNonlinearEquation.Inverse_sh_TX.Medium.massToMoleFractions'('X', {0.0280134, 0.0319988, 0.01801528, 0.0440095});
   algorithm
     's' := 'Modelica.Media.Examples.SolveOneNonlinearEquation.Inverse_sh_TX.Medium.s_TX'('T', 'X') - ('X'[1] * 8.31446261815324 / 0.0280134 * (if 'X'[1] < 2.220446049250313e-16 then 'Y'[1] else 'Modelica.Math.log'('Y'[1] * 'p' / 101325.0)) + 'X'[2] * 8.31446261815324 / 0.0319988 * (if 'X'[2] < 2.220446049250313e-16 then 'Y'[2] else 'Modelica.Math.log'('Y'[2] * 'p' / 101325.0)) + 'X'[3] * 8.31446261815324 / 0.01801528 * (if 'X'[3] < 2.220446049250313e-16 then 'Y'[3] else 'Modelica.Math.log'('Y'[3] * 'p' / 101325.0)) + 'X'[4] * 8.31446261815324 / 0.0440095 * (if 'X'[4] < 2.220446049250313e-16 then 'Y'[4] else 'Modelica.Math.log'('Y'[4] * 'p' / 101325.0)));
     annotation(Inline = true, smoothOrder = 2);
@@ -117,7 +117,7 @@ package 'Inverse_sh_TX'
   record 'Medium.ThermodynamicState'
     Real 'p'(nominal = 1e6, start = 1e6, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 500.0, start = 500.0, max = 6000.0, min = 200.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[4] 'X'(nominal = fill(0.1, 4), start = {0.768, 0.232, 0.0, 0.0}, max = fill(1.0, 4), min = fill(0.0, 4), unit = fill("kg/kg", 4), quantity = fill("MassFraction", 4));
+    Real 'X'[4](nominal = fill(0.1, 4), start = {0.768, 0.232, 0.0, 0.0}, max = fill(1.0, 4), min = fill(0.0, 4), unit = fill("kg/kg", 4), quantity = fill("MassFraction", 4));
   end 'Medium.ThermodynamicState';
 
   partial function 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' "Interface for a function with one input and one output Real signal"

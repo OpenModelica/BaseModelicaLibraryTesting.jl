@@ -6,8 +6,8 @@ package 'PsychrometricData'
     output Real 'psat_der'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
     Real 'Tcritical'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.096;
     Real 'pcritical'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 2.2064e7;
-    Real[:] 'a' = {-7.85951783, 1.84408259, -11.7866497, 22.6807411, -15.9618719, 1.80122502};
-    Real[:] 'n' = {1.0, 1.5, 3.0, 3.5, 4.0, 7.5};
+    Real 'a'[:] = {-7.85951783, 1.84408259, -11.7866497, 22.6807411, -15.9618719, 1.80122502};
+    Real 'n'[:] = {1.0, 1.5, 3.0, 3.5, 4.0, 7.5};
     Real 'r1' = 1.0 - 'Tsat' / 'Tcritical';
     Real 'r1_der' = -1.0 / 'Tcritical' * 'dTsat';
     Real 'r2' = 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] * 'r1' ^ 'n'[2] + 'a'[3] * 'r1' ^ 'n'[3] + 'a'[4] * 'r1' ^ 'n'[4] + 'a'[5] * 'r1' ^ 'n'[5] + 'a'[6] * 'r1' ^ 'n'[6];
@@ -58,8 +58,8 @@ package 'PsychrometricData'
     output Real 'psat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'Ttriple'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.16;
     Real 'ptriple'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 611.657;
-    Real[:] 'a' = {-13.928169, 34.7078238};
-    Real[:] 'n' = {-1.5, -1.25};
+    Real 'a'[:] = {-13.928169, 34.7078238};
+    Real 'n'[:] = {-1.5, -1.25};
     Real 'r1' = 'Tsat' / 'Ttriple';
   algorithm
     'psat' := exp('a'[1] - 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] - 'a'[2] * 'r1' ^ 'n'[2]) * 'ptriple';
@@ -173,8 +173,8 @@ package 'PsychrometricData'
     output Real 'psat_der'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
     Real 'Ttriple'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.16;
     Real 'ptriple'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 611.657;
-    Real[:] 'a' = {-13.928169, 34.7078238};
-    Real[:] 'n' = {-1.5, -1.25};
+    Real 'a'[:] = {-13.928169, 34.7078238};
+    Real 'n'[:] = {-1.5, -1.25};
     Real 'r1' = 'Tsat' / 'Ttriple';
     Real 'r1_der' = 'dTsat' / 'Ttriple';
   algorithm
@@ -185,10 +185,10 @@ package 'PsychrometricData'
   function 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der' "Derivative function of h_pTX"
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
+    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
     input Real 'dp'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
     input Real 'dT'(unit = "K/s", quantity = "TemperatureSlope");
-    input Real[:] 'dX'(each unit = "1/s");
+    input Real 'dX'[:](each unit = "1/s");
     output Real 'h_der'(unit = "J/(kg.s)");
     Real 'p_steam_sat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'X_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
@@ -220,7 +220,7 @@ package 'PsychrometricData'
   function 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX' "Return specific enthalpy of moist air as a function of pressure p, temperature T and composition X"
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
+    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
     output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
     Real 'p_steam_sat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'X_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
@@ -242,8 +242,8 @@ package 'PsychrometricData'
     output Real 'psat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'Tcritical'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.096;
     Real 'pcritical'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 2.2064e7;
-    Real[:] 'a' = {-7.85951783, 1.84408259, -11.7866497, 22.6807411, -15.9618719, 1.80122502};
-    Real[:] 'n' = {1.0, 1.5, 3.0, 3.5, 4.0, 7.5};
+    Real 'a'[:] = {-7.85951783, 1.84408259, -11.7866497, 22.6807411, -15.9618719, 1.80122502};
+    Real 'n'[:] = {1.0, 1.5, 3.0, 3.5, 4.0, 7.5};
     Real 'r1' = 1.0 - 'Tsat' / 'Tcritical';
   algorithm
     'psat' := exp(('a'[1] * 'r1' ^ 'n'[1] + 'a'[2] * 'r1' ^ 'n'[2] + 'a'[3] * 'r1' ^ 'n'[3] + 'a'[4] * 'r1' ^ 'n'[4] + 'a'[5] * 'r1' ^ 'n'[5] + 'a'[6] * 'r1' ^ 'n'[6]) * 'Tcritical' / 'Tsat') * 'pcritical';
@@ -281,7 +281,7 @@ package 'PsychrometricData'
   record 'Medium.ThermodynamicState'
     Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, max = 647.0, min = 190.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[2] 'X'(nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
+    Real 'X'[2](nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
   end 'Medium.ThermodynamicState';
 
   partial function 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' "Interface for a function with one input and one output Real signal"
@@ -295,10 +295,10 @@ package 'PsychrometricData'
     Real 'Hf'(unit = "J/kg", quantity = "SpecificEnergy");
     Real 'H0'(unit = "J/kg", quantity = "SpecificEnergy");
     Real 'Tlimit'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[7] 'alow';
-    Real[2] 'blow';
-    Real[7] 'ahigh';
-    Real[2] 'bhigh';
+    Real 'alow'[7];
+    Real 'blow'[2];
+    Real 'ahigh'[7];
+    Real 'bhigh'[2];
     Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
   end 'Modelica.Media.IdealGases.Common.DataRecord';
 

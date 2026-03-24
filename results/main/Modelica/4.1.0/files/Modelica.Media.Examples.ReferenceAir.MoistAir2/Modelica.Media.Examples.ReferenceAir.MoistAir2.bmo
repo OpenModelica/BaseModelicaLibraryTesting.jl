@@ -34,7 +34,7 @@ package 'MoistAir2'
   function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX' "Specific enthalpy of moist air"
     input Real 'p'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
+    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
     output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
     Real 'xw';
     Real 'xws';
@@ -71,10 +71,10 @@ package 'MoistAir2'
   function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.rho_pTX_der' "Derivative of density as a function of pressure p, temperature T and composition X"
     input Real 'p'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
+    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
     input Real 'p_der';
     input Real 'T_der';
-    input Real[:] 'X_der';
+    input Real 'X_der'[:];
     output Real 'd_der';
     Real 'pd';
     Real 'pd_der';
@@ -84,7 +84,7 @@ package 'MoistAir2'
     Real 'xw_der';
     Real 'xws';
     Real 'xws_der';
-    Real[5] 'o';
+    Real 'o'[5];
   algorithm
     if 'X'[1] == 0.0 then
       'd_der' := 'Modelica.Media.Air.ReferenceAir.Air_Utilities.rho_pT_der'('p', 'T', 'Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_pT'('p', 'T'), 'p_der', 'T_der');
@@ -149,7 +149,7 @@ package 'MoistAir2'
   function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.rho_pTX' "Return density as a function of pressure p, temperature T and composition X"
     input Real 'p'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
+    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
     output Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     Real 'pd';
     Real 'pl';
@@ -184,7 +184,7 @@ package 'MoistAir2'
   function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.phi_pTX' "Relative humidity"
     input Real 'p'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
+    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
     output Real 'phi';
     Real 'xw';
     Real 'pd';
@@ -211,10 +211,10 @@ package 'MoistAir2'
   function 'Modelica.Media.Air.ReferenceMoistAir.Utilities.h_pTX_der' "Derivative of specific enthalpy of moist air"
     input Real 'p'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real[:] 'X'(max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
+    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1))) = {0.01, 0.99};
     input Real 'p_der';
     input Real 'T_der';
-    input Real[:] 'X_der';
+    input Real 'X_der'[:];
     output Real 'h_der';
     Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
     Real 'xw';
@@ -273,7 +273,7 @@ package 'MoistAir2'
   function 'Modelica.Media.Air.ReferenceMoistAir.Xsaturation' "Return absolute humidity per unit mass of moist air at saturation as a function of the thermodynamic state record"
     input 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState' 'state';
     output Real 'X_sat'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction");
-    Real[:] 'X'(nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
+    Real 'X'[:](nominal = fill(0.1, size('X', 1)), max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("kg/kg", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
   algorithm
     'X' := 'Modelica.Media.Air.ReferenceMoistAir.massFractionSaturation'('state');
     'X_sat' := 'X'[1];
@@ -282,31 +282,31 @@ package 'MoistAir2'
   record 'volume.Medium.ThermodynamicState'
     Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[2] 'X'(nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
+    Real 'X'[2](nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
   end 'volume.Medium.ThermodynamicState';
 
   record 'fixedMassFlowRate.Medium.ThermodynamicState'
     Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[2] 'X'(nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
+    Real 'X'[2](nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
   end 'fixedMassFlowRate.Medium.ThermodynamicState';
 
   record 'ambient.Medium.ThermodynamicState'
     Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[2] 'X'(nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
+    Real 'X'[2](nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
   end 'ambient.Medium.ThermodynamicState';
 
   record 'volume1.Medium.ThermodynamicState'
     Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[2] 'X'(nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
+    Real 'X'[2](nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
   end 'volume1.Medium.ThermodynamicState';
 
   record 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState'
     Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, max = 1e4, min = 1.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real[2] 'X'(nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
+    Real 'X'[2](nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
   end 'Modelica.Media.Air.ReferenceMoistAir.ThermodynamicState';
 
   record 'Modelica.Media.Common.AuxiliaryProperties'

@@ -211,13 +211,13 @@ package 'HeatingSystem'
 
   function 'Modelica.Fluid.Examples.HeatingSystem.pump.flowCharacteristic'
     input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
-    input Real[3] 'V_flow_nominal'(unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1.0016729001588132e-5, 1.5025093502382197e-5};
-    input Real[3] 'head_nominal'(unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {4.085688385570253, 2.0428441927851266, 0.0};
+    input Real 'V_flow_nominal'[3](unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1.0016729001588132e-5, 1.5025093502382197e-5};
+    input Real 'head_nominal'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {4.085688385570253, 2.0428441927851266, 0.0};
     output Real 'head'(unit = "m", quantity = "Length");
-    Real[3] 'V_flow_nominal2' = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
+    Real 'V_flow_nominal2'[3] = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
     Real 'V_flow_min'(unit = "m3/s", quantity = "VolumeFlowRate") = min('V_flow_nominal');
     Real 'V_flow_max'(unit = "m3/s", quantity = "VolumeFlowRate") = max('V_flow_nominal');
-    Real[3] 'c' = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
+    Real 'c'[3] = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
   algorithm
     assert(max({'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[1], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[2], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[3]}) <= (-2.2250738585072014e-308), "Wrong pump curve -- head_nominal must be monotonically decreasing with increasing V_flow_nominal", AssertionLevel.warning);
 

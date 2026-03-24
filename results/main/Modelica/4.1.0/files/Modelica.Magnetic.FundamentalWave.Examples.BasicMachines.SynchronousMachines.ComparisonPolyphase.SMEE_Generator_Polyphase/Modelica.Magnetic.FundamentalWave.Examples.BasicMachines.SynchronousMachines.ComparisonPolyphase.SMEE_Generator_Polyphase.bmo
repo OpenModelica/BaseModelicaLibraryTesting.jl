@@ -30,12 +30,12 @@ package 'SMEE_Generator_Polyphase'
   end 'Modelica.Math.atan3';
 
   function 'Modelica.Electrical.Machines.SpacePhasors.Functions.ToSpacePhasor' "Conversion from polyphase input to space phasor and zero sequence component"
-    input Real[:] 'x';
-    output Real[2] 'y';
+    input Real 'x'[:];
+    output Real 'y'[2];
     output Real 'y0';
     Integer 'm' = size('x', 1);
-    Real['m'] 'phi'(displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
-    Real[2, 'm'] 'TransformationMatrix' = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
+    Real 'phi'['m'](displayUnit = fill("deg", 'm'), unit = fill("rad", 'm'), quantity = fill("Angle", 'm')) = 'Modelica.Electrical.Polyphase.Functions.symmetricOrientation'('m');
+    Real 'TransformationMatrix'[2, 'm'] = 2.0 / 'm' * {cos('phi'[1:'m']), sin('phi'[1:'m'])};
   algorithm
     'y' := 'TransformationMatrix' * 'x';
     'y0' := 1.0 / 'm' * sum('x');

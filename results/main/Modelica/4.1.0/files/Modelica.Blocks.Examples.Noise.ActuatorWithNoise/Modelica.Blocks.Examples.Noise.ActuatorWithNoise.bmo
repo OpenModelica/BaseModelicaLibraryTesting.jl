@@ -10,12 +10,12 @@ package 'ActuatorWithNoise'
   end 'Modelica.Blocks.Tables.Internal.getTable1DValueNoDer2';
 
   function 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower' "Calculate active power of voltage and current input"
-    input Real[3] 'v'(unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
-    input Real[3] 'i'(unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
+    input Real 'v'[3](unit = {"V", "V", "V"}, quantity = {"ElectricPotential", "ElectricPotential", "ElectricPotential"});
+    input Real 'i'[3](unit = {"A", "A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent", "ElectricCurrent"});
     output Real 'p'(unit = "W", quantity = "Power");
     constant Integer 'm' = 3;
-    Real[2] 'v_'(unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
-    Real[2] 'i_'(unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
+    Real 'v_'[2](unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
+    Real 'i_'[2](unit = {"A", "A"}, quantity = {"ElectricCurrent", "ElectricCurrent"});
   algorithm
     'v_' := {0.0, 0.0};
     'i_' := {0.0, 0.0};
@@ -39,9 +39,9 @@ package 'ActuatorWithNoise'
   end 'Modelica.Blocks.Tables.Internal.getDerTable1DValueNoDer';
 
   function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
-    input Integer[4] 'stateIn';
+    input Integer 'stateIn'[4];
     output Real 'result';
-    output Integer[4] 'stateOut';
+    output Integer 'stateOut'[4];
   external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
   end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
 
@@ -61,9 +61,9 @@ package 'ActuatorWithNoise'
     input Integer 'localSeed';
     input Integer 'globalSeed';
     input Integer 'nState'(min = 1);
-    output Integer['nState'] 'state';
+    output Integer 'state'['nState'];
     Real 'r';
-    Integer[2] 'aux';
+    Integer 'aux'[2];
     Integer 'nStateEven';
   algorithm
     'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
@@ -91,7 +91,7 @@ package 'ActuatorWithNoise'
     input Integer 'seed';
     output Integer 'id';
     constant Integer 'localSeed' = 715827883;
-    Integer[33] 'rngState';
+    Integer 'rngState'[33];
   algorithm
     'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
     'id' := 'localSeed';
@@ -108,8 +108,8 @@ package 'ActuatorWithNoise'
     function constructor "Initialize 1-dim. table defined by matrix"
       input String 'tableName';
       input String 'fileName';
-      input Real[:, :] 'table';
-      input Integer[:] 'columns';
+      input Real 'table'[:, :];
+      input Integer 'columns'[:];
       input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
       input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints';
       input Boolean 'verboseRead' = true;
