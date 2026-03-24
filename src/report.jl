@@ -120,6 +120,7 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
         antlr_status = !r.export_success ? "na" : (r.antlr_success ? "pass" : "fail")
         mtk_status   = !r.antlr_success  ? "na" : (r.mtk_success   ? "pass" : "fail")
         ode_status   = !r.mtk_success    ? "na" : (r.ode_success    ? "pass" : "fail")
+        sim_status   = !r.ode_success    ? "na" : (r.sim_success    ? "pass" : "fail")
 
         antlr_cell = antlr_status == "na" ? """<td class="na">—</td>""" :
             _status_cell(r.antlr_success, r.antlr_time,
@@ -130,14 +131,17 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
         ode_cell   = ode_status == "na" ? """<td class="na">—</td>""" :
             _status_cell(r.ode_success, r.ode_time,
                          rel_log_file_or_nothing(results_root, r.name, "ode"))
+        sim_cell   = sim_status == "na" ? """<td class="na">—</td>""" :
+            _status_cell(r.sim_success, r.sim_time,
+                         rel_log_file_or_nothing(results_root, r.name, "sim"))
 
-        """    <tr data-exp="$(r.export_success ? "pass" : "fail")" data-antlr="$(antlr_status)" data-mtk="$(mtk_status)" data-ode="$(ode_status)" data-sim="$(r.sim_success ? "pass" : "fail")" data-cmp="$(_cmp_status(r))">
+        """    <tr data-exp="$(r.export_success ? "pass" : "fail")" data-antlr="$(antlr_status)" data-mtk="$(mtk_status)" data-ode="$(ode_status)" data-sim="$(sim_status)" data-cmp="$(_cmp_status(r))">
       <td><a href="files/$(r.name)/$(r.name).bmo">$(r.name).bmo</a></td>
       $(_status_cell(r.export_success, r.export_time, rel_log_file_or_nothing(results_root, r.name, "export")))
       $(antlr_cell)
       $(mtk_cell)
       $(ode_cell)
-      $(_status_cell(r.sim_success,    r.sim_time,    rel_log_file_or_nothing(results_root, r.name, "sim")))
+      $(sim_cell)
       $(_cmp_cell(r, results_root, csv_max_size_mb))
     </tr>"""
     end for r in results], "\n")
@@ -164,7 +168,7 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
     td.ok      { background: #d4edda; color: #155724; }
     td.partial { background: #fff3cd; color: #856404; }
     td.fail    { background: #f8d7da; color: #721c24; }
-    td.na      { color: #888; }
+    td.na      { background: #f8d7da; color: #888; }
     a { color: #0366d6; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .filter-row th { background: #f5f5f5; }
