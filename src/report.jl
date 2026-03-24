@@ -159,6 +159,7 @@ function generate_report(results::Vector{ModelResult}, results_root::String,
 OpenModelica: $(info.omc_version)<br>
 OMC options: <code>$(info.omc_options)</code><br>
 BaseModelica.jl: $(basemodelica_jl_version)<br>
+Solver: <code>$(info.solver)</code><br>
 Filter: $(var_filter)<br>
 Reference results: $(ref_results)</p>
 <p>CPU: $(info.cpu_model) ($(info.cpu_threads) threads)<br>

@@ -57,8 +57,12 @@ end
 
 Run the four-phase pipeline for a single model and return its result.
 """
-function test_model(omc::OMJulia.OMCSession, model::String, results_root::String,
-                    ref_root::String; csv_max_size_mb::Int = CSV_MAX_SIZE_MB)::ModelResult
+function test_model(omc::OMJulia.OMCSession,
+                    model::String,
+                    results_root::String,
+                    ref_root::String;
+                    sim_settings   ::SimulateSettings = _SIM_SETTINGS,
+                    csv_max_size_mb::Int              = CSV_MAX_SIZE_MB)::ModelResult
     model_dir = joinpath(results_root, "files", model)
     mkpath(model_dir)
 
@@ -93,6 +97,7 @@ function test_model(omc::OMJulia.OMCSession, model::String, results_root::String
 
     # Phase 3 ──────────────────────────────────────────────────────────────────
     sim_ok, sim_t, sim_err, sol = run_simulate(ode_prob, model_dir, model;
+                                               settings = sim_settings,
                                                csv_max_size_mb, cmp_signals)
 
     # Phase 4 (optional) ───────────────────────────────────────────────────────
@@ -132,6 +137,7 @@ function main(;
     results_root     :: String                = "",
     ref_root         :: String                = get(ENV, "MAPLIB_REF", ""),
     bm_options       :: String                = get(ENV, "BM_OPTIONS", "scalarize,moveBindings,inlineFunctions"),
+    sim_settings     :: SimulateSettings      = _SIM_SETTINGS,
     csv_max_size_mb  :: Int                   = CSV_MAX_SIZE_MB,
 )
     t0 = time()
@@ -200,7 +206,7 @@ function main(;
 
         for (i, model) in enumerate(models)
             @info "[$i/$(length(models))] $model"
-            result = test_model(omc, model, results_root, ref_root; csv_max_size_mb)
+            result = test_model(omc, model, results_root, ref_root; sim_settings, csv_max_size_mb)
             push!(results, result)
 
             phase = if result.sim_success && result.cmp_total > 0
@@ -245,6 +251,9 @@ function main(;
         length(cpu_info),
         Sys.total_memory() / 1024^3,
         time() - t0,
+        let s = _SIM_SETTINGS.solver
+            "$(parentmodule(typeof(s))).$(nameof(typeof(s)))"
+        end,
     )
 
     generate_report(results, results_root, info; csv_max_size_mb)

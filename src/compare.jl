@@ -368,6 +368,8 @@ function compare_with_reference(
     signals::Vector{String}   = String[],
 )::Tuple{Int,Int,Int,String}
 
+    isdir(model_dir) || mkpath(model_dir)
+
     times, ref_data = _read_ref_csv(ref_csv_path)
     isempty(times) && return 0, 0, 0, ""
 

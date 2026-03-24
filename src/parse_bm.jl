@@ -18,6 +18,7 @@ function run_parse(bm_path::String, model_dir::String,
     parse_error   = ""
     ode_prob      = nothing
 
+    isdir(model_dir) || mkpath(model_dir)
     log_file    = open(joinpath(model_dir, "$(model)_parsing.log"), "w")
     stdout_pipe = Pipe()
     println(log_file, "Model:   $model")

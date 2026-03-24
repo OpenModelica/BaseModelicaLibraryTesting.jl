@@ -33,6 +33,7 @@ function write_summary(
         print(io, "  \"cpu_threads\":  $(info.cpu_threads),\n")
         print(io, "  \"ram_gb\":       $(@sprintf "%.2f" info.ram_gb),\n")
         print(io, "  \"total_time_s\": $(@sprintf "%.2f" info.total_time_s),\n")
+        print(io, "  \"solver\":       \"$(_esc_json(info.solver))\",\n")
         print(io, "  \"models\": [\n")
         for (i, r) in enumerate(results)
             sep = i < length(results) ? "," : ""
@@ -74,6 +75,7 @@ Parsed contents of a single `summary.json` file.
 - `cpu_threads`  — number of logical CPU threads
 - `ram_gb`       — total system RAM in GiB
 - `total_time_s` — wall-clock duration of the full test run in seconds
+- `solver`       — fully-qualified solver name, e.g. `"DifferentialEquations.Rodas5P"`
 - `models`       — vector of per-model dicts; each has keys
                    `"name"`, `"export"`, `"parse"`, `"sim"`, `"cmp_total"`, `"cmp_pass"`
 """
@@ -92,6 +94,7 @@ struct RunSummary
     cpu_threads  :: Int
     ram_gb       :: Float64
     total_time_s :: Float64
+    solver       :: String
     models       :: Vector{Dict{String,Any}}
 end
 
@@ -150,6 +153,7 @@ function load_summary(results_root::String)::Union{RunSummary,Nothing}
         _int("cpu_threads"),
         _float("ram_gb"),
         _float("total_time_s"),
+        _str("solver"),
         models,
     )
 end

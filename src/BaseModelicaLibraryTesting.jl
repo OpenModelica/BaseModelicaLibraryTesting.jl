@@ -4,7 +4,7 @@ import Pkg
 import OMJulia
 import OMJulia: sendExpression
 import BaseModelica
-import DifferentialEquations: solve, Rodas5P, ReturnCode
+import DifferentialEquations
 import ModelingToolkit
 import Dates: now
 import Printf: @sprintf
@@ -21,11 +21,12 @@ include("pipeline.jl")
 # ── Public API ─────────────────────────────────────────────────────────────────
 
 # Shared types and constants
-export ModelResult, CompareSettings, RunInfo
+export ModelResult, CompareSettings, SimulateSettings, RunInfo
 export LIBRARY, LIBRARY_VERSION, CMP_REL_TOL, CMP_ABS_TOL
 
 # Comparison configuration
 export configure_comparison!, compare_settings
+export configure_simulate!, simulate_settings
 
 # Pipeline phases
 export run_export       # Phase 1: Base Modelica export via OMC
