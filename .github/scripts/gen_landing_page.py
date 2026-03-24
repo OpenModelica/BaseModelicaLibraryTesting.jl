@@ -79,9 +79,15 @@ def load_runs(site_root: Path) -> list[dict]:
         except Exception:
             continue
 
-        models = data.get("models", [])
+        models  = data.get("models", [])
         n       = len(models)
         n_exp   = sum(1 for m in models if m.get("export", False))
+        # Sub-steps — fall back to overall "parse" flag for older summary.json files
+        # that predate the three-step split.
+        has_substeps = any("antlr" in m for m in models)
+        n_antlr = sum(1 for m in models if m.get("antlr", m.get("parse", False))) if has_substeps else None
+        n_mtk   = sum(1 for m in models if m.get("mtk",   m.get("parse", False))) if has_substeps else None
+        n_ode   = sum(1 for m in models if m.get("ode",   m.get("parse", False))) if has_substeps else None
         n_par   = sum(1 for m in models if m.get("parse",  False))
         n_sim   = sum(1 for m in models if m.get("sim",    False))
 
@@ -100,6 +106,9 @@ def load_runs(site_root: Path) -> list[dict]:
             "omc_version": data.get("omc_version",  "?"),
             "total":       n,
             "n_exp":       n_exp,
+            "n_antlr":     n_antlr,
+            "n_mtk":       n_mtk,
+            "n_ode":       n_ode,
             "n_par":       n_par,
             "n_sim":       n_sim,
             "n_cmp":       n_cmp,
@@ -123,6 +132,11 @@ def _pct_cell(num: int, den: int) -> str:
 def render(runs: list[dict]) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
+    def _parse_sub_cell(n_sub, n_prev):
+        if n_sub is None:
+            return '<td class="na">—</td>'
+        return _pct_cell(n_sub, n_prev)
+
     if runs:
         rows = []
         for r in runs:
@@ -140,13 +154,15 @@ def render(runs: list[dict]) -> str:
     <td>{r['date']}</td>
     <td>{r['duration']}</td>
     {_pct_cell(r['n_exp'], r['total'])}
-    {_pct_cell(r['n_par'], r['n_exp'])}
+    {_parse_sub_cell(r['n_antlr'], r['n_exp'])}
+    {_parse_sub_cell(r['n_mtk'],   r['n_antlr'] if r['n_antlr'] is not None else r['n_exp'])}
+    {_parse_sub_cell(r['n_ode'],   r['n_mtk']   if r['n_mtk']   is not None else r['n_exp'])}
     {_pct_cell(r['n_sim'], r['n_par'])}
     {cmp_cell}
   </tr>""")
         rows_html = "\n".join(rows)
     else:
-        rows_html = '  <tr><td colspan="10" class="na" style="text-align:center">No results yet.</td></tr>'
+        rows_html = '  <tr><td colspan="12" class="na" style="text-align:center">No results yet.</td></tr>'
 
     return f"""\
 <!DOCTYPE html>
@@ -180,7 +196,9 @@ def render(runs: list[dict]) -> str:
     <th>Date</th>
     <th>Duration</th>
     <th>BM Export</th>
-    <th>BM Parse</th>
+    <th>ANTLR</th>
+    <th>BM→MTK</th>
+    <th>ODEProblem</th>
     <th>MTK Sim</th>
     <th>Ref Cmp</th>
   </tr>
