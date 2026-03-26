@@ -78,28 +78,25 @@ function run_simulate(ode_prob,
         # Redirect all library log output (including Symbolics/MTK warnings)
         # to the log file so they don't clutter stdout.
         sol = Logging.with_logger(logger) do
-            # Overwrite saveat, always use dense output.
-            # For stateless models (no unknowns) the adaptive solver takes no
-            # internal steps and sol.t would be empty with saveat=[].
-            # Supply explicit time points so observed variables can be evaluated.
+            # Special handling for systems without states
             sys        = ode_prob.f.sys
             n_unknowns = length(ModelingToolkit.unknowns(sys))
-
-            kwargs = if n_unknowns == 0
-                # No unknowns at all (e.g. BusUsage):
-                # Supply explicit time points so observed variables can be evaluated.
+            eqs        = ModelingToolkit.equations(sys)
+            n_states   = count(ModelingToolkitBase.isdiffeq, eqs)
+            kwargs, active_solver = if n_states == 0
+                # No state variables (e.g. BusUsage, Modelica.Electrical.Analog.Examples.OpAmps.Subtracter):
+                # Use Rodas5Pr on a fixed grid so observed variables can be evaluated at each step.
+                dt_s = (ode_prob.tspan[end] - ode_prob.tspan[1]) / (settings.saveat_n - 1)
                 saveat_s = collect(range(ode_prob.tspan[1], ode_prob.tspan[end]; length = settings.saveat_n))
-                (saveat = saveat_s, dense = true)
+                (saveat = saveat_s, dt = dt_s, adaptive = false, dense = false),
+                DifferentialEquations.Rodas5Pr()
             else
-                (saveat = Float64[], dense = true)
+                saveat_s = Float64[]
+                (saveat = saveat_s, dense = true), solver
             end
 
-            # Log solver settings — init returns NullODEIntegrator (no .opts)
-            # when the problem has no unknowns (u::Nothing), so only inspect
-            # opts when a real integrator is returned.
-            # Use our own `saveat` vector for the log: integ.opts.saveat is a
-            # BinaryHeap which does not support iterate/minimum/maximum.
-            integ = DifferentialEquations.init(ode_prob, solver; kwargs...)
+            # Log solver settings
+            integ = DifferentialEquations.init(ode_prob, active_solver; kwargs...)
             saveat_s = kwargs.saveat
             solver_settings_string = if hasproperty(integ, :opts)
                 sv_str = isempty(saveat_s) ? "[]" : "$(length(saveat_s)) points in [$(first(saveat_s)), $(last(saveat_s))]"
@@ -119,7 +116,7 @@ function run_simulate(ode_prob,
             end
 
             # Solve
-            DifferentialEquations.solve(ode_prob, solver; kwargs...)
+            DifferentialEquations.solve(ode_prob, active_solver; kwargs...)
         end
         sim_time = time() - t0
         if sol.retcode == DifferentialEquations.ReturnCode.Success
