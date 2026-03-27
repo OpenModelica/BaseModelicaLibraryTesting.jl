@@ -1940,7 +1940,7 @@ package 'IMC_Transformer'
     'aimc.wMechanical' = der('aimc.phiMechanical');
     'aimc.tauElectrical' = 'aimc.inertiaRotor.flange_a.tau';
     'aimc.tauShaft' = -'aimc.flange.tau';
-    'aimc.powerBalance.powerStator' = sum('aimc.vs' * 'aimc.is');
+    'aimc.powerBalance.powerStator' = sum({'aimc.vs[1]' * 'aimc.is[1]', 'aimc.vs[2]' * 'aimc.is[2]', 'aimc.vs[3]' * 'aimc.is[3]'});
     'aimc.powerBalance.powerMechanical' = 'aimc.wMechanical' * 'aimc.tauShaft';
     'aimc.powerBalance.powerInertiaStator' = 0.29 * 'aimc.inertiaStator.a' * 'aimc.inertiaStator.w';
     'aimc.powerBalance.powerInertiaRotor' = 0.29 * 'aimc.inertiaRotor.a' * 'aimc.inertiaRotor.w';
@@ -2041,8 +2041,8 @@ package 'IMC_Transformer'
     'aimc.rotorCage.strayReluctance.Phi.im' = 'aimc.rotorCage.strayReluctance.port_p.Phi.im';
     'aimc.rotorCage.strayReluctance.abs_Phi' = sqrt('aimc.rotorCage.strayReluctance.Phi.re' ^ 2.0 + 'aimc.rotorCage.strayReluctance.Phi.im' ^ 2.0);
     'aimc.rotorCage.strayReluctance.arg_Phi' = 'Modelica.Math.atan3'('aimc.rotorCage.strayReluctance.Phi.im', 'aimc.rotorCage.strayReluctance.Phi.re', 0.0);
-    'transformer.powerBalance.power1' = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('transformer.v1', 'transformer.i1');
-    'transformer.powerBalance.power2' = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'('transformer.v2', 'transformer.i2');
+    'transformer.powerBalance.power1' = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'({'transformer.v1[1]', 'transformer.v1[2]', 'transformer.v1[3]'}, {'transformer.i1[1]', 'transformer.i1[2]', 'transformer.i1[3]'});
+    'transformer.powerBalance.power2' = 'Modelica.Electrical.Machines.SpacePhasors.Functions.activePower'({'transformer.v2[1]', 'transformer.v2[2]', 'transformer.v2[3]'}, {'transformer.i2[1]', 'transformer.i2[2]', 'transformer.i2[3]'});
     'transformer.powerBalance.lossPowerTotal' = 'transformer.powerBalance.lossPower1' + 'transformer.powerBalance.lossPower2' + 'transformer.powerBalance.lossPowerCore';
     'transformer.powerBalance.lossPower1' = 'transformer.r1.resistor[1].LossPower' + 'transformer.r1.resistor[2].LossPower' + 'transformer.r1.resistor[3].LossPower';
     'transformer.powerBalance.lossPower2' = 'transformer.r2.resistor[1].LossPower' + 'transformer.r2.resistor[2].LossPower' + 'transformer.r2.resistor[3].LossPower';
