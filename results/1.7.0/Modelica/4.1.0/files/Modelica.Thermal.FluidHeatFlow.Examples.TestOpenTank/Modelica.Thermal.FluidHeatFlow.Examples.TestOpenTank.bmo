@@ -1,0 +1,286 @@
+//! base 0.1.0
+package 'TestOpenTank'
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmin' "Return minimum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMin';
+  external "C" 'timeMin' = ModelicaStandardTables_CombiTimeTable_minimumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmin';
+
+  function 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer' "Derivative of interpolated 1-dim. table where first column is time (but do not provide a derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Integer 'icol';
+    input Real 'timeIn';
+    input Real 'nextTimeEvent';
+    input Real 'pre_nextTimeEvent';
+    input Real 'der_timeIn';
+    output Real 'der_y';
+  external "C" 'der_y' = ModelicaStandardTables_CombiTimeTable_getDerValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent', 'der_timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer';
+
+  function 'Modelica.Blocks.Tables.Internal.getNextTimeEvent' "Return next time event value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Real 'timeIn';
+    output Real 'nextTimeEvent';
+  external "C" 'nextTimeEvent' = ModelicaStandardTables_CombiTimeTable_nextTimeEvent('tableID', 'timeIn') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getNextTimeEvent';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2' "Interpolate 1-dim. table where first column is time (but do not provide a second derivative function)"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    input Integer 'icol';
+    input Real 'timeIn';
+    input Real 'nextTimeEvent';
+    input Real 'pre_nextTimeEvent';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTimeTable_getValue('tableID', 'icol', 'timeIn', 'nextTimeEvent', 'pre_nextTimeEvent') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1, noDerivative = 'nextTimeEvent', noDerivative = 'pre_nextTimeEvent') = 'Modelica.Blocks.Tables.Internal.getDerTimeTableValueNoDer');
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2';
+
+  function 'Modelica.Blocks.Tables.Internal.getTimeTableTmax' "Return maximum abscissa value of 1-dim. table where first column is time"
+    input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'tableID';
+    output Real 'timeMax';
+  external "C" 'timeMax' = ModelicaStandardTables_CombiTimeTable_maximumTime('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTimeTableTmax';
+
+  type 'Modelica.Blocks.Types.Smoothness' = enumeration('LinearSegments', 'ContinuousDerivative', 'ConstantSegments', 'MonotoneContinuousDerivative1', 'MonotoneContinuousDerivative2', 'ModifiedContinuousDerivative');
+
+  type 'Modelica.Blocks.Types.Extrapolation' = enumeration('HoldLastPoint', 'LastTwoPoints', 'Periodic', 'NoExtrapolation');
+
+  type 'Modelica.Blocks.Types.TimeEvents' = enumeration('Always', 'AtDiscontinuities', 'NoTimeEvents');
+
+  class 'Modelica.Blocks.Types.ExternalCombiTimeTable'
+  extends ExternalObject;
+
+    function constructor "Initialize 1-dim. table where first column is time"
+      input String 'tableName';
+      input String 'fileName';
+      input Real 'table'[:, :];
+      input Real 'startTime';
+      input Integer 'columns'[:];
+      input 'Modelica.Blocks.Types.Smoothness' 'smoothness';
+      input 'Modelica.Blocks.Types.Extrapolation' 'extrapolation';
+      input Real 'shiftTime' = 0.0;
+      input 'Modelica.Blocks.Types.TimeEvents' 'timeEvents' = 'Modelica.Blocks.Types.TimeEvents'.'Always';
+      input Boolean 'verboseRead' = true;
+      input String 'delimiter' = ",";
+      input Integer 'nHeaderLines' = 0;
+      output 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'externalCombiTimeTable';
+    external "C" 'externalCombiTimeTable' = ModelicaStandardTables_CombiTimeTable_init3('fileName', 'tableName', 'table', size('table', 1), size('table', 2), 'startTime', 'columns', size('columns', 1), 'smoothness', 'extrapolation', 'shiftTime', 'timeEvents', 'verboseRead', 'delimiter', 'nHeaderLines') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    end constructor;
+
+    function destructor "Terminate 1-dim. table where first column is time"
+      input 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'externalCombiTimeTable';
+    external "C" ModelicaStandardTables_CombiTimeTable_close('externalCombiTimeTable') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    end destructor;
+
+end 'Modelica.Blocks.Types.ExternalCombiTimeTable';
+
+  model 'TestOpenTank' "Test the OpenTank model"
+    output Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow rate to tank";
+    output Real 'level'(unit = "m", quantity = "Length") "Level in tank";
+    output Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature in tank";
+    parameter Real 'openTank.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
+    parameter Real 'openTank.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
+    parameter Real 'openTank.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
+    parameter Real 'openTank.medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
+    parameter Real 'openTank.medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
+    parameter Real 'openTank.T0'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 313.15 "Initial temperature of medium";
+    parameter Boolean 'openTank.T0fixed' = true "Initial temperature guess value or fixed";
+    Real 'openTank.T_port'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
+    Real 'openTank.T'(nominal = 300.0, fixed = true, start = 313.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
+    parameter Real 'openTank.flowPort.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
+    parameter Real 'openTank.flowPort.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
+    parameter Real 'openTank.flowPort.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
+    parameter Real 'openTank.flowPort.medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
+    parameter Real 'openTank.flowPort.medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
+    Real 'openTank.flowPort.p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'openTank.flowPort.m_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'openTank.flowPort.h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'openTank.flowPort.H_flow'(unit = "W", quantity = "EnthalpyFlowRate");
+    constant Boolean 'openTank.Exchange' = true "Exchange of medium via flowport";
+    Real 'openTank.h'(unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy in the volume";
+    parameter Real 'openTank.ATank'(start = 1.0, unit = "m2", quantity = "Area") = 1.0 "Cross section of tank";
+    parameter Real 'openTank.hTank'(start = 1.0, unit = "m", quantity = "Length") = 1.0 "Height of tank";
+    parameter Real 'openTank.pAmbient'(start = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 0.0 "Ambient pressure";
+    parameter Real 'openTank.g'(min = 0.0, unit = "m/s2", quantity = "Acceleration") = 10.0 "Gravitation";
+    parameter Boolean 'openTank.useHeatPort' = false "= true, if HeatPort is enabled" annotation(Evaluate = true);
+    Real 'openTank.m'(min = 0.0, unit = "kg", quantity = "Mass") "Mass of medium in tank";
+    Real 'openTank.H'(unit = "J", quantity = "Energy") "Enthalpy of medium";
+    Real 'openTank.Q_flow'(unit = "W", quantity = "Power") "Heat flow at the optional heatPort";
+    Real 'openTank.level'(fixed = true, start = 0.5, unit = "m", quantity = "Length") "Level of medium in tank";
+    Real 'openTank.TTank'(displayUnit = "degC", unit = "K", quantity = "Temperature") "Temperature of medium in tank";
+    parameter Real 'ambient.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
+    parameter Real 'ambient.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
+    parameter Real 'ambient.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
+    parameter Real 'ambient.medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
+    parameter Real 'ambient.medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
+    parameter Real 'ambient.T0'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Initial temperature of medium";
+    parameter Boolean 'ambient.T0fixed' = false "Initial temperature guess value or fixed";
+    Real 'ambient.T_port'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
+    Real 'ambient.T'(nominal = 300.0, fixed = false, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
+    parameter Real 'ambient.flowPort.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
+    parameter Real 'ambient.flowPort.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
+    parameter Real 'ambient.flowPort.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
+    parameter Real 'ambient.flowPort.medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
+    parameter Real 'ambient.flowPort.medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
+    Real 'ambient.flowPort.p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'ambient.flowPort.m_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'ambient.flowPort.h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'ambient.flowPort.H_flow'(unit = "W", quantity = "EnthalpyFlowRate");
+    constant Boolean 'ambient.Exchange' = true "Exchange of medium via flowport";
+    Real 'ambient.h'(unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy in the volume";
+    parameter Boolean 'ambient.usePressureInput' = false "Enable / disable pressure input" annotation(Evaluate = true);
+    parameter Real 'ambient.constantAmbientPressure'(start = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 0.0 "Ambient pressure";
+    parameter Boolean 'ambient.useTemperatureInput' = false "Enable / disable temperature input" annotation(Evaluate = true);
+    parameter Real 'ambient.constantAmbientTemperature'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Ambient temperature";
+    Real 'ambient.pAmbient'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'ambient.TAmbient'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    parameter Real 'volumeFlow.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
+    parameter Real 'volumeFlow.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
+    parameter Real 'volumeFlow.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
+    parameter Real 'volumeFlow.medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
+    parameter Real 'volumeFlow.medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
+    parameter Real 'volumeFlow.m'(start = 1.0, min = 0.0, unit = "kg", quantity = "Mass") = 0.0 "Mass of medium";
+    parameter Real 'volumeFlow.T0'(nominal = 300.0, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Initial temperature of medium";
+    parameter Boolean 'volumeFlow.T0fixed' = false "Initial temperature guess value or fixed";
+    parameter Real 'volumeFlow.tapT'(max = 1.0, min = 0.0) = 1.0 "Defines temperature of heatPort between inlet and outlet temperature";
+    Real 'volumeFlow.dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure drop a->b";
+    Real 'volumeFlow.V_flow'(start = 0.0, unit = "m3/s", quantity = "VolumeFlowRate") "Volume flow a->b";
+    Real 'volumeFlow.Q_flow'(unit = "W", quantity = "Power") "Heat exchange with ambient";
+    Real 'volumeFlow.T'(nominal = 300.0, fixed = false, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
+    Real 'volumeFlow.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
+    Real 'volumeFlow.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
+    Real 'volumeFlow.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'volumeFlow.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
+    Real 'volumeFlow.h'(start = 'volumeFlow.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
+    parameter Real 'volumeFlow.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
+    parameter Real 'volumeFlow.flowPort_a.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
+    parameter Real 'volumeFlow.flowPort_a.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
+    parameter Real 'volumeFlow.flowPort_a.medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
+    parameter Real 'volumeFlow.flowPort_a.medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
+    Real 'volumeFlow.flowPort_a.p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'volumeFlow.flowPort_a.m_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'volumeFlow.flowPort_a.h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'volumeFlow.flowPort_a.H_flow'(unit = "W", quantity = "EnthalpyFlowRate");
+    parameter Real 'volumeFlow.flowPort_b.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
+    parameter Real 'volumeFlow.flowPort_b.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
+    parameter Real 'volumeFlow.flowPort_b.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
+    parameter Real 'volumeFlow.flowPort_b.medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
+    parameter Real 'volumeFlow.flowPort_b.medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
+    Real 'volumeFlow.flowPort_b.p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'volumeFlow.flowPort_b.m_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'volumeFlow.flowPort_b.h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'volumeFlow.flowPort_b.H_flow'(unit = "W", quantity = "EnthalpyFlowRate");
+    parameter Boolean 'volumeFlow.useVolumeFlowInput' = true "Enable / disable volume flow input" annotation(Evaluate = true);
+    parameter Real 'volumeFlow.constantVolumeFlow'(start = 1.0, unit = "m3/s", quantity = "VolumeFlowRate") = 1.0 "Volume flow rate";
+    Real 'volumeFlow.volumeFlow'(unit = "m3/s");
+    Real 'volumeFlow.internalVolumeFlow'(unit = "m3/s", quantity = "VolumeFlowRate");
+    parameter Integer 'combiTimeTable.nout'(min = 1) = 1 "Number of outputs";
+    Real 'combiTimeTable.y[1]' "Connector of Real output signals";
+    parameter Boolean 'combiTimeTable.tableOnFile' = false "= true, if table is defined on file or in function usertab";
+    parameter Real 'combiTimeTable.table[1,1]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[1,2]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[2,1]' = 0.5 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[2,2]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[3,1]' = 0.5 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[3,2]' = -1.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[4,1]' = 0.75 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[4,2]' = -1.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[5,1]' = 0.75 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[5,2]' = 1.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[6,1]' = 1.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[6,2]' = 1.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[7,1]' = 1.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[7,2]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[8,1]' = 1.5 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter Real 'combiTimeTable.table[8,2]' = 0.0 "Table matrix (time = first column; e.g., table=[0, 0; 1, 1; 2, 4])";
+    parameter String 'combiTimeTable.tableName' = "NoName" "Table name on file or in function usertab (see docu)";
+    parameter String 'combiTimeTable.fileName' = "NoName" "File where matrix is stored";
+    parameter String 'combiTimeTable.delimiter' = "," "Column delimiter character for CSV file";
+    parameter Integer 'combiTimeTable.nHeaderLines' = 0 "Number of header lines to ignore for CSV file";
+    parameter Boolean 'combiTimeTable.verboseRead' = true "= true, if info message that file is loading is to be printed";
+    parameter Integer 'combiTimeTable.columns[1]' = 2 "Columns of table to be interpolated";
+    parameter 'Modelica.Blocks.Types.Smoothness' 'combiTimeTable.smoothness' = 'Modelica.Blocks.Types.Smoothness'.'LinearSegments' "Smoothness of table interpolation";
+    parameter 'Modelica.Blocks.Types.Extrapolation' 'combiTimeTable.extrapolation' = 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints' "Extrapolation of data outside the definition range";
+    parameter Real 'combiTimeTable.timeScale'(min = 2.220446049250313e-16, unit = "s", quantity = "Time") = 1.0 "Time scale of first table column" annotation(Evaluate = true);
+    parameter Real 'combiTimeTable.offset[1]' = 0.0 "Offsets of output signals";
+    parameter Real 'combiTimeTable.startTime'(unit = "s", quantity = "Time") = 0.0 "Output = offset for time < startTime";
+    parameter Real 'combiTimeTable.shiftTime'(unit = "s", quantity = "Time") = 0.0 "Shift time of first table column";
+    parameter 'Modelica.Blocks.Types.TimeEvents' 'combiTimeTable.timeEvents' = 'Modelica.Blocks.Types.TimeEvents'.'Always' "Time event handling of table interpolation";
+    parameter Boolean 'combiTimeTable.verboseExtrapolation' = false "= true, if warning messages are to be printed if time is outside the table definition range";
+    parameter Real 'combiTimeTable.t_min'(unit = "s", quantity = "Time") = 'combiTimeTable.t_minScaled' "Minimum abscissa value defined in table";
+    parameter Real 'combiTimeTable.t_max'(unit = "s", quantity = "Time") = 'combiTimeTable.t_maxScaled' "Maximum abscissa value defined in table";
+    parameter Real 'combiTimeTable.t_minScaled' = 'Modelica.Blocks.Tables.Internal.getTimeTableTmin'('combiTimeTable.tableID') "Minimum (scaled) abscissa value defined in table";
+    parameter Real 'combiTimeTable.t_maxScaled' = 'Modelica.Blocks.Tables.Internal.getTimeTableTmax'('combiTimeTable.tableID') "Maximum (scaled) abscissa value defined in table";
+    parameter Real 'combiTimeTable.p_offset[1]' = 0.0 "Offsets of output signals";
+    parameter 'Modelica.Blocks.Types.ExternalCombiTimeTable' 'combiTimeTable.tableID' = 'Modelica.Blocks.Types.ExternalCombiTimeTable'("NoName", "NoName", {{0.0, 0.0}, {0.5, 0.0}, {0.5, -1.0}, {0.75, -1.0}, {0.75, 1.0}, {1.0, 1.0}, {1.0, 0.0}, {1.5, 0.0}}, 0.0, {2}, 'Modelica.Blocks.Types.Smoothness'.'LinearSegments', 'Modelica.Blocks.Types.Extrapolation'.'LastTwoPoints', 0.0, 'Modelica.Blocks.Types.TimeEvents'.'Always', false, ",", 0) "External table object";
+    discrete Real 'combiTimeTable.nextTimeEvent'(fixed = true, start = 0.0, unit = "s", quantity = "Time") "Next time event instant";
+    discrete Real 'combiTimeTable.nextTimeEventScaled'(fixed = true, start = 0.0) "Next scaled time event instant";
+    Real 'combiTimeTable.timeScaled' "Scaled time";
+    parameter Boolean 'combiTimeTable.isCsvExt' = false;
+  equation
+    'V_flow' = 'volumeFlow.V_flow';
+    'level' = 'openTank.level';
+    'T' = 'openTank.TTank';
+    'volumeFlow.volumeFlow' = 'volumeFlow.internalVolumeFlow';
+    'combiTimeTable.y[1]' = 'volumeFlow.volumeFlow';
+    'openTank.flowPort.h' = 'volumeFlow.flowPort_b.h';
+    assert(abs('openTank.flowPort.medium.rho' - 'volumeFlow.flowPort_b.medium.rho') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    assert(abs('openTank.flowPort.medium.cp' - 'volumeFlow.flowPort_b.medium.cp') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    assert(abs('openTank.flowPort.medium.cv' - 'volumeFlow.flowPort_b.medium.cv') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    assert(abs('openTank.flowPort.medium.lambda' - 'volumeFlow.flowPort_b.medium.lambda') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    assert(abs('openTank.flowPort.medium.nu' - 'volumeFlow.flowPort_b.medium.nu') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    'openTank.flowPort.p' = 'volumeFlow.flowPort_b.p';
+    'volumeFlow.flowPort_a.h' = 'ambient.flowPort.h';
+    assert(abs('volumeFlow.flowPort_a.medium.rho' - 'ambient.flowPort.medium.rho') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    assert(abs('volumeFlow.flowPort_a.medium.cp' - 'ambient.flowPort.medium.cp') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    assert(abs('volumeFlow.flowPort_a.medium.cv' - 'ambient.flowPort.medium.cv') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    assert(abs('volumeFlow.flowPort_a.medium.lambda' - 'ambient.flowPort.medium.lambda') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    assert(abs('volumeFlow.flowPort_a.medium.nu' - 'ambient.flowPort.medium.nu') <= 0.0, "Connected constants/parameters must be equal", AssertionLevel.error);
+    'volumeFlow.flowPort_a.p' = 'ambient.flowPort.p';
+    'volumeFlow.flowPort_b.m_flow' + 'openTank.flowPort.m_flow' = 0.0;
+    'volumeFlow.flowPort_b.H_flow' + 'openTank.flowPort.H_flow' = 0.0;
+    'volumeFlow.flowPort_a.m_flow' + 'ambient.flowPort.m_flow' = 0.0;
+    'volumeFlow.flowPort_a.H_flow' + 'ambient.flowPort.H_flow' = 0.0;
+    'openTank.TTank' = 'openTank.T';
+    'openTank.Q_flow' = 0.0;
+    assert('openTank.level' >= 0.0, "Tank got empty!", AssertionLevel.error);
+    assert('openTank.level' <= 1.0, "Tank got full!", AssertionLevel.error);
+    'openTank.m' = 'openTank.medium.rho' * 'openTank.level';
+    der('openTank.m') = 'openTank.flowPort.m_flow';
+    'openTank.H' = 'openTank.m' * 'openTank.h';
+    der('openTank.H') = 'openTank.flowPort.H_flow' + 'openTank.Q_flow';
+    'openTank.flowPort.p' = 'openTank.m' * 10.0;
+    'openTank.T_port' = 'openTank.flowPort.h' / 'openTank.medium.cp';
+    'openTank.T' = 'openTank.h' / 'openTank.medium.cp';
+    'openTank.flowPort.H_flow' = semiLinear('openTank.flowPort.m_flow', 'openTank.flowPort.h', 'openTank.h');
+    'ambient.pAmbient' = 0.0;
+    'ambient.TAmbient' = 293.15;
+    'ambient.flowPort.p' = 'ambient.pAmbient';
+    'ambient.T' = 'ambient.TAmbient';
+    'ambient.T_port' = 'ambient.flowPort.h' / 'ambient.medium.cp';
+    'ambient.T' = 'ambient.h' / 'ambient.medium.cp';
+    'ambient.flowPort.H_flow' = semiLinear('ambient.flowPort.m_flow', 'ambient.flowPort.h', 'ambient.h');
+    'volumeFlow.Q_flow' = 0.0;
+    'volumeFlow.V_flow' = 'volumeFlow.internalVolumeFlow';
+    'volumeFlow.dp' = 'volumeFlow.flowPort_a.p' - 'volumeFlow.flowPort_b.p';
+    'volumeFlow.V_flow' = 'volumeFlow.flowPort_a.m_flow' / 'volumeFlow.medium.rho';
+    'volumeFlow.T_a' = 'volumeFlow.flowPort_a.h' / 'volumeFlow.medium.cp';
+    'volumeFlow.T_b' = 'volumeFlow.flowPort_b.h' / 'volumeFlow.medium.cp';
+    'volumeFlow.dT' = if noEvent('volumeFlow.V_flow' >= 0.0) then 'volumeFlow.T' - 'volumeFlow.T_a' else 'volumeFlow.T_b' - 'volumeFlow.T';
+    'volumeFlow.h' = 'volumeFlow.medium.cp' * 'volumeFlow.T';
+    'volumeFlow.T_q' = 'volumeFlow.T';
+    'volumeFlow.flowPort_a.m_flow' + 'volumeFlow.flowPort_b.m_flow' = 0.0;
+    'volumeFlow.flowPort_a.H_flow' + 'volumeFlow.flowPort_b.H_flow' + 'volumeFlow.Q_flow' = 0.0;
+    'volumeFlow.flowPort_a.H_flow' = semiLinear('volumeFlow.flowPort_a.m_flow', 'volumeFlow.flowPort_a.h', 'volumeFlow.h');
+    'volumeFlow.flowPort_b.H_flow' = semiLinear('volumeFlow.flowPort_b.m_flow', 'volumeFlow.flowPort_b.h', 'volumeFlow.h');
+    'combiTimeTable.timeScaled' = time;
+
+    when {time >= pre('combiTimeTable.nextTimeEvent'), initial()} then
+      'combiTimeTable.nextTimeEventScaled' = 'Modelica.Blocks.Tables.Internal.getNextTimeEvent'('combiTimeTable.tableID', 'combiTimeTable.timeScaled');
+      'combiTimeTable.nextTimeEvent' = if 'combiTimeTable.nextTimeEventScaled' < 1e60 then 'combiTimeTable.nextTimeEventScaled' else 1e60;
+    end when;
+
+    'combiTimeTable.y[1]' = 'Modelica.Blocks.Tables.Internal.getTimeTableValueNoDer2'('combiTimeTable.tableID', 1, 'combiTimeTable.timeScaled', 'combiTimeTable.nextTimeEventScaled', pre('combiTimeTable.nextTimeEventScaled'));
+    annotation(experiment(StopTime = 1.5));
+  end 'TestOpenTank';
+end 'TestOpenTank';

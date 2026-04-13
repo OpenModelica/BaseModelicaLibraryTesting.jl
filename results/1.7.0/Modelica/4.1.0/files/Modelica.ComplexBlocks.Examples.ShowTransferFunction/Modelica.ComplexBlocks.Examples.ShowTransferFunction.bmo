@@ -1,0 +1,103 @@
+//! base 0.1.0
+package 'ShowTransferFunction'
+  function 'Modelica.ComplexBlocks.Examples.ShowTransferFunction.transferFunction.powerOfJ' "Internal function to compute j^k for any integer"
+    input Integer 'k';
+    output 'Complex' 'x';
+    Integer 'm' = mod('k', 4);
+  algorithm
+    'x' := if 'm' == 0 then 'Complex'(1.0, 0.0) else if 'm' == 1 then 'Complex'(0.0, 1.0) else if 'm' == 2 then 'Complex'(-1.0, 0.0) else 'Complex'(0.0, -1.0);
+    annotation(Inline = true);
+  end 'Modelica.ComplexBlocks.Examples.ShowTransferFunction.transferFunction.powerOfJ';
+
+  record 'Complex'
+    Real 're';
+    Real 'im';
+  end 'Complex';
+
+  model 'ShowTransferFunction' "Test complex transfer function block"
+    parameter Real 'm'(min = 0.0, unit = "kg", quantity = "Mass") = 0.2 "Mass";
+    parameter Real 'd'(unit = "N.s/m", quantity = "TranslationalDampingConstant") = 0.01 "Damping coefficient (not the damping ratio)";
+    parameter Real 'c'(unit = "N/m", quantity = "TranslationalSpringConstant") = 0.1 "Stiffness";
+    constant Real 'oneUnitMass'(min = 0.0, unit = "kg", quantity = "Mass") = 1.0 "Helping constant to satisfy unit check";
+    constant Real 'oneUnitDampingConstant'(unit = "N.s/m", quantity = "TranslationalDampingConstant") = 1.0 "Helping constant to satisfy unit check";
+    constant Real 'oneUnitSpringConstant'(unit = "N/m", quantity = "TranslationalSpringConstant") = 1.0 "Helping constant to satisfy unit check";
+    parameter Real 'b[1]' = -0.2 "Unitless numerator polynomial coefficients {-m} of the transfer function";
+    parameter Real 'a[1]' = 0.2 "Unitless denominator polynomial coefficients {m,d,c} of the transfer function";
+    parameter Real 'a[2]' = 0.01 "Unitless denominator polynomial coefficients {m,d,c} of the transfer function";
+    parameter Real 'a[3]' = 0.1 "Unitless denominator polynomial coefficients {m,d,c} of the transfer function";
+    parameter Real 'wMin' = 0.01 "Lower bound for frequency sweep";
+    parameter Real 'wMax' = 100.0 "Upper bound for frequency sweep";
+    Real 'lg_w' "Logarithm of frequency";
+    Real 'dB' "Magnitude of the transfer function in decibel";
+    Real 'phi'(displayUnit = "deg", unit = "rad", quantity = "Angle") "Argument of the transfer function";
+    Real 'logFrequencySweep.y' "Connector of Real output signal";
+    parameter Real 'logFrequencySweep.wMin'(min = 2.220446049250313e-16) = 0.01 "Start frequency";
+    parameter Real 'logFrequencySweep.wMax'(min = 2.220446049250313e-16) = 100.0 "End frequency";
+    parameter Real 'logFrequencySweep.startTime'(unit = "s", quantity = "Time") = 0.0 "Start time of frequency sweep";
+    parameter Real 'logFrequencySweep.duration'(start = 1.0, min = 0.0, unit = "s", quantity = "Time") = 1.0 "Duration of ramp (= 0.0 gives a Step)";
+    parameter Real 'const.k.re'(start = 1.0) = 1.0 "Real part of complex number";
+    parameter Real 'const.k.im'(start = 0.0) = 0.0 "Imaginary part of complex number";
+    Real 'const.y.re' "Real part of complex number";
+    Real 'const.y.im' "Imaginary part of complex number";
+    Real 'transferFunction.u.re' "Real part of complex number";
+    Real 'transferFunction.u.im' "Imaginary part of complex number";
+    Real 'transferFunction.y.re' "Real part of complex number";
+    Real 'transferFunction.y.im' "Imaginary part of complex number";
+    parameter Boolean 'transferFunction.useConjugateInput' = false "If true, input is processed conjugate complex";
+    Real 'transferFunction.uInternal.re' "Real part of complex number";
+    Real 'transferFunction.uInternal.im' "Imaginary part of complex number";
+    parameter Real 'transferFunction.b[1]' = -0.2 "Numerator coefficients of transfer function (e.g., 2*(jw)+3 is specified as {2,3})";
+    parameter Real 'transferFunction.a[1]' = 0.2 "Denominator coefficients of transfer function (e.g., 5*(jw)+6 is specified as {5,6})";
+    parameter Real 'transferFunction.a[2]' = 0.01 "Denominator coefficients of transfer function (e.g., 5*(jw)+6 is specified as {5,6})";
+    parameter Real 'transferFunction.a[3]' = 0.1 "Denominator coefficients of transfer function (e.g., 5*(jw)+6 is specified as {5,6})";
+    Real 'transferFunction.w'(unit = "rad/s") "Angular frequency input";
+    Real 'transferFunction.bw[1].re' "Real part of complex number";
+    Real 'transferFunction.bw[1].im' "Imaginary part of complex number";
+    Real 'transferFunction.aw[1].re' "Real part of complex number";
+    Real 'transferFunction.aw[1].im' "Imaginary part of complex number";
+    Real 'transferFunction.aw[2].re' "Real part of complex number";
+    Real 'transferFunction.aw[2].im' "Imaginary part of complex number";
+    Real 'transferFunction.aw[3].re' "Real part of complex number";
+    Real 'transferFunction.aw[3].im' "Imaginary part of complex number";
+    Real 'transferFunction.bSum.re' "Real part of complex number";
+    Real 'transferFunction.bSum.im' "Imaginary part of complex number";
+    Real 'transferFunction.aSum.re' "Real part of complex number";
+    Real 'transferFunction.aSum.im' "Imaginary part of complex number";
+    Real 'complexToPolar.len';
+    Real 'complexToPolar.phi'(unit = "rad");
+    Real 'complexToPolar.u.re' "Real part of complex number";
+    Real 'complexToPolar.u.im' "Imaginary part of complex number";
+    parameter Boolean 'complexToPolar.useConjugateInput' = false "If true, input is processed conjugate complex";
+  equation
+    'lg_w' = log10('logFrequencySweep.y');
+    'dB' = 20.0 * log10('complexToPolar.len');
+    'phi' = 'complexToPolar.phi';
+    'transferFunction.uInternal.re' = 'transferFunction.u.re';
+    'transferFunction.uInternal.im' = 'transferFunction.u.im';
+    'const.y.re' = 'transferFunction.u.re';
+    'const.y.im' = 'transferFunction.u.im';
+    'logFrequencySweep.y' = 'transferFunction.w';
+    'transferFunction.y.re' = 'complexToPolar.u.re';
+    'transferFunction.y.im' = 'complexToPolar.u.im';
+    'logFrequencySweep.y' = if time < 0.0 then 0.01 else if time < 1.0 then 0.01 * 1e4 ^ min(1.0, time) else 100.0;
+    'const.y.re' = 'const.k.re';
+    'const.y.im' = 'const.k.im';
+    'transferFunction.bw[1].re' = -0.2;
+    'transferFunction.bw[1].im' = 0.0;
+    'transferFunction.aw[1].re' = 0.2 * 'transferFunction.w' ^ 2.0 * (-1.0);
+    'transferFunction.aw[2].re' = 0.0;
+    'transferFunction.aw[3].re' = 0.1;
+    'transferFunction.aw[1].im' = 0.0;
+    'transferFunction.aw[2].im' = 0.01 * 'transferFunction.w';
+    'transferFunction.aw[3].im' = 0.0;
+    'transferFunction.bSum.re' = 'transferFunction.bw[1].re';
+    'transferFunction.bSum.im' = 'transferFunction.bw[1].im';
+    'transferFunction.aSum.re' = 'transferFunction.aw[1].re' + 'transferFunction.aw[2].re' + 'transferFunction.aw[3].re';
+    'transferFunction.aSum.im' = 'transferFunction.aw[1].im' + 'transferFunction.aw[2].im' + 'transferFunction.aw[3].im';
+    'transferFunction.y.re' = (('transferFunction.u.re' * 'transferFunction.bSum.re' - 'transferFunction.u.im' * 'transferFunction.bSum.im') * 'transferFunction.aSum.re' + ('transferFunction.u.re' * 'transferFunction.bSum.im' + 'transferFunction.u.im' * 'transferFunction.bSum.re') * 'transferFunction.aSum.im') / ('transferFunction.aSum.re' * 'transferFunction.aSum.re' + 'transferFunction.aSum.im' * 'transferFunction.aSum.im');
+    'transferFunction.y.im' = (('transferFunction.u.re' * 'transferFunction.bSum.im' + 'transferFunction.u.im' * 'transferFunction.bSum.re') * 'transferFunction.aSum.re' - ('transferFunction.u.re' * 'transferFunction.bSum.re' - 'transferFunction.u.im' * 'transferFunction.bSum.im') * 'transferFunction.aSum.im') / ('transferFunction.aSum.re' * 'transferFunction.aSum.re' + 'transferFunction.aSum.im' * 'transferFunction.aSum.im');
+    'complexToPolar.len' = sqrt('complexToPolar.u.re' ^ 2.0 + 'complexToPolar.u.im' ^ 2.0);
+    'complexToPolar.phi' = atan2('complexToPolar.u.im', 'complexToPolar.u.re');
+    annotation(experiment(StopTime = 1, Interval = 0.001));
+  end 'ShowTransferFunction';
+end 'ShowTransferFunction';

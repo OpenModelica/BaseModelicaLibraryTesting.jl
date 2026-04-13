@@ -1,0 +1,666 @@
+//! base 0.1.0
+package 'TestTwoPhaseStates'
+  function 'Modelica.Media.Water.IF97_Utilities.thermalConductivity' "Compute lambda(d,T,p) in the one-phase region"
+    input Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Integer 'phase' = 0;
+    input Boolean 'industrialMethod' = true;
+    input Boolean 'checkLimits' = true;
+    output Real 'lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity");
+    Integer 'region'(max = 5, min = 1);
+    constant Real 'n0' = 1.0;
+    constant Real 'n1' = 6.978267;
+    constant Real 'n2' = 2.599096;
+    constant Real 'n3' = -0.998254;
+    constant Real 'nn'[30] = {1.3293046, 1.7018363, 5.2246158, 8.7127675, -1.8525999, -0.40452437, -2.2156845, -10.124111, -9.5000611, 0.9340469, 0.2440949, 1.6511057, 4.9874687, 4.3786606, 0.0, 0.018660751, -0.76736002, -0.27297694, -0.91783782, 0.0, -0.12961068, 0.37283344, -0.43083393, 0.0, 0.0, 0.044809953, -0.1120316, 0.13333849, 0.0, 0.0};
+    constant Real 'lamstar'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 0.4945;
+    constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
+    constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;
+    constant Real 'pstar'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 2.2115e7;
+    constant Real 'etastar'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 5.5071e-5;
+    Integer 'i';
+    Integer 'j';
+    Real 'delta';
+    Real 'tau';
+    Real 'deltam1';
+    Real 'taum1';
+    Real 'Lam0';
+    Real 'Lam1';
+    Real 'Lam2';
+    Real 'tfun';
+    Real 'rhofun';
+    Real 'dpitau';
+    Real 'ddelpi';
+    Real 'd2';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'Tc' = 'T' - 273.15;
+    Real 'Chi';
+    constant Real 'rhostar2'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.7;
+    constant Real 'Tstar2'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.25;
+    constant Real 'lambdastar'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0;
+    Real 'lambdaREL';
+    Real 'deltaTREL';
+    constant Real 'C'[:] = {0.642857, -4.11717, -6.17937, 0.00308976, 0.0822994, 10.0932};
+    constant Real 'dpar'[:] = {0.0701309, 0.011852, 0.00169937, -1.02};
+    constant Real 'b'[:] = {-0.39707, 0.400302, 1.06};
+    constant Real 'B'[:] = {-0.171587, 2.39219};
+    constant Real 'a'[:] = {0.0102811, 0.0299621, 0.0156146, -0.00422464};
+    Real 'Q';
+    Real 'S';
+    Real 'lambdaREL2';
+    Real 'lambdaREL1';
+    Real 'lambdaREL0';
+    Real 'rhoREL' = 'd' / 'rhostar2';
+    Real 'TREL' = 'T' / 'Tstar2';
+  algorithm
+    if 'checkLimits' then
+      assert('d' > 0.004854575724778614, "IF97 medium function cond_dTp called with too low density\nd = " + String('d') + " <= " + "0.00485458" + " (triple point density)", AssertionLevel.error);
+      assert(('p' <= 1e8 and 'Tc' >= 0.0 and 'Tc' <= 500.0 or 'p' <= 7e7 and 'Tc' > 500.0 and 'Tc' <= 650.0) or 'p' <= 4e7 and 'Tc' > 650.0 and 'Tc' <= 800.0, "IF97 medium function cond_dTp: thermal conductivity computed outside the range\nof validity of the IF97 formulation: p = " + String('p') + " Pa, Tc = " + String('Tc') + " K", AssertionLevel.error);
+    end if;
+
+    if 'industrialMethod' then
+      'deltaTREL' := abs('TREL' - 1.0) + 'C'[4];
+      'Q' := 2.0 + 'C'[5] / 'deltaTREL' ^ 0.6;
+
+      if 'TREL' >= 1.0 then
+        'S' := 1.0 / 'deltaTREL';
+      else
+        'S' := 'C'[6] / 'deltaTREL' ^ 0.6;
+      end if;
+
+      'lambdaREL2' := ('dpar'[1] / 'TREL' ^ 10.0 + 'dpar'[2]) * 'rhoREL' ^ 1.8 * 'Modelica.Math.exp'('C'[1] * (1.0 - 'rhoREL' ^ 2.8)) + 'dpar'[3] * 'S' * 'rhoREL' ^ 'Q' * 'Modelica.Math.exp'('Q' / (1.0 + 'Q') * (1.0 - 'rhoREL' ^ (1.0 + 'Q'))) + 'dpar'[4] * 'Modelica.Math.exp'('C'[2] * 'TREL' ^ 1.5 + 'C'[3] / 'rhoREL' ^ 5.0);
+      'lambdaREL1' := 'b'[1] + 'b'[2] * 'rhoREL' + 'b'[3] * 'Modelica.Math.exp'('B'[1] * ('rhoREL' + 'B'[2]) ^ 2.0);
+      'lambdaREL0' := 'TREL' ^ 0.5 * ('a'[1] + 'a'[2] * 'TREL' + 'a'[3] * 'TREL' ^ 2.0 + 'a'[4] * 'TREL' ^ 3.0);
+      'lambdaREL' := 'lambdaREL0' + 'lambdaREL1' + 'lambdaREL2';
+      'lambda' := 'lambdaREL' * 'lambdastar';
+    else
+      if 'p' < 1.65292e7 then
+        if 'd' > 322.0 then
+          'region' := 1;
+        else
+          'region' := 2;
+        end if;
+      else
+        assert(false, "The scientific method works only for temperature up to 623.15 K", AssertionLevel.error);
+      end if;
+
+      'tau' := 'tstar' / 'T';
+      'delta' := 'd' / 'rhostar';
+      'deltam1' := 'delta' - 1.0;
+      'taum1' := 'tau' - 1.0;
+      'Lam0' := 1.0 / ('n0' + ('n1' + ('n2' + 'n3' * 'tau') * 'tau') * 'tau') / 'tau' ^ 0.5;
+      'Lam1' := 0.0;
+      'tfun' := 1.0;
+
+      for 'i' in 1:5 loop
+        if 'i' <> 1 then
+          'tfun' := 'tfun' * 'taum1';
+        end if;
+
+        'rhofun' := 1.0;
+
+        for 'j' in 0:5 loop
+          if 'j' <> 0 then
+            'rhofun' := 'rhofun' * 'deltam1';
+          end if;
+
+          'Lam1' := 'Lam1' + 'nn'['i' + 'j' * 5] * 'tfun' * 'rhofun';
+        end for;
+      end for;
+
+      if 'region' == 1 then
+        'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'T');
+        'dpitau' := -'tstar' / 'pstar' * (1.653e7 * ('g'.'gpi' - 1386.0 / 'T' * 'g'.'gtaupi') / 'g'.'gpipi' / 'T');
+        'ddelpi' := -'pstar' / 'rhostar' * 461.526 / 1.653e7 / 1.653e7 * 'T' * 'd' * 'd' * 'g'.'gpipi';
+        'Chi' := 'delta' * 'ddelpi';
+      elseif 'region' == 2 then
+        'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'T', true);
+        'dpitau' := -'tstar' / 'pstar' * (1e6 * ('g'.'gpi' - 540.0 / 'T' * 'g'.'gtaupi') / 'g'.'gpipi' / 'T');
+        'ddelpi' := -'pstar' / 'rhostar' * 461.526 / 1e6 / 1e6 * 'T' * 'd' * 'd' * 'g'.'gpipi';
+        'Chi' := 'delta' * 'ddelpi';
+      else
+        assert(false, "Thermal conductivity can only be called in the one-phase regions below 623.15 K\n(p = " + String('p') + " Pa, T = " + String('T') + " K, region = " + String('region') + ")", AssertionLevel.error);
+      end if;
+
+      'taum1' := 1.0 / 'tau' - 1.0;
+      'd2' := 'deltam1' * 'deltam1';
+      'Lam2' := 0.0013848 * 'etastar' / 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Transport.visc_dTp'('d', 'T', 'p', 0, true) / ('tau' * 'tau' * 'delta' * 'delta') * 'dpitau' * 'dpitau' * max('Chi', 2.2250738585072014e-308) ^ 0.4678 * 'delta' ^ 0.5 * 'Modelica.Math.exp'(-(18.66 * 'taum1' * 'taum1' + 'd2' * 'd2'));
+      'lambda' := 'lamstar' * ('Lam0' * 'Modelica.Math.exp'('delta' * 'Lam1') + 'Lam2');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.thermalConductivity';
+
+  function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph' "Intermediate property record for water"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    input Integer 'phase' = 0;
+    input Integer 'region' = 0;
+    output 'Modelica.Media.Common.IF97BaseTwoPhase' 'aux';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Integer 'error';
+    Real 'h_liq'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'd_liq'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h_vap'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'd_vap'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    'Modelica.Media.Common.PhaseBoundaryProperties' 'liq';
+    'Modelica.Media.Common.PhaseBoundaryProperties' 'vap';
+    'Modelica.Media.Common.GibbsDerivs' 'gl';
+    'Modelica.Media.Common.GibbsDerivs' 'gv';
+    'Modelica.Media.Common.HelmholtzDerivs' 'fl';
+    'Modelica.Media.Common.HelmholtzDerivs' 'fv';
+    Real 't1'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 't2'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+  algorithm
+    'aux'.'region' := if 'region' == 0 then if 'phase' == 2 then 4 else 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.region_ph'('p', 'h', 'phase', 0) else 'region';
+    'aux'.'phase' := if 'phase' <> 0 then 'phase' else if 'aux'.'region' == 4 then 2 else 1;
+    'aux'.'p' := max('p', 611.657);
+    'aux'.'h' := max('h', 1000.0);
+    'aux'.'R_s' := 461.526;
+    'aux'.'vt' := 0.0 "Initialized in case it is not needed";
+    'aux'.'vp' := 0.0 "Initialized in case it is not needed";
+
+    if 'aux'.'region' == 1 then
+      'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph1'('aux'.'p', 'aux'.'h');
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'aux'.'T');
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'aux'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'vp' := 'aux'.'R_s' * 'aux'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif 'aux'.'region' == 2 then
+      'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph2'('aux'.'p', 'aux'.'h');
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'aux'.'T', true);
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'aux'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'aux'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 1.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif 'aux'.'region' == 3 then
+      ('aux'.'rho', 'aux'.'T', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.dtofph3'('aux'.'p', 'aux'.'h', 1e-7, 1e-6);
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('aux'.'rho', 'aux'.'T');
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta');
+      'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'aux'.'pd' := 'aux'.'R_s' * 'aux'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+      'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'aux'.'cv' := abs('aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau')) "Can be close to neg. infinity near critical point";
+      'aux'.'cp' := ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd' * 'aux'.'cv' + 'aux'.'T' * 'aux'.'pt' * 'aux'.'pt') / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := 'aux'.'pt';
+    elseif 'aux'.'region' == 4 then
+      'h_liq' := 'Modelica.Media.Water.IF97_Utilities.hl_p'('p');
+      'h_vap' := 'Modelica.Media.Water.IF97_Utilities.hv_p'('p');
+      'aux'.'x' := if 'h_vap' <> 'h_liq' then ('h' - 'h_liq') / ('h_vap' - 'h_liq') else 1.0;
+
+      if 'p' < 1.65292e7 then
+        't1' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph1'('aux'.'p', 'h_liq');
+        't2' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tph2'('aux'.'p', 'h_vap');
+        'gl' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('aux'.'p', 't1');
+        'gv' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('aux'.'p', 't2', true);
+        'liq' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gl');
+        'vap' := 'Modelica.Media.Common.gibbsToBoundaryProps'('gv');
+        'aux'.'T' := 't1' + 'aux'.'x' * ('t2' - 't1');
+      else
+        'aux'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('aux'.'p');
+        'd_liq' := 'Modelica.Media.Water.IF97_Utilities.rhol_T'('aux'.'T');
+        'd_vap' := 'Modelica.Media.Water.IF97_Utilities.rhov_T'('aux'.'T');
+        'fl' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('d_liq', 'aux'.'T');
+        'fv' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('d_vap', 'aux'.'T');
+        'liq' := 'Modelica.Media.Common.helmholtzToBoundaryProps'('fl');
+        'vap' := 'Modelica.Media.Common.helmholtzToBoundaryProps'('fv');
+      end if;
+
+      'aux'.'dpT' := if 'liq'.'d' <> 'vap'.'d' then ('vap'.'s' - 'liq'.'s') * 'liq'.'d' * 'vap'.'d' / ('liq'.'d' - 'vap'.'d') else 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('aux'.'T');
+      'aux'.'s' := 'liq'.'s' + 'aux'.'x' * ('vap'.'s' - 'liq'.'s');
+      'aux'.'rho' := 'liq'.'d' * 'vap'.'d' / ('vap'.'d' + 'aux'.'x' * ('liq'.'d' - 'vap'.'d'));
+      'aux'.'cv' := 'Modelica.Media.Common.cv2Phase'('liq', 'vap', 'aux'.'x', 'aux'.'T', 'p');
+      'aux'.'cp' := 'liq'.'cp' + 'aux'.'x' * ('vap'.'cp' - 'liq'.'cp');
+      'aux'.'pt' := 'liq'.'pt' + 'aux'.'x' * ('vap'.'pt' - 'liq'.'pt');
+      'aux'.'pd' := 'liq'.'pd' + 'aux'.'x' * ('vap'.'pd' - 'liq'.'pd');
+    elseif 'aux'.'region' == 5 then
+      ('aux'.'T', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.tofph5'('aux'.'p', 'aux'.'h', 1e-7);
+      assert('error' == 0, "Error in inverse iteration of steam tables", AssertionLevel.error);
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g5'('aux'.'p', 'aux'.'T');
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'aux'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'aux'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    else
+      assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", h = " + String('h') + ")", AssertionLevel.error);
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp' "Derivative of saturation temperature w.r.t. pressure"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output Real 'dtsat'(unit = "K/Pa");
+    Real 'pi';
+    Real 'o'[49];
+  algorithm
+    'pi' := max(2.2250738585072014e-308, 'p' * 1e-6);
+    'o'[1] := 'pi' ^ 0.75;
+    'o'[2] := 1.0 / 'o'[1];
+    'o'[3] := -4.268461735023 * 'o'[2];
+    'o'[4] := sqrt('pi');
+    'o'[5] := 1.0 / 'o'[4];
+    'o'[6] := 0.5 * 'o'[5];
+    'o'[7] := 'o'[3] + 'o'[6];
+    'o'[8] := 'pi' ^ 0.25;
+    'o'[9] := -3.2325550322333e6 * 'o'[8];
+    'o'[10] := -724213.16703206 * 'o'[4];
+    'o'[11] := 405113.40542057 + 'o'[10] + 'o'[9];
+    'o'[12] := -4.0 * 'o'[11] * 'o'[7];
+    'o'[13] := -808138.758058325 * 'o'[2];
+    'o'[14] := -362106.58351603 * 'o'[5];
+    'o'[15] := 'o'[13] + 'o'[14];
+    'o'[16] := -17.073846940092 * 'o'[8];
+    'o'[17] := 14.91510861353 + 'o'[16] + 'o'[4];
+    'o'[18] := -4.0 * 'o'[15] * 'o'[17];
+    'o'[19] := 3005.2061756175 * 'o'[2];
+    'o'[20] := 583.52607263835 * 'o'[5];
+    'o'[21] := 'o'[19] + 'o'[20];
+    'o'[22] := 12020.82470247 * 'o'[8];
+    'o'[23] := 1167.0521452767 * 'o'[4];
+    'o'[24] := 'o'[22] - 4823.2657361591 + 'o'[23];
+    'o'[25] := 2.0 * 'o'[21] * 'o'[24];
+    'o'[26] := 'o'[12] + 'o'[18] + 'o'[25];
+    'o'[27] := -4.0 * 'o'[11] * 'o'[17];
+    'o'[28] := 'o'[24] * 'o'[24];
+    'o'[29] := 'o'[27] + 'o'[28];
+    'o'[30] := sqrt('o'[29]);
+    'o'[31] := 1.0 / 'o'[30];
+    'o'[32] := -'o'[30];
+    'o'[33] := -12020.82470247 * 'o'[8];
+    'o'[34] := -1167.0521452767 * 'o'[4];
+    'o'[35] := 4823.2657361591 + 'o'[32] + 'o'[33] + 'o'[34];
+    'o'[36] := 'o'[30];
+    'o'[37] := 'o'[22] - 4823.2657361591 + 'o'[23] + 'o'[36];
+    'o'[38] := 'o'[37] * 'o'[37];
+    'o'[39] := 1.0 / 'o'[38];
+    'o'[40] := -1.72207339365771 * 'o'[30];
+    'o'[41] := 21592.2055343628 * 'o'[8];
+    'o'[42] := 'o'[30] * 'o'[8];
+    'o'[43] := -8192.87114842946 * 'o'[4];
+    'o'[44] := -0.510632954559659 * 'o'[30] * 'o'[4];
+    'o'[45] := -3100.02526152368 * 'o'[1];
+    'o'[46] := 'pi';
+    'o'[47] := 1295.95640782102 * 'o'[46];
+    'o'[48] := 2862.09212505088 + 'o'[40] + 'o'[41] + 'o'[42] + 'o'[43] + 'o'[44] + 'o'[45] + 'o'[47];
+    'o'[49] := 1.0 / ('o'[35] * 'o'[35]);
+    'dtsat' := 5e-7 * (2.0 * 'o'[15] / 'o'[35] - 2.0 * 'o'[11] * (-(3005.2061756175 * 'o'[2] + 0.5 * 'o'[26] * 'o'[31] + 583.52607263835 * 'o'[5])) * 'o'[49] - 20953.46356643991 * ('o'[39] * (1295.95640782102 + 5398.05138359071 * 'o'[2] + 0.25 * 'o'[2] * 'o'[30] - 0.861036696828853 * 'o'[26] * 'o'[31] - 0.255316477279829 * 'o'[26] * 'o'[31] * 'o'[4] - 4096.43557421473 * 'o'[5] - 0.255316477279829 * 'o'[30] * 'o'[5] - 2325.01894614276 / 'o'[8] + 0.5 * 'o'[26] * 'o'[31] * 'o'[8]) - 2.0 * ('o'[19] + 'o'[20] + 0.5 * 'o'[26] * 'o'[31]) * 'o'[48] * 'o'[37] ^ (-3.0)) / sqrt('o'[39] * 'o'[48]));
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p' "Properties on the dew curve"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
+  algorithm
+    'bpro'.'R_s' := 461.526;
+    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
+    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
+    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
+
+    if not 'bpro'.'region3boundary' then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'bpro'.'T', true);
+      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    else
+      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhov_p_R4b'('plim');
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
+      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hv_p_R4b'('plim');
+      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat' "Region 4 saturation temperature as a function of pressure"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pi';
+    Real 'o'[20];
+  algorithm
+    assert('p' > 611.657, "IF97 medium function tsat called with too low pressure\np = " + String('p') + " Pa <= " + "611.657" + " Pa (triple point pressure)", AssertionLevel.error);
+    'pi' := min('p', 2.2064e7) * 1e-6;
+    'o'[1] := 'pi' ^ 0.25;
+    'o'[2] := -3.2325550322333e6 * 'o'[1];
+    'o'[3] := 'pi' ^ 0.5;
+    'o'[4] := -724213.16703206 * 'o'[3];
+    'o'[5] := 405113.40542057 + 'o'[2] + 'o'[4];
+    'o'[6] := -17.073846940092 * 'o'[1];
+    'o'[7] := 14.91510861353 + 'o'[3] + 'o'[6];
+    'o'[8] := -4.0 * 'o'[5] * 'o'[7];
+    'o'[9] := 12020.82470247 * 'o'[1];
+    'o'[10] := 1167.0521452767 * 'o'[3];
+    'o'[11] := 'o'[10] - 4823.2657361591 + 'o'[9];
+    'o'[12] := 'o'[11] * 'o'[11];
+    'o'[13] := 'o'[12] + 'o'[8];
+    'o'[14] := 'o'[13] ^ 0.5;
+    'o'[15] := -'o'[14];
+    'o'[16] := -12020.82470247 * 'o'[1];
+    'o'[17] := -1167.0521452767 * 'o'[3];
+    'o'[18] := 4823.2657361591 + 'o'[15] + 'o'[16] + 'o'[17];
+    'o'[19] := 1.0 / 'o'[18];
+    'o'[20] := 2.0 * 'o'[19] * 'o'[5];
+    't_sat' := 0.5 * (650.17534844798 + 'o'[20] - ((650.17534844798 + 'o'[20]) ^ 2.0 - 4.0 * (1300.35069689596 * 'o'[19] * 'o'[5] - 0.23855557567849)) ^ 0.5);
+    annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der');
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p' "Properties on the boiling curve"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
+  algorithm
+    'bpro'.'R_s' := 461.526;
+    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
+    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
+    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
+
+    if not 'bpro'.'region3boundary' then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'bpro'.'T');
+      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    else
+      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhol_p_R4b'('plim');
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
+      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hl_p_R4b'('plim');
+      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p';
+
+  function 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity' "Compute eta(d,T) in the one-phase region"
+    input Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Integer 'phase' = 0;
+    input Boolean 'checkLimits' = true;
+    output Real 'eta'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    constant Real 'n0' = 1.0;
+    constant Real 'n1' = 0.978197;
+    constant Real 'n2' = 0.579829;
+    constant Real 'n3' = -0.202354;
+    constant Real 'nn'[42] = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
+    constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
+    constant Real 'etastar'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 5.5071e-5;
+    constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;
+    Integer 'i';
+    Integer 'j';
+    Real 'delta';
+    Real 'deltam1';
+    Real 'tau';
+    Real 'taum1';
+    Real 'Psi0';
+    Real 'Psi1';
+    Real 'tfun';
+    Real 'rhofun';
+    Real 'Tc' = 'T' - 273.15;
+  algorithm
+    'delta' := 'd' / 'rhostar';
+
+    if 'checkLimits' then
+      assert('d' > 0.004854575724778614, "IF97 medium function visc_dTp for viscosity called with too low density\nd = " + String('d') + " <= " + "0.00485458" + " (triple point density)", AssertionLevel.error);
+      assert(('p' <= 5e8 and 'Tc' >= 0.0 and 'Tc' <= 150.0 or 'p' <= 3.5e8 and 'Tc' > 150.0 and 'Tc' <= 600.0) or 'p' <= 3e8 and 'Tc' > 600.0 and 'Tc' <= 900.0, "IF97 medium function visc_dTp: viscosity computed outside the range\nof validity of the IF97 formulation: p = " + String('p') + " Pa, Tc = " + String('Tc') + " K", AssertionLevel.error);
+    end if;
+
+    'deltam1' := 'delta' - 1.0;
+    'tau' := 'tstar' / 'T';
+    'taum1' := 'tau' - 1.0;
+    'Psi0' := 1.0 / ('n0' + ('n1' + ('n2' + 'n3' * 'tau') * 'tau') * 'tau') / sqrt('tau');
+    'Psi1' := 0.0;
+    'tfun' := 1.0;
+
+    for 'i' in 1:6 loop
+      if 'i' <> 1 then
+        'tfun' := 'tfun' * 'taum1';
+      end if;
+
+      'rhofun' := 1.0;
+
+      for 'j' in 0:6 loop
+        if 'j' <> 0 then
+          'rhofun' := 'rhofun' * 'deltam1';
+        end if;
+
+        'Psi1' := 'Psi1' + 'nn'['i' + 'j' * 6] * 'tfun' * 'rhofun';
+      end for;
+    end for;
+
+    'eta' := 'etastar' * 'Psi0' * 'Modelica.Math.exp'('delta' * 'Psi1');
+  end 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der' "Derivative function for tsat"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'der_p'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    output Real 'der_tsat'(unit = "K/s", quantity = "TemperatureSlope");
+    Real 'dtp';
+  algorithm
+    'dtp' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('p');
+    'der_tsat' := 'dtp' * 'der_p';
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der';
+
+  record 'Modelica.Media.Common.IF97PhaseBoundaryProperties'
+    Boolean 'region3boundary';
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'dpT'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+    Real 'vt'(unit = "m3/(kg.K)");
+    Real 'vp'(unit = "m3/(kg.Pa)");
+  end 'Modelica.Media.Common.IF97PhaseBoundaryProperties';
+
+  record 'Modelica.Media.Common.IF97BaseTwoPhase'
+    Integer 'phase'(start = 0);
+    Integer 'region'(max = 5, min = 1);
+    Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+    Real 'vt';
+    Real 'vp';
+    Real 'x';
+    Real 'dpT';
+  end 'Modelica.Media.Common.IF97BaseTwoPhase';
+
+  record 'Modelica.Media.Common.GibbsDerivs'
+    Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'pi'(unit = "1");
+    Real 'tau'(unit = "1");
+    Real 'g'(unit = "1");
+    Real 'gpi'(unit = "1");
+    Real 'gpipi'(unit = "1");
+    Real 'gtau'(unit = "1");
+    Real 'gtautau'(unit = "1");
+    Real 'gtaupi'(unit = "1");
+  end 'Modelica.Media.Common.GibbsDerivs';
+
+  record 'Modelica.Media.Common.HelmholtzDerivs'
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'delta'(unit = "1");
+    Real 'tau'(unit = "1");
+    Real 'f'(unit = "1");
+    Real 'fdelta'(unit = "1");
+    Real 'fdeltadelta'(unit = "1");
+    Real 'ftau'(unit = "1");
+    Real 'ftautau'(unit = "1");
+    Real 'fdeltatau'(unit = "1");
+  end 'Modelica.Media.Common.HelmholtzDerivs';
+
+  record 'Modelica.Media.Common.PhaseBoundaryProperties'
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'u'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'pt'(unit = "Pa/K", quantity = "DerPressureByTemperature");
+    Real 'pd'(unit = "Pa.m3/kg", quantity = "DerPressureByDensity");
+  end 'Modelica.Media.Common.PhaseBoundaryProperties';
+
+  model 'TestTwoPhaseStates' "Test the TwoPhaseWater model"
+    Real 'medium.p'(stateSelect = StateSelect.default, nominal = 1e5, fixed = true, start = 2000.0, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Absolute pressure of medium";
+    Real 'medium.h'(stateSelect = StateSelect.default, fixed = true, start = 8e5, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy of medium";
+    Real 'medium.d'(stateSelect = StateSelect.default, nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density of medium";
+    Real 'medium.T'(stateSelect = StateSelect.default, nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature of medium";
+    Real 'medium.X[1]'(nominal = 0.1, start = 1.0, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Mass fractions (= (component mass)/total mass  m_i/m)";
+    Real 'medium.u'(nominal = 1e6, max = 1e8, min = -1e8, unit = "J/kg", quantity = "SpecificEnergy") "Specific internal energy of medium";
+    Real 'medium.R_s'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") "Gas constant (of mixture if applicable)";
+    Real 'medium.MM'(nominal = 0.032, max = 0.25, min = 0.001, unit = "kg/mol", quantity = "MolarMass") "Molar mass (of mixture or single fluid)";
+    Integer 'medium.state.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'medium.state.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'medium.state.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'medium.state.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'medium.state.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    parameter Boolean 'medium.preferredMediumStates' = false "= true, if StateSelect.prefer shall be used for the independent property variables of the medium" annotation(Evaluate = true);
+    parameter Boolean 'medium.standardOrderComponents' = true "If true, and reducedX = true, the last element of X will be computed from the other ones";
+    Real 'medium.T_degC'(unit = "degC", quantity = "ThermodynamicTemperature") "Temperature of medium in [degC]";
+    Real 'medium.p_bar'(unit = "bar", quantity = "Pressure") "Absolute pressure of medium in [bar]";
+    Real 'medium.sat.psat'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Saturation pressure";
+    Real 'medium.sat.Tsat'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Saturation temperature";
+    Integer 'medium.phase'(fixed = false, start = 1, max = 2, min = 0) "2 for two-phase, 1 for one-phase, 0 if not known";
+    Integer 'medium.dew.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'medium.dew.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'medium.dew.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'medium.dew.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'medium.dew.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    Integer 'medium.bubble.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'medium.bubble.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'medium.bubble.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'medium.bubble.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'medium.bubble.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    Integer 'medium.bubble2.phase'(max = 2, min = 0) "Phase of the fluid: 1 for 1-phase, 2 for two-phase, 0 for not known, e.g., interactive use";
+    Real 'medium.bubble2.h'(nominal = 5e5, start = 1e5, max = 1e10, min = -1e10, unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy";
+    Real 'medium.bubble2.d'(nominal = 500.0, start = 150.0, max = 1e5, min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") "Density";
+    Real 'medium.bubble2.T'(nominal = 500.0, start = 500.0, max = 2273.15, min = 273.15, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature";
+    Real 'medium.bubble2.p'(nominal = 1e6, start = 5e6, max = 1e8, min = 611.657, displayUnit = "bar", unit = "Pa", quantity = "Pressure") "Pressure";
+    Real 'medium.eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") "Viscosity (McAdams mixture rules if in 2-phase)";
+    Real 'medium.eta_d'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") "Dew line viscosity";
+    Real 'medium.eta_b'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") "Bubble line viscosity";
+    Real 'medium.lambda_d'(nominal = 1.0, start = 1.0, max = 500.0, min = 0.0, unit = "W/(m.K)", quantity = "ThermalConductivity") "Dew line thermal conductivity";
+    Real 'medium.lambda_b'(nominal = 1.0, start = 1.0, max = 500.0, min = 0.0, unit = "W/(m.K)", quantity = "ThermalConductivity") "Bubble line thermal conductivity";
+    Real 'medium.cp_d'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") "Dew line Specific heat capacity";
+    Real 'medium.cp_b'(nominal = 1000.0, start = 1000.0, max = 1e7, min = 0.0, unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") "Bubble line Specific heat capacity";
+    Real 'medium.ddhp';
+    Real 'medium.ddhp_d';
+    Real 'medium.ddhp_b' "Derivatives";
+    Real 'medium.ddph';
+    Real 'medium.ddph_d';
+    Real 'medium.ddph_b' "Derivatives";
+    Real 'medium.ddhp_b2';
+    Real 'medium.ddph_b2' "Derivatives";
+    Real 'medium.x'(nominal = 0.1, max = 1.0, min = 0.0, unit = "kg/kg", quantity = "MassFraction") "Steam mass fraction";
+    Real 'medium.dTp';
+    Real 'medium.dTp2';
+    Real 'medium.s_b'(nominal = 1000.0, max = 1e7, min = -1e7, unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'medium.s_d'(nominal = 1000.0, max = 1e7, min = -1e7, unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    parameter Real 'dh'(displayUnit = "kJ/(kg.s)", unit = "J/(kg.s)") = 8e4 "Derivative of specific enthalpy of medium";
+    parameter Real 'dp'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope") = 1e6 "Derivative of pressure of medium";
+  equation
+    'medium.T_degC' = 'medium.T' - 273.15;
+    'medium.p_bar' = 'medium.p' / 1e5;
+    'medium.eta' = if 'medium.phase' == 1 then 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity'('medium.state.d', 'medium.state.T', 'medium.state.p', 'medium.state.phase', true) else 1.0 / ('medium.x' / 'medium.eta_d' + (1.0 - 'medium.x') / 'medium.eta_b');
+    'medium.dew.phase' = 1;
+    'medium.dew.h' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('medium.sat.psat')).h;
+    'medium.dew.d' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('medium.sat.psat')).d;
+    'medium.dew.T' = 'medium.sat.Tsat';
+    'medium.dew.p' = 'medium.sat.psat';
+    'medium.bubble.phase' = 1;
+    'medium.bubble.h' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('medium.sat.psat')).h;
+    'medium.bubble.d' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('medium.sat.psat')).d;
+    'medium.bubble.T' = 'medium.sat.Tsat';
+    'medium.bubble.p' = 'medium.sat.psat';
+    'medium.bubble2.phase' = 2;
+    'medium.bubble2.h' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('medium.sat.psat')).h;
+    'medium.bubble2.d' = ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('medium.sat.psat')).d;
+    'medium.bubble2.T' = 'medium.sat.Tsat';
+    'medium.bubble2.p' = 'medium.sat.psat';
+    'medium.x' = ('medium.h' - 'medium.bubble.h') / max('medium.dew.h' - 'medium.bubble.h', 1e-6);
+    'medium.eta_d' = 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity'('medium.dew.d', 'medium.dew.T', 'medium.dew.p', 'medium.dew.phase', true);
+    'medium.eta_b' = 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity'('medium.bubble.d', 'medium.bubble.T', 'medium.bubble.p', 'medium.bubble.phase', true);
+    'medium.lambda_d' = 'Modelica.Media.Water.IF97_Utilities.thermalConductivity'('medium.dew.d', 'medium.dew.T', 'medium.dew.p', 'medium.dew.phase', true, true);
+    'medium.lambda_b' = 'Modelica.Media.Water.IF97_Utilities.thermalConductivity'('medium.bubble.d', 'medium.bubble.T', 'medium.bubble.p', 'medium.bubble.phase', true, true);
+    'medium.cp_d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 0, 0)).cp;
+    'medium.cp_b' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 0, 0)).cp;
+    'medium.s_d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).s;
+    'medium.s_b' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).s;
+    'medium.ddph' = if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).region == 3 then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).cv * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).pt) / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).pd * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).cv + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).pt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).pt) else if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).region == 4 then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).cv / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).dpT + 1.0) / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).dpT * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).T) else -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).vp * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).cp - ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).vt / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).vt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).vt) / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).cp;
+    'medium.ddph_d' = if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).region == 3 then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).cv * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).pt) / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).pd * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).cv + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).pt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).pt) else if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).region == 4 then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).cv / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).dpT + 1.0) / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).dpT * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).T) else -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).vp * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).cp - ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).vt / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).vt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).vt) / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).cp;
+    'medium.ddph_b' = if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).region == 3 then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).cv * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).pt) / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).pd * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).cv + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).pt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).pt) else if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).region == 4 then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).cv / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).dpT + 1.0) / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).dpT * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).T) else -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).vp * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).cp - ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).vt / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).vt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).vt) / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).cp;
+    'medium.ddhp' = if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).region == 3 then -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).pt / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).pd * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).cv + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).pt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).pt) else if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).region == 4 then -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).dpT * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).T) else -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).vt / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.state.p', 'medium.state.h', 'medium.state.phase', 0)).cp;
+    'medium.ddhp_d' = if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).region == 3 then -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).pt / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).pd * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).cv + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).pt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).pt) else if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).region == 4 then -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).dpT * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).T) else -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).vt / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.dew.p', 'medium.dew.h', 'medium.dew.phase', 0)).cp;
+    'medium.ddhp_b' = if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).region == 3 then -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).pt / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).pd * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).cv + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).pt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).pt) else if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).region == 4 then -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).dpT * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).T) else -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).vt / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble.p', 'medium.bubble.h', 'medium.bubble.phase', 0)).cp;
+    'medium.ddhp_b2' = if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).region == 3 then -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).pt / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).pd * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).cv + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).pt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).pt) else if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).region == 4 then -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).dpT * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).T) else -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).vt / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).cp;
+    'medium.ddph_b2' = if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).region == 3 then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).cv * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).pt) / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).pd * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).cv + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).pt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).pt) else if ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).region == 4 then ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).cv / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).dpT + 1.0) / (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).dpT * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).T) else -('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho * (('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).vp * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).cp - ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).vt / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).rho + ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).T * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).vt * ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).vt) / ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.bubble2.p', 'medium.bubble2.h', 'medium.bubble2.phase', 0)).cp;
+    'medium.dTp' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('medium.p');
+    'medium.dTp2' = (1.0 / 'medium.dew.d' - 1.0 / 'medium.bubble.d') / max('medium.s_d' - 'medium.s_b', 1e-6);
+    'medium.MM' = 0.018015268;
+    'medium.phase' = if ('medium.h' < ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p'('medium.sat.psat')).h or 'medium.h' > ('Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p'('medium.sat.psat')).h) or 'medium.p' > 2.2064e7 then 1 else 2;
+    'medium.d' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.p', 'medium.h', 'medium.phase', 0)).rho;
+    'medium.T' = ('Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph'('medium.p', 'medium.h', 'medium.phase', 0)).T;
+    'medium.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('medium.p');
+    'medium.sat.psat' = 'medium.p';
+    'medium.u' = 'medium.h' - 'medium.p' / 'medium.d';
+    'medium.R_s' = 461.5231157345669;
+    'medium.h' = 'medium.state.h';
+    'medium.p' = 'medium.state.p';
+    'medium.T' = 'medium.state.T';
+    'medium.d' = 'medium.state.d';
+    'medium.phase' = 'medium.state.phase';
+    'medium.X[1]' = 1.0;
+    assert('medium.X[1]' >= (-1e-5) and 'medium.X[1]' <= 1.00001, "Mass fraction X[" + String(1) + "] = " + String('medium.X[1]') + "of substance " + "water" + "\nof medium " + "WaterIF97" + " is not in the range 0..1", AssertionLevel.error);
+    assert('medium.p' >= 0.0, "Pressure (= " + String('medium.p') + " Pa) of medium \"" + "WaterIF97" + "\" is negative\n(Temperature = " + String('medium.T') + " K)", AssertionLevel.error);
+    der('medium.p') = 1e6;
+    der('medium.h') = 8e4;
+    annotation(experiment(StopTime = 22, Interval = 0.01));
+  end 'TestTwoPhaseStates';
+end 'TestTwoPhaseStates';

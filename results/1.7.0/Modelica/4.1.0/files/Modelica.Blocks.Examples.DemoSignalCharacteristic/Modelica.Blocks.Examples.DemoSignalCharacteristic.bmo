@@ -1,0 +1,236 @@
+//! base 0.1.0
+package 'DemoSignalCharacteristic'
+  model 'DemoSignalCharacteristic' "Demonstrate characteristic values of a signal"
+    parameter Real 'app'(min = 0.0) = 1.0 "Peak-to-peak value of pulse signal";
+    parameter Real 'dutyCycle'(max = 1.0, min = 0.0) = 0.5 "Duty cycle of pulse signal";
+    parameter Real 'offset' = 0.0 "Offset of pulse signal";
+    parameter Real 'f'(unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency of pulse signal";
+    Real 'y' "Investigated pulse signal";
+    parameter Real 'y_mean' = 0.5 "Mean value";
+    parameter Real 'y_rect' = 0.5 "Rectified mean";
+    parameter Real 'y_rms' = 0.7071067811865476 "Root mean square";
+    parameter Real 'y1_cos' = 2.756423737004841e-17 "First harmonic cosine rms component";
+    parameter Real 'y1_sin' = 0.45015815807855303 "First harmonic sine rms component";
+    parameter Real 'y1_rms' = 0.45015815807855303 "RMS value of first harmonic";
+    parameter Real 'y1_arg' = 1.5707963267948966 "Argument of first harmonic";
+    parameter Real 'pulse.amplitude' = 1.0 "Amplitude of pulse";
+    parameter Real 'pulse.width'(max = 100.0, min = 2.2250738585072014e-308) = 50.0 "Width of pulse in % of period";
+    parameter Real 'pulse.period'(start = 1.0, min = 2.2250738585072014e-308, unit = "s", quantity = "Time") = 0.02 "Time for one period";
+    parameter Integer 'pulse.nperiod' = -1 "Number of periods (< 0 means infinite number of periods)";
+    Real 'pulse.y' "Connector of Real output signal";
+    parameter Real 'pulse.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'pulse.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    Real 'pulse.T_width'(unit = "s", quantity = "Time");
+    Real 'pulse.T_start'(unit = "s", quantity = "Time") "Start time of current period";
+    Integer 'pulse.count' "Period count";
+    Real 'mean.u' "Connector of Real input signal";
+    Real 'mean.y' "Connector of Real output signal";
+    parameter Real 'mean.f'(start = 50.0, unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency";
+    parameter Real 'mean.x0' = 0.0 "Start value of integrator state";
+    parameter Real 'mean.y0' = 0.5 "Start value of output";
+    parameter Boolean 'mean.yGreaterOrEqualZero' = false "= true, if output y is guaranteed to be >= 0 for the exact solution" annotation(Evaluate = true);
+    parameter Real 'mean.t0'(fixed = false, unit = "s", quantity = "Time") "Start time of simulation";
+    Real 'mean.x' "Integrator state";
+    discrete Real 'mean.y_last' "Last sampled mean value";
+    Real 'rectifiedMean.u' "Connector of Real input signal";
+    Real 'rectifiedMean.y' "Connector of Real output signal";
+    parameter Real 'rectifiedMean.f'(start = 50.0, unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency";
+    parameter Real 'rectifiedMean.x0' = 0.0 "Start value of integrator state";
+    parameter Real 'rectifiedMean.y0'(min = 0.0) = 0.5 "Start value of output";
+    Real 'rectifiedMean.mean.u' "Connector of Real input signal";
+    Real 'rectifiedMean.mean.y' "Connector of Real output signal";
+    parameter Real 'rectifiedMean.mean.f'(start = 50.0, unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency";
+    parameter Real 'rectifiedMean.mean.x0' = 0.0 "Start value of integrator state";
+    parameter Real 'rectifiedMean.mean.y0' = 0.5 "Start value of output";
+    parameter Boolean 'rectifiedMean.mean.yGreaterOrEqualZero' = false "= true, if output y is guaranteed to be >= 0 for the exact solution" annotation(Evaluate = true);
+    parameter Real 'rectifiedMean.mean.t0'(fixed = false, unit = "s", quantity = "Time") "Start time of simulation";
+    Real 'rectifiedMean.mean.x' "Integrator state";
+    discrete Real 'rectifiedMean.mean.y_last' "Last sampled mean value";
+    Real 'rectifiedMean.abs1.u' "Connector of Real input signal";
+    Real 'rectifiedMean.abs1.y' "Connector of Real output signal";
+    parameter Boolean 'rectifiedMean.abs1.generateEvent' = false "Choose whether events shall be generated" annotation(Evaluate = true);
+    Real 'rootMeanSquare.u' "Connector of Real input signal";
+    Real 'rootMeanSquare.y' "Connector of Real output signal";
+    parameter Real 'rootMeanSquare.f'(start = 50.0, unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency";
+    parameter Real 'rootMeanSquare.x0' = 0.0 "Start value of integrator state";
+    parameter Real 'rootMeanSquare.y0'(min = 0.0) = 0.7071067811865476 "Start value of output";
+    parameter Integer 'rootMeanSquare.product.significantDigits'(min = 1) = 3 "Number of significant digits to be shown in dynamic diagram layer for y";
+    parameter Integer 'rootMeanSquare.product.nu'(min = 0) = 2 "Number of input connections";
+    Real 'rootMeanSquare.product.u[1]';
+    Real 'rootMeanSquare.product.u[2]';
+    Real 'rootMeanSquare.product.y';
+    Real 'rootMeanSquare.mean.u' "Connector of Real input signal";
+    Real 'rootMeanSquare.mean.y' "Connector of Real output signal";
+    parameter Real 'rootMeanSquare.mean.f'(start = 50.0, unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency";
+    parameter Real 'rootMeanSquare.mean.x0' = 0.0 "Start value of integrator state";
+    parameter Real 'rootMeanSquare.mean.y0' = 0.5000000000000001 "Start value of output";
+    parameter Boolean 'rootMeanSquare.mean.yGreaterOrEqualZero' = true "= true, if output y is guaranteed to be >= 0 for the exact solution" annotation(Evaluate = true);
+    parameter Real 'rootMeanSquare.mean.t0'(fixed = false, unit = "s", quantity = "Time") "Start time of simulation";
+    Real 'rootMeanSquare.mean.x' "Integrator state";
+    discrete Real 'rootMeanSquare.mean.y_last' "Last sampled mean value";
+    Real 'rootMeanSquare.sqrt1.u' "Connector of Real input signal";
+    Real 'rootMeanSquare.sqrt1.y' "Connector of Real output signal";
+    parameter Real 'harmonic.f'(start = 50.0, unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency";
+    parameter Integer 'harmonic.k'(start = 1) = 1 "Order of harmonic";
+    parameter Boolean 'harmonic.useConjugateComplex' = false "Gives conjugate complex result if true" annotation(Evaluate = true);
+    parameter Real 'harmonic.x0Cos' = 0.0 "Start value of cos integrator state";
+    parameter Real 'harmonic.x0Sin' = 0.0 "Start value of sin integrator state";
+    parameter Real 'harmonic.y0Cos' = 2.756423737004841e-17 "Start value of cos result";
+    parameter Real 'harmonic.y0Sin' = 0.45015815807855303 "Start value of sin result";
+    parameter Real 'harmonic.sin1.amplitude' = 1.4142135623730951 "Amplitude of cosine wave";
+    parameter Real 'harmonic.sin1.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 50.0 "Frequency of cosine wave";
+    parameter Real 'harmonic.sin1.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of cosine wave";
+    parameter Boolean 'harmonic.sin1.continuous' = false "Make output continuous by starting at offset + amplitude*cos(phase)" annotation(Evaluate = true);
+    Real 'harmonic.sin1.y' "Connector of Real output signal";
+    parameter Real 'harmonic.sin1.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'harmonic.sin1.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'harmonic.sin2.amplitude' = 1.4142135623730951 "Amplitude of sine wave";
+    parameter Real 'harmonic.sin2.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 50.0 "Frequency of sine wave";
+    parameter Real 'harmonic.sin2.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of sine wave";
+    parameter Boolean 'harmonic.sin2.continuous' = false "Make output continuous by starting at offset + amplitude*sin(phase)" annotation(Evaluate = true);
+    Real 'harmonic.sin2.y' "Connector of Real output signal";
+    parameter Real 'harmonic.sin2.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'harmonic.sin2.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Integer 'harmonic.product1.significantDigits'(min = 1) = 3 "Number of significant digits to be shown in dynamic diagram layer for y";
+    parameter Integer 'harmonic.product1.nu'(min = 0) = 2 "Number of input connections";
+    Real 'harmonic.product1.u[1]';
+    Real 'harmonic.product1.u[2]';
+    Real 'harmonic.product1.y';
+    parameter Integer 'harmonic.product2.significantDigits'(min = 1) = 3 "Number of significant digits to be shown in dynamic diagram layer for y";
+    parameter Integer 'harmonic.product2.nu'(min = 0) = 2 "Number of input connections";
+    Real 'harmonic.product2.u[1]';
+    Real 'harmonic.product2.u[2]';
+    Real 'harmonic.product2.y';
+    Real 'harmonic.mean1.u' "Connector of Real input signal";
+    Real 'harmonic.mean1.y' "Connector of Real output signal";
+    parameter Real 'harmonic.mean1.f'(start = 50.0, unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency";
+    parameter Real 'harmonic.mean1.x0' = 0.0 "Start value of integrator state";
+    parameter Real 'harmonic.mean1.y0' = 2.756423737004841e-17 "Start value of output";
+    parameter Boolean 'harmonic.mean1.yGreaterOrEqualZero' = false "= true, if output y is guaranteed to be >= 0 for the exact solution" annotation(Evaluate = true);
+    parameter Real 'harmonic.mean1.t0'(fixed = false, unit = "s", quantity = "Time") "Start time of simulation";
+    Real 'harmonic.mean1.x' "Integrator state";
+    discrete Real 'harmonic.mean1.y_last' "Last sampled mean value";
+    Real 'harmonic.mean2.u' "Connector of Real input signal";
+    Real 'harmonic.mean2.y' "Connector of Real output signal";
+    parameter Real 'harmonic.mean2.f'(start = 50.0, unit = "Hz", quantity = "Frequency") = 50.0 "Base frequency";
+    parameter Real 'harmonic.mean2.x0' = 0.0 "Start value of integrator state";
+    parameter Real 'harmonic.mean2.y0' = 0.45015815807855303 "Start value of output";
+    parameter Boolean 'harmonic.mean2.yGreaterOrEqualZero' = false "= true, if output y is guaranteed to be >= 0 for the exact solution" annotation(Evaluate = true);
+    parameter Real 'harmonic.mean2.t0'(fixed = false, unit = "s", quantity = "Time") "Start time of simulation";
+    Real 'harmonic.mean2.x' "Integrator state";
+    discrete Real 'harmonic.mean2.y_last' "Last sampled mean value";
+    Real 'harmonic.u';
+    Real 'harmonic.y_rms' "Root mean square of polar representation";
+    Real 'harmonic.y_arg'(unit = "rad") "Angle of polar representation";
+    Real 'harmonic.rectangularToPolar.u_re' "Real part of rectangular representation";
+    Real 'harmonic.rectangularToPolar.u_im' "Imaginary part of rectangular representation";
+    Real 'harmonic.rectangularToPolar.y_abs' "Length of polar representation";
+    Real 'harmonic.rectangularToPolar.y_arg'(unit = "rad") "Angle of polar representation";
+    parameter Real 'harmonic.gain.k'(start = 1.0) = 1.0 "Gain value multiplied with input signal";
+    Real 'harmonic.gain.u' "Input signal connector";
+    Real 'harmonic.gain.y' "Output signal connector";
+  initial equation
+    'mean.t0' = time;
+    'mean.x' = 0.0;
+    'mean.y_last' = 0.5;
+    'rectifiedMean.mean.t0' = time;
+    'rectifiedMean.mean.x' = 0.0;
+    'rectifiedMean.mean.y_last' = 0.5;
+    'rootMeanSquare.mean.t0' = time;
+    'rootMeanSquare.mean.x' = 0.0;
+    'rootMeanSquare.mean.y_last' = 0.5000000000000001;
+    'harmonic.mean1.t0' = time;
+    'harmonic.mean1.x' = 0.0;
+    'harmonic.mean1.y_last' = 2.756423737004841e-17;
+    'harmonic.mean2.t0' = time;
+    'harmonic.mean2.x' = 0.0;
+    'harmonic.mean2.y_last' = 0.45015815807855303;
+  equation
+    'y' = 'pulse.y';
+    'pulse.T_width' = 0.01;
+    'rectifiedMean.u' = 'rectifiedMean.abs1.u';
+    'rectifiedMean.abs1.y' = 'rectifiedMean.mean.u';
+    'rectifiedMean.mean.y' = 'rectifiedMean.y';
+    'rootMeanSquare.product.y' = 'rootMeanSquare.mean.u';
+    'rootMeanSquare.mean.y' = 'rootMeanSquare.sqrt1.u';
+    'rootMeanSquare.sqrt1.y' = 'rootMeanSquare.y';
+    'rootMeanSquare.u' = 'rootMeanSquare.product.u[2]';
+    'rootMeanSquare.u' = 'rootMeanSquare.product.u[1]';
+    'harmonic.product2.y' = 'harmonic.mean2.u';
+    'harmonic.product1.y' = 'harmonic.mean1.u';
+    'harmonic.mean1.y' = 'harmonic.rectangularToPolar.u_re';
+    'harmonic.mean2.y' = 'harmonic.rectangularToPolar.u_im';
+    'harmonic.rectangularToPolar.y_abs' = 'harmonic.y_rms';
+    'harmonic.sin1.y' = 'harmonic.product1.u[1]';
+    'harmonic.u' = 'harmonic.product2.u[1]';
+    'harmonic.u' = 'harmonic.product1.u[2]';
+    'harmonic.sin2.y' = 'harmonic.product2.u[2]';
+    'harmonic.rectangularToPolar.y_arg' = 'harmonic.gain.u';
+    'harmonic.gain.y' = 'harmonic.y_arg';
+    'pulse.y' = 'harmonic.u';
+    'pulse.y' = 'rootMeanSquare.u';
+    'pulse.y' = 'rectifiedMean.u';
+    'pulse.y' = 'mean.u';
+
+    when time >= (pre('pulse.count') + 1) * 0.02 then
+      'pulse.count' = pre('pulse.count') + 1;
+      'pulse.T_start' = time;
+    end when;
+
+    'pulse.y' = if time < 0.0 then 0.0 else if time < 'pulse.T_start' + 'pulse.T_width' then 1.0 else 0.0;
+    der('mean.x') = 'mean.u';
+
+    when sample('mean.t0' + 0.02, 0.02) then
+      'mean.y_last' = 50.0 * pre('mean.x');
+      reinit('mean.x', 0.0);
+    end when;
+
+    'mean.y' = 'mean.y_last';
+    der('rectifiedMean.mean.x') = 'rectifiedMean.mean.u';
+
+    when sample('rectifiedMean.mean.t0' + 0.02, 0.02) then
+      'rectifiedMean.mean.y_last' = 50.0 * pre('rectifiedMean.mean.x');
+      reinit('rectifiedMean.mean.x', 0.0);
+    end when;
+
+    'rectifiedMean.mean.y' = 'rectifiedMean.mean.y_last';
+    'rectifiedMean.abs1.y' = if noEvent('rectifiedMean.abs1.u' >= 0.0) then 'rectifiedMean.abs1.u' else -'rectifiedMean.abs1.u';
+    'rootMeanSquare.product.y' = 'rootMeanSquare.product.u[1]' * 'rootMeanSquare.product.u[2]';
+    der('rootMeanSquare.mean.x') = 'rootMeanSquare.mean.u';
+
+    when sample('rootMeanSquare.mean.t0' + 0.02, 0.02) then
+      'rootMeanSquare.mean.y_last' = max(0.0, 50.0 * pre('rootMeanSquare.mean.x'));
+      reinit('rootMeanSquare.mean.x', 0.0);
+    end when;
+
+    'rootMeanSquare.mean.y' = 'rootMeanSquare.mean.y_last';
+    'rootMeanSquare.sqrt1.y' = sqrt('rootMeanSquare.sqrt1.u');
+    'harmonic.sin1.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * cos(314.1592653589793 * time);
+    'harmonic.sin2.y' = if time < 0.0 then 0.0 else 1.4142135623730951 * sin(314.1592653589793 * time);
+    'harmonic.product1.y' = 'harmonic.product1.u[1]' * 'harmonic.product1.u[2]';
+    'harmonic.product2.y' = 'harmonic.product2.u[1]' * 'harmonic.product2.u[2]';
+    der('harmonic.mean1.x') = 'harmonic.mean1.u';
+
+    when sample('harmonic.mean1.t0' + 0.02, 0.02) then
+      'harmonic.mean1.y_last' = 50.0 * pre('harmonic.mean1.x');
+      reinit('harmonic.mean1.x', 0.0);
+    end when;
+
+    'harmonic.mean1.y' = 'harmonic.mean1.y_last';
+    der('harmonic.mean2.x') = 'harmonic.mean2.u';
+
+    when sample('harmonic.mean2.t0' + 0.02, 0.02) then
+      'harmonic.mean2.y_last' = 50.0 * pre('harmonic.mean2.x');
+      reinit('harmonic.mean2.x', 0.0);
+    end when;
+
+    'harmonic.mean2.y' = 'harmonic.mean2.y_last';
+    'harmonic.rectangularToPolar.y_abs' = sqrt('harmonic.rectangularToPolar.u_re' * 'harmonic.rectangularToPolar.u_re' + 'harmonic.rectangularToPolar.u_im' * 'harmonic.rectangularToPolar.u_im');
+    'harmonic.rectangularToPolar.y_arg' = atan2('harmonic.rectangularToPolar.u_im', 'harmonic.rectangularToPolar.u_re');
+    'harmonic.gain.y' = 'harmonic.gain.u';
+  initial algorithm
+    'pulse.count' := integer(time / 0.02);
+    'pulse.T_start' := 'pulse.count' * 0.02;
+    annotation(experiment(StopTime = 0.5, Interval = 0.0005, Tolerance = 1e-06));
+  end 'DemoSignalCharacteristic';
+end 'DemoSignalCharacteristic';

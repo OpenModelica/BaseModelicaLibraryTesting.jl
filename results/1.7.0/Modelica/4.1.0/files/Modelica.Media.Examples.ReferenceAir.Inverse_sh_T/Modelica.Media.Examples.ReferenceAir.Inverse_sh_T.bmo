@@ -1,0 +1,120 @@
+//! base 0.1.0
+package 'Inverse_sh_T'
+  function 'Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_pT' "Intermediate property record for air (p and T preferred states)"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    output 'Modelica.Media.Common.AuxiliaryProperties' 'aux';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+  algorithm
+    'aux'.'p' := 'p';
+    'aux'.'T' := 'T';
+    'aux'.'R_s' := 287.117;
+    'aux'.'rho' := 'Modelica.Media.Air.ReferenceAir.Air_Utilities.Inverses.dofpT'('p', 'T', 0.1);
+    'f' := 'Modelica.Media.Air.ReferenceAir.Air_Utilities.Basic.Helmholtz'('aux'.'rho', 'T');
+    'aux'.'h' := 'aux'.'R_s' * 'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta') - 1.58955762320524e6;
+    'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f') - 6610.41237132543;
+    'aux'.'pd' := 'aux'.'R_s' * 'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+    'aux'.'cv' := 'aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+    'aux'.'cp' := 'aux'.'cv' + 'aux'.'T' * 'aux'.'pt' * 'aux'.'pt' / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+    'aux'.'vp' := -1.0 / ('aux'.'rho' * 'aux'.'rho') / 'aux'.'pd';
+    'aux'.'vt' := 'aux'.'pt' / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+  end 'Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_pT';
+
+  function 'Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_ps' "Intermediate property record for air"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    output 'Modelica.Media.Common.AuxiliaryProperties' 'aux';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+  algorithm
+    'aux'.'p' := 'p';
+    'aux'.'s' := 's';
+    'aux'.'R_s' := 287.117;
+    ('aux'.'rho', 'aux'.'T') := 'Modelica.Media.Air.ReferenceAir.Air_Utilities.Inverses.dTofps'('p', 's', 0.1, 1e-6);
+    'f' := 'Modelica.Media.Air.ReferenceAir.Air_Utilities.Basic.Helmholtz'('aux'.'rho', 'aux'.'T');
+    'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta') - 1.58955762320524e6;
+    'aux'.'pd' := 'aux'.'R_s' * 'aux'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+    'aux'.'cv' := 'aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+    'aux'.'cp' := 'aux'.'cv' + 'aux'.'T' * 'aux'.'pt' * 'aux'.'pt' / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+    'aux'.'vp' := -1.0 / ('aux'.'rho' * 'aux'.'rho') / 'aux'.'pd';
+    'aux'.'vt' := 'aux'.'pt' / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+  end 'Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_ps';
+
+  function 'Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_ph' "Intermediate property record for air"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    output 'Modelica.Media.Common.AuxiliaryProperties' 'aux';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Integer 'error';
+  algorithm
+    'aux'.'p' := 'p';
+    'aux'.'h' := 'h';
+    'aux'.'R_s' := 287.117;
+    ('aux'.'rho', 'aux'.'T') := 'Modelica.Media.Air.ReferenceAir.Air_Utilities.Inverses.dTofph'('p', 'h', 0.1, 1e-9);
+    'f' := 'Modelica.Media.Air.ReferenceAir.Air_Utilities.Basic.Helmholtz'('aux'.'rho', 'aux'.'T');
+    'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f') - 6610.41237132543;
+    'aux'.'pd' := 'aux'.'R_s' * 'aux'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+    'aux'.'cv' := 'aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+    'aux'.'cp' := 'aux'.'cv' + 'aux'.'T' * 'aux'.'pt' * 'aux'.'pt' / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+    'aux'.'vp' := -1.0 / ('aux'.'rho' * 'aux'.'rho') / 'aux'.'pd';
+    'aux'.'vt' := 'aux'.'pt' / ('aux'.'rho' * 'aux'.'rho' * 'aux'.'pd');
+  end 'Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_ph';
+
+  record 'Modelica.Media.Common.AuxiliaryProperties'
+    Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 's'(unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Real 'pt'(unit = "Pa/K");
+    Real 'pd'(unit = "Pa.m3/kg");
+    Real 'vt';
+    Real 'vp';
+  end 'Modelica.Media.Common.AuxiliaryProperties';
+
+  record 'Modelica.Media.Common.HelmholtzDerivs'
+    Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'R_s'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity");
+    Real 'delta'(unit = "1");
+    Real 'tau'(unit = "1");
+    Real 'f'(unit = "1");
+    Real 'fdelta'(unit = "1");
+    Real 'fdeltadelta'(unit = "1");
+    Real 'ftau'(unit = "1");
+    Real 'ftautau'(unit = "1");
+    Real 'fdeltatau'(unit = "1");
+  end 'Modelica.Media.Common.HelmholtzDerivs';
+
+  model 'Inverse_sh_T' "Solve h = h_pT(p, T), s = s_pT(p, T) for T, if h or s is given"
+    parameter Real 'T_min'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 300.0 "Vary temperature linearly from T_min (time=0) up to T_max (time=1)";
+    parameter Real 'T_max'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 500.0 "Vary temperature linearly from T_min (time=0) up to T_max (time=1)";
+    parameter Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1e5 "Fixed pressure in model";
+    parameter Real 'h_min'(unit = "J/kg", quantity = "SpecificEnergy") = 27020.003775687423 "Specific enthalpy at T_min";
+    parameter Real 'h_max'(unit = "J/kg", quantity = "SpecificEnergy") = 230162.96812748676 "Specific enthalpy at T_max";
+    parameter Real 's_min'(unit = "J/(kg.K)", quantity = "SpecificEntropy") = 259.93496370356297 "Specific entropy at T_min";
+    parameter Real 's_max'(unit = "J/(kg.K)", quantity = "SpecificEntropy") = 778.2872127282653 "Specific entropy at T_max";
+    Real 'h1'(unit = "J/kg", quantity = "SpecificEnergy") "Pre-defined specific enthalpy";
+    Real 'h2'(unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy computed from T (= h1 required)";
+    Real 's1'(unit = "J/(kg.K)", quantity = "SpecificEntropy") "Pre-defined specific entropy";
+    Real 's2'(unit = "J/(kg.K)", quantity = "SpecificEntropy") "Specific entropy computed from T (= h1 required)";
+    Real 'Th'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature computed from h1";
+    Real 'Ts'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature computed from s1";
+    constant Real 'timeUnit'(unit = "s", quantity = "Time") = 1.0;
+  equation
+    'h1' = if time < 0.0 then 27020.003775687423 else if time >= 1.0 then 230162.96812748676 else 27020.003775687423 + time * 203142.96435179934;
+    's1' = if time < 0.0 then 259.93496370356297 else if time >= 1.0 then 778.2872127282653 else 259.93496370356297 + time * 518.3522490247024;
+    'Th' = ('Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_ph'(1e5, 'h1')).T;
+    'Ts' = ('Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_ps'(1e5, 's1')).T;
+    'h2' = ('Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_pT'(1e5, 'Th')).h;
+    's2' = ('Modelica.Media.Air.ReferenceAir.Air_Utilities.airBaseProp_pT'(1e5, 'Ts')).s;
+    assert(abs('h1' - 'h2') < 0.001, "Inverse for h not correctly computed", AssertionLevel.error);
+    assert(abs('s1' - 's2') < 0.001, "Inverse for s not correctly computed", AssertionLevel.error);
+    annotation(experiment(StopTime = 1));
+  end 'Inverse_sh_T';
+end 'Inverse_sh_T';

@@ -1,0 +1,46 @@
+//! base 0.1.0
+package 'Densities'
+  model 'Densities' "Demonstrates how to compute distribution densities (= Probability Density Function)"
+    output Real 'uniformDensity_y';
+    output Real 'normalDensity_y';
+    output Real 'weibullDensity_y';
+    parameter Real 'uniformDensity.u_min' = -4.0 "Lower limit of u";
+    parameter Real 'uniformDensity.u_max' = 4.0 "Upper limit of u";
+    Real 'uniformDensity.u' "Real input signal";
+    Real 'uniformDensity.y' "Density of the input signal according to the uniform probability density function";
+    Real 'clock.y' "Connector of Real output signal";
+    parameter Real 'clock.offset' = 0.0 "Offset of output signal y";
+    parameter Real 'clock.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'const.k'(start = 1.0) = -10.0 "Constant output value";
+    Real 'const.y' "Connector of Real output signal";
+    Real 'add.u1' "Connector of Real input signal 1";
+    Real 'add.u2' "Connector of Real input signal 2";
+    Real 'add.y' "Connector of Real output signal";
+    parameter Real 'add.k1' = 1.0 "Gain of input signal 1";
+    parameter Real 'add.k2' = 1.0 "Gain of input signal 2";
+    parameter Real 'normalDensity.mu' = 0.0 "Expectation (mean) value of the normal distribution";
+    parameter Real 'normalDensity.sigma' = 2.0 "Standard deviation of the normal distribution";
+    Real 'normalDensity.u' "Real input signal";
+    Real 'normalDensity.y' "Density of the input signal according to the normal probability density function";
+    parameter Real 'weibullDensity.lambda'(min = 0.0) = 3.0 "Scale parameter of the Weibull distribution";
+    parameter Real 'weibullDensity.k'(min = 0.0) = 1.5 "Shape parameter of the Weibull distribution";
+    Real 'weibullDensity.u' "Real input signal";
+    Real 'weibullDensity.y' "Density of the input signal according to the Weibull probability density function";
+  equation
+    'uniformDensity_y' = 'uniformDensity.y';
+    'normalDensity_y' = 'normalDensity.y';
+    'weibullDensity_y' = 'weibullDensity.y';
+    'clock.y' = 'add.u1';
+    'const.y' = 'add.u2';
+    'add.y' = 'weibullDensity.u';
+    'add.y' = 'normalDensity.u';
+    'add.y' = 'uniformDensity.u';
+    'uniformDensity.y' = if 'uniformDensity.u' < (-4.0) or 'uniformDensity.u' > 4.0 then 0.0 else 1.0 / (4.0 - (-4.0));
+    'clock.y' = smooth(0, if time < 0.0 then 0.0 else time);
+    'const.y' = -10.0;
+    'add.y' = 'add.u1' + 'add.u2';
+    'normalDensity.y' = exp(-('normalDensity.u' - 0.0) ^ 2.0 / (2.0 * 2.0 ^ 2.0)) / (2.0 * 2.5066282746310002);
+    'weibullDensity.y' = if 'weibullDensity.u' >= 0.0 then 1.5 / 3.0 * ('weibullDensity.u' / 3.0) ^ (1.5 - 1.0) * exp(-('weibullDensity.u' / 3.0) ^ 1.5) else 0.0;
+    annotation(experiment(StopTime = 20, Interval = 2e-2));
+  end 'Densities';
+end 'Densities';

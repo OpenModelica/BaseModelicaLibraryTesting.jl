@@ -1,0 +1,33 @@
+//! base 0.1.0
+package 'WriteRealMatrixToFile'
+  function 'Modelica.Utilities.Streams.writeRealMatrix' "Write Real matrix to a MATLAB MAT file"
+    input String 'fileName';
+    input String 'matrixName';
+    input Real 'matrix'[:, :];
+    input Boolean 'append' = false;
+    input String 'format' = "4";
+    output Boolean 'success';
+  external "C" 'success' = ModelicaIO_writeRealMatrix('fileName', 'matrixName', 'matrix', size('matrix', 1), size('matrix', 2), 'append', 'format') annotation(Library = {"ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library", Include = "#include \"ModelicaIO.h\"", IncludeDirectory = "modelica://Modelica/Resources/C-Sources");
+  end 'Modelica.Utilities.Streams.writeRealMatrix';
+
+  model 'WriteRealMatrixToFile' "Demonstrate usage of function Streams.writeRealMatrix"
+    parameter Real 'A[1,1]' = 11.0 "Matrix stored in different formats on files";
+    parameter Real 'A[1,2]' = 12.0 "Matrix stored in different formats on files";
+    parameter Real 'A[2,1]' = 21.0 "Matrix stored in different formats on files";
+    parameter Real 'A[2,2]' = 22.0 "Matrix stored in different formats on files";
+    parameter Real 'A[3,1]' = 31.0 "Matrix stored in different formats on files";
+    parameter Real 'A[3,2]' = 32.0 "Matrix stored in different formats on files";
+    output Boolean 'success1' "= true if writing to Test_RealMatrix_v4.mat is successful";
+    output Boolean 'success2' "= true if appending to Test_RealMatrix_v4.mat is successful";
+    output Boolean 'success3' "= true if writing to Test_RealMatrix_v6.mat is successful";
+    output Boolean 'success4' "= true if writing to Test_RealMatrix_v7.mat is successful";
+  algorithm
+    when initial() then
+      'success1' := 'Modelica.Utilities.Streams.writeRealMatrix'("Test_RealMatrix_v4.mat", "Matrix_A", {{11.0, 12.0}, {21.0, 22.0}, {31.0, 32.0}}, false, "4");
+      'success2' := 'Modelica.Utilities.Streams.writeRealMatrix'("Test_RealMatrix_v4.mat", "Matrix_B", {{11.0, 12.0}, {21.0, 22.0}, {31.0, 32.0}}, true, "4");
+      'success3' := 'Modelica.Utilities.Streams.writeRealMatrix'("Test_RealMatrix_v6.mat", "Matrix_A", {{11.0, 12.0}, {21.0, 22.0}, {31.0, 32.0}}, false, "6");
+      'success4' := 'Modelica.Utilities.Streams.writeRealMatrix'("Test_RealMatrix_v7.mat", "Matrix_A", {{11.0, 12.0}, {21.0, 22.0}, {31.0, 32.0}}, false, "7");
+    end when;
+    annotation(experiment(StopTime = 0.1));
+  end 'WriteRealMatrixToFile';
+end 'WriteRealMatrixToFile';

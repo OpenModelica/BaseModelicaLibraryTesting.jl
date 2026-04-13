@@ -1,0 +1,161 @@
+//! base 0.1.0
+package 'DrydenContinuousTurbulence'
+  function 'Modelica.Math.Special.erfInv' "Inverse error function: u = erf(erfInv(u))"
+    input Real 'u';
+    output Real 'y';
+    constant Real 'eps' = 0.1;
+  algorithm
+    if 'u' >= 1.0 then
+      'y' := 1e60;
+    elseif 'u' <= (-1.0) then
+      'y' := -1e60;
+    elseif 'u' == 0.0 then
+      'y' := 0.0;
+    elseif 'u' < 0.0 then
+      'y' := -'Modelica.Math.Special.Internal.erfInvUtil'(-'u', 1.0 + 'u');
+    else
+      'y' := 'Modelica.Math.Special.Internal.erfInvUtil'('u', 1.0 - 'u');
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Math.Special.erfInv';
+
+  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
+    input Integer 'stateIn'[4];
+    output Real 'result';
+    output Integer 'stateOut'[4];
+  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
+
+  function 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star' "Return an initial state vector for a random number generator (based on xorshift64star algorithm)"
+    input Integer 'localSeed';
+    input Integer 'globalSeed';
+    input Integer 'nState'(min = 1);
+    output Integer 'state'['nState'];
+    Real 'r';
+    Integer 'aux'[2];
+    Integer 'nStateEven';
+  algorithm
+    'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
+
+    if 'nState' >= 2 then
+      'state'[1:2] := 'aux';
+    else
+      'state'[1] := 'aux'[1];
+    end if;
+
+    'nStateEven' := 2 * div('nState', 2);
+
+    for 'i' in 3:2:'nStateEven' loop
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['i' - 2:'i' - 1]);
+      'state'['i':'i' + 1] := 'aux';
+    end for;
+
+    if 'nState' >= 3 and 'nState' <> 'nStateEven' then
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['nState' - 2:'nState' - 1]);
+      'state'['nState'] := 'aux'[1];
+    end if;
+  end 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star';
+
+  function 'Modelica.Math.Random.Utilities.initializeImpureRandom' "Initializes the internal state of the impure random number generator"
+    input Integer 'seed';
+    output Integer 'id';
+    constant Integer 'localSeed' = 715827883;
+    Integer 'rngState'[33];
+  algorithm
+    'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
+    'id' := 'localSeed';
+    'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
+  end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
+
+  type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
+
+  model 'DrydenContinuousTurbulence' "Demonstrates how to model wind turbulence for aircraft with the BandLimitedWhiteNoise block (a simple model of vertical Dryden gust speed at low altitudes < 1000 ft)"
+    parameter Real 'V'(unit = "m/s", quantity = "Velocity") = 72.01599999999999 "Airspeed of aircraft (typically 140kts during approach)";
+    parameter Real 'sigma'(unit = "m/s", quantity = "Velocity") = 1.5432 "Turbulence intensity (=0.1 * wind at 20 ft, typically 30 kt)";
+    parameter Real 'L'(unit = "m", quantity = "Length") = 182.88 "Scale length (= flight altitude)";
+    Real 'Hw.u' "Connector of Real input signal";
+    Real 'Hw.y' "Connector of Real output signal";
+    parameter Real 'Hw.b[1]' = 6.102583519250095 "Numerator coefficients of transfer function (e.g., 2*s+3 is specified as {2,3})";
+    parameter Real 'Hw.b[2]' = 1.3874453541030678 "Numerator coefficients of transfer function (e.g., 2*s+3 is specified as {2,3})";
+    parameter Real 'Hw.a[1]' = 6.448733577731698 "Denominator coefficients of transfer function (e.g., 5*s+6 is specified as {5,6})";
+    parameter Real 'Hw.a[2]' = 5.078871361919574 "Denominator coefficients of transfer function (e.g., 5*s+6 is specified as {5,6})";
+    parameter Real 'Hw.a[3]' = 1.0 "Denominator coefficients of transfer function (e.g., 5*s+6 is specified as {5,6})";
+    parameter 'Modelica.Blocks.Types.Init' 'Hw.initType' = 'Modelica.Blocks.Types.Init'.'InitialState' "Type of initialization (1: no init, 2: steady state, 3: initial state, 4: initial output)" annotation(Evaluate = true);
+    parameter Real 'Hw.x_start[1]' = 0.0 "Initial or guess values of states";
+    parameter Real 'Hw.x_start[2]' = 0.0 "Initial or guess values of states";
+    parameter Real 'Hw.y_start' = 0.0 "Initial value of output (derivatives of y are zero up to nx-1-th derivative)";
+    Real 'Hw.x[1]'(start = 0.0) "State of transfer function from controller canonical form";
+    Real 'Hw.x[2]'(start = 0.0) "State of transfer function from controller canonical form";
+    parameter Integer 'Hw.na' = 3 "Size of Denominator of transfer function.";
+    parameter Integer 'Hw.nb' = 2 "Size of Numerator of transfer function.";
+    parameter Integer 'Hw.nx' = 2;
+    parameter Real 'Hw.bb[1]' = 0.0;
+    parameter Real 'Hw.bb[2]' = 6.102583519250095;
+    parameter Real 'Hw.bb[3]' = 1.3874453541030678;
+    parameter Real 'Hw.d' = 0.0;
+    parameter Real 'Hw.a_end' = 1.0;
+    Real 'Hw.x_scaled[1]' "Scaled vector x";
+    Real 'Hw.x_scaled[2]' "Scaled vector x";
+    Real 'whiteNoise.y' "Connector of Real output signal";
+    parameter Real 'whiteNoise.samplePeriod'(start = 0.01, unit = "s", quantity = "Time") = 0.005 "Period for sampling the raw random numbers";
+    parameter Boolean 'whiteNoise.enableNoise' = true "= true: y = noise, otherwise y = y_off";
+    parameter Real 'whiteNoise.y_off' = 0.0 "Sets y = y_off if enableNoise=false (or time<startTime, see below)";
+    parameter Boolean 'whiteNoise.useGlobalSeed' = true "= true: use global seed, otherwise ignore it";
+    parameter Boolean 'whiteNoise.useAutomaticLocalSeed' = true "= true: use automatic local seed, otherwise use fixedLocalSeed";
+    parameter Integer 'whiteNoise.fixedLocalSeed' = 1 "Local seed (any Integer number)";
+    parameter Real 'whiteNoise.startTime'(unit = "s", quantity = "Time") = 0.0 "Start time for sampling the raw random numbers";
+    parameter Integer 'whiteNoise.localSeed'(fixed = false) "The actual localSeed";
+    parameter Integer 'whiteNoise.actualGlobalSeed' = 'globalSeed.seed' "The global seed, which is actually used";
+    parameter Boolean 'whiteNoise.generateNoise' = true "= true, if noise shall be generated, otherwise no noise";
+    Integer 'whiteNoise.state[1]' "Internal state of random number generator";
+    Integer 'whiteNoise.state[2]' "Internal state of random number generator";
+    Integer 'whiteNoise.state[3]' "Internal state of random number generator";
+    Integer 'whiteNoise.state[4]' "Internal state of random number generator";
+    discrete Real 'whiteNoise.r' "Random number according to the desired distribution";
+    discrete Real 'whiteNoise.r_raw' "Uniform random number in the range (0,1]";
+    parameter Real 'whiteNoise.noisePower' = 1.0 "Power of white noise signal";
+    parameter Real 'whiteNoise.mu' = 0.0;
+    parameter Real 'whiteNoise.sigma' = 14.142135623730951;
+    constant Real 'unitVelocity'(unit = "m/s", quantity = "Velocity") = 1.0;
+    parameter Real 'compareToSpeed.k'(start = 1.0) = 0.013885803154854479 "Gain value multiplied with input signal";
+    Real 'compareToSpeed.u' "Input signal connector";
+    Real 'compareToSpeed.y' "Output signal connector";
+    parameter Boolean 'globalSeed.enableNoise' = true "= true, if noise blocks generate noise as output; = false, if they generate a constant output";
+    parameter Boolean 'globalSeed.useAutomaticSeed' = false "= true, choose a seed by system time and process id; = false, use fixedSeed";
+    parameter Integer 'globalSeed.fixedSeed' = 67867967 "Fixed global seed for random number generators (if useAutomaticSeed = false)";
+    parameter Integer 'globalSeed.seed'(fixed = false) "Actually used global seed";
+    parameter Integer 'globalSeed.id_impure'(fixed = false) "ID for impure random number generators Modelica.Math.Random.Utilities.impureXXX";
+  initial equation
+    'Hw.x_scaled[1]' = 0.0;
+    'Hw.x_scaled[2]' = 0.0;
+    'whiteNoise.r' = 0.0 + 14.142135623730951 * 1.4142135623730951 * 'Modelica.Math.Special.erfInv'(2.0 * 'whiteNoise.r_raw' - 1.0);
+    'whiteNoise.localSeed' = -142151362;
+    pre('whiteNoise.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('whiteNoise.localSeed', 'whiteNoise.actualGlobalSeed', 4))[1];
+    pre('whiteNoise.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('whiteNoise.localSeed', 'whiteNoise.actualGlobalSeed', 4))[2];
+    pre('whiteNoise.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('whiteNoise.localSeed', 'whiteNoise.actualGlobalSeed', 4))[3];
+    pre('whiteNoise.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('whiteNoise.localSeed', 'whiteNoise.actualGlobalSeed', 4))[4];
+    'whiteNoise.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('whiteNoise.state'));
+    'globalSeed.seed' = 67867967;
+    'globalSeed.id_impure' = 'Modelica.Math.Random.Utilities.initializeImpureRandom'('globalSeed.seed');
+  equation
+    'whiteNoise.y' = 'Hw.u';
+    'Hw.y' = 'compareToSpeed.u';
+    der('Hw.x_scaled[1]') = ('Hw.u' - (5.078871361919574 * 'Hw.x_scaled[1]' + 'Hw.x_scaled[2]')) / 6.448733577731698;
+    der('Hw.x_scaled[2]') = 'Hw.x_scaled[1]';
+    'Hw.y' = 6.102583519250095 * 'Hw.x_scaled[1]' + 1.3874453541030678 * 'Hw.x_scaled[2]';
+    'Hw.x[1]' = 'Hw.x_scaled[1]';
+    'Hw.x[2]' = 'Hw.x_scaled[2]';
+
+    when sample(0.0, 0.005) then
+      'whiteNoise.r' = 0.0 + 14.142135623730951 * 1.4142135623730951 * 'Modelica.Math.Special.erfInv'(2.0 * 'whiteNoise.r_raw' - 1.0);
+    end when;
+
+    when sample(0.0, 0.005) then
+      ('whiteNoise.r_raw', 'whiteNoise.state') = 'Modelica.Math.Random.Generators.Xorshift128plus.random'({pre('whiteNoise.state[1]'), pre('whiteNoise.state[2]'), pre('whiteNoise.state[3]'), pre('whiteNoise.state[4]')});
+    end when;
+
+    'whiteNoise.y' = if time < 0.0 then 0.0 else 'whiteNoise.r';
+    'compareToSpeed.y' = 0.013885803154854479 * 'compareToSpeed.u';
+    annotation(experiment(StopTime = 100));
+  end 'DrydenContinuousTurbulence';
+end 'DrydenContinuousTurbulence';

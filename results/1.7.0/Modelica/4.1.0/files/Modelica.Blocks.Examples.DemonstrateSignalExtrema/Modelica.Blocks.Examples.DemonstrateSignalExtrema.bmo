@@ -1,0 +1,99 @@
+//! base 0.1.0
+package 'DemonstrateSignalExtrema'
+  model 'DemonstrateSignalExtrema' "Test detection of signal extrema"
+    parameter Real 'amplitude.amplitude' = 2.0 "Amplitude of sine wave";
+    parameter Real 'amplitude.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 63.0 "Frequency of sine wave";
+    parameter Real 'amplitude.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of sine wave";
+    parameter Boolean 'amplitude.continuous' = false "Make output continuous by starting at offset + amplitude*sin(phase)" annotation(Evaluate = true);
+    Real 'amplitude.y' "Connector of Real output signal";
+    parameter Real 'amplitude.offset' = 3.0 "Offset of output signal y";
+    parameter Real 'amplitude.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    parameter Real 'frequency.amplitude' = 45.0 "Amplitude of cosine wave";
+    parameter Real 'frequency.f'(start = 1.0, unit = "Hz", quantity = "Frequency") = 77.0 "Frequency of cosine wave";
+    parameter Real 'frequency.phase'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0 "Phase of cosine wave";
+    parameter Boolean 'frequency.continuous' = false "Make output continuous by starting at offset + amplitude*cos(phase)" annotation(Evaluate = true);
+    Real 'frequency.y' "Connector of Real output signal";
+    parameter Real 'frequency.offset' = 55.0 "Offset of output signal y";
+    parameter Real 'frequency.startTime'(unit = "s", quantity = "Time") = 0.0 "Output y = offset for time < startTime";
+    Real 'sine.y' "Connector of Real output signal";
+    parameter Boolean 'sine.useConstantAmplitude' = false "Enable constant amplitude";
+    parameter Real 'sine.constantAmplitude' = 1.0 "Constant amplitude";
+    parameter Boolean 'sine.useConstantFrequency' = false "Enable constant frequency";
+    parameter Real 'sine.constantFrequency'(unit = "Hz", quantity = "Frequency") = 1.0 "Constant frequency";
+    parameter Real 'sine.offset' = 0.0 "Offset of the sine wave";
+    Real 'sine.phi'(fixed = true, start = 0.0, displayUnit = "deg", unit = "rad", quantity = "Angle") "Phase of the sine wave";
+    Real 'sine.amplitude' "Amplitude";
+    Real 'sine.f'(unit = "Hz") "Frequency";
+    Real 'sine.amplitude_internal' "Amplitude";
+    Real 'sine.f_internal'(unit = "Hz") "Frequency";
+    parameter Real 'signalExtrema1.Ts'(start = 0.01, unit = "s", quantity = "Time") = 0.01 "Sample time";
+    Real 'signalExtrema1.u' "Connector of Real input signal";
+    Real 'signalExtrema1.y_min' "Min of input signal";
+    Real 'signalExtrema1.y_max' "Max of input signal";
+    discrete Real 'signalExtrema1.t_min' "Sample time of last found minimum";
+    discrete Real 'signalExtrema1.t_max' "Sample time of last found maximum";
+    parameter Real 'signalExtrema1.t0'(fixed = false, unit = "s", quantity = "Time") "Start time of simulation";
+    parameter Real 'signalExtrema2.Ts'(start = 0.01, unit = "s", quantity = "Time") = 1e-4 "Sample time";
+    Real 'signalExtrema2.u' "Connector of Real input signal";
+    Real 'signalExtrema2.y_min' "Min of input signal";
+    Real 'signalExtrema2.y_max' "Max of input signal";
+    discrete Real 'signalExtrema2.t_min' "Sample time of last found minimum";
+    discrete Real 'signalExtrema2.t_max' "Sample time of last found maximum";
+    parameter Real 'signalExtrema2.t0'(fixed = false, unit = "s", quantity = "Time") "Start time of simulation";
+  initial equation
+    'signalExtrema1.t0' = time;
+    'signalExtrema1.y_min' = 'signalExtrema1.u';
+    'signalExtrema1.y_max' = 'signalExtrema1.u';
+    'signalExtrema1.t_min' = time;
+    'signalExtrema1.t_max' = time;
+    'signalExtrema2.t0' = time;
+    'signalExtrema2.y_min' = 'signalExtrema2.u';
+    'signalExtrema2.y_max' = 'signalExtrema2.u';
+    'signalExtrema2.t_min' = time;
+    'signalExtrema2.t_max' = time;
+  equation
+    'sine.f' = 'sine.f_internal';
+    'sine.amplitude' = 'sine.amplitude_internal';
+    'sine.y' = 'signalExtrema2.u';
+    'sine.y' = 'signalExtrema1.u';
+    'amplitude.y' = 'sine.amplitude';
+    'frequency.y' = 'sine.f';
+    'amplitude.y' = 3.0 + (if time < 0.0 then 0.0 else 2.0 * sin(395.84067435231395 * time));
+    'frequency.y' = 55.0 + (if time < 0.0 then 0.0 else 45.0 * cos(483.80526865282815 * time));
+    der('sine.phi') = 6.283185307179586 * 'sine.f_internal';
+    'sine.y' = 'sine.amplitude_internal' * sin('sine.phi');
+
+    when sample('signalExtrema1.t0' + 0.01, 0.01) then
+      'signalExtrema1.y_min' = min('signalExtrema1.u', pre('signalExtrema1.y_min'));
+      'signalExtrema1.y_max' = max('signalExtrema1.u', pre('signalExtrema1.y_max'));
+
+      if 'signalExtrema1.y_min' < pre('signalExtrema1.y_min') then
+        'signalExtrema1.t_min' = time;
+        'signalExtrema1.t_max' = pre('signalExtrema1.t_max');
+      elseif 'signalExtrema1.y_max' > pre('signalExtrema1.y_max') then
+        'signalExtrema1.t_max' = time;
+        'signalExtrema1.t_min' = pre('signalExtrema1.t_min');
+      else
+        'signalExtrema1.t_min' = pre('signalExtrema1.t_min');
+        'signalExtrema1.t_max' = pre('signalExtrema1.t_max');
+      end if;
+    end when;
+
+    when sample('signalExtrema2.t0' + 1e-4, 1e-4) then
+      'signalExtrema2.y_min' = min('signalExtrema2.u', pre('signalExtrema2.y_min'));
+      'signalExtrema2.y_max' = max('signalExtrema2.u', pre('signalExtrema2.y_max'));
+
+      if 'signalExtrema2.y_min' < pre('signalExtrema2.y_min') then
+        'signalExtrema2.t_min' = time;
+        'signalExtrema2.t_max' = pre('signalExtrema2.t_max');
+      elseif 'signalExtrema2.y_max' > pre('signalExtrema2.y_max') then
+        'signalExtrema2.t_max' = time;
+        'signalExtrema2.t_min' = pre('signalExtrema2.t_min');
+      else
+        'signalExtrema2.t_min' = pre('signalExtrema2.t_min');
+        'signalExtrema2.t_max' = pre('signalExtrema2.t_max');
+      end if;
+    end when;
+    annotation(experiment(StopTime = 1.5, Interval = 1e-05, Tolerance = 1e-06));
+  end 'DemonstrateSignalExtrema';
+end 'DemonstrateSignalExtrema';

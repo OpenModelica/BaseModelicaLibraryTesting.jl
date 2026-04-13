@@ -1,0 +1,161 @@
+//! base 0.1.0
+package 'Distributions'
+  function 'Modelica.Math.Distributions.TruncatedNormal.quantile' "Quantile of truncated normal distribution"
+    input Real 'u'(max = 1.0, min = 0.0);
+    input Real 'y_min' = 0.0;
+    input Real 'y_max' = 1.0;
+    input Real 'mu' = ('y_max' + 'y_min') / 2.0;
+    input Real 'sigma' = ('y_max' - 'y_min') / 6.0;
+    output Real 'y';
+    Real 'cdf_min' = 'Modelica.Math.Distributions.Normal.cumulative'('y_min', 'mu', 'sigma');
+    Real 'cdf_max' = 'Modelica.Math.Distributions.Normal.cumulative'('y_max', 'mu', 'sigma');
+  algorithm
+    'y' := 'Modelica.Math.Distributions.Normal.quantile'('cdf_min' + 'u' * ('cdf_max' - 'cdf_min'), 'mu', 'sigma');
+    'y' := min('y_max', max('y_min', 'y'));
+    annotation(smoothOrder = 1);
+  end 'Modelica.Math.Distributions.TruncatedNormal.quantile';
+
+  function 'Modelica.Math.Random.Generators.Xorshift128plus.random' "Returns a uniform random number with the xorshift128+ algorithm"
+    input Integer 'stateIn'[4];
+    output Real 'result';
+    output Integer 'stateOut'[4];
+  external "C" ModelicaRandom_xorshift128plus('stateIn', 'stateOut', 'result') annotation(Library = "ModelicaExternalC", LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Math.Random.Generators.Xorshift128plus.random';
+
+  function 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star' "Return an initial state vector for a random number generator (based on xorshift64star algorithm)"
+    input Integer 'localSeed';
+    input Integer 'globalSeed';
+    input Integer 'nState'(min = 1);
+    output Integer 'state'['nState'];
+    Real 'r';
+    Integer 'aux'[2];
+    Integer 'nStateEven';
+  algorithm
+    'aux' := 'Modelica.Math.Random.Generators.Xorshift64star.initialState'('localSeed', 'globalSeed');
+
+    if 'nState' >= 2 then
+      'state'[1:2] := 'aux';
+    else
+      'state'[1] := 'aux'[1];
+    end if;
+
+    'nStateEven' := 2 * div('nState', 2);
+
+    for 'i' in 3:2:'nStateEven' loop
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['i' - 2:'i' - 1]);
+      'state'['i':'i' + 1] := 'aux';
+    end for;
+
+    if 'nState' >= 3 and 'nState' <> 'nStateEven' then
+      ('r', 'aux') := 'Modelica.Math.Random.Generators.Xorshift64star.random'('state'['nState' - 2:'nState' - 1]);
+      'state'['nState'] := 'aux'[1];
+    end if;
+  end 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star';
+
+  function 'Modelica.Math.Random.Utilities.initializeImpureRandom' "Initializes the internal state of the impure random number generator"
+    input Integer 'seed';
+    output Integer 'id';
+    constant Integer 'localSeed' = 715827883;
+    Integer 'rngState'[33];
+  algorithm
+    'rngState' := 'Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('localSeed', 'seed', 33);
+    'id' := 'localSeed';
+    'Modelica.Math.Random.Utilities.initializeImpureRandom.setInternalState'('rngState', 'id');
+  end 'Modelica.Math.Random.Utilities.initializeImpureRandom';
+
+  model 'Distributions' "Demonstrates noise with different types of distributions"
+    parameter Real 'samplePeriod'(unit = "s", quantity = "Time") = 0.02 "Sample period of all blocks";
+    parameter Real 'y_min' = -1.0 "Minimum value of band for random values";
+    parameter Real 'y_max' = 3.0 "Maximum value of band for random values";
+    parameter Boolean 'globalSeed.enableNoise' = true "= true, if noise blocks generate noise as output; = false, if they generate a constant output";
+    parameter Boolean 'globalSeed.useAutomaticSeed' = false "= true, choose a seed by system time and process id; = false, use fixedSeed";
+    parameter Integer 'globalSeed.fixedSeed' = 67867967 "Fixed global seed for random number generators (if useAutomaticSeed = false)";
+    parameter Integer 'globalSeed.seed'(fixed = false) "Actually used global seed";
+    parameter Integer 'globalSeed.id_impure'(fixed = false) "ID for impure random number generators Modelica.Math.Random.Utilities.impureXXX";
+    output Real 'uniformNoise_y';
+    output Real 'truncatedNormalNoise_y';
+    Integer 'n';
+    Real 'uniformNoise.y' "Connector of Real output signal";
+    parameter Real 'uniformNoise.samplePeriod'(start = 0.01, unit = "s", quantity = "Time") = 0.02 "Period for sampling the raw random numbers";
+    parameter Boolean 'uniformNoise.enableNoise' = true "= true: y = noise, otherwise y = y_off";
+    parameter Real 'uniformNoise.y_off' = 0.0 "Sets y = y_off if enableNoise=false (or time<startTime, see below)";
+    parameter Boolean 'uniformNoise.useGlobalSeed' = true "= true: use global seed, otherwise ignore it";
+    parameter Boolean 'uniformNoise.useAutomaticLocalSeed' = false "= true: use automatic local seed, otherwise use fixedLocalSeed";
+    parameter Integer 'uniformNoise.fixedLocalSeed' = 1 "Local seed (any Integer number)";
+    parameter Real 'uniformNoise.startTime'(unit = "s", quantity = "Time") = 0.0 "Start time for sampling the raw random numbers";
+    parameter Integer 'uniformNoise.localSeed'(fixed = false) "The actual localSeed";
+    parameter Integer 'uniformNoise.actualGlobalSeed' = 'globalSeed.seed' "The global seed, which is actually used";
+    parameter Boolean 'uniformNoise.generateNoise' = true "= true, if noise shall be generated, otherwise no noise";
+    Integer 'uniformNoise.state[1]' "Internal state of random number generator";
+    Integer 'uniformNoise.state[2]' "Internal state of random number generator";
+    Integer 'uniformNoise.state[3]' "Internal state of random number generator";
+    Integer 'uniformNoise.state[4]' "Internal state of random number generator";
+    discrete Real 'uniformNoise.r' "Random number according to the desired distribution";
+    discrete Real 'uniformNoise.r_raw' "Uniform random number in the range (0,1]";
+    parameter Real 'uniformNoise.y_min'(start = 0.0) = -1.0 "Lower limit of y";
+    parameter Real 'uniformNoise.y_max'(start = 1.0) = 3.0 "Upper limit of y";
+    Real 'truncatedNormalNoise.y' "Connector of Real output signal";
+    parameter Real 'truncatedNormalNoise.samplePeriod'(start = 0.01, unit = "s", quantity = "Time") = 0.02 "Period for sampling the raw random numbers";
+    parameter Boolean 'truncatedNormalNoise.enableNoise' = true "= true: y = noise, otherwise y = y_off";
+    parameter Real 'truncatedNormalNoise.y_off' = 0.0 "Sets y = y_off if enableNoise=false (or time<startTime, see below)";
+    parameter Boolean 'truncatedNormalNoise.useGlobalSeed' = true "= true: use global seed, otherwise ignore it";
+    parameter Boolean 'truncatedNormalNoise.useAutomaticLocalSeed' = false "= true: use automatic local seed, otherwise use fixedLocalSeed";
+    parameter Integer 'truncatedNormalNoise.fixedLocalSeed' = 1 "Local seed (any Integer number)";
+    parameter Real 'truncatedNormalNoise.startTime'(unit = "s", quantity = "Time") = 0.0 "Start time for sampling the raw random numbers";
+    parameter Integer 'truncatedNormalNoise.localSeed'(fixed = false) "The actual localSeed";
+    parameter Integer 'truncatedNormalNoise.actualGlobalSeed' = 'globalSeed.seed' "The global seed, which is actually used";
+    parameter Boolean 'truncatedNormalNoise.generateNoise' = true "= true, if noise shall be generated, otherwise no noise";
+    Integer 'truncatedNormalNoise.state[1]' "Internal state of random number generator";
+    Integer 'truncatedNormalNoise.state[2]' "Internal state of random number generator";
+    Integer 'truncatedNormalNoise.state[3]' "Internal state of random number generator";
+    Integer 'truncatedNormalNoise.state[4]' "Internal state of random number generator";
+    discrete Real 'truncatedNormalNoise.r' "Random number according to the desired distribution";
+    discrete Real 'truncatedNormalNoise.r_raw' "Uniform random number in the range (0,1]";
+    parameter Real 'truncatedNormalNoise.y_min'(start = 0.0) = -1.0 "Lower limit of y";
+    parameter Real 'truncatedNormalNoise.y_max'(start = 1.0) = 3.0 "Upper limit of y";
+    parameter Real 'truncatedNormalNoise.mu' = 1.0 "Expectation (mean) value of the normal distribution";
+    parameter Real 'truncatedNormalNoise.sigma' = 0.6666666666666666 "Standard deviation of the normal distribution";
+  initial equation
+    'globalSeed.seed' = 67867967;
+    'globalSeed.id_impure' = 'Modelica.Math.Random.Utilities.initializeImpureRandom'('globalSeed.seed');
+    'uniformNoise.r' = 'uniformNoise.r_raw' * (3.0 - (-1.0)) + (-1.0);
+    'uniformNoise.localSeed' = 1;
+    pre('uniformNoise.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('uniformNoise.localSeed', 'uniformNoise.actualGlobalSeed', 4))[1];
+    pre('uniformNoise.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('uniformNoise.localSeed', 'uniformNoise.actualGlobalSeed', 4))[2];
+    pre('uniformNoise.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('uniformNoise.localSeed', 'uniformNoise.actualGlobalSeed', 4))[3];
+    pre('uniformNoise.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('uniformNoise.localSeed', 'uniformNoise.actualGlobalSeed', 4))[4];
+    'uniformNoise.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('uniformNoise.state'));
+    'truncatedNormalNoise.r' = 'Modelica.Math.Distributions.TruncatedNormal.quantile'('truncatedNormalNoise.r_raw', -1.0, 3.0, 1.0, 0.6666666666666666);
+    'truncatedNormalNoise.localSeed' = 1;
+    pre('truncatedNormalNoise.state[1]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('truncatedNormalNoise.localSeed', 'truncatedNormalNoise.actualGlobalSeed', 4))[1];
+    pre('truncatedNormalNoise.state[2]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('truncatedNormalNoise.localSeed', 'truncatedNormalNoise.actualGlobalSeed', 4))[2];
+    pre('truncatedNormalNoise.state[3]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('truncatedNormalNoise.localSeed', 'truncatedNormalNoise.actualGlobalSeed', 4))[3];
+    pre('truncatedNormalNoise.state[4]') = ('Modelica.Math.Random.Utilities.initialStateWithXorshift64star'('truncatedNormalNoise.localSeed', 'truncatedNormalNoise.actualGlobalSeed', 4))[4];
+    'truncatedNormalNoise.r_raw' = 'Modelica.Math.Random.Generators.Xorshift128plus.random'(pre('truncatedNormalNoise.state'));
+  equation
+    'uniformNoise_y' = 'uniformNoise.y';
+    'truncatedNormalNoise_y' = 'truncatedNormalNoise.y';
+    'n' = if time < 0.5 then 12 else 2;
+
+    when sample(0.0, 0.02) then
+      'uniformNoise.r' = 'uniformNoise.r_raw' * (3.0 - (-1.0)) + (-1.0);
+    end when;
+
+    when sample(0.0, 0.02) then
+      ('uniformNoise.r_raw', 'uniformNoise.state') = 'Modelica.Math.Random.Generators.Xorshift128plus.random'({pre('uniformNoise.state[1]'), pre('uniformNoise.state[2]'), pre('uniformNoise.state[3]'), pre('uniformNoise.state[4]')});
+    end when;
+
+    'uniformNoise.y' = if time < 0.0 then 0.0 else 'uniformNoise.r';
+
+    when sample(0.0, 0.02) then
+      'truncatedNormalNoise.r' = 'Modelica.Math.Distributions.TruncatedNormal.quantile'('truncatedNormalNoise.r_raw', -1.0, 3.0, 1.0, 0.6666666666666666);
+    end when;
+
+    when sample(0.0, 0.02) then
+      ('truncatedNormalNoise.r_raw', 'truncatedNormalNoise.state') = 'Modelica.Math.Random.Generators.Xorshift128plus.random'({pre('truncatedNormalNoise.state[1]'), pre('truncatedNormalNoise.state[2]'), pre('truncatedNormalNoise.state[3]'), pre('truncatedNormalNoise.state[4]')});
+    end when;
+
+    'truncatedNormalNoise.y' = if time < 0.0 then 0.0 else 'truncatedNormalNoise.r';
+    annotation(experiment(StopTime = 2));
+  end 'Distributions';
+end 'Distributions';

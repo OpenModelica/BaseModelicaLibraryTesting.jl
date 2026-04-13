@@ -1,0 +1,614 @@
+//! base 0.1.0
+package 'DFFREGSRL'
+  type 'Modelica.Electrical.Digital.Interfaces.Logic' = enumeration('\'U\'', '\'X\'', '\'0\'', '\'1\'', '\'Z\'', '\'W\'', '\'L\'', '\'H\'', '\'-\'');
+
+  type 'Modelica.Electrical.Digital.Interfaces.Strength' = enumeration('\'S_X01\'', '\'S_X0H\'', '\'S_XL1\'', '\'S_X0Z\'', '\'S_XZ1\'', '\'S_WLH\'', '\'S_WLZ\'', '\'S_WZH\'', '\'S_W0H\'', '\'S_WL1\'');
+
+  model 'DFFREGSRL' "Pulse triggered D-Register-Bank, low active set and reset"
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'clock.x[1]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'clock.x[2]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'clock.x[3]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter Real 'clock.t[1]' = 0.0 "Vector of corresponding time points";
+    parameter Real 'clock.t[2]' = 10.0 "Vector of corresponding time points";
+    parameter Real 'clock.t[3]' = 11.0 "Vector of corresponding time points";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'clock.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial output value";
+    parameter Integer 'clock.n' = 3 "Table size";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'clock.y';
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'data_0.x[1]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'' "Vector of values";
+    parameter Real 'data_0.t[1]' = 0.0 "Vector of corresponding time points";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'data_0.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial output value";
+    parameter Integer 'data_0.n' = 1 "Table size";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'data_0.y';
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'reset.x[1]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'reset.x[2]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'reset.x[3]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter Real 'reset.t[1]' = 0.0 "Vector of corresponding time points";
+    parameter Real 'reset.t[2]' = 1.0 "Vector of corresponding time points";
+    parameter Real 'reset.t[3]' = 2.0 "Vector of corresponding time points";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'reset.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial output value";
+    parameter Integer 'reset.n' = 3 "Table size";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'reset.y';
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'data_1.x[1]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter Real 'data_1.t[1]' = 0.0 "Vector of corresponding time points";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'data_1.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial output value";
+    parameter Integer 'data_1.n' = 1 "Table size";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'data_1.y';
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'set.x[1]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'set.x[2]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' "Vector of values";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'set.x[3]' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' "Vector of values";
+    parameter Real 'set.t[1]' = 0.0 "Vector of corresponding time points";
+    parameter Real 'set.t[2]' = 5.0 "Vector of corresponding time points";
+    parameter Real 'set.t[3]' = 6.0 "Vector of corresponding time points";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'set.y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial output value";
+    parameter Integer 'set.n' = 3 "Table size";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'set.y';
+    parameter Real 'dFFREGSRL.tHL'(unit = "s", quantity = "Time") = 2.0 "High->Low delay";
+    parameter Real 'dFFREGSRL.tLH'(unit = "s", quantity = "Time") = 3.0 "Low->High delay";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Strength' 'dFFREGSRL.strength' = 'Modelica.Electrical.Digital.Interfaces.Strength'.'\'S_X01\'' "Output strength";
+    parameter Integer 'dFFREGSRL.n'(min = 1) = 2 "Data width";
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 7;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 7;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 6;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 3;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 6;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 6;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 3;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 6;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 5;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 8;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 5;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 5;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 8;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 5;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 7;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 7;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 7;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 7;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 6;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 3;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 6;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 6;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 3;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 6;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 5;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 8;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 5;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 5;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 8;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 5;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 7;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 4;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 7;
+    constant Integer 'dFFREGSRL.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 4;
+    parameter Real 'dFFREGSRL.delay.tHL'(unit = "s", quantity = "Time") = 2.0 "High->Low delay";
+    parameter Real 'dFFREGSRL.delay.tLH'(unit = "s", quantity = "Time") = 3.0 "Low->High delay";
+    parameter Integer 'dFFREGSRL.delay.n'(min = 1) = 2 "Data width";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.x[1]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.x[2]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.y[1]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.y[2]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[1].x'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital input signal";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[1].y'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital output signal";
+    parameter Real 'dFFREGSRL.delay.inertialDelaySensitive[1].tLH'(start = 0.0, unit = "s", quantity = "Time") = 3.0 "Rise inertial delay";
+    parameter Real 'dFFREGSRL.delay.inertialDelaySensitive[1].tHL'(start = 0.0, unit = "s", quantity = "Time") = 2.0 "Fall inertial delay";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[1].y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial value of output";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    Real 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTime'(unit = "s", quantity = "Time");
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[1].y_auxiliary'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[1].y_old'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    Integer 'dFFREGSRL.delay.inertialDelaySensitive[1].lh';
+    discrete Real 'dFFREGSRL.delay.inertialDelaySensitive[1].t_next'(unit = "s", quantity = "Time");
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[2].x'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital input signal";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[2].y'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'') "Connector of Digital output signal";
+    parameter Real 'dFFREGSRL.delay.inertialDelaySensitive[2].tLH'(start = 0.0, unit = "s", quantity = "Time") = 3.0 "Rise inertial delay";
+    parameter Real 'dFFREGSRL.delay.inertialDelaySensitive[2].tHL'(start = 0.0, unit = "s", quantity = "Time") = 2.0 "Fall inertial delay";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[2].y0' = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' "Initial value of output";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 0 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = -1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Specification of delay according to signal change";
+    constant Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTable[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 0 "Specification of delay according to signal change";
+    Real 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTime'(unit = "s", quantity = "Time");
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[2].y_auxiliary'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.delay.inertialDelaySensitive[2].y_old'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    Integer 'dFFREGSRL.delay.inertialDelaySensitive[2].lh';
+    discrete Real 'dFFREGSRL.delay.inertialDelaySensitive[2].t_next'(unit = "s", quantity = "Time");
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 7 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 7 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 6 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 3 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 6 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 6 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 3 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 6 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 5 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 8 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 5 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 5 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 8 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 5 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 7 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 7 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 7 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 7 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 6 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 3 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 6 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 6 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 3 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 6 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 5 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 8 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 5 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 5 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 8 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 5 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'U\\\'\']' = 1 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'X\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'0\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'1\\\'\']' = 7 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'Z\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'W\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'L\\\'\']' = 2 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'H\\\'\']' = 7 "Function selection by [reset, set] reading";
+    parameter Integer 'dFFREGSRL.dFFSR.ResetSetMap[\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\',\'Modelica.Electrical.Digital.Interfaces.Logic\'.\'\\\'-\\\'\']' = 4 "Function selection by [reset, set] reading";
+    parameter 'Modelica.Electrical.Digital.Interfaces.Strength' 'dFFREGSRL.dFFSR.strength' = 'Modelica.Electrical.Digital.Interfaces.Strength'.'\'S_X01\'' "Output strength";
+    parameter Integer 'dFFREGSRL.dFFSR.n'(min = 1) = 2 "Data width";
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.set'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.reset'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.clock'(fixed = true, start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.dataIn[1]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.dataIn[2]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.dataOut[1]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.dataOut[2]';
+    Integer 'dFFREGSRL.dFFSR.clock_flag'(start = 0);
+    Integer 'dFFREGSRL.dFFSR.reset_set_flag'(start = 1);
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.nextstate[1]'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.nextstate[2]'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.next_assign_val[1]'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dFFSR.next_assign_val[2]'(start = 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'');
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.set';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.reset';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.clock';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dataIn[1]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dataIn[2]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dataOut[1]';
+    'Modelica.Electrical.Digital.Interfaces.Logic' 'dFFREGSRL.dataOut[2]';
+  equation
+    'dFFREGSRL.delay.x[1]' = 'dFFREGSRL.delay.inertialDelaySensitive[1].x';
+    'dFFREGSRL.delay.inertialDelaySensitive[1].y' = 'dFFREGSRL.delay.y[1]';
+    'dFFREGSRL.delay.x[2]' = 'dFFREGSRL.delay.inertialDelaySensitive[2].x';
+    'dFFREGSRL.delay.inertialDelaySensitive[2].y' = 'dFFREGSRL.delay.y[2]';
+    'dFFREGSRL.dFFSR.dataOut[1]' = 'dFFREGSRL.delay.x[1]';
+    'dFFREGSRL.dFFSR.dataOut[2]' = 'dFFREGSRL.delay.x[2]';
+    'dFFREGSRL.set' = 'dFFREGSRL.dFFSR.set';
+    'dFFREGSRL.reset' = 'dFFREGSRL.dFFSR.reset';
+    'dFFREGSRL.clock' = 'dFFREGSRL.dFFSR.clock';
+    'dFFREGSRL.dataIn[1]' = 'dFFREGSRL.dFFSR.dataIn[1]';
+    'dFFREGSRL.dataIn[2]' = 'dFFREGSRL.dFFSR.dataIn[2]';
+    'dFFREGSRL.delay.y[1]' = 'dFFREGSRL.dataOut[1]';
+    'dFFREGSRL.delay.y[2]' = 'dFFREGSRL.dataOut[2]';
+    'reset.y' = 'dFFREGSRL.reset';
+    'clock.y' = 'dFFREGSRL.clock';
+    'set.y' = 'dFFREGSRL.set';
+    'data_0.y' = 'dFFREGSRL.dataIn[1]';
+    'data_1.y' = 'dFFREGSRL.dataIn[2]';
+  algorithm
+    if initial() then
+      assert(true, "Invalid size of table (n < 1)", AssertionLevel.error);
+    end if;
+
+    'clock.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+
+    if time >= ({0.0, 10.0, 11.0})[1] then
+      'clock.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[1];
+    end if;
+
+    if time >= ({0.0, 10.0, 11.0})[2] then
+      'clock.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[2];
+    end if;
+
+    if time >= ({0.0, 10.0, 11.0})[3] then
+      'clock.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\''})[3];
+    end if;
+  algorithm
+    if initial() then
+      assert(true, "Invalid size of table (n < 1)", AssertionLevel.error);
+    end if;
+
+    'data_0.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+
+    if time >= 0.0 then
+      'data_0.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'';
+    end if;
+  algorithm
+    if initial() then
+      assert(true, "Invalid size of table (n < 1)", AssertionLevel.error);
+    end if;
+
+    'reset.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+
+    if time >= ({0.0, 1.0, 2.0})[1] then
+      'reset.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''})[1];
+    end if;
+
+    if time >= ({0.0, 1.0, 2.0})[2] then
+      'reset.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''})[2];
+    end if;
+
+    if time >= ({0.0, 1.0, 2.0})[3] then
+      'reset.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''})[3];
+    end if;
+  algorithm
+    if initial() then
+      assert(true, "Invalid size of table (n < 1)", AssertionLevel.error);
+    end if;
+
+    'data_1.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+
+    if time >= 0.0 then
+      'data_1.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
+    end if;
+  algorithm
+    if initial() then
+      assert(true, "Invalid size of table (n < 1)", AssertionLevel.error);
+    end if;
+
+    'set.y' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+
+    if time >= ({0.0, 5.0, 6.0})[1] then
+      'set.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''})[1];
+    end if;
+
+    if time >= ({0.0, 5.0, 6.0})[2] then
+      'set.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''})[2];
+    end if;
+
+    if time >= ({0.0, 5.0, 6.0})[3] then
+      'set.y' := ({'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''})[3];
+    end if;
+  algorithm
+    when {initial(), change('dFFREGSRL.delay.inertialDelaySensitive[1].x') and not initial()} then
+      'dFFREGSRL.delay.inertialDelaySensitive[1].y_old' := if initial() or pre('dFFREGSRL.delay.inertialDelaySensitive[1].y') == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' else pre('dFFREGSRL.delay.inertialDelaySensitive[1].y');
+      'dFFREGSRL.delay.inertialDelaySensitive[1].lh' := ({{0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}})['dFFREGSRL.delay.inertialDelaySensitive[1].y_old','dFFREGSRL.delay.inertialDelaySensitive[1].x'];
+      'dFFREGSRL.delay.inertialDelaySensitive[1].delayTime' := if 'dFFREGSRL.delay.inertialDelaySensitive[1].lh' > 0 then 3.0 else if 'dFFREGSRL.delay.inertialDelaySensitive[1].lh' < 0 then 2.0 else 0.0;
+      'dFFREGSRL.delay.inertialDelaySensitive[1].t_next' := time + 'dFFREGSRL.delay.inertialDelaySensitive[1].delayTime';
+
+      if 'dFFREGSRL.delay.inertialDelaySensitive[1].lh' == 0 or abs('dFFREGSRL.delay.inertialDelaySensitive[1].delayTime') < 2.2250738585072014e-308 then
+        'dFFREGSRL.delay.inertialDelaySensitive[1].y_auxiliary' := 'dFFREGSRL.delay.inertialDelaySensitive[1].x';
+      end if;
+    elsewhen time >= 'dFFREGSRL.delay.inertialDelaySensitive[1].t_next' then
+      'dFFREGSRL.delay.inertialDelaySensitive[1].y_auxiliary' := 'dFFREGSRL.delay.inertialDelaySensitive[1].x';
+    end when;
+
+    'dFFREGSRL.delay.inertialDelaySensitive[1].y' := 'dFFREGSRL.delay.inertialDelaySensitive[1].y_auxiliary';
+  algorithm
+    when {initial(), change('dFFREGSRL.delay.inertialDelaySensitive[2].x') and not initial()} then
+      'dFFREGSRL.delay.inertialDelaySensitive[2].y_old' := if initial() or pre('dFFREGSRL.delay.inertialDelaySensitive[2].y') == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' then 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' else pre('dFFREGSRL.delay.inertialDelaySensitive[2].y');
+      'dFFREGSRL.delay.inertialDelaySensitive[2].lh' := ({{0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {0, 0, -1, 1, 0, 0, -1, 1, 0}, {1, 1, 0, 1, 1, 1, 0, 1, 1}, {-1, -1, -1, 0, -1, -1, -1, 0, -1}, {0, 0, -1, 1, 0, 0, -1, 1, 0}})['dFFREGSRL.delay.inertialDelaySensitive[2].y_old','dFFREGSRL.delay.inertialDelaySensitive[2].x'];
+      'dFFREGSRL.delay.inertialDelaySensitive[2].delayTime' := if 'dFFREGSRL.delay.inertialDelaySensitive[2].lh' > 0 then 3.0 else if 'dFFREGSRL.delay.inertialDelaySensitive[2].lh' < 0 then 2.0 else 0.0;
+      'dFFREGSRL.delay.inertialDelaySensitive[2].t_next' := time + 'dFFREGSRL.delay.inertialDelaySensitive[2].delayTime';
+
+      if 'dFFREGSRL.delay.inertialDelaySensitive[2].lh' == 0 or abs('dFFREGSRL.delay.inertialDelaySensitive[2].delayTime') < 2.2250738585072014e-308 then
+        'dFFREGSRL.delay.inertialDelaySensitive[2].y_auxiliary' := 'dFFREGSRL.delay.inertialDelaySensitive[2].x';
+      end if;
+    elsewhen time >= 'dFFREGSRL.delay.inertialDelaySensitive[2].t_next' then
+      'dFFREGSRL.delay.inertialDelaySensitive[2].y_auxiliary' := 'dFFREGSRL.delay.inertialDelaySensitive[2].x';
+    end when;
+
+    'dFFREGSRL.delay.inertialDelaySensitive[2].y' := 'dFFREGSRL.delay.inertialDelaySensitive[2].y_auxiliary';
+  algorithm
+    if (change('dFFREGSRL.dFFSR.clock') or change('dFFREGSRL.dFFSR.reset')) or change('dFFREGSRL.dFFSR.set') then
+      if change('dFFREGSRL.dFFSR.clock') then
+        if initial() then
+          'dFFREGSRL.dFFSR.clock_flag' := ({0, 0, 0, 2, 0, 0, 0, 2, 0})['dFFREGSRL.dFFSR.clock'];
+        else
+          'dFFREGSRL.dFFSR.clock_flag' := ({{0, 0, 0, 2, 0, 0, 0, 2, 0}, {0, 0, 0, 2, 0, 0, 0, 2, 0}, {2, 2, 0, 1, 2, 2, 0, 1, 2}, {0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 2, 0, 0, 0, 2, 0}, {0, 0, 0, 2, 0, 0, 0, 2, 0}, {2, 2, 0, 1, 2, 2, 0, 1, 0}, {0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 2, 0, 0, 0, 2, 0}})[pre('dFFREGSRL.dFFSR.clock'),'dFFREGSRL.dFFSR.clock'];
+        end if;
+      end if;
+
+      'dFFREGSRL.dFFSR.reset_set_flag' := ({{1, 1, 1, 1, 1, 1, 1, 1, 1}, {1, 4, 2, 7, 4, 4, 2, 7, 4}, {1, 6, 2, 3, 6, 6, 2, 3, 6}, {1, 5, 2, 8, 5, 5, 2, 8, 5}, {1, 4, 2, 7, 4, 4, 2, 7, 4}, {1, 4, 2, 7, 4, 4, 2, 7, 4}, {1, 6, 2, 3, 6, 6, 2, 3, 6}, {1, 5, 2, 8, 5, 5, 2, 8, 5}, {1, 4, 2, 7, 4, 4, 2, 7, 4}})['dFFREGSRL.dFFSR.reset','dFFREGSRL.dFFSR.set'];
+
+      for 'i' in 1:2 loop
+        if 'dFFREGSRL.dFFSR.reset_set_flag' == 1 then
+          'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+        elseif 'dFFREGSRL.dFFSR.reset_set_flag' == 2 then
+          'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'';
+        elseif 'dFFREGSRL.dFFSR.reset_set_flag' == 3 then
+          'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
+        elseif 'dFFREGSRL.dFFSR.reset_set_flag' == 4 then
+          if 'dFFREGSRL.dFFSR.next_assign_val[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' and 'dFFREGSRL.dFFSR.clock_flag' <> 1 or 'dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' and 'dFFREGSRL.dFFSR.clock_flag' <> 0 then
+            'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+          else
+            'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+          end if;
+        elseif 'dFFREGSRL.dFFSR.reset_set_flag' == 5 then
+          if 'dFFREGSRL.dFFSR.next_assign_val[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' and (('dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' or 'dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'') or 'dFFREGSRL.dFFSR.clock_flag' == 0) then
+            break;
+          elseif ('dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'' or 'dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'') and 'dFFREGSRL.dFFSR.clock_flag' == 1 then
+            'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'';
+          elseif 'dFFREGSRL.dFFSR.next_assign_val[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' and 'dFFREGSRL.dFFSR.clock_flag' <> 1 or 'dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' and 'dFFREGSRL.dFFSR.clock_flag' <> 0 then
+            'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+          else
+            'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+          end if;
+        elseif 'dFFREGSRL.dFFSR.reset_set_flag' == 6 then
+          'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+        elseif 'dFFREGSRL.dFFSR.reset_set_flag' == 7 then
+          if 'dFFREGSRL.dFFSR.next_assign_val[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' and (('dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' or 'dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'') or 'dFFREGSRL.dFFSR.clock_flag' == 0) then
+            break;
+          elseif ('dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'' or 'dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'') and 'dFFREGSRL.dFFSR.clock_flag' == 1 then
+            'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'';
+          elseif 'dFFREGSRL.dFFSR.next_assign_val[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' and 'dFFREGSRL.dFFSR.clock_flag' <> 1 or 'dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' and 'dFFREGSRL.dFFSR.clock_flag' <> 0 then
+            'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+          else
+            'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+          end if;
+        elseif 'dFFREGSRL.dFFSR.reset_set_flag' == 8 then
+          if 'dFFREGSRL.dFFSR.clock_flag' == 0 then
+            break;
+          elseif 'dFFREGSRL.dFFSR.clock_flag' == 1 then
+            'dFFREGSRL.dFFSR.nextstate[\'i\']' := ({{'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\''}})['dFFREGSRL.dFFSR.dataIn[\'i\']','Modelica.Electrical.Digital.Interfaces.Strength'.'\'S_X01\''];
+          else
+            if 'dFFREGSRL.dFFSR.next_assign_val[\'i\']' == ({{'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'0\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'L\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'Z\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'H\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'1\''}, {'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\'', 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'W\''}})['dFFREGSRL.dFFSR.dataIn[\'i\']','Modelica.Electrical.Digital.Interfaces.Strength'.'\'S_X01\''] or 'dFFREGSRL.dFFSR.next_assign_val[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' then
+              break;
+            elseif 'dFFREGSRL.dFFSR.dataIn[\'i\']' == 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'' then
+              'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'U\'';
+            else
+              'dFFREGSRL.dFFSR.nextstate[\'i\']' := 'Modelica.Electrical.Digital.Interfaces.Logic'.'\'X\'';
+            end if;
+          end if;
+        end if;
+      end for;
+    end if;
+
+    'dFFREGSRL.dFFSR.next_assign_val' := 'dFFREGSRL.dFFSR.nextstate';
+    'dFFREGSRL.dFFSR.dataOut' := 'dFFREGSRL.dFFSR.nextstate';
+    annotation(experiment(StopTime = 15));
+  end 'DFFREGSRL';
+end 'DFFREGSRL';

@@ -1,0 +1,186 @@
+//! base 0.1.0
+package 'InverseIncompressible_sh_T'
+  function 'Modelica.Math.Polynomials.integralValue' "Integral of polynomial p(u) from u_low to u_high"
+    input Real 'p'[:];
+    input Real 'u_high';
+    input Real 'u_low' = 0.0;
+    output Real 'integral' = 0.0;
+    Integer 'n' = size('p', 1);
+    Real 'y_low' = 0.0;
+  algorithm
+    for 'j' in 1:'n' loop
+      'integral' := 'u_high' * ('p'['j'] / ('n' - 'j' + 1) + 'integral');
+      'y_low' := 'u_low' * ('p'['j'] / ('n' - 'j' + 1) + 'y_low');
+    end for;
+
+    'integral' := 'integral' - 'y_low';
+    annotation(derivative(order = 1, zeroDerivative = 'p') = 'Modelica.Math.Polynomials.integralValue_der');
+  end 'Modelica.Math.Polynomials.integralValue';
+
+  function 'Modelica.Math.Nonlinear.solveOneNonlinearEquation' "Solve f(u) = 0 in a very reliable and efficient way (f(u_min) and f(u_max) must have different signs)"
+    input 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' 'f';
+    input Real 'u_min';
+    input Real 'u_max';
+    input Real 'tolerance' = 2.220446049250313e-14;
+    output Real 'u';
+    constant Real 'eps' = 2.220446049250313e-16;
+    Real 'a' = 'u_min';
+    Real 'b' = 'u_max';
+    Real 'c';
+    Real 'd';
+    Real 'e';
+    Real 'm';
+    Real 's';
+    Real 'p';
+    Real 'q';
+    Real 'r';
+    Real 'tol';
+    Real 'fa';
+    Real 'fb';
+    Real 'fc';
+    Boolean 'found' = false;
+  algorithm
+    'fa' := 'f'('u_min');
+    'fb' := 'f'('u_max');
+    'fc' := 'fb';
+
+    if 'fa' > 0.0 and 'fb' > 0.0 or 'fa' < 0.0 and 'fb' < 0.0 then
+      'Modelica.Utilities.Streams.error'("The arguments u_min and u_max provided in the function call\n    solveOneNonlinearEquation(f,u_min,u_max)\ndo not bracket the root of the single non-linear equation 0=f(u):\n  u_min  = " + String('u_min') + "\n" + "  u_max  = " + String('u_max') + "\n" + "  fa = f(u_min) = " + String('fa') + "\n" + "  fb = f(u_max) = " + String('fb') + "\n" + "fa and fb must have opposite sign which is not the case");
+    end if;
+
+    'c' := 'a';
+    'fc' := 'fa';
+    'e' := 'b' - 'a';
+    'd' := 'e';
+
+    while not 'found' loop
+      if abs('fc') < abs('fb') then
+        'a' := 'b';
+        'b' := 'c';
+        'c' := 'a';
+        'fa' := 'fb';
+        'fb' := 'fc';
+        'fc' := 'fa';
+      end if;
+
+      'tol' := 2.0 * 'eps' * abs('b') + 'tolerance';
+      'm' := ('c' - 'b') / 2.0;
+
+      if abs('m') <= 'tol' or 'fb' == 0.0 then
+        'found' := true;
+        'u' := 'b';
+      else
+        if abs('e') < 'tol' or abs('fa') <= abs('fb') then
+          'e' := 'm';
+          'd' := 'e';
+        else
+          's' := 'fb' / 'fa';
+
+          if 'a' == 'c' then
+            'p' := 2.0 * 'm' * 's';
+            'q' := 1.0 - 's';
+          else
+            'q' := 'fa' / 'fc';
+            'r' := 'fb' / 'fc';
+            'p' := 's' * (2.0 * 'm' * 'q' * ('q' - 'r') - ('b' - 'a') * ('r' - 1.0));
+            'q' := ('q' - 1.0) * ('r' - 1.0) * ('s' - 1.0);
+          end if;
+
+          if 'p' > 0.0 then
+            'q' := -'q';
+          else
+            'p' := -'p';
+          end if;
+
+          's' := 'e';
+          'e' := 'd';
+
+          if 2.0 * 'p' < 3.0 * 'm' * 'q' - abs('tol' * 'q') and 'p' < abs(0.5 * 's' * 'q') then
+            'd' := 'p' / 'q';
+          else
+            'e' := 'm';
+            'd' := 'e';
+          end if;
+        end if;
+
+        'a' := 'b';
+        'fa' := 'fb';
+        'b' := 'b' + (if abs('d') > 'tol' then 'd' else if 'm' > 0.0 then 'tol' else -'tol');
+        'fb' := 'f'('b');
+
+        if 'fb' > 0.0 and 'fc' > 0.0 or 'fb' < 0.0 and 'fc' < 0.0 then
+          'c' := 'a';
+          'fc' := 'fa';
+          'e' := 'b' - 'a';
+          'd' := 'e';
+        end if;
+      end if;
+    end while;
+  end 'Modelica.Math.Nonlinear.solveOneNonlinearEquation';
+
+  function 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.specificEntropy' "Return specific entropy as a function of the thermodynamic state record"
+    input 'Medium.ThermodynamicState' 'state';
+    output Real 's'(nominal = 1000.0, max = 1e7, min = -1e7, unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Integer 'npol' = 2;
+  algorithm
+    assert(true, "Specific Entropy, s(T), is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
+    's' := 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.s_T'('state'.'T');
+    annotation(smoothOrder = 2);
+  end 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.specificEntropy';
+
+  function 'Modelica.Math.Polynomials.integralValue_der' "Time derivative of integral of polynomial p(u) from u_low to u_high, assuming only u_high as time-dependent (Leibniz rule)"
+    input Real 'p'[:];
+    input Real 'u_high';
+    input Real 'u_low' = 0.0;
+    input Real 'du_high';
+    input Real 'du_low' = 0.0;
+    output Real 'dintegral' = 0.0;
+  algorithm
+    'dintegral' := 'Modelica.Math.Polynomials.evaluate'('p', 'u_high') * 'du_high';
+  end 'Modelica.Math.Polynomials.integralValue_der';
+
+  function 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.setState_pT' "Returns state record as function of p and T"
+    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'T'(nominal = 300.0, start = 288.15, max = 373.15, min = 243.14999999999998, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    output 'Medium.ThermodynamicState' 'state';
+  algorithm
+    'state'.'T' := 'T';
+    'state'.'p' := 'p';
+    annotation(smoothOrder = 3);
+  end 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.setState_pT';
+
+  record 'Medium.ThermodynamicState'
+    Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+  end 'Medium.ThermodynamicState';
+
+  partial function 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' "Interface for a function with one input and one output Real signal"
+    input Real 'u';
+    output Real 'y';
+  end 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction';
+
+  model 'InverseIncompressible_sh_T' "Inverse computation for incompressible media"
+    parameter Real 'T_min'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 243.14999999999998 "Vary temperature linearly from T_min (time=0) up to T_max (time=1)";
+    parameter Real 'T_max'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 373.15 "Vary temperature linearly from T_min (time=0) up to T_max (time=1)";
+    parameter Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1e5 "Fixed pressure in model";
+    parameter Real 'h_min'(unit = "J/kg", quantity = "SpecificEnergy") = -105128.34143377884 "Specific enthalpy at T_min";
+    parameter Real 'h_max'(unit = "J/kg", quantity = "SpecificEnergy") = 372336.28613859473 "Specific enthalpy at T_max";
+    parameter Real 's_min'(unit = "J/(kg.K)", quantity = "SpecificEntropy") = -401.29833996167235 "Specific entropy at T_min";
+    parameter Real 's_max'(unit = "J/(kg.K)", quantity = "SpecificEntropy") = 1137.8997504962717 "Specific entropy at T_max";
+    Real 'h1'(fixed = true, start = -105128.34143377884, unit = "J/kg", quantity = "SpecificEnergy") "Pre-defined specific enthalpy";
+    Real 'h2'(unit = "J/kg", quantity = "SpecificEnergy") "Specific enthalpy computed from Th (= h1 required)";
+    Real 's1'(fixed = true, start = -401.29833996167235, unit = "J/(kg.K)", quantity = "SpecificEntropy") "Pre-defined specific entropy";
+    Real 's2'(unit = "J/(kg.K)", quantity = "SpecificEntropy") "Specific entropy computed from Ts (= s1 required)";
+    Real 'Th'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature computed from h1";
+    Real 'Ts'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature computed from s1";
+    constant Real 'timeUnit'(unit = "s", quantity = "Time") = 1.0;
+  equation
+    der('h1') = if time < 1.0 then 477464.6275723736 else 0.0;
+    der('s1') = if time < 1.0 then 1539.198090457944 else 0.0;
+    'Th' = 'Modelica.Math.Nonlinear.solveOneNonlinearEquation'(function 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.T_ph.f_nonlinear'(p = 1e5, h = 'h1'), 243.14999999999998, 373.15, 2.220446049250313e-14);
+    'Ts' = 'Modelica.Math.Nonlinear.solveOneNonlinearEquation'(function 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.T_ps.f_nonlinear'(s = 's1'), 243.14999999999998, 373.15, 2.220446049250313e-14);
+    'h2' = 'Modelica.Math.Polynomials.integralValue'({-7.666493085690878e-4, 3.406312561476593, 3555.6027310073478}, 'Th' - 273.15, 0.0);
+    's2' = 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.specificEntropy'('Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.setState_pT'(1e5, 'Ts'));
+    annotation(experiment(StopTime = 1));
+  end 'InverseIncompressible_sh_T';
+end 'InverseIncompressible_sh_T';
