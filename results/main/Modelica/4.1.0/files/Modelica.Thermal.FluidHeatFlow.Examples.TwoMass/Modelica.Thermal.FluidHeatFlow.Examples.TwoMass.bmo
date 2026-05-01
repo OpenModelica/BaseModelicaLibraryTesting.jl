@@ -9,13 +9,13 @@ package 'TwoMass'
     parameter Real 'TAmb'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Ambient temperature";
     parameter Real 'TMass1'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 313.15 "Initial temperature of mass1";
     parameter Real 'TMass2'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 333.15 "Initial temperature of mass2";
-    output Real 'dTMass1'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTtoPipe1'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTCoolant1'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTMass2'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTtoPipe2'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTCoolant2'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTmixedCoolant'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTMass1'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between mass 1 and ambient condition";
+    output Real 'dTtoPipe1'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between mass 1 and coolant in pipe 1";
+    output Real 'dTCoolant1'(unit = "K", quantity = "ThermodynamicTemperature") "Change in coolant temperature in pipe 1";
+    output Real 'dTMass2'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between mass 2 and ambient condition";
+    output Real 'dTtoPipe2'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between mass 2 and coolant in pipe 2";
+    output Real 'dTCoolant2'(unit = "K", quantity = "ThermodynamicTemperature") "Coolant2's temperature increase";
+    output Real 'dTmixedCoolant'(unit = "K", quantity = "ThermodynamicTemperature") "Mixed Coolant's temperature increase";
     parameter Real 'ambient1.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'ambient1.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
     parameter Real 'ambient1.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
@@ -57,7 +57,7 @@ package 'TwoMass'
     Real 'pump.T'(nominal = 300.0, fixed = false, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'pump.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'pump.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'pump.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pump.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'pump.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'pump.h'(start = 'pump.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'pump.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -97,7 +97,7 @@ package 'TwoMass'
     Real 'pipe1.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'pipe1.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'pipe1.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'pipe1.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pipe1.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'pipe1.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'pipe1.h'(start = 'pipe1.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'pipe1.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -149,7 +149,7 @@ package 'TwoMass'
     Real 'pipe2.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'pipe2.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'pipe2.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'pipe2.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pipe2.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'pipe2.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'pipe2.h'(start = 'pipe2.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'pipe2.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -201,7 +201,7 @@ package 'TwoMass'
     Real 'pipe3.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'pipe3.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'pipe3.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'pipe3.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pipe3.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'pipe3.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'pipe3.h'(start = 'pipe3.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'pipe3.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -268,7 +268,7 @@ package 'TwoMass'
     Real 'heatCapacitor1.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'heatCapacitor1.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'thermalConductor1.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from port_a -> port_b";
-    Real 'thermalConductor1.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'thermalConductor1.dT'(unit = "K", quantity = "ThermodynamicTemperature") "port_a.T - port_b.T";
     Real 'thermalConductor1.port_a.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'thermalConductor1.port_a.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'thermalConductor1.port_b.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
@@ -280,7 +280,7 @@ package 'TwoMass'
     Real 'heatCapacitor2.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'heatCapacitor2.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'thermalConductor2.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from port_a -> port_b";
-    Real 'thermalConductor2.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'thermalConductor2.dT'(unit = "K", quantity = "ThermodynamicTemperature") "port_a.T - port_b.T";
     Real 'thermalConductor2.port_a.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'thermalConductor2.port_a.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'thermalConductor2.port_b.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";

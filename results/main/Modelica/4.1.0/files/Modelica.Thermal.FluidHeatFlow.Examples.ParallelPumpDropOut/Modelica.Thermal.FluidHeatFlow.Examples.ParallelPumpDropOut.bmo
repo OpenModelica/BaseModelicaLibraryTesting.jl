@@ -7,13 +7,13 @@ package 'ParallelPumpDropOut'
     parameter Real 'medium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
     parameter Real 'medium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
     parameter Real 'TAmb'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Ambient temperature";
-    output Real 'dTSource1'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTtoPipe1'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTCoolant1'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTSource2'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTtoPipe2'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTCoolant2'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTmixedCoolant'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTSource1'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between heat source 1 and ambient condition";
+    output Real 'dTtoPipe1'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between heat source 1 and coolant in pipe 1";
+    output Real 'dTCoolant1'(unit = "K", quantity = "ThermodynamicTemperature") "Coolant1's temperature increase";
+    output Real 'dTSource2'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between heat source 2 and ambient condition";
+    output Real 'dTtoPipe2'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between heat source 2 and coolant in pipe 2";
+    output Real 'dTCoolant2'(unit = "K", quantity = "ThermodynamicTemperature") "Coolant2's temperature increase";
+    output Real 'dTmixedCoolant'(unit = "K", quantity = "ThermodynamicTemperature") "Overall change in coolant temperature";
     parameter Real 'ambient1.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'ambient1.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
     parameter Real 'ambient1.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
@@ -55,7 +55,7 @@ package 'ParallelPumpDropOut'
     Real 'pump.T'(nominal = 300.0, fixed = false, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'pump.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'pump.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'pump.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pump.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'pump.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'pump.h'(start = 'pump.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'pump.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -95,7 +95,7 @@ package 'ParallelPumpDropOut'
     Real 'pipe1.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'pipe1.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'pipe1.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'pipe1.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pipe1.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'pipe1.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'pipe1.h'(start = 'pipe1.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'pipe1.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -147,7 +147,7 @@ package 'ParallelPumpDropOut'
     Real 'pipe2.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'pipe2.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'pipe2.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'pipe2.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pipe2.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'pipe2.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'pipe2.h'(start = 'pipe2.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'pipe2.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -199,7 +199,7 @@ package 'ParallelPumpDropOut'
     Real 'pipe3.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'pipe3.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'pipe3.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'pipe3.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pipe3.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'pipe3.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'pipe3.h'(start = 'pipe3.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'pipe3.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -271,7 +271,7 @@ package 'ParallelPumpDropOut'
     Real 'prescribedHeatFlow1.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'prescribedHeatFlow1.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'Convection1.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from solid -> fluid";
-    Real 'Convection1.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'Convection1.dT'(unit = "K", quantity = "ThermodynamicTemperature") "= solid.T - fluid.T";
     Real 'Convection1.Gc'(unit = "W/K") "Signal representing the convective thermal conductance in [W/K]";
     Real 'Convection1.solid.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'Convection1.solid.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
@@ -288,7 +288,7 @@ package 'ParallelPumpDropOut'
     Real 'prescribedHeatFlow2.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'prescribedHeatFlow2.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'convection2.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from solid -> fluid";
-    Real 'convection2.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'convection2.dT'(unit = "K", quantity = "ThermodynamicTemperature") "= solid.T - fluid.T";
     Real 'convection2.Gc'(unit = "W/K") "Signal representing the convective thermal conductance in [W/K]";
     Real 'convection2.solid.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'convection2.solid.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";

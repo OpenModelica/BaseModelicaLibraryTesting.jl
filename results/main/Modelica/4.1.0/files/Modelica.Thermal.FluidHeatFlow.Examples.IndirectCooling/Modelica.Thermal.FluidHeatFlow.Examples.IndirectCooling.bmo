@@ -12,11 +12,11 @@ package 'IndirectCooling'
     parameter Real 'innerMedium.lambda'(unit = "W/(m.K)", quantity = "ThermalConductivity") = 1.0 "Thermal conductivity";
     parameter Real 'innerMedium.nu'(min = 0.0, unit = "m2/s", quantity = "KinematicViscosity") = 1.0 "Kinematic viscosity";
     parameter Real 'TAmb'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Ambient temperature";
-    output Real 'dTSource'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTtoPipe'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTinnerCoolant'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTCooler'(unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'dTouterCoolant'(unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'dTSource'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between heat source and ambient condition";
+    output Real 'dTtoPipe'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature difference between heat source and coolant in pipe 1";
+    output Real 'dTinnerCoolant'(unit = "K", quantity = "ThermodynamicTemperature") "Inner Coolant's temperature increase";
+    output Real 'dTCooler'(unit = "K", quantity = "ThermodynamicTemperature") "Coolant temperature difference between inner pipe and outer pipe";
+    output Real 'dTouterCoolant'(unit = "K", quantity = "ThermodynamicTemperature") "Outer coolant's temperature increase";
     parameter Real 'ambient1.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
     parameter Real 'ambient1.medium.cp'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant pressure";
     parameter Real 'ambient1.medium.cv'(unit = "J/(kg.K)", quantity = "SpecificHeatCapacity") = 1.0 "Specific heat capacity at constant volume";
@@ -58,7 +58,7 @@ package 'IndirectCooling'
     Real 'outerPump.T'(nominal = 300.0, fixed = false, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'outerPump.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'outerPump.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'outerPump.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'outerPump.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'outerPump.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'outerPump.h'(start = 'outerPump.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'outerPump.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -110,7 +110,7 @@ package 'IndirectCooling'
     Real 'ambient2.pAmbient'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'ambient2.TAmbient'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     Real 'thermalConductor.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from port_a -> port_b";
-    Real 'thermalConductor.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'thermalConductor.dT'(unit = "K", quantity = "ThermodynamicTemperature") "port_a.T - port_b.T";
     Real 'thermalConductor.port_a.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'thermalConductor.port_a.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'thermalConductor.port_b.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
@@ -141,7 +141,7 @@ package 'IndirectCooling'
     Real 'pipe1.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'pipe1.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'pipe1.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'pipe1.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pipe1.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'pipe1.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'pipe1.h'(start = 'pipe1.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'pipe1.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -214,7 +214,7 @@ package 'IndirectCooling'
     Real 'innerPump.T'(nominal = 300.0, fixed = false, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'innerPump.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'innerPump.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'innerPump.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'innerPump.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'innerPump.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'innerPump.h'(start = 'innerPump.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'innerPump.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -264,7 +264,7 @@ package 'IndirectCooling'
     Real 'outerPipe.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'outerPipe.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'outerPipe.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'outerPipe.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'outerPipe.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'outerPipe.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'outerPipe.h'(start = 'outerPipe.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'outerPipe.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -316,7 +316,7 @@ package 'IndirectCooling'
     Real 'innerPipe.T'(nominal = 300.0, fixed = true, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'innerPipe.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'innerPipe.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'innerPipe.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'innerPipe.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'innerPipe.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'innerPipe.h'(start = 'innerPipe.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'innerPipe.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -354,14 +354,14 @@ package 'IndirectCooling'
     Real 'innerPipe.heatPort.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'innerPipe.Q_flowHeatPort'(unit = "W", quantity = "Power") "Heat flow at conditional heatPort";
     Real 'innerConvection.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from solid -> fluid";
-    Real 'innerConvection.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'innerConvection.dT'(unit = "K", quantity = "ThermodynamicTemperature") "= solid.T - fluid.T";
     Real 'innerConvection.Gc'(unit = "W/K") "Signal representing the convective thermal conductance in [W/K]";
     Real 'innerConvection.solid.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'innerConvection.solid.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'innerConvection.fluid.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'innerConvection.fluid.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'outerConvection.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from solid -> fluid";
-    Real 'outerConvection.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'outerConvection.dT'(unit = "K", quantity = "ThermodynamicTemperature") "= solid.T - fluid.T";
     Real 'outerConvection.Gc'(unit = "W/K") "Signal representing the convective thermal conductance in [W/K]";
     Real 'outerConvection.solid.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'outerConvection.solid.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";

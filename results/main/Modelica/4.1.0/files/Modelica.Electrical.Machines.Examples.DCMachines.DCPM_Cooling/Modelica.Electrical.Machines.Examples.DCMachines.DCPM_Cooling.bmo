@@ -11,8 +11,8 @@ package 'DCPM_Cooling'
     parameter Real 'Cc'(unit = "J/K", quantity = "HeatCapacity") = 50.0 "Core's heat capacity";
     parameter Real 'Losses'(unit = "W", quantity = "Power") = 500.0 "Nominal Losses";
     parameter Real 'T0'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 293.15 "Reference temperature 20 degC";
-    parameter Real 'dTCoolant'(unit = "K", quantity = "ThermodynamicTemperature") = 10.0;
-    parameter Real 'dTArmature'(unit = "K", quantity = "ThermodynamicTemperature") = 55.0;
+    parameter Real 'dTCoolant'(unit = "K", quantity = "ThermodynamicTemperature") = 10.0 "Coolant's temperature rise";
+    parameter Real 'dTArmature'(unit = "K", quantity = "ThermodynamicTemperature") = 55.0 "Armature's temperature rise over coolant";
     parameter Real 'G_armature_core'(unit = "W/K", quantity = "ThermalConductance") = 18.181818181818183 "Heat conductance armature - core";
     parameter Real 'G_core_cooling'(unit = "W/K", quantity = "ThermalConductance") = 18.181818181818183 "Heat conductance core - cooling";
     parameter Real 'CoolantFlow'(unit = "m3/s", quantity = "VolumeFlowRate") = 50.0 "Coolant flow";
@@ -294,7 +294,7 @@ package 'DCPM_Cooling'
     Real 'armature.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'armature.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'armatureCore.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from port_a -> port_b";
-    Real 'armatureCore.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'armatureCore.dT'(unit = "K", quantity = "ThermodynamicTemperature") "port_a.T - port_b.T";
     Real 'armatureCore.port_a.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'armatureCore.port_a.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'armatureCore.port_b.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
@@ -306,7 +306,7 @@ package 'DCPM_Cooling'
     Real 'core.port.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'core.port.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'coreCooling.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate from port_a -> port_b";
-    Real 'coreCooling.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'coreCooling.dT'(unit = "K", quantity = "ThermodynamicTemperature") "port_a.T - port_b.T";
     Real 'coreCooling.port_a.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
     Real 'coreCooling.port_a.Q_flow'(unit = "W", quantity = "Power") "Heat flow rate (positive if flowing from outside into the component)";
     Real 'coreCooling.port_b.T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Port temperature";
@@ -353,7 +353,7 @@ package 'DCPM_Cooling'
     Real 'volumeFlow.T'(nominal = 300.0, fixed = false, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'volumeFlow.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'volumeFlow.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'volumeFlow.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'volumeFlow.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'volumeFlow.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'volumeFlow.h'(start = 'volumeFlow.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'volumeFlow.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
@@ -392,7 +392,7 @@ package 'DCPM_Cooling'
     Real 'cooling.T'(nominal = 300.0, fixed = false, start = 293.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Outlet temperature of medium";
     Real 'cooling.T_a'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_a";
     Real 'cooling.T_b'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature at flowPort_b";
-    Real 'cooling.dT'(unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'cooling.dT'(unit = "K", quantity = "ThermodynamicTemperature") "Temperature increase of coolant in flow direction";
     Real 'cooling.T_q'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") "Temperature relevant for heat exchange with ambient";
     Real 'cooling.h'(start = 'cooling.medium.cp' * 293.15, unit = "J/kg", quantity = "SpecificEnergy") "Medium's specific enthalpy";
     parameter Real 'cooling.flowPort_a.medium.rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 1.0 "Density";
