@@ -1,6 +1,6 @@
 //! base 0.1.0
 package 'EngineV6_analytic'
-  function 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder2.jointRRP.jointUSP.prismatic.selectBranch' "Determine branch which is closest to initial angle=0"
+  function 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder6.jointRRP.jointUSP.prismatic.selectBranch' "Determine branch which is closest to initial angle=0"
     input Real 'L'(unit = "m", quantity = "Length");
     input Real 'e'[3](each unit = "1");
     input Real 'd_guess'(unit = "m", quantity = "Length");
@@ -33,7 +33,7 @@ package 'EngineV6_analytic'
     else
       'positiveBranch' := false;
     end if;
-  end 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder2.jointRRP.jointUSP.prismatic.selectBranch';
+  end 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder6.jointRRP.jointUSP.prismatic.selectBranch';
 
   function 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder1.jointRRP.jointUSP.prismatic.selectBranch' "Determine branch which is closest to initial angle=0"
     input Real 'L'(unit = "m", quantity = "Length");
@@ -69,6 +69,41 @@ package 'EngineV6_analytic'
       'positiveBranch' := false;
     end if;
   end 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder1.jointRRP.jointUSP.prismatic.selectBranch';
+
+  function 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder2.jointRRP.jointUSP.prismatic.selectBranch' "Determine branch which is closest to initial angle=0"
+    input Real 'L'(unit = "m", quantity = "Length");
+    input Real 'e'[3](each unit = "1");
+    input Real 'd_guess'(unit = "m", quantity = "Length");
+    input Real 'r_a'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
+    input Real 'r_b'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
+    output Boolean 'positiveBranch';
+    Real 'rbra'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
+    Real 'B';
+    Real 'C';
+    Real 'k1';
+    Real 'k2';
+    Real 'k1a';
+    Real 'k1b';
+    Real 'd1';
+    Real 'd2';
+  algorithm
+    'rbra' := {'r_b'[1] - 'r_a'[1], 'r_b'[2] - 'r_a'[2], 'r_b'[3] - 'r_a'[3]};
+    'B' := 2.0 * ('e'[1] * 'rbra'[1] + 'e'[2] * 'rbra'[2] + 'e'[3] * 'rbra'[3]);
+    'C' := 'rbra'[1] * 'rbra'[1] + 'rbra'[2] * 'rbra'[2] + 'rbra'[3] * 'rbra'[3] - 'L' * 'L';
+    'k1' := 'B' / 2.0;
+    'k1a' := 'k1' * 'k1' - 'C';
+    assert(noEvent('k1a' > 1e-10), "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIf this also lead to singular positions, it could be that this\nkinematic loop cannot be solved analytically with a fixed state\nselection. In this case you have to build up the loop with\nbasic joints (NO aggregation JointXXX components) and rely on\ndynamic state selection, i.e., during simulation the states will\nbe dynamically selected in such a way that in no position a\ndegree of freedom is lost.\n", AssertionLevel.error);
+    'k1b' := max('k1a', 1e-12);
+    'k2' := sqrt('k1b');
+    'd1' := 'k2' - 'k1';
+    'd2' := -('k1' + 'k2');
+
+    if abs('d1' - 'd_guess') <= abs('d2' - 'd_guess') then
+      'positiveBranch' := true;
+    else
+      'positiveBranch' := false;
+    end if;
+  end 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder2.jointRRP.jointUSP.prismatic.selectBranch';
 
   function 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder3.jointRRP.jointUSP.prismatic.selectBranch' "Determine branch which is closest to initial angle=0"
     input Real 'L'(unit = "m", quantity = "Length");
@@ -139,41 +174,6 @@ package 'EngineV6_analytic'
       'positiveBranch' := false;
     end if;
   end 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder4.jointRRP.jointUSP.prismatic.selectBranch';
-
-  function 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder6.jointRRP.jointUSP.prismatic.selectBranch' "Determine branch which is closest to initial angle=0"
-    input Real 'L'(unit = "m", quantity = "Length");
-    input Real 'e'[3](each unit = "1");
-    input Real 'd_guess'(unit = "m", quantity = "Length");
-    input Real 'r_a'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    input Real 'r_b'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    output Boolean 'positiveBranch';
-    Real 'rbra'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    Real 'B';
-    Real 'C';
-    Real 'k1';
-    Real 'k2';
-    Real 'k1a';
-    Real 'k1b';
-    Real 'd1';
-    Real 'd2';
-  algorithm
-    'rbra' := {'r_b'[1] - 'r_a'[1], 'r_b'[2] - 'r_a'[2], 'r_b'[3] - 'r_a'[3]};
-    'B' := 2.0 * ('e'[1] * 'rbra'[1] + 'e'[2] * 'rbra'[2] + 'e'[3] * 'rbra'[3]);
-    'C' := 'rbra'[1] * 'rbra'[1] + 'rbra'[2] * 'rbra'[2] + 'rbra'[3] * 'rbra'[3] - 'L' * 'L';
-    'k1' := 'B' / 2.0;
-    'k1a' := 'k1' * 'k1' - 'C';
-    assert(noEvent('k1a' > 1e-10), "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIf this also lead to singular positions, it could be that this\nkinematic loop cannot be solved analytically with a fixed state\nselection. In this case you have to build up the loop with\nbasic joints (NO aggregation JointXXX components) and rely on\ndynamic state selection, i.e., during simulation the states will\nbe dynamically selected in such a way that in no position a\ndegree of freedom is lost.\n", AssertionLevel.error);
-    'k1b' := max('k1a', 1e-12);
-    'k2' := sqrt('k1b');
-    'd1' := 'k2' - 'k1';
-    'd2' := -('k1' + 'k2');
-
-    if abs('d1' - 'd_guess') <= abs('d2' - 'd_guess') then
-      'positiveBranch' := true;
-    else
-      'positiveBranch' := false;
-    end if;
-  end 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder6.jointRRP.jointUSP.prismatic.selectBranch';
 
   function 'Modelica.Mechanics.MultiBody.Examples.Loops.EngineV6_analytic.engine.cylinder5.jointRRP.jointUSP.prismatic.selectBranch' "Determine branch which is closest to initial angle=0"
     input Real 'L'(unit = "m", quantity = "Length");

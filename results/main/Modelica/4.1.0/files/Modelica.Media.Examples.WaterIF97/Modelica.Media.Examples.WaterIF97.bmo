@@ -1,5 +1,48 @@
 //! base 0.1.0
 package 'WaterIF97'
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p' "Properties on the boiling curve"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
+  algorithm
+    'bpro'.'R_s' := 461.526;
+    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
+    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
+    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
+
+    if not 'bpro'.'region3boundary' then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'bpro'.'T');
+      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    else
+      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhol_p_R4b'('plim');
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
+      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hl_p_R4b'('plim');
+      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der' "Derivative function for tsat"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'der_p'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    output Real 'der_tsat'(unit = "K/s", quantity = "TemperatureSlope");
+    Real 'dtp';
+  algorithm
+    'dtp' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('p');
+    'der_tsat' := 'dtp' * 'der_p';
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der';
+
   function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph' "Intermediate property record for water"
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
@@ -115,39 +158,6 @@ package 'WaterIF97'
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph';
 
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p' "Properties on the dew curve"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
-    'Modelica.Media.Common.GibbsDerivs' 'g';
-    'Modelica.Media.Common.HelmholtzDerivs' 'f';
-    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
-  algorithm
-    'bpro'.'R_s' := 461.526;
-    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
-    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
-    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
-
-    if not 'bpro'.'region3boundary' then
-      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'bpro'.'T', true);
-      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
-      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
-      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
-      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
-      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
-      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
-      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
-      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-    else
-      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhov_p_R4b'('plim');
-      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
-      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hv_p_R4b'('plim');
-      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
-      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
-      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
-      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
-    end if;
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p';
-
   function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat' "Region 4 saturation temperature as a function of pressure"
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
@@ -179,39 +189,6 @@ package 'WaterIF97'
     't_sat' := 0.5 * (650.17534844798 + 'o'[20] - ((650.17534844798 + 'o'[20]) ^ 2.0 - 4.0 * (1300.35069689596 * 'o'[19] * 'o'[5] - 0.23855557567849)) ^ 0.5);
     annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der');
   end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat';
-
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p' "Properties on the boiling curve"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
-    'Modelica.Media.Common.GibbsDerivs' 'g';
-    'Modelica.Media.Common.HelmholtzDerivs' 'f';
-    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
-  algorithm
-    'bpro'.'R_s' := 461.526;
-    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
-    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
-    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
-
-    if not 'bpro'.'region3boundary' then
-      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'bpro'.'T');
-      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
-      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
-      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
-      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
-      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
-      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
-      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
-      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-    else
-      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhol_p_R4b'('plim');
-      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
-      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hl_p_R4b'('plim');
-      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
-      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
-      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
-      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
-    end if;
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p';
 
   function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT' "Intermediate property record for water (p and T preferred states)"
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -284,15 +261,38 @@ package 'WaterIF97'
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';
 
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der' "Derivative function for tsat"
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p' "Properties on the dew curve"
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'der_p'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    output Real 'der_tsat'(unit = "K/s", quantity = "TemperatureSlope");
-    Real 'dtp';
+    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
   algorithm
-    'dtp' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('p');
-    'der_tsat' := 'dtp' * 'der_p';
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der';
+    'bpro'.'R_s' := 461.526;
+    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
+    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
+    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
+
+    if not 'bpro'.'region3boundary' then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'bpro'.'T', true);
+      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    else
+      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhov_p_R4b'('plim');
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
+      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hv_p_R4b'('plim');
+      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p';
 
   record 'Modelica.Media.Common.IF97PhaseBoundaryProperties'
     Boolean 'region3boundary';

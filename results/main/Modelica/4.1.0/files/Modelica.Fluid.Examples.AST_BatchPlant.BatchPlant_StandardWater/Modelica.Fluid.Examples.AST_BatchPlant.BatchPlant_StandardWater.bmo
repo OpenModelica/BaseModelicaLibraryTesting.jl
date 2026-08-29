@@ -1,5 +1,167 @@
 //! base 0.1.0
 package 'BatchPlant_StandardWater'
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p' "Properties on the boiling curve"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
+  algorithm
+    'bpro'.'R_s' := 461.526;
+    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
+    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
+    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
+
+    if not 'bpro'.'region3boundary' then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'bpro'.'T');
+      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
+      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    else
+      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhol_p_R4b'('plim');
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
+      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hl_p_R4b'('plim');
+      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Fluid.Machines.BaseClasses.PumpMonitoring.assertPositiveDifference'
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'p_sat'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input String 'message';
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+  algorithm
+    'dp' := 'p' - 'p_sat';
+    assert('p' >= 'p_sat', 'message', AssertionLevel.error);
+  end 'Modelica.Fluid.Machines.BaseClasses.PumpMonitoring.assertPositiveDifference';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat' "Region 4 saturation pressure as a function of temperature"
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'p_sat'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'o'[8];
+    Real 'Tlim' = min('T', 647.096);
+  algorithm
+    assert('T' >= 273.16, "IF97 medium function psat: input temperature (= 273.16 K).\nlower than the triple point temperature 273.16 K", AssertionLevel.error);
+    'o'[1] := 'Tlim' - 650.17534844798;
+    'o'[2] := 1.0 / 'o'[1];
+    'o'[3] := -0.23855557567849 * 'o'[2];
+    'o'[4] := 'o'[3] + 'Tlim';
+    'o'[5] := -4823.2657361591 * 'o'[4];
+    'o'[6] := 'o'[4] * 'o'[4];
+    'o'[7] := 14.91510861353 * 'o'[6];
+    'o'[8] := 405113.40542057 + 'o'[5] + 'o'[7];
+    'p_sat' := 1.6e7 * 'o'[8] * 'o'[8] * 'o'[8] * 'o'[8] / (3.2325550322333e6 - 12020.82470247 * 'o'[4] + 17.073846940092 * 'o'[6] + sqrt((12020.82470247 * 'o'[4] - 3.2325550322333e6 - 17.073846940092 * 'o'[6]) ^ 2.0 - 4.0 * (1167.0521452767 * 'o'[4] - 724213.16703206 + 'o'[6]) * 'o'[8])) ^ 4.0;
+    annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat_der');
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat';
+
+  function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT' "Intermediate property record for water (p and T preferred states)"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Integer 'region' = 0;
+    output 'Modelica.Media.Common.IF97BaseTwoPhase' 'aux';
+    'Modelica.Media.Common.GibbsDerivs' 'g';
+    'Modelica.Media.Common.HelmholtzDerivs' 'f';
+    Integer 'error';
+  algorithm
+    'aux'.'phase' := 1;
+    'aux'.'region' := if 'region' == 0 then 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.region_pT'('p', 'T', 0) else 'region';
+    'aux'.'R_s' := 461.526;
+    'aux'.'p' := 'p';
+    'aux'.'T' := 'T';
+    'aux'.'vt' := 0.0 "Initialized in case it is not needed";
+    'aux'.'vp' := 0.0 "Initialized in case it is not needed";
+
+    if 'aux'.'region' == 1 then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'T');
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+    elseif 'aux'.'region' == 2 then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'T', true);
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 1.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    elseif 'aux'.'region' == 3 then
+      ('aux'.'rho', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.dofpt3'('p', 'T', 1e-7);
+      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('aux'.'rho', 'T');
+      'aux'.'h' := 'aux'.'R_s' * 'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta');
+      'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
+      'aux'.'pd' := 'aux'.'R_s' * 'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
+      'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
+      'aux'.'cv' := 'aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
+      'aux'.'x' := 0.0;
+      'aux'.'dpT' := 'aux'.'pt';
+    elseif 'aux'.'region' == 5 then
+      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g5'('p', 'T');
+      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
+      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
+      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
+      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
+      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
+      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
+      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
+      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
+      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
+      'aux'.'x' := 1.0;
+      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
+    else
+      assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", T = " + String('T') + ")", AssertionLevel.error);
+    end if;
+  end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';
+
   function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB2B3.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
     input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -29,7 +191,36 @@ package 'BatchPlant_StandardWater'
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB2B3.flowModel.WallFriction.pressureLoss_m_flow';
 
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -63,12 +254,12 @@ package 'BatchPlant_StandardWater'
     'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
 
     if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
@@ -78,7 +269,259 @@ package 'BatchPlant_StandardWater'
       end if;
     end if;
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.massFlowRate_dp_staticHead';
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat' "Region 4 saturation temperature as a function of pressure"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pi';
+    Real 'o'[20];
+  algorithm
+    assert('p' > 611.657, "IF97 medium function tsat called with too low pressure\np = " + String('p') + " Pa <= " + "611.657" + " Pa (triple point pressure)", AssertionLevel.error);
+    'pi' := min('p', 2.2064e7) * 1e-6;
+    'o'[1] := 'pi' ^ 0.25;
+    'o'[2] := -3.2325550322333e6 * 'o'[1];
+    'o'[3] := 'pi' ^ 0.5;
+    'o'[4] := -724213.16703206 * 'o'[3];
+    'o'[5] := 405113.40542057 + 'o'[2] + 'o'[4];
+    'o'[6] := -17.073846940092 * 'o'[1];
+    'o'[7] := 14.91510861353 + 'o'[3] + 'o'[6];
+    'o'[8] := -4.0 * 'o'[5] * 'o'[7];
+    'o'[9] := 12020.82470247 * 'o'[1];
+    'o'[10] := 1167.0521452767 * 'o'[3];
+    'o'[11] := 'o'[10] - 4823.2657361591 + 'o'[9];
+    'o'[12] := 'o'[11] * 'o'[11];
+    'o'[13] := 'o'[12] + 'o'[8];
+    'o'[14] := 'o'[13] ^ 0.5;
+    'o'[15] := -'o'[14];
+    'o'[16] := -12020.82470247 * 'o'[1];
+    'o'[17] := -1167.0521452767 * 'o'[3];
+    'o'[18] := 4823.2657361591 + 'o'[15] + 'o'[16] + 'o'[17];
+    'o'[19] := 1.0 / 'o'[18];
+    'o'[20] := 2.0 * 'o'[19] * 'o'[5];
+    't_sat' := 0.5 * (650.17534844798 + 'o'[20] - ((650.17534844798 + 'o'[20]) ^ 2.0 - 4.0 * (1300.35069689596 * 'o'[19] * 'o'[5] - 0.23855557567849)) ^ 0.5);
+    annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der');
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity' "Compute eta(d,T) in the one-phase region"
+    input Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Integer 'phase' = 0;
+    input Boolean 'checkLimits' = true;
+    output Real 'eta'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    constant Real 'n0' = 1.0;
+    constant Real 'n1' = 0.978197;
+    constant Real 'n2' = 0.579829;
+    constant Real 'n3' = -0.202354;
+    constant Real 'nn'[42] = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
+    constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
+    constant Real 'etastar'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 5.5071e-5;
+    constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;
+    Integer 'i';
+    Integer 'j';
+    Real 'delta';
+    Real 'deltam1';
+    Real 'tau';
+    Real 'taum1';
+    Real 'Psi0';
+    Real 'Psi1';
+    Real 'tfun';
+    Real 'rhofun';
+    Real 'Tc' = 'T' - 273.15;
+  algorithm
+    'delta' := 'd' / 'rhostar';
+
+    if 'checkLimits' then
+      assert('d' > 0.004854575724778614, "IF97 medium function visc_dTp for viscosity called with too low density\nd = " + String('d') + " <= " + "0.00485458" + " (triple point density)", AssertionLevel.error);
+      assert(('p' <= 5e8 and 'Tc' >= 0.0 and 'Tc' <= 150.0 or 'p' <= 3.5e8 and 'Tc' > 150.0 and 'Tc' <= 600.0) or 'p' <= 3e8 and 'Tc' > 600.0 and 'Tc' <= 900.0, "IF97 medium function visc_dTp: viscosity computed outside the range\nof validity of the IF97 formulation: p = " + String('p') + " Pa, Tc = " + String('Tc') + " K", AssertionLevel.error);
+    end if;
+
+    'deltam1' := 'delta' - 1.0;
+    'tau' := 'tstar' / 'T';
+    'taum1' := 'tau' - 1.0;
+    'Psi0' := 1.0 / ('n0' + ('n1' + ('n2' + 'n3' * 'tau') * 'tau') * 'tau') / sqrt('tau');
+    'Psi1' := 0.0;
+    'tfun' := 1.0;
+
+    for 'i' in 1:6 loop
+      if 'i' <> 1 then
+        'tfun' := 'tfun' * 'taum1';
+      end if;
+
+      'rhofun' := 1.0;
+
+      for 'j' in 0:6 loop
+        if 'j' <> 0 then
+          'rhofun' := 'rhofun' * 'deltam1';
+        end if;
+
+        'Psi1' := 'Psi1' + 'nn'['i' + 'j' * 6] * 'tfun' * 'rhofun';
+      end for;
+    end for;
+
+    'eta' := 'etastar' * 'Psi0' * 'Modelica.Math.exp'('delta' * 'Psi1');
+  end 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.pressureLoss_m_flow';
 
   function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph' "Intermediate property record for water"
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -195,377 +638,6 @@ package 'BatchPlant_StandardWater'
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_ph';
 
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p' "Properties on the boiling curve"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output 'Modelica.Media.Common.IF97PhaseBoundaryProperties' 'bpro';
-    'Modelica.Media.Common.GibbsDerivs' 'g';
-    'Modelica.Media.Common.HelmholtzDerivs' 'f';
-    Real 'plim'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = min('p', 2.20639999999999e7);
-  algorithm
-    'bpro'.'R_s' := 461.526;
-    'bpro'.'T' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('plim');
-    'bpro'.'dpT' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('bpro'.'T');
-    'bpro'.'region3boundary' := 'bpro'.'T' > 623.15;
-
-    if not 'bpro'.'region3boundary' then
-      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'bpro'.'T');
-      'bpro'.'d' := 'p' / ('bpro'.'R_s' * 'bpro'.'T' * 'g'.'pi' * 'g'.'gpi');
-      'bpro'.'h' := if 'p' > 'plim' then 2.08754684511715e6 else 'bpro'.'R_s' * 'bpro'.'T' * 'g'.'tau' * 'g'.'gtau';
-      'bpro'.'s' := 'g'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
-      'bpro'.'cp' := -'bpro'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
-      'bpro'.'vt' := 'bpro'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
-      'bpro'.'vp' := 'bpro'.'R_s' * 'bpro'.'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
-      'bpro'.'pt' := -'p' / 'bpro'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
-      'bpro'.'pd' := -'bpro'.'R_s' * 'bpro'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-    else
-      'bpro'.'d' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.rhol_p_R4b'('plim');
-      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('bpro'.'d', 'bpro'.'T');
-      'bpro'.'h' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.hl_p_R4b'('plim');
-      'bpro'.'s' := 'f'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
-      'bpro'.'cv' := 'bpro'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
-      'bpro'.'pt' := 'bpro'.'R_s' * 'bpro'.'d' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
-      'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
-    end if;
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.boilingcurve_p';
-
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat' "Region 4 saturation temperature as a function of pressure"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real 'pi';
-    Real 'o'[20];
-  algorithm
-    assert('p' > 611.657, "IF97 medium function tsat called with too low pressure\np = " + String('p') + " Pa <= " + "611.657" + " Pa (triple point pressure)", AssertionLevel.error);
-    'pi' := min('p', 2.2064e7) * 1e-6;
-    'o'[1] := 'pi' ^ 0.25;
-    'o'[2] := -3.2325550322333e6 * 'o'[1];
-    'o'[3] := 'pi' ^ 0.5;
-    'o'[4] := -724213.16703206 * 'o'[3];
-    'o'[5] := 405113.40542057 + 'o'[2] + 'o'[4];
-    'o'[6] := -17.073846940092 * 'o'[1];
-    'o'[7] := 14.91510861353 + 'o'[3] + 'o'[6];
-    'o'[8] := -4.0 * 'o'[5] * 'o'[7];
-    'o'[9] := 12020.82470247 * 'o'[1];
-    'o'[10] := 1167.0521452767 * 'o'[3];
-    'o'[11] := 'o'[10] - 4823.2657361591 + 'o'[9];
-    'o'[12] := 'o'[11] * 'o'[11];
-    'o'[13] := 'o'[12] + 'o'[8];
-    'o'[14] := 'o'[13] ^ 0.5;
-    'o'[15] := -'o'[14];
-    'o'[16] := -12020.82470247 * 'o'[1];
-    'o'[17] := -1167.0521452767 * 'o'[3];
-    'o'[18] := 4823.2657361591 + 'o'[15] + 'o'[16] + 'o'[17];
-    'o'[19] := 1.0 / 'o'[18];
-    'o'[20] := 2.0 * 'o'[19] * 'o'[5];
-    't_sat' := 0.5 * (650.17534844798 + 'o'[20] - ((650.17534844798 + 'o'[20]) ^ 2.0 - 4.0 * (1300.35069689596 * 'o'[19] * 'o'[5] - 0.23855557567849)) ^ 0.5);
-    annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der');
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P1.flowCharacteristic'
-    input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
-    input Real 'V_flow_nominal'[3](unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1e-4, 1.5e-4};
-    input Real 'head_nominal'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {10.0, 5.0, 0.0};
-    output Real 'head'(unit = "m", quantity = "Length");
-    Real 'V_flow_nominal2'[3] = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
-    Real 'V_flow_min'(unit = "m3/s", quantity = "VolumeFlowRate") = min('V_flow_nominal');
-    Real 'V_flow_max'(unit = "m3/s", quantity = "VolumeFlowRate") = max('V_flow_nominal');
-    Real 'c'[3] = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
-  algorithm
-    assert(max({'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[1], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[2], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[3]}) <= (-2.2250738585072014e-308), "Wrong pump curve -- head_nominal must be monotonically decreasing with increasing V_flow_nominal", AssertionLevel.warning);
-
-    if 'V_flow' < 'V_flow_min' then
-      'head' := max('head_nominal') + ('V_flow' - 'V_flow_min') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_min');
-    elseif 'V_flow' > 'V_flow_max' then
-      'head' := min('head_nominal') + ('V_flow' - 'V_flow_max') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_max');
-    else
-      'head' := 'c'[1] + 'V_flow' * ('c'[2] + 'V_flow' * 'c'[3]);
-    end if;
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P1.flowCharacteristic';
-
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat_der' "Derivative function for psat"
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'der_T'(unit = "K/s", quantity = "TemperatureSlope");
-    output Real 'der_psat'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    Real 'dpt';
-  algorithm
-    'dpt' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('T');
-    'der_psat' := 'dpt' * 'der_T';
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat_der';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P2.flowCharacteristic'
-    input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
-    input Real 'V_flow_nominal'[3](unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1e-4, 1.5e-4};
-    input Real 'head_nominal'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {10.0, 5.0, 0.0};
-    output Real 'head'(unit = "m", quantity = "Length");
-    Real 'V_flow_nominal2'[3] = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
-    Real 'V_flow_min'(unit = "m3/s", quantity = "VolumeFlowRate") = min('V_flow_nominal');
-    Real 'V_flow_max'(unit = "m3/s", quantity = "VolumeFlowRate") = max('V_flow_nominal');
-    Real 'c'[3] = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
-  algorithm
-    assert(max({'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[1], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[2], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[3]}) <= (-2.2250738585072014e-308), "Wrong pump curve -- head_nominal must be monotonically decreasing with increasing V_flow_nominal", AssertionLevel.warning);
-
-    if 'V_flow' < 'V_flow_min' then
-      'head' := max('head_nominal') + ('V_flow' - 'V_flow_min') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_min');
-    elseif 'V_flow' > 'V_flow_max' then
-      'head' := min('head_nominal') + ('V_flow' - 'V_flow_max') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_max');
-    else
-      'head' := 'c'[1] + 'V_flow' * ('c'[2] + 'V_flow' * 'c'[3]);
-    end if;
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P2.flowCharacteristic';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      else
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat' "Region 4 saturation pressure as a function of temperature"
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'p_sat'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'o'[8];
-    Real 'Tlim' = min('T', 647.096);
-  algorithm
-    assert('T' >= 273.16, "IF97 medium function psat: input temperature (= 273.16 K).\nlower than the triple point temperature 273.16 K", AssertionLevel.error);
-    'o'[1] := 'Tlim' - 650.17534844798;
-    'o'[2] := 1.0 / 'o'[1];
-    'o'[3] := -0.23855557567849 * 'o'[2];
-    'o'[4] := 'o'[3] + 'Tlim';
-    'o'[5] := -4823.2657361591 * 'o'[4];
-    'o'[6] := 'o'[4] * 'o'[4];
-    'o'[7] := 14.91510861353 * 'o'[6];
-    'o'[8] := 405113.40542057 + 'o'[5] + 'o'[7];
-    'p_sat' := 1.6e7 * 'o'[8] * 'o'[8] * 'o'[8] * 'o'[8] / (3.2325550322333e6 - 12020.82470247 * 'o'[4] + 17.073846940092 * 'o'[6] + sqrt((12020.82470247 * 'o'[4] - 3.2325550322333e6 - 17.073846940092 * 'o'[6]) ^ 2.0 - 4.0 * (1167.0521452767 * 'o'[4] - 724213.16703206 + 'o'[6]) * 'o'[8])) ^ 4.0;
-    annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat_der');
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der' "Derivative function for tsat"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'der_p'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    output Real 'der_tsat'(unit = "K/s", quantity = "TemperatureSlope");
-    Real 'dtp';
-  algorithm
-    'dtp' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('p');
-    'der_tsat' := 'dtp' * 'der_p';
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.pressureLoss_m_flow';
-
   function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB2B3.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -617,7 +689,65 @@ package 'BatchPlant_StandardWater'
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB2B3.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+  algorithm
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -651,12 +781,12 @@ package 'BatchPlant_StandardWater'
     'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
 
     if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
@@ -666,7 +796,28 @@ package 'BatchPlant_StandardWater'
       end if;
     end if;
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B1.flowModel.WallFriction.massFlowRate_dp_staticHead';
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B3.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P2.flowCharacteristic'
+    input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
+    input Real 'V_flow_nominal'[3](unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1e-4, 1.5e-4};
+    input Real 'head_nominal'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {10.0, 5.0, 0.0};
+    output Real 'head'(unit = "m", quantity = "Length");
+    Real 'V_flow_nominal2'[3] = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
+    Real 'V_flow_min'(unit = "m3/s", quantity = "VolumeFlowRate") = min('V_flow_nominal');
+    Real 'V_flow_max'(unit = "m3/s", quantity = "VolumeFlowRate") = max('V_flow_nominal');
+    Real 'c'[3] = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
+  algorithm
+    assert(max({'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[1], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[2], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[3]}) <= (-2.2250738585072014e-308), "Wrong pump curve -- head_nominal must be monotonically decreasing with increasing V_flow_nominal", AssertionLevel.warning);
+
+    if 'V_flow' < 'V_flow_min' then
+      'head' := max('head_nominal') + ('V_flow' - 'V_flow_min') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_min');
+    elseif 'V_flow' > 'V_flow_max' then
+      'head' := min('head_nominal') + ('V_flow' - 'V_flow_max') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_max');
+    else
+      'head' := 'c'[1] + 'V_flow' * ('c'[2] + 'V_flow' * 'c'[3]);
+    end if;
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P2.flowCharacteristic';
 
   function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -719,15 +870,126 @@ package 'BatchPlant_StandardWater'
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB1B2.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
-  function 'Modelica.Fluid.Machines.BaseClasses.PumpMonitoring.assertPositiveDifference'
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'p_sat'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input String 'message';
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
     output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'lambda2';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
   algorithm
-    'dp' := 'p' - 'p_sat';
-    assert('p' >= 'p_sat', 'message', AssertionLevel.error);
-  end 'Modelica.Fluid.Machines.BaseClasses.PumpMonitoring.assertPositiveDifference';
+    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
+    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
+    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
+    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
+    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der' "Derivative function for tsat"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'der_p'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    output Real 'der_tsat'(unit = "K/s", quantity = "TemperatureSlope");
+    Real 'dtp';
+  algorithm
+    'dtp' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('p');
+    'der_tsat' := 'dtp' * 'der_p';
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump2B2.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat_der' "Derivative function for psat"
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'der_T'(unit = "K/s", quantity = "TemperatureSlope");
+    output Real 'der_psat'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    Real 'dpt';
+  algorithm
+    'dpt' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dptofT'('T');
+    'der_psat' := 'dpt' * 'der_T';
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.psat_der';
+
+  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P1.flowCharacteristic'
+    input Real 'V_flow'(unit = "m3/s", quantity = "VolumeFlowRate");
+    input Real 'V_flow_nominal'[3](unit = {"m3/s", "m3/s", "m3/s"}, quantity = {"VolumeFlowRate", "VolumeFlowRate", "VolumeFlowRate"}) = {0.0, 1e-4, 1.5e-4};
+    input Real 'head_nominal'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"}) = {10.0, 5.0, 0.0};
+    output Real 'head'(unit = "m", quantity = "Length");
+    Real 'V_flow_nominal2'[3] = {'V_flow_nominal'[1] ^ 2.0, 'V_flow_nominal'[2] ^ 2.0, 'V_flow_nominal'[3] ^ 2.0};
+    Real 'V_flow_min'(unit = "m3/s", quantity = "VolumeFlowRate") = min('V_flow_nominal');
+    Real 'V_flow_max'(unit = "m3/s", quantity = "VolumeFlowRate") = max('V_flow_nominal');
+    Real 'c'[3] = 'Modelica.Math.Matrices.solve'({{1.0, 'V_flow_nominal'[1], 'V_flow_nominal2'[1]}, {1.0, 'V_flow_nominal'[2], 'V_flow_nominal2'[2]}, {1.0, 'V_flow_nominal'[3], 'V_flow_nominal2'[3]}}, 'head_nominal');
+  algorithm
+    assert(max({'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[1], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[2], 'c'[2] + 2.0 * 'c'[3] * 'V_flow_nominal'[3]}) <= (-2.2250738585072014e-308), "Wrong pump curve -- head_nominal must be monotonically decreasing with increasing V_flow_nominal", AssertionLevel.warning);
+
+    if 'V_flow' < 'V_flow_min' then
+      'head' := max('head_nominal') + ('V_flow' - 'V_flow_min') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_min');
+    elseif 'V_flow' > 'V_flow_max' then
+      'head' := min('head_nominal') + ('V_flow' - 'V_flow_max') * ('c'[2] + 2.0 * 'c'[3] * 'V_flow_max');
+    else
+      'head' := 'c'[1] + 'V_flow' * ('c'[2] + 'V_flow' * 'c'[3]);
+    end if;
+  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.P1.flowCharacteristic';
 
   function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p' "Properties on the dew curve"
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -761,95 +1023,6 @@ package 'BatchPlant_StandardWater'
       'bpro'.'pd' := 'bpro'.'R_s' * 'bpro'.'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.dewcurve_p';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'mu'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'rho'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'lambda2';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-  algorithm
-    'rho' := if 'm_flow' >= 0.0 then 'rho_a' else 'rho_b';
-    'mu' := if 'm_flow' >= 0.0 then 'mu_a' else 'mu_b';
-    'Re' := 'diameter' * abs('m_flow') / ('crossArea' * 'mu');
-    'lambda2' := if 'Re' <= 'Re1' then 64.0 * 'Re' else if 'Re' >= 'Re2' then 0.25 * ('Re' / 'Modelica.Math.log10'('Delta' / 3.7 + 5.74 / 'Re' ^ 0.9)) ^ 2.0 else 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.pressureLoss_m_flow.interpolateInRegion2'('Re', 'Re1', 'Re2', 'Delta');
-    'dp' := 'length' * 'mu' * 'mu' / (2.0 * 'rho' * 'diameter' * 'diameter' * 'diameter') * (if 'm_flow' >= 0.0 then 'lambda2' else -'lambda2');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity' "Compute eta(d,T) in the one-phase region"
-    input Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Integer 'phase' = 0;
-    input Boolean 'checkLimits' = true;
-    output Real 'eta'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    constant Real 'n0' = 1.0;
-    constant Real 'n1' = 0.978197;
-    constant Real 'n2' = 0.579829;
-    constant Real 'n3' = -0.202354;
-    constant Real 'nn'[42] = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
-    constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
-    constant Real 'etastar'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 5.5071e-5;
-    constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;
-    Integer 'i';
-    Integer 'j';
-    Real 'delta';
-    Real 'deltam1';
-    Real 'tau';
-    Real 'taum1';
-    Real 'Psi0';
-    Real 'Psi1';
-    Real 'tfun';
-    Real 'rhofun';
-    Real 'Tc' = 'T' - 273.15;
-  algorithm
-    'delta' := 'd' / 'rhostar';
-
-    if 'checkLimits' then
-      assert('d' > 0.004854575724778614, "IF97 medium function visc_dTp for viscosity called with too low density\nd = " + String('d') + " <= " + "0.00485458" + " (triple point density)", AssertionLevel.error);
-      assert(('p' <= 5e8 and 'Tc' >= 0.0 and 'Tc' <= 150.0 or 'p' <= 3.5e8 and 'Tc' > 150.0 and 'Tc' <= 600.0) or 'p' <= 3e8 and 'Tc' > 600.0 and 'Tc' <= 900.0, "IF97 medium function visc_dTp: viscosity computed outside the range\nof validity of the IF97 formulation: p = " + String('p') + " Pa, Tc = " + String('Tc') + " K", AssertionLevel.error);
-    end if;
-
-    'deltam1' := 'delta' - 1.0;
-    'tau' := 'tstar' / 'T';
-    'taum1' := 'tau' - 1.0;
-    'Psi0' := 1.0 / ('n0' + ('n1' + ('n2' + 'n3' * 'tau') * 'tau') * 'tau') / sqrt('tau');
-    'Psi1' := 0.0;
-    'tfun' := 1.0;
-
-    for 'i' in 1:6 loop
-      if 'i' <> 1 then
-        'tfun' := 'tfun' * 'taum1';
-      end if;
-
-      'rhofun' := 1.0;
-
-      for 'j' in 0:6 loop
-        if 'j' <> 0 then
-          'rhofun' := 'rhofun' * 'deltam1';
-        end if;
-
-        'Psi1' := 'Psi1' + 'nn'['i' + 'j' * 6] * 'tfun' * 'rhofun';
-      end for;
-    end for;
-
-    'eta' := 'etastar' * 'Psi0' * 'Modelica.Math.exp'('delta' * 'Psi1');
-  end 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity';
 
   function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -901,179 +1074,6 @@ package 'BatchPlant_StandardWater'
     end if;
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB7Pump.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      else
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipePump1B1.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
-  function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT' "Intermediate property record for water (p and T preferred states)"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Integer 'region' = 0;
-    output 'Modelica.Media.Common.IF97BaseTwoPhase' 'aux';
-    'Modelica.Media.Common.GibbsDerivs' 'g';
-    'Modelica.Media.Common.HelmholtzDerivs' 'f';
-    Integer 'error';
-  algorithm
-    'aux'.'phase' := 1;
-    'aux'.'region' := if 'region' == 0 then 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Regions.region_pT'('p', 'T', 0) else 'region';
-    'aux'.'R_s' := 461.526;
-    'aux'.'p' := 'p';
-    'aux'.'T' := 'T';
-    'aux'.'vt' := 0.0 "Initialized in case it is not needed";
-    'aux'.'vp' := 0.0 "Initialized in case it is not needed";
-
-    if 'aux'.'region' == 1 then
-      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g1'('p', 'T');
-      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
-      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
-      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
-      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
-      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
-      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
-      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
-      'aux'.'x' := 0.0;
-      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
-      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-    elseif 'aux'.'region' == 2 then
-      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g2'('p', 'T', true);
-      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
-      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
-      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
-      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
-      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
-      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
-      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
-      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
-      'aux'.'x' := 1.0;
-      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    elseif 'aux'.'region' == 3 then
-      ('aux'.'rho', 'error') := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Inverses.dofpt3'('p', 'T', 1e-7);
-      'f' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.f3'('aux'.'rho', 'T');
-      'aux'.'h' := 'aux'.'R_s' * 'T' * ('f'.'tau' * 'f'.'ftau' + 'f'.'delta' * 'f'.'fdelta');
-      'aux'.'s' := 'aux'.'R_s' * ('f'.'tau' * 'f'.'ftau' - 'f'.'f');
-      'aux'.'pd' := 'aux'.'R_s' * 'T' * 'f'.'delta' * (2.0 * 'f'.'fdelta' + 'f'.'delta' * 'f'.'fdeltadelta');
-      'aux'.'pt' := 'aux'.'R_s' * 'aux'.'rho' * 'f'.'delta' * ('f'.'fdelta' - 'f'.'tau' * 'f'.'fdeltatau');
-      'aux'.'cv' := 'aux'.'R_s' * (-'f'.'tau' * 'f'.'tau' * 'f'.'ftautau');
-      'aux'.'x' := 0.0;
-      'aux'.'dpT' := 'aux'.'pt';
-    elseif 'aux'.'region' == 5 then
-      'g' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.g5'('p', 'T');
-      'aux'.'h' := 'aux'.'R_s' * 'aux'.'T' * 'g'.'tau' * 'g'.'gtau';
-      'aux'.'s' := 'aux'.'R_s' * ('g'.'tau' * 'g'.'gtau' - 'g'.'g');
-      'aux'.'rho' := 'p' / ('aux'.'R_s' * 'T' * 'g'.'pi' * 'g'.'gpi');
-      'aux'.'vt' := 'aux'.'R_s' / 'p' * ('g'.'pi' * 'g'.'gpi' - 'g'.'tau' * 'g'.'pi' * 'g'.'gtaupi');
-      'aux'.'vp' := 'aux'.'R_s' * 'T' / ('p' * 'p') * 'g'.'pi' * 'g'.'pi' * 'g'.'gpipi';
-      'aux'.'pt' := -'g'.'p' / 'g'.'T' * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / ('g'.'gpipi' * 'g'.'pi');
-      'aux'.'pd' := -'g'.'R_s' * 'g'.'T' * 'g'.'gpi' * 'g'.'gpi' / 'g'.'gpipi';
-      'aux'.'cp' := -'aux'.'R_s' * 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau';
-      'aux'.'cv' := 'aux'.'R_s' * (('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') * ('g'.'gpi' - 'g'.'tau' * 'g'.'gtaupi') / 'g'.'gpipi' - 'g'.'tau' * 'g'.'tau' * 'g'.'gtautau');
-      'aux'.'x' := 1.0;
-      'aux'.'dpT' := -'aux'.'vt' / 'aux'.'vp';
-    else
-      assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", T = " + String('T') + ")", AssertionLevel.error);
-    end if;
-  end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';
-
-  function 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re'(unit = "1", quantity = "ReynoldsNumber");
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min((745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta')) ^ 0.97, 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      else
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.AST_BatchPlant.BatchPlant_StandardWater.pipeB6Pump.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
   type 'Modelica.Fluid.Examples.AST_BatchPlant.BaseClasses.Init' = enumeration('GuessValues', 'InitialValues', 'SteadyStateMomentum', 'SteadyStateHydraulic', 'SteadyState');
 

@@ -1,32 +1,5 @@
 //! base 0.1.0
 package 'Spice3BenchmarkFourBitBinaryAdder'
-  function 'Modelica.Electrical.Spice3.Internal.Diode.diodeNoBypassCode' "Calculation of currents"
-    input 'Modelica.Electrical.Spice3.Internal.Diode.DiodeModelLineParams' 'in_p';
-    input 'Modelica.Electrical.Spice3.Internal.Diode.DiodeParams' 'in_dp';
-    input 'Modelica.Electrical.Spice3.Internal.Diode.DiodeCalc' 'in_c';
-    input 'Modelica.Electrical.Spice3.Internal.Model.Model' 'in_m';
-    input Boolean 'in_m_mbInit';
-    input Real 'in_m_pVoltageValues'[2](unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
-    output 'Modelica.Electrical.Spice3.Internal.Diode.CurrentsCapacitances' 'out_cc';
-    output Real 'm_dCap'(min = -1e60, unit = "F", quantity = "Capacitance");
-    Real 'm_dPNVoltage'(unit = "V", quantity = "ElectricPotential");
-    Real 'm_dCurrent'(unit = "A", quantity = "ElectricCurrent");
-    Real 'm_dCond'(unit = "S", quantity = "Conductance");
-    Real 'm_dCharge'(unit = "C", quantity = "ElectricCharge");
-    Real 'm_dCapCurrent'(unit = "A", quantity = "ElectricCurrent");
-  algorithm
-    'm_dPNVoltage' := 'in_m_pVoltageValues'[1] - 'in_m_pVoltageValues'[2];
-
-    if 'in_p'.'m_pBvIsGiven' > 0.5 then
-      ('out_cc'.'m_dCurrent', 'm_dCond') := 'Modelica.Electrical.Spice3.Internal.Functions.junction3'('m_dPNVoltage', 'in_m'.'m_dTemp', 'in_p'.'m_emissionCoeff', 'in_c'.'m_tSatCur', 'in_c'.'m_tBrkdwnV');
-    else
-      ('out_cc'.'m_dCurrent', 'm_dCond') := 'Modelica.Electrical.Spice3.Internal.Functions.junction2'('m_dPNVoltage', 'in_m'.'m_dTemp', 'in_p'.'m_emissionCoeff', 'in_c'.'m_tSatCur');
-    end if;
-
-    'm_dCurrent' := 'out_cc'.'m_dCurrent';
-    ('m_dCap', 'm_dCharge') := 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapTransTime'('in_c'.'m_tJctCap', 'm_dPNVoltage', 'in_c'.'m_tJctPot' * 'in_p'.'m_depletionCapCoeff', 'in_p'.'m_gradingCoeff', 'in_p'.'m_junctionPot', 'in_c'.'m_tF1', 'in_c'.'m_f2', 'in_c'.'m_f3', 'in_p'.'m_transitTime', 'm_dCond', 'm_dCurrent');
-  end 'Modelica.Electrical.Spice3.Internal.Diode.diodeNoBypassCode';
-
   function 'Modelica.Electrical.Spice3.Internal.Bjt.bjtNoBypassCode' "Calculation of currents"
     input 'Modelica.Electrical.Spice3.Internal.Bjt.Bjt' 'in_p3';
     input 'Modelica.Electrical.Spice3.Internal.Bjt.BjtModelLineParams' 'in_p';
@@ -232,6 +205,33 @@ package 'Spice3BenchmarkFourBitBinaryAdder'
     'out_cc'.'iXX' := 1.0;
     annotation(smoothOrder(normallyConstant = 'in_p3') = 1);
   end 'Modelica.Electrical.Spice3.Internal.Bjt.bjtNoBypassCode';
+
+  function 'Modelica.Electrical.Spice3.Internal.Diode.diodeNoBypassCode' "Calculation of currents"
+    input 'Modelica.Electrical.Spice3.Internal.Diode.DiodeModelLineParams' 'in_p';
+    input 'Modelica.Electrical.Spice3.Internal.Diode.DiodeParams' 'in_dp';
+    input 'Modelica.Electrical.Spice3.Internal.Diode.DiodeCalc' 'in_c';
+    input 'Modelica.Electrical.Spice3.Internal.Model.Model' 'in_m';
+    input Boolean 'in_m_mbInit';
+    input Real 'in_m_pVoltageValues'[2](unit = {"V", "V"}, quantity = {"ElectricPotential", "ElectricPotential"});
+    output 'Modelica.Electrical.Spice3.Internal.Diode.CurrentsCapacitances' 'out_cc';
+    output Real 'm_dCap'(min = -1e60, unit = "F", quantity = "Capacitance");
+    Real 'm_dPNVoltage'(unit = "V", quantity = "ElectricPotential");
+    Real 'm_dCurrent'(unit = "A", quantity = "ElectricCurrent");
+    Real 'm_dCond'(unit = "S", quantity = "Conductance");
+    Real 'm_dCharge'(unit = "C", quantity = "ElectricCharge");
+    Real 'm_dCapCurrent'(unit = "A", quantity = "ElectricCurrent");
+  algorithm
+    'm_dPNVoltage' := 'in_m_pVoltageValues'[1] - 'in_m_pVoltageValues'[2];
+
+    if 'in_p'.'m_pBvIsGiven' > 0.5 then
+      ('out_cc'.'m_dCurrent', 'm_dCond') := 'Modelica.Electrical.Spice3.Internal.Functions.junction3'('m_dPNVoltage', 'in_m'.'m_dTemp', 'in_p'.'m_emissionCoeff', 'in_c'.'m_tSatCur', 'in_c'.'m_tBrkdwnV');
+    else
+      ('out_cc'.'m_dCurrent', 'm_dCond') := 'Modelica.Electrical.Spice3.Internal.Functions.junction2'('m_dPNVoltage', 'in_m'.'m_dTemp', 'in_p'.'m_emissionCoeff', 'in_c'.'m_tSatCur');
+    end if;
+
+    'm_dCurrent' := 'out_cc'.'m_dCurrent';
+    ('m_dCap', 'm_dCharge') := 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapTransTime'('in_c'.'m_tJctCap', 'm_dPNVoltage', 'in_c'.'m_tJctPot' * 'in_p'.'m_depletionCapCoeff', 'in_p'.'m_gradingCoeff', 'in_p'.'m_junctionPot', 'in_c'.'m_tF1', 'in_c'.'m_f2', 'in_c'.'m_f3', 'in_p'.'m_transitTime', 'm_dCond', 'm_dCurrent');
+  end 'Modelica.Electrical.Spice3.Internal.Diode.diodeNoBypassCode';
 
   record 'Modelica.Electrical.Spice3.Internal.Bjt.Bjt'
     Real 'm_dTemp'(nominal = 300.0, start = 300.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");

@@ -1,5 +1,22 @@
 //! base 0.1.0
 package 'SMEE_Rectifier'
+  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
+    input Real 'u1';
+    input Real 'u2';
+    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
+    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    constant Real 'pi2' = 6.283185307179586;
+    Real 'w';
+  algorithm
+    'w' := 'Modelica.Math.atan2'('u1', 'u2');
+
+    if 'y0' == 0.0 then
+      'y' := 'w';
+    else
+      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
+    end if;
+  end 'Modelica.Math.atan3';
+
   function 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass' "Return low pass filter roots as needed for block for given cut-off frequency"
     input Real 'cr_in'[:];
     input Real 'c0_in'[:];
@@ -25,23 +42,6 @@ package 'SMEE_Rectifier'
       'ku'['i'] := 'c0'['i'] / 'b'['i'];
     end for;
   end 'Modelica.Blocks.Continuous.Internal.Filter.roots.lowPass';
-
-  function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
-    input Real 'u1';
-    input Real 'u2';
-    input Real 'y0'(displayUnit = "deg", unit = "rad", quantity = "Angle") = 0.0;
-    output Real 'y'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    constant Real 'pi2' = 6.283185307179586;
-    Real 'w';
-  algorithm
-    'w' := 'Modelica.Math.atan2'('u1', 'u2');
-
-    if 'y0' == 0.0 then
-      'y' := 'w';
-    else
-      'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
-    end if;
-  end 'Modelica.Math.atan3';
 
   type 'Modelica.Blocks.Types.SimpleController' = enumeration('P', 'PI', 'PD', 'PID');
 

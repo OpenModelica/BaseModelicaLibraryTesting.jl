@@ -1,5 +1,56 @@
 //! base 0.1.0
 package 'IncompressibleFluidNetwork'
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
   function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
     input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -29,51 +80,67 @@ package 'IncompressibleFluidNetwork'
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.pressureLoss_m_flow';
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
     input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
     input Real 'length'(unit = "m", quantity = "Length");
     input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
     input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
     input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
     input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'zeta';
-    Real 'k0';
-    Real 'k';
-    Real 'yd0';
-    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
   algorithm
     assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
-    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
-    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
-    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
-    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
-    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.pressureLoss_m_flow';
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
 
-  function 'Modelica.Math.Polynomials.integralValue' "Integral of polynomial p(u) from u_low to u_high"
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Math.Polynomials.integralValue_der' "Time derivative of integral of polynomial p(u) from u_low to u_high, assuming only u_high as time-dependent (Leibniz rule)"
     input Real 'p'[:];
     input Real 'u_high';
     input Real 'u_low' = 0.0;
-    output Real 'integral' = 0.0;
-    Integer 'n' = size('p', 1);
-    Real 'y_low' = 0.0;
+    input Real 'du_high';
+    input Real 'du_low' = 0.0;
+    output Real 'dintegral' = 0.0;
   algorithm
-    for 'j' in 1:'n' loop
-      'integral' := 'u_high' * ('p'['j'] / ('n' - 'j' + 1) + 'integral');
-      'y_low' := 'u_low' * ('p'['j'] / ('n' - 'j' + 1) + 'y_low');
-    end for;
-
-    'integral' := 'integral' - 'y_low';
-    annotation(derivative(order = 1, zeroDerivative = 'p') = 'Modelica.Math.Polynomials.integralValue_der');
-  end 'Modelica.Math.Polynomials.integralValue';
+    'dintegral' := 'Modelica.Math.Polynomials.evaluate'('p', 'u_high') * 'du_high';
+  end 'Modelica.Math.Polynomials.integralValue_der';
 
   function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe6.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
     input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
@@ -104,6 +171,57 @@ package 'IncompressibleFluidNetwork'
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe6.flowModel.WallFriction.pressureLoss_m_flow';
 
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
   function 'Modelica.Math.Polynomials.evaluate_der' "Evaluate derivative of polynomial at a given abscissa value"
     input Real 'p'[:];
     input Real 'u';
@@ -120,20 +238,7 @@ package 'IncompressibleFluidNetwork'
     'dy' := 'dy' * 'du';
   end 'Modelica.Math.Polynomials.evaluate_der';
 
-  function 'Modelica.Math.Polynomials.evaluate' "Evaluate polynomial at a given abscissa value"
-    input Real 'p'[:];
-    input Real 'u';
-    output Real 'y';
-  algorithm
-    'y' := 'p'[1];
-
-    for 'j' in 2:size('p', 1) loop
-      'y' := 'p'['j'] + 'u' * 'y';
-    end for;
-    annotation(derivative(order = 1, zeroDerivative = 'p') = 'Modelica.Math.Polynomials.evaluate_der');
-  end 'Modelica.Math.Polynomials.evaluate';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
     input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -160,7 +265,36 @@ package 'IncompressibleFluidNetwork'
     'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
     'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.pressureLoss_m_flow';
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'zeta';
+    Real 'k0';
+    Real 'k';
+    Real 'yd0';
+    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
+    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
+    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
+    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
+    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
+    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.pressureLoss_m_flow';
 
   function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe9.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -213,25 +347,14 @@ package 'IncompressibleFluidNetwork'
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe9.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve3.Medium.dynamicViscosity' "Return dynamic viscosity as a function of the thermodynamic state record"
-    input 'valve3.Medium.ThermodynamicState' 'state';
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve1.Medium.dynamicViscosity' "Return dynamic viscosity as a function of the thermodynamic state record"
+    input 'valve1.Medium.ThermodynamicState' 'state';
     output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
   algorithm
     assert(true, "DynamicViscosity, eta, is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
     'eta' := 'Modelica.Math.exp'('Modelica.Math.Polynomials.evaluate'({1.2494070905497295e6, -4756.243495674506, -3.3660095663583767}, 1.0 / 'state'.'T'));
     annotation(smoothOrder = 2);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve3.Medium.dynamicViscosity';
-
-  function 'Modelica.Math.Polynomials.integralValue_der' "Time derivative of integral of polynomial p(u) from u_low to u_high, assuming only u_high as time-dependent (Leibniz rule)"
-    input Real 'p'[:];
-    input Real 'u_high';
-    input Real 'u_low' = 0.0;
-    input Real 'du_high';
-    input Real 'du_low' = 0.0;
-    output Real 'dintegral' = 0.0;
-  algorithm
-    'dintegral' := 'Modelica.Math.Polynomials.evaluate'('p', 'u_high') * 'du_high';
-  end 'Modelica.Math.Polynomials.integralValue_der';
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve1.Medium.dynamicViscosity';
 
   function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe4.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -284,109 +407,7 @@ package 'IncompressibleFluidNetwork'
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe4.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      else
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      else
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
     input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -413,9 +434,120 @@ package 'IncompressibleFluidNetwork'
     'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
     'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.pressureLoss_m_flow';
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.pressureLoss_m_flow';
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'zeta';
+    Real 'k0';
+    Real 'k';
+    Real 'yd0';
+    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
+    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
+    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
+    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
+    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
+    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe11.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Fluid.Utilities.regRoot2' "Anti-symmetric approximation of square root with discontinuous factor so that the first derivative is finite and continuous"
+    input Real 'x';
+    input Real 'x_small'(min = 0.0) = 0.01;
+    input Real 'k1'(min = 0.0) = 1.0;
+    input Real 'k2'(min = 0.0) = 1.0;
+    input Boolean 'use_yd0' = false;
+    input Real 'yd0'(min = 0.0) = 1.0;
+    output Real 'y';
+    Real 'sqrt_k1' = if 'k1' > 0.0 then sqrt('k1') else 0.0;
+    Real 'sqrt_k2' = if 'k2' > 0.0 then sqrt('k2') else 0.0;
+  algorithm
+    'y' := smooth(2, if 'x' >= 'x_small' then 'sqrt_k1' * sqrt('x') else if 'x' <= (-'x_small') then -'sqrt_k2' * sqrt(abs('x')) else if 'k1' >= 'k2' then 'Modelica.Fluid.Utilities.regRoot2.regRoot2_utility'('x', 'x_small', 'k1', 'k2', 'use_yd0', 'yd0') else -'Modelica.Fluid.Utilities.regRoot2.regRoot2_utility'(-'x', 'x_small', 'k2', 'k1', 'use_yd0', 'yd0'));
+    annotation(smoothOrder = 2);
+  end 'Modelica.Fluid.Utilities.regRoot2';
+
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve3.Medium.dynamicViscosity' "Return dynamic viscosity as a function of the thermodynamic state record"
+    input 'valve3.Medium.ThermodynamicState' 'state';
+    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+  algorithm
+    assert(true, "DynamicViscosity, eta, is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
+    'eta' := 'Modelica.Math.exp'('Modelica.Math.Polynomials.evaluate'({1.2494070905497295e6, -4756.243495674506, -3.3660095663583767}, 1.0 / 'state'.'T'));
+    annotation(smoothOrder = 2);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve3.Medium.dynamicViscosity';
+
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'zeta';
+    Real 'k0';
+    Real 'k';
+    Real 'yd0';
+    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
+    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
+    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
+    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
+    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
+    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe9.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'zeta';
+    Real 'k0';
+    Real 'k';
+    Real 'yd0';
+    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
+    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
+    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
+    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
+    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
+    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe9.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -449,12 +581,12 @@ package 'IncompressibleFluidNetwork'
     'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
 
     if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
@@ -464,58 +596,20 @@ package 'IncompressibleFluidNetwork'
       end if;
     end if;
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.massFlowRate_dp_staticHead';
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  function 'Modelica.Math.Polynomials.evaluate' "Evaluate polynomial at a given abscissa value"
+    input Real 'p'[:];
+    input Real 'u';
+    output Real 'y';
   algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+    'y' := 'p'[1];
 
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      else
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.massFlowRate_dp_staticHead';
+    for 'j' in 2:size('p', 1) loop
+      'y' := 'p'['j'] + 'u' * 'y';
+    end for;
+    annotation(derivative(order = 1, zeroDerivative = 'p') = 'Modelica.Math.Polynomials.evaluate_der');
+  end 'Modelica.Math.Polynomials.evaluate';
 
   function 'Modelica.Math.Nonlinear.solveOneNonlinearEquation' "Solve f(u) = 0 in a very reliable and efficient way (f(u_min) and f(u_max) must have different signs)"
     input 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' 'f';
@@ -618,31 +712,7 @@ package 'IncompressibleFluidNetwork'
     end while;
   end 'Modelica.Math.Nonlinear.solveOneNonlinearEquation';
 
-  function 'Modelica.Fluid.Utilities.regRoot2' "Anti-symmetric approximation of square root with discontinuous factor so that the first derivative is finite and continuous"
-    input Real 'x';
-    input Real 'x_small'(min = 0.0) = 0.01;
-    input Real 'k1'(min = 0.0) = 1.0;
-    input Real 'k2'(min = 0.0) = 1.0;
-    input Boolean 'use_yd0' = false;
-    input Real 'yd0'(min = 0.0) = 1.0;
-    output Real 'y';
-    Real 'sqrt_k1' = if 'k1' > 0.0 then sqrt('k1') else 0.0;
-    Real 'sqrt_k2' = if 'k2' > 0.0 then sqrt('k2') else 0.0;
-  algorithm
-    'y' := smooth(2, if 'x' >= 'x_small' then 'sqrt_k1' * sqrt('x') else if 'x' <= (-'x_small') then -'sqrt_k2' * sqrt(abs('x')) else if 'k1' >= 'k2' then 'Modelica.Fluid.Utilities.regRoot2.regRoot2_utility'('x', 'x_small', 'k1', 'k2', 'use_yd0', 'yd0') else -'Modelica.Fluid.Utilities.regRoot2.regRoot2_utility'(-'x', 'x_small', 'k2', 'k1', 'use_yd0', 'yd0'));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Fluid.Utilities.regRoot2';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve2.Medium.dynamicViscosity' "Return dynamic viscosity as a function of the thermodynamic state record"
-    input 'valve2.Medium.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-  algorithm
-    assert(true, "DynamicViscosity, eta, is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
-    'eta' := 'Modelica.Math.exp'('Modelica.Math.Polynomials.evaluate'({1.2494070905497295e6, -4756.243495674506, -3.3660095663583767}, 1.0 / 'state'.'T'));
-    annotation(smoothOrder = 2);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve2.Medium.dynamicViscosity';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
     input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -669,138 +739,7 @@ package 'IncompressibleFluidNetwork'
     'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
     'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      else
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
-    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'g_times_height_ab'(unit = "m2/s2");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
-    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
-    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
-    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
-    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
-    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
-    Real 'dm_flow_ddp_fric_zero';
-    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
-    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
-  algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
-    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
-
-    if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-    else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
-
-      if 'dp' > 'dp_zero' then
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
-      else
-        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
-      end if;
-    end if;
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.massFlowRate_dp_staticHead';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe4.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'zeta';
-    Real 'k0';
-    Real 'k';
-    Real 'yd0';
-    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
-  algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
-    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
-    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
-    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
-    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
-    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe4.flowModel.WallFriction.pressureLoss_m_flow';
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.pressureLoss_m_flow';
 
   function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe6.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -853,6 +792,35 @@ package 'IncompressibleFluidNetwork'
     annotation(smoothOrder = 1);
   end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe6.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'zeta';
+    Real 'k0';
+    Real 'k';
+    Real 'yd0';
+    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
+    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
+    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
+    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
+    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
+    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe3.flowModel.WallFriction.pressureLoss_m_flow';
+
   function 'Modelica.Fluid.Utilities.checkBoundary' "Check whether boundary definition is correct"
     input String 'mediumName';
     input String 'substanceNames'[:];
@@ -880,16 +848,147 @@ package 'IncompressibleFluidNetwork'
     end if;
   end 'Modelica.Fluid.Utilities.checkBoundary';
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve1.Medium.dynamicViscosity' "Return dynamic viscosity as a function of the thermodynamic state record"
-    input 'valve1.Medium.ThermodynamicState' 'state';
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+    input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'g_times_height_ab'(unit = "m2/s2");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'dp_small'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1.0;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'Delta'(min = 0.0) = 'roughness' / 'diameter';
+    Real 'Re2'(unit = "1", quantity = "ReynoldsNumber") = 'Re_turbulent';
+    Real 'dp_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'dp_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'm_flow_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'm_flow_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_a'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dm_flow_ddp_fric_b'(unit = "kg/s", quantity = "MassFlowRate");
+    Real 'dp_grav_a'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_a';
+    Real 'dp_grav_b'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 'g_times_height_ab' * 'rho_b';
+    Real 'm_flow_zero'(unit = "kg/s", quantity = "MassFlowRate") = 0.0;
+    Real 'dm_flow_ddp_fric_zero';
+    Real 'Re1'(unit = "1", quantity = "ReynoldsNumber") = min(745.0 * 'Modelica.Math.exp'(if 'Delta' <= 0.0065 then 1.0 else 0.0065 / 'Delta'), 'Re_turbulent');
+    Real 'dp_zero'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = ('dp_grav_a' + 'dp_grav_b') / 2.0;
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'dp_a' := max('dp_grav_a', 'dp_grav_b') + 'dp_small';
+    'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
+
+    if 'dp' >= 'dp_a' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    elseif 'dp' <= 'dp_b' then
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+    else
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
+
+      if 'dp' > 'dp_zero' then
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_zero', 'dp_a', 'm_flow_zero', 'm_flow_a', 'dm_flow_ddp_fric_zero', 'dm_flow_ddp_fric_a');
+      else
+        'm_flow' := 'Modelica.Fluid.Utilities.regFun3'('dp', 'dp_b', 'dp_zero', 'm_flow_b', 'm_flow_zero', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_zero');
+      end if;
+    end if;
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.massFlowRate_dp_staticHead';
+
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe4.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
+    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
+    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    input Real 'length'(unit = "m", quantity = "Length");
+    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
+    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
+    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
+    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
+    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
+    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'zeta';
+    Real 'k0';
+    Real 'k';
+    Real 'yd0';
+    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
+  algorithm
+    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
+    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
+    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
+    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
+    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
+    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
+    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
+    annotation(smoothOrder = 1);
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe4.flowModel.WallFriction.pressureLoss_m_flow';
+
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve2.Medium.dynamicViscosity' "Return dynamic viscosity as a function of the thermodynamic state record"
+    input 'valve2.Medium.ThermodynamicState' 'state';
     output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
   algorithm
     assert(true, "DynamicViscosity, eta, is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
     'eta' := 'Modelica.Math.exp'('Modelica.Math.Polynomials.evaluate'({1.2494070905497295e6, -4756.243495674506, -3.3660095663583767}, 1.0 / 'state'.'T'));
     annotation(smoothOrder = 2);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve1.Medium.dynamicViscosity';
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.valve2.Medium.dynamicViscosity';
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -923,12 +1022,12 @@ package 'IncompressibleFluidNetwork'
     'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
 
     if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
@@ -938,125 +1037,26 @@ package 'IncompressibleFluidNetwork'
       end if;
     end if;
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.massFlowRate_dp_staticHead';
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe7.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'zeta';
-    Real 'k0';
-    Real 'k';
-    Real 'yd0';
-    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
+  function 'Modelica.Math.Polynomials.integralValue' "Integral of polynomial p(u) from u_low to u_high"
+    input Real 'p'[:];
+    input Real 'u_high';
+    input Real 'u_low' = 0.0;
+    output Real 'integral' = 0.0;
+    Integer 'n' = size('p', 1);
+    Real 'y_low' = 0.0;
   algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
-    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
-    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
-    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
-    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
-    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe1.flowModel.WallFriction.pressureLoss_m_flow';
+    for 'j' in 1:'n' loop
+      'integral' := 'u_high' * ('p'['j'] / ('n' - 'j' + 1) + 'integral');
+      'y_low' := 'u_low' * ('p'['j'] / ('n' - 'j' + 1) + 'y_low');
+    end for;
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'zeta';
-    Real 'k0';
-    Real 'k';
-    Real 'yd0';
-    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
-  algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
-    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
-    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
-    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
-    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
-    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe8.flowModel.WallFriction.pressureLoss_m_flow';
+    'integral' := 'integral' - 'y_low';
+    annotation(derivative(order = 1, zeroDerivative = 'p') = 'Modelica.Math.Polynomials.integralValue_der');
+  end 'Modelica.Math.Polynomials.integralValue';
 
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe9.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'zeta';
-    Real 'k0';
-    Real 'k';
-    Real 'yd0';
-    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
-  algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
-    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
-    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
-    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
-    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
-    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe9.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
-    input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
-    input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'mu_a'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'mu_b'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    input Real 'length'(unit = "m", quantity = "Length");
-    input Real 'diameter'(min = 0.0, unit = "m", quantity = "Length");
-    input Real 'crossArea'(unit = "m2", quantity = "Area") = 3.141592653589793 * 'diameter' ^ 2.0 / 4.0;
-    input Real 'roughness'(min = 0.0, displayUnit = "mm", unit = "m", quantity = "Length") = 2.5e-5;
-    input Real 'm_flow_small'(unit = "kg/s", quantity = "MassFlowRate") = 0.01;
-    input Real 'Re_turbulent'(unit = "1", quantity = "ReynoldsNumber") = 4000.0;
-    output Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'zeta';
-    Real 'k0';
-    Real 'k';
-    Real 'yd0';
-    Real 'm_flow_turbulent'(unit = "kg/s", quantity = "MassFlowRate");
-  algorithm
-    assert('roughness' > 1e-10, "roughness > 0 required for quadratic turbulent wall friction characteristic", AssertionLevel.error);
-    'zeta' := 'length' / 'diameter' / (2.0 * 'Modelica.Math.log10'(3.7 / ('roughness' / 'diameter'))) ^ 2.0;
-    'k0' := 128.0 * 'length' / (3.141592653589793 * 'diameter' ^ 4.0);
-    'k' := 8.0 * 'zeta' / (3.141592653589793 * 'diameter' * 'diameter') ^ 2.0;
-    'yd0' := 'k0' * ('mu_a' + 'mu_b') / ('rho_a' + 'rho_b');
-    'm_flow_turbulent' := max(0.39269908169872414 * 'diameter' * ('mu_a' + 'mu_b') * 'Re_turbulent', 'm_flow_small');
-    'dp' := 'Modelica.Fluid.Utilities.regSquare2'('m_flow', 'm_flow_turbulent', 'k' / 'rho_a', 'k' / 'rho_b', true, 'yd0');
-    annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe10.flowModel.WallFriction.pressureLoss_m_flow';
-
-  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
+  function 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
     input Real 'rho_b'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -1090,12 +1090,12 @@ package 'IncompressibleFluidNetwork'
     'dp_b' := min('dp_grav_a', 'dp_grav_b') - 'dp_small';
 
     if 'dp' >= 'dp_a' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     elseif 'dp' <= 'dp_b' then
-      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      'm_flow' := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
     else
-      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
-      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_a', 'dm_flow_ddp_fric_a') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_a' - 'dp_grav_a', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
+      ('m_flow_b', 'dm_flow_ddp_fric_b') := 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.Internal.m_flow_of_dp_fric'('dp_b' - 'dp_grav_b', 'rho_a', 'rho_b', 'mu_a', 'mu_b', 'length', 'diameter', 'crossArea', 'Re1', 'Re2', 'Delta');
       ('m_flow', 'dm_flow_ddp_fric_zero') := 'Modelica.Fluid.Utilities.regFun3'('dp_zero', 'dp_b', 'dp_a', 'm_flow_b', 'm_flow_a', 'dm_flow_ddp_fric_b', 'dm_flow_ddp_fric_a');
 
       if 'dp' > 'dp_zero' then
@@ -1105,7 +1105,7 @@ package 'IncompressibleFluidNetwork'
       end if;
     end if;
     annotation(smoothOrder = 1);
-  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe5.flowModel.WallFriction.massFlowRate_dp_staticHead';
+  end 'Modelica.Fluid.Examples.IncompressibleFluidNetwork.pipe2.flowModel.WallFriction.massFlowRate_dp_staticHead';
 
   type 'Modelica.Fluid.Types.ModelStructure' = enumeration('av_vb', 'a_v_b', 'av_b', 'a_vb');
 

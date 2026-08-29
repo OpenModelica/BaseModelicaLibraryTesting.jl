@@ -1,18 +1,5 @@
 //! base 0.1.0
 package 'MixtureGases'
-  function 'Modelica.Media.Examples.MixtureGases.Medium1.dynamicViscosity' "Return mixture dynamic viscosity"
-    input 'Medium1.ThermodynamicState' 'state';
-    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    Real 'etaX'[2](nominal = {0.001, 0.001}, start = {0.001, 0.001}, max = {1e8, 1e8}, min = {0.0, 0.0}, unit = {"Pa.s", "Pa.s"}, quantity = {"DynamicViscosity", "DynamicViscosity"});
-  algorithm
-    for 'i' in 1:2 loop
-      'etaX'['i'] := 'Modelica.Media.IdealGases.Common.Functions.dynamicViscosityLowPressure'('state'.'T', ({126.2, 154.58})['i'], ({0.0280134, 0.0319988})['i'], ({9.01e-5, 7.337e-5})['i'], ({0.037, 0.022})['i'], 0.0, 0.0);
-    end for;
-
-    'eta' := 'Modelica.Media.Examples.MixtureGases.Medium1.gasMixtureViscosity'('Modelica.Media.Examples.MixtureGases.Medium1.massToMoleFractions'('state'.'X', {0.0280134, 0.0319988}), {0.0280134, 0.0319988}, 'etaX');
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.MixtureGases.Medium1.dynamicViscosity';
-
   function 'Modelica.Media.Examples.MixtureGases.Medium2.dynamicViscosity' "Return mixture dynamic viscosity"
     input 'Medium2.ThermodynamicState' 'state';
     output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
@@ -63,6 +50,19 @@ package 'MixtureGases'
     'lambda' := 'Modelica.Media.Examples.MixtureGases.Medium2.lowPressureThermalConductivity'('Modelica.Media.Examples.MixtureGases.Medium2.massToMoleFractions'('state'.'X', {0.01604246, 0.03006904, 0.04409562, 0.0581222, 0.0280134, 0.0440095}), 'state'.'T', {190.56, 305.32, 369.83, 425.12, 126.2, 304.12}, {4.599e6, 4.872e6, 4.248e6, 3.796e6, 3.398e6, 7.374e6}, {0.01604246, 0.03006904, 0.04409562, 0.0581222, 0.0280134, 0.0440095}, 'lambdaX');
     annotation(smoothOrder = 2);
   end 'Modelica.Media.Examples.MixtureGases.Medium2.thermalConductivity';
+
+  function 'Modelica.Media.Examples.MixtureGases.Medium1.dynamicViscosity' "Return mixture dynamic viscosity"
+    input 'Medium1.ThermodynamicState' 'state';
+    output Real 'eta'(nominal = 0.001, start = 0.001, max = 1e8, min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    Real 'etaX'[2](nominal = {0.001, 0.001}, start = {0.001, 0.001}, max = {1e8, 1e8}, min = {0.0, 0.0}, unit = {"Pa.s", "Pa.s"}, quantity = {"DynamicViscosity", "DynamicViscosity"});
+  algorithm
+    for 'i' in 1:2 loop
+      'etaX'['i'] := 'Modelica.Media.IdealGases.Common.Functions.dynamicViscosityLowPressure'('state'.'T', ({126.2, 154.58})['i'], ({0.0280134, 0.0319988})['i'], ({9.01e-5, 7.337e-5})['i'], ({0.037, 0.022})['i'], 0.0, 0.0);
+    end for;
+
+    'eta' := 'Modelica.Media.Examples.MixtureGases.Medium1.gasMixtureViscosity'('Modelica.Media.Examples.MixtureGases.Medium1.massToMoleFractions'('state'.'X', {0.0280134, 0.0319988}), {0.0280134, 0.0319988}, 'etaX');
+    annotation(smoothOrder = 2);
+  end 'Modelica.Media.Examples.MixtureGases.Medium1.dynamicViscosity';
 
   record 'Medium1.ThermodynamicState'
     Real 'p'(nominal = 1e6, start = 1e6, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");

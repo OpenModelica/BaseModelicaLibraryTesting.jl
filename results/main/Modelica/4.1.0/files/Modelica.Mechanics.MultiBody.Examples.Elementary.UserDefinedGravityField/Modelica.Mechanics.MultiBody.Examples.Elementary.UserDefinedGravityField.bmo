@@ -1,5 +1,19 @@
 //! base 0.1.0
 package 'UserDefinedGravityField'
+  function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
+    input Real 'n_x'[3];
+    input Real 'n_y'[3];
+    output Real 'T'[3, 3];
+    Real 'e_x'[3](each unit = "1") = if 'Modelica.Math.Vectors.length'('n_x') < 1e-10 then {1.0, 0.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_x', 2.220446049250313e-14);
+    Real 'e_y'[3](each unit = "1") = if 'Modelica.Math.Vectors.length'('n_y') < 1e-10 then {0.0, 1.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_y', 2.220446049250313e-14);
+    Real 'n_z_aux'[3](each unit = "1") = {'e_x'[2] * 'e_y'[3] - 'e_x'[3] * 'e_y'[2], 'e_x'[3] * 'e_y'[1] - 'e_x'[1] * 'e_y'[3], 'e_x'[1] * 'e_y'[2] - 'e_x'[2] * 'e_y'[1]};
+    Real 'n_y_aux'[3](each unit = "1") = if 'n_z_aux'[1] * 'n_z_aux'[1] + 'n_z_aux'[2] * 'n_z_aux'[2] + 'n_z_aux'[3] * 'n_z_aux'[3] > 1e-6 then 'e_y' else if abs('e_x'[1]) > 1e-6 then {0.0, 1.0, 0.0} else {1.0, 0.0, 0.0};
+    Real 'e_z_aux'[3](each unit = "1") = {'e_x'[2] * 'n_y_aux'[3] - 'e_x'[3] * 'n_y_aux'[2], 'e_x'[3] * 'n_y_aux'[1] - 'e_x'[1] * 'n_y_aux'[3], 'e_x'[1] * 'n_y_aux'[2] - 'e_x'[2] * 'n_y_aux'[1]};
+    Real 'e_z'[3](each unit = "1") = 'Modelica.Math.Vectors.normalize'('e_z_aux', 2.220446049250313e-14);
+  algorithm
+    'T' := {'e_x', {'e_z'[2] * 'e_x'[3] - 'e_z'[3] * 'e_x'[2], 'e_z'[3] * 'e_x'[1] - 'e_z'[1] * 'e_x'[3], 'e_z'[1] * 'e_x'[2] - 'e_z'[2] * 'e_x'[1]}, 'e_z'};
+  end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
+
   function 'Modelica.Mechanics.MultiBody.Examples.Elementary.UserDefinedGravityField.world.gravityAcceleration'
     input Real 'r'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
     input Real 'phi'(unit = "deg", quantity = "Angle") = 0.0;
@@ -27,20 +41,6 @@ package 'UserDefinedGravityField'
     'gh' := 'gn' * (1.0 - 'ha' * (2.0 * (1.0 + 'f' + 'm' - 2.0 * 'f' * 'sinphi2') + 3.0 * 'ha'));
     'gravity' := {0.0, -'gh', 0.0};
   end 'Modelica.Mechanics.MultiBody.Examples.Elementary.UserDefinedGravityField.world.gravityAcceleration';
-
-  function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
-    input Real 'n_x'[3];
-    input Real 'n_y'[3];
-    output Real 'T'[3, 3];
-    Real 'e_x'[3](each unit = "1") = if 'Modelica.Math.Vectors.length'('n_x') < 1e-10 then {1.0, 0.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_x', 2.220446049250313e-14);
-    Real 'e_y'[3](each unit = "1") = if 'Modelica.Math.Vectors.length'('n_y') < 1e-10 then {0.0, 1.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_y', 2.220446049250313e-14);
-    Real 'n_z_aux'[3](each unit = "1") = {'e_x'[2] * 'e_y'[3] - 'e_x'[3] * 'e_y'[2], 'e_x'[3] * 'e_y'[1] - 'e_x'[1] * 'e_y'[3], 'e_x'[1] * 'e_y'[2] - 'e_x'[2] * 'e_y'[1]};
-    Real 'n_y_aux'[3](each unit = "1") = if 'n_z_aux'[1] * 'n_z_aux'[1] + 'n_z_aux'[2] * 'n_z_aux'[2] + 'n_z_aux'[3] * 'n_z_aux'[3] > 1e-6 then 'e_y' else if abs('e_x'[1]) > 1e-6 then {0.0, 1.0, 0.0} else {1.0, 0.0, 0.0};
-    Real 'e_z_aux'[3](each unit = "1") = {'e_x'[2] * 'n_y_aux'[3] - 'e_x'[3] * 'n_y_aux'[2], 'e_x'[3] * 'n_y_aux'[1] - 'e_x'[1] * 'n_y_aux'[3], 'e_x'[1] * 'n_y_aux'[2] - 'e_x'[2] * 'n_y_aux'[1]};
-    Real 'e_z'[3](each unit = "1") = 'Modelica.Math.Vectors.normalize'('e_z_aux', 2.220446049250313e-14);
-  algorithm
-    'T' := {'e_x', {'e_z'[2] * 'e_x'[3] - 'e_z'[3] * 'e_x'[2], 'e_z'[3] * 'e_x'[1] - 'e_z'[1] * 'e_x'[3], 'e_z'[1] * 'e_x'[2] - 'e_z'[2] * 'e_x'[1]}, 'e_z'};
-  end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
 
   type 'Modelica.Mechanics.MultiBody.Types.GravityTypes' = enumeration('NoGravity', 'UniformGravity', 'PointGravity');
 

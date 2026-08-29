@@ -1,20 +1,95 @@
 //! base 0.1.0
 package 'PsychrometricData'
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid_der' "Derivative function for 'saturationPressureLiquid'"
+  function 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der' "Derivative function for 'sublimationPressureIce'"
     input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     input Real 'dTsat'(unit = "K/s", quantity = "TemperatureSlope");
     output Real 'psat_der'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    Real 'Tcritical'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.096;
-    Real 'pcritical'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 2.2064e7;
-    Real 'a'[:] = {-7.85951783, 1.84408259, -11.7866497, 22.6807411, -15.9618719, 1.80122502};
-    Real 'n'[:] = {1.0, 1.5, 3.0, 3.5, 4.0, 7.5};
-    Real 'r1' = 1.0 - 'Tsat' / 'Tcritical';
-    Real 'r1_der' = -1.0 / 'Tcritical' * 'dTsat';
-    Real 'r2' = 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] * 'r1' ^ 'n'[2] + 'a'[3] * 'r1' ^ 'n'[3] + 'a'[4] * 'r1' ^ 'n'[4] + 'a'[5] * 'r1' ^ 'n'[5] + 'a'[6] * 'r1' ^ 'n'[6];
+    Real 'Ttriple'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.16;
+    Real 'ptriple'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 611.657;
+    Real 'a'[:] = {-13.928169, 34.7078238};
+    Real 'n'[:] = {-1.5, -1.25};
+    Real 'r1' = 'Tsat' / 'Ttriple';
+    Real 'r1_der' = 'dTsat' / 'Ttriple';
   algorithm
-    'psat_der' := exp('r2' * 'Tcritical' / 'Tsat') * 'pcritical' * (('a'[1] * ('r1' ^ ('n'[1] - 1.0) * 'n'[1] * 'r1_der') + 'a'[2] * ('r1' ^ ('n'[2] - 1.0) * 'n'[2] * 'r1_der') + 'a'[3] * ('r1' ^ ('n'[3] - 1.0) * 'n'[3] * 'r1_der') + 'a'[4] * ('r1' ^ ('n'[4] - 1.0) * 'n'[4] * 'r1_der') + 'a'[5] * ('r1' ^ ('n'[5] - 1.0) * 'n'[5] * 'r1_der') + 'a'[6] * ('r1' ^ ('n'[6] - 1.0) * 'n'[6] * 'r1_der')) * 'Tcritical' / 'Tsat' - 'r2' * 'Tcritical' * 'dTsat' / 'Tsat' ^ 2.0);
+    'psat_der' := exp('a'[1] - 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] - 'a'[2] * 'r1' ^ 'n'[2]) * 'ptriple' * (-('a'[1] * ('r1' ^ ('n'[1] - 1.0) * 'n'[1] * 'r1_der') + 'a'[2] * ('r1' ^ ('n'[2] - 1.0) * 'n'[2] * 'r1_der')));
     annotation(Inline = false, smoothOrder = 5);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid_der';
+  end 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der';
+
+  function 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce' "Return sublimation pressure of water as a function of temperature T between 190 and 273.16 K"
+    input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    output Real 'psat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'Ttriple'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.16;
+    Real 'ptriple'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 611.657;
+    Real 'a'[:] = {-13.928169, 34.7078238};
+    Real 'n'[:] = {-1.5, -1.25};
+    Real 'r1' = 'Tsat' / 'Ttriple';
+  algorithm
+    'psat' := exp('a'[1] - 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] - 'a'[2] * 'r1' ^ 'n'[2]) * 'ptriple';
+    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der', Inline = false, smoothOrder = 5);
+  end 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce';
+
+  function 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction' "Spline interpolation of two functions"
+    input Real 'pos';
+    input Real 'neg';
+    input Real 'x';
+    input Real 'deltax' = 1.0;
+    output Real 'out';
+    constant Real 'lim' = 0.9999999999;
+    Real 'scaledX1';
+    Real 'scaledXp';
+    Real 'scaledXt';
+    Real 'y';
+  algorithm
+    'scaledX1' := 'x' / 'deltax';
+
+    if 'scaledX1' <= (-'lim') then
+      'y' := 0.0;
+    elseif 'scaledX1' >= 'lim' then
+      'y' := 1.0;
+    else
+      'scaledXp' := 'scaledX1' * 0.5 * 3.141592653589793;
+      'scaledXt' := 'Modelica.Math.tan'('scaledXp');
+      'y' := 0.5 * 'Modelica.Math.tanh'('scaledXt') + 0.5;
+    end if;
+
+    'out' := 'pos' * 'y' + (1.0 - 'y') * 'neg';
+    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction_der');
+  end 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction';
+
+  function 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der' "Derivative function of h_pTX"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
+    input Real 'dp'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    input Real 'dT'(unit = "K/s", quantity = "TemperatureSlope");
+    input Real 'dX'[:](each unit = "1/s");
+    output Real 'h_der'(unit = "J/(kg.s)");
+    Real 'p_steam_sat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'X_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
+    Real 'X_liquid'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
+    Real 'X_steam'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
+    Real 'X_air'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
+    Real 'x_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
+    Real 'dX_steam'(unit = "1/s");
+    Real 'dX_air'(unit = "1/s");
+    Real 'dX_liq'(unit = "1/s");
+    Real 'dps'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    Real 'dx_sat'(unit = "1/s");
+  algorithm
+    'p_steam_sat' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure'('T');
+    'x_sat' := 'p_steam_sat' * 0.6219647130774989 / max(2.220446049250313e-14, 'p' - 'p_steam_sat');
+    'X_sat' := min('x_sat' * (1.0 - 'X'[1]), 1.0);
+    'X_liquid' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax'('X'[1] - 'X_sat', 0.0, 1e-5);
+    'X_steam' := 'X'[1] - 'X_liquid';
+    'X_air' := 1.0 - 'X'[1];
+    'dX_air' := -'dX'[1];
+    'dps' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure_der'('T', 'dT');
+    'dx_sat' := 0.6219647130774989 * ('dps' * ('p' - 'p_steam_sat') - 'p_steam_sat' * ('dp' - 'dps')) / ('p' - 'p_steam_sat') / ('p' - 'p_steam_sat');
+    'dX_liq' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax_der'('X'[1] - 'X_sat', 0.0, 1e-5, (1.0 + 'x_sat') * 'dX'[1] - (1.0 - 'X'[1]) * 'dx_sat', 0.0, 0.0);
+    'dX_steam' := 'dX'[1] - 'dX_liq';
+    'h_der' := 'X_steam' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow_der'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 2.547494319e6, 'dT') + 'dX_steam' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 2.547494319e6) + 'X_air' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow_der'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 25104.684, 'dT') + 'dX_air' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 25104.684) + 'X_liquid' * 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater_der'('T', 'dT') + 'dX_liq' * 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater'('T');
+    annotation(Inline = false, smoothOrder = 1);
+  end 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der';
 
   function 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction_der' "Derivative of spliceFunction"
     input Real 'pos';
@@ -53,18 +128,41 @@ package 'PsychrometricData'
     end if;
   end 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction_der';
 
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce' "Return sublimation pressure of water as a function of temperature T between 190 and 273.16 K"
+  function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid_der' "Derivative function for 'saturationPressureLiquid'"
     input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    output Real 'psat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'Ttriple'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.16;
-    Real 'ptriple'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 611.657;
-    Real 'a'[:] = {-13.928169, 34.7078238};
-    Real 'n'[:] = {-1.5, -1.25};
-    Real 'r1' = 'Tsat' / 'Ttriple';
+    input Real 'dTsat'(unit = "K/s", quantity = "TemperatureSlope");
+    output Real 'psat_der'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    Real 'Tcritical'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.096;
+    Real 'pcritical'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 2.2064e7;
+    Real 'a'[:] = {-7.85951783, 1.84408259, -11.7866497, 22.6807411, -15.9618719, 1.80122502};
+    Real 'n'[:] = {1.0, 1.5, 3.0, 3.5, 4.0, 7.5};
+    Real 'r1' = 1.0 - 'Tsat' / 'Tcritical';
+    Real 'r1_der' = -1.0 / 'Tcritical' * 'dTsat';
+    Real 'r2' = 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] * 'r1' ^ 'n'[2] + 'a'[3] * 'r1' ^ 'n'[3] + 'a'[4] * 'r1' ^ 'n'[4] + 'a'[5] * 'r1' ^ 'n'[5] + 'a'[6] * 'r1' ^ 'n'[6];
   algorithm
-    'psat' := exp('a'[1] - 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] - 'a'[2] * 'r1' ^ 'n'[2]) * 'ptriple';
-    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der', Inline = false, smoothOrder = 5);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce';
+    'psat_der' := exp('r2' * 'Tcritical' / 'Tsat') * 'pcritical' * (('a'[1] * ('r1' ^ ('n'[1] - 1.0) * 'n'[1] * 'r1_der') + 'a'[2] * ('r1' ^ ('n'[2] - 1.0) * 'n'[2] * 'r1_der') + 'a'[3] * ('r1' ^ ('n'[3] - 1.0) * 'n'[3] * 'r1_der') + 'a'[4] * ('r1' ^ ('n'[4] - 1.0) * 'n'[4] * 'r1_der') + 'a'[5] * ('r1' ^ ('n'[5] - 1.0) * 'n'[5] * 'r1_der') + 'a'[6] * ('r1' ^ ('n'[6] - 1.0) * 'n'[6] * 'r1_der')) * 'Tcritical' / 'Tsat' - 'r2' * 'Tcritical' * 'dTsat' / 'Tsat' ^ 2.0);
+    annotation(Inline = false, smoothOrder = 5);
+  end 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid_der';
+
+  function 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX' "Return specific enthalpy of moist air as a function of pressure p, temperature T and composition X"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
+    output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
+    Real 'p_steam_sat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    Real 'X_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
+    Real 'X_liquid'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
+    Real 'X_steam'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
+    Real 'X_air'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
+  algorithm
+    'p_steam_sat' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure'('T');
+    'X_sat' := min('p_steam_sat' * 0.6219647130774989 / max(2.220446049250313e-14, 'p' - 'p_steam_sat') * (1.0 - 'X'[1]), 1.0);
+    'X_liquid' := max('X'[1] - 'X_sat', 0.0);
+    'X_steam' := 'X'[1] - 'X_liquid';
+    'X_air' := 1.0 - 'X'[1];
+    'h' := 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 2.547494319e6) * 'X_steam' + 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 25104.684) * 'X_air' + 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater'('T') * 'X_liquid';
+    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der', Inline = false);
+  end 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX';
 
   function 'Modelica.Math.Nonlinear.solveOneNonlinearEquation' "Solve f(u) = 0 in a very reliable and efficient way (f(u_min) and f(u_max) must have different signs)"
     input 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' 'f';
@@ -167,76 +265,6 @@ package 'PsychrometricData'
     end while;
   end 'Modelica.Math.Nonlinear.solveOneNonlinearEquation';
 
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der' "Derivative function for 'sublimationPressureIce'"
-    input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'dTsat'(unit = "K/s", quantity = "TemperatureSlope");
-    output Real 'psat_der'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    Real 'Ttriple'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 273.16;
-    Real 'ptriple'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 611.657;
-    Real 'a'[:] = {-13.928169, 34.7078238};
-    Real 'n'[:] = {-1.5, -1.25};
-    Real 'r1' = 'Tsat' / 'Ttriple';
-    Real 'r1_der' = 'dTsat' / 'Ttriple';
-  algorithm
-    'psat_der' := exp('a'[1] - 'a'[1] * 'r1' ^ 'n'[1] + 'a'[2] - 'a'[2] * 'r1' ^ 'n'[2]) * 'ptriple' * (-('a'[1] * ('r1' ^ ('n'[1] - 1.0) * 'n'[1] * 'r1_der') + 'a'[2] * ('r1' ^ ('n'[2] - 1.0) * 'n'[2] * 'r1_der')));
-    annotation(Inline = false, smoothOrder = 5);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.sublimationPressureIce_der';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der' "Derivative function of h_pTX"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    input Real 'dp'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    input Real 'dT'(unit = "K/s", quantity = "TemperatureSlope");
-    input Real 'dX'[:](each unit = "1/s");
-    output Real 'h_der'(unit = "J/(kg.s)");
-    Real 'p_steam_sat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'X_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_liquid'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_steam'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_air'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'x_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'dX_steam'(unit = "1/s");
-    Real 'dX_air'(unit = "1/s");
-    Real 'dX_liq'(unit = "1/s");
-    Real 'dps'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    Real 'dx_sat'(unit = "1/s");
-  algorithm
-    'p_steam_sat' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure'('T');
-    'x_sat' := 'p_steam_sat' * 0.6219647130774989 / max(2.220446049250313e-14, 'p' - 'p_steam_sat');
-    'X_sat' := min('x_sat' * (1.0 - 'X'[1]), 1.0);
-    'X_liquid' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax'('X'[1] - 'X_sat', 0.0, 1e-5);
-    'X_steam' := 'X'[1] - 'X_liquid';
-    'X_air' := 1.0 - 'X'[1];
-    'dX_air' := -'dX'[1];
-    'dps' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure_der'('T', 'dT');
-    'dx_sat' := 0.6219647130774989 * ('dps' * ('p' - 'p_steam_sat') - 'p_steam_sat' * ('dp' - 'dps')) / ('p' - 'p_steam_sat') / ('p' - 'p_steam_sat');
-    'dX_liq' := 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.smoothMax_der'('X'[1] - 'X_sat', 0.0, 1e-5, (1.0 + 'x_sat') * 'dX'[1] - (1.0 - 'X'[1]) * 'dx_sat', 0.0, 0.0);
-    'dX_steam' := 'dX'[1] - 'dX_liq';
-    'h_der' := 'X_steam' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow_der'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 2.547494319e6, 'dT') + 'dX_steam' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 2.547494319e6) + 'X_air' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow_der'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 25104.684, 'dT') + 'dX_air' * 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 25104.684) + 'X_liquid' * 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater_der'('T', 'dT') + 'dX_liq' * 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater'('T');
-    annotation(Inline = false, smoothOrder = 1);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der';
-
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX' "Return specific enthalpy of moist air as a function of pressure p, temperature T and composition X"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'X'[:](max = fill(1.0, size('X', 1)), min = fill(0.0, size('X', 1)), unit = fill("1", size('X', 1)), quantity = fill("MassFraction", size('X', 1)));
-    output Real 'h'(unit = "J/kg", quantity = "SpecificEnergy");
-    Real 'p_steam_sat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    Real 'X_sat'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_liquid'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_steam'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-    Real 'X_air'(max = 1.0, min = 0.0, unit = "1", quantity = "MassFraction");
-  algorithm
-    'p_steam_sat' := 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressure'('T');
-    'X_sat' := min('p_steam_sat' * 0.6219647130774989 / max(2.220446049250313e-14, 'p' - 'p_steam_sat') * (1.0 - 'X'[1]), 1.0);
-    'X_liquid' := max('X'[1] - 'X_sat', 0.0);
-    'X_steam' := 'X'[1] - 'X_liquid';
-    'X_air' := 1.0 - 'X'[1];
-    'h' := 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("H2O", 0.01801528, -1.342338281725291e7, 549760.6476280135, 1000.0, {-39479.6083, 575.573102, 0.931782653, 0.00722271286, -7.34255737e-6, 4.95504349e-9, -1.336933246e-12}, {-33039.7431, 17.24205775}, {1.034972096e6, -2412.698562, 4.64611078, 0.002291998307, -6.836830479999999e-7, 9.426468930000001e-11, -4.82238053e-15}, {-13842.86509, -7.97814851}, 461.5254384056201), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 2.547494319e6) * 'X_steam' + 'Modelica.Media.IdealGases.Common.Functions.h_Tlow'('Modelica.Media.IdealGases.Common.DataRecord'("Air", 0.0289651159, -4333.833858403446, 298609.6803431054, 1000.0, {10099.5016, -196.827561, 5.00915511, -0.00576101373, 1.06685993e-5, -7.94029797e-9, 2.18523191e-12}, {-176.796731, -3.921504225}, {241521.443, -1257.8746, 5.14455867, -2.13854179e-4, 7.06522784e-8, -1.07148349e-11, 6.57780015e-16}, {6462.26319, -8.147411905}, 287.0525368759184), 'T', true, 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy'.'UserDefined', 25104.684) * 'X_air' + 'Modelica.Media.Examples.PsychrometricData.Medium.enthalpyOfWater'('T') * 'X_liquid';
-    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX_der', Inline = false);
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.h_pTX';
-
   function 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid' "Return saturation pressure of water as a function of temperature T in the range of 273.16 to 647.096 K"
     input Real 'Tsat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     output Real 'psat'(nominal = 1e5, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -250,44 +278,11 @@ package 'PsychrometricData'
     annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid_der', Inline = false, smoothOrder = 5);
   end 'Modelica.Media.Examples.PsychrometricData.Medium.saturationPressureLiquid';
 
-  function 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction' "Spline interpolation of two functions"
-    input Real 'pos';
-    input Real 'neg';
-    input Real 'x';
-    input Real 'deltax' = 1.0;
-    output Real 'out';
-    constant Real 'lim' = 0.9999999999;
-    Real 'scaledX1';
-    Real 'scaledXp';
-    Real 'scaledXt';
-    Real 'y';
-  algorithm
-    'scaledX1' := 'x' / 'deltax';
-
-    if 'scaledX1' <= (-'lim') then
-      'y' := 0.0;
-    elseif 'scaledX1' >= 'lim' then
-      'y' := 1.0;
-    else
-      'scaledXp' := 'scaledX1' * 0.5 * 3.141592653589793;
-      'scaledXt' := 'Modelica.Math.tan'('scaledXp');
-      'y' := 0.5 * 'Modelica.Math.tanh'('scaledXt') + 0.5;
-    end if;
-
-    'out' := 'pos' * 'y' + (1.0 - 'y') * 'neg';
-    annotation(derivative(order = 1) = 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction_der');
-  end 'Modelica.Media.Examples.PsychrometricData.Medium.Utilities.spliceFunction';
-
   record 'Medium.ThermodynamicState'
     Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     Real 'T'(nominal = 300.0, start = 288.15, max = 647.0, min = 190.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     Real 'X'[2](nominal = fill(0.1, 2), start = {0.01, 0.99}, max = fill(1.0, 2), min = fill(0.0, 2), unit = fill("kg/kg", 2), quantity = fill("MassFraction", 2));
   end 'Medium.ThermodynamicState';
-
-  partial function 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' "Interface for a function with one input and one output Real signal"
-    input Real 'u';
-    output Real 'y';
-  end 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction';
 
   record 'Modelica.Media.IdealGases.Common.DataRecord'
     String 'name';
@@ -303,6 +298,11 @@ package 'PsychrometricData'
   end 'Modelica.Media.IdealGases.Common.DataRecord';
 
   type 'Modelica.Media.Interfaces.Choices.ReferenceEnthalpy' = enumeration('ZeroAt0K', 'ZeroAt25C', 'UserDefined');
+
+  partial function 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' "Interface for a function with one input and one output Real signal"
+    input Real 'u';
+    output Real 'y';
+  end 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction';
 
   model 'PsychrometricData' "Produces plot data for psychrometric charts"
     parameter Real 'p_const'(displayUnit = "bar", unit = "Pa", quantity = "Pressure") = 1e5 "Pressure";

@@ -1,5 +1,22 @@
 //! base 0.1.0
 package 'Graetz'
+  function 'Modelica.Electrical.Spice3.Internal.Functions.resDepTemp' "Temperature dependent conductance"
+    input Real 'resist'(unit = "Ohm", quantity = "Resistance");
+    input Real 'temp'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'tnom'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    input Real 'tc1';
+    input Real 'tc2';
+    output Real 'conduct'(unit = "S", quantity = "Conductance");
+    output Real 'dCond_dTemp';
+    Real 'difference';
+    Real 'factor';
+  algorithm
+    'difference' := 'temp' - 'tnom';
+    'factor' := 1.0 + 'tc1' * 'difference' + 'tc2' * 'difference' * 'difference';
+    'conduct' := 1.0 / ('resist' * 'factor');
+    'dCond_dTemp' := ('tc1' + 2.0 * 'tc2' * 'difference') * 'conduct' * 'conduct';
+  end 'Modelica.Electrical.Spice3.Internal.Functions.resDepTemp';
+
   function 'Modelica.Electrical.Spice3.Internal.Diode.diodeNoBypassCode' "Calculation of currents"
     input 'Modelica.Electrical.Spice3.Internal.Diode.DiodeModelLineParams' 'in_p';
     input 'Modelica.Electrical.Spice3.Internal.Diode.DiodeParams' 'in_dp';
@@ -26,23 +43,6 @@ package 'Graetz'
     'm_dCurrent' := 'out_cc'.'m_dCurrent';
     ('m_dCap', 'm_dCharge') := 'Modelica.Electrical.Spice3.Internal.Functions.junctionCapTransTime'('in_c'.'m_tJctCap', 'm_dPNVoltage', 'in_c'.'m_tJctPot' * 'in_p'.'m_depletionCapCoeff', 'in_p'.'m_gradingCoeff', 'in_p'.'m_junctionPot', 'in_c'.'m_tF1', 'in_c'.'m_f2', 'in_c'.'m_f3', 'in_p'.'m_transitTime', 'm_dCond', 'm_dCurrent');
   end 'Modelica.Electrical.Spice3.Internal.Diode.diodeNoBypassCode';
-
-  function 'Modelica.Electrical.Spice3.Internal.Functions.resDepTemp' "Temperature dependent conductance"
-    input Real 'resist'(unit = "Ohm", quantity = "Resistance");
-    input Real 'temp'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'tnom'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'tc1';
-    input Real 'tc2';
-    output Real 'conduct'(unit = "S", quantity = "Conductance");
-    output Real 'dCond_dTemp';
-    Real 'difference';
-    Real 'factor';
-  algorithm
-    'difference' := 'temp' - 'tnom';
-    'factor' := 1.0 + 'tc1' * 'difference' + 'tc2' * 'difference' * 'difference';
-    'conduct' := 1.0 / ('resist' * 'factor');
-    'dCond_dTemp' := ('tc1' + 2.0 * 'tc2' * 'difference') * 'conduct' * 'conduct';
-  end 'Modelica.Electrical.Spice3.Internal.Functions.resDepTemp';
 
   record 'Modelica.Electrical.Spice3.Internal.Diode.CurrentsCapacitances'
     Real 'm_dCurrent'(unit = "A", quantity = "ElectricCurrent");

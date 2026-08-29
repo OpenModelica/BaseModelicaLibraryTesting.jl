@@ -1,48 +1,5 @@
 //! base 0.1.0
 package 'IMC_withLosses'
-  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
-    input 'Complex' 'u'[:];
-    output Real 'y';
-    Integer 'm' = size('u', 1);
-  algorithm
-    'y' := sum(sqrt('u[\'k\']'.'re' ^ 2.0 + 'u[\'k\']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
-    annotation(Inline = true);
-  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
-
-  function 'Complex.\'*\'.scalarProduct' "Scalar product of two complex vectors c1 and c2"
-    input 'Complex' 'c1'[:];
-    input 'Complex' 'c2'[size('c1', 1)];
-    output 'Complex' 'c3';
-  algorithm
-    'c3' := 'Complex'(0.0, 0.0);
-
-    for 'i' in 1:size('c1', 1) loop
-      'c3' := 'Complex.\'constructor\'.fromReal'('c3'.'re' + 'c1[\'i\']'.'re' * 'c2[\'i\']'.'re' + 'c1[\'i\']'.'im' * 'c2[\'i\']'.'im', 'c3'.'im' + 'c1[\'i\']'.'re' * 'c2[\'i\']'.'im' - 'c1[\'i\']'.'im' * 'c2[\'i\']'.'re');
-    end for;
-    annotation(Inline = true, smoothOrder = 100);
-  end 'Complex.\'*\'.scalarProduct';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMax';
-  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DValue' "Interpolate 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    input Integer 'icol';
-    input Real 'u';
-    output Real 'y';
-  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValue');
-  end 'Modelica.Blocks.Tables.Internal.getTable1DValue';
-
-  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
-    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
-    output Real 'uMin';
-  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
-  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
-
   function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
     input Real 'u1';
     input Real 'u2';
@@ -60,6 +17,30 @@ package 'IMC_withLosses'
     end if;
   end 'Modelica.Math.atan3';
 
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax' "Return maximum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMax';
+  external "C" 'uMax' = ModelicaStandardTables_CombiTable1D_maximumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmax';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DValue' "Interpolate 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    input Integer 'icol';
+    input Real 'u';
+    output Real 'y';
+  external "C" 'y' = ModelicaStandardTables_CombiTable1D_getValue('tableID', 'icol', 'u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+    annotation(derivative(order = 1) = 'Modelica.Blocks.Tables.Internal.getDerTable1DValue');
+  end 'Modelica.Blocks.Tables.Internal.getTable1DValue';
+
+  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
+    input 'Complex' 'u'[:];
+    output Real 'y';
+    Integer 'm' = size('u', 1);
+  algorithm
+    'y' := sum(sqrt('u[\'k\']'.'re' ^ 2.0 + 'u[\'k\']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
+    annotation(Inline = true);
+  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
+
   function 'Modelica.Blocks.Tables.Internal.getDerTable1DValue' "Derivative of interpolated 1-dim. table defined by matrix"
     input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
     input Integer 'icol';
@@ -69,6 +50,25 @@ package 'IMC_withLosses'
   external "C" 'der_y' = ModelicaStandardTables_CombiTable1D_getDerValue('tableID', 'icol', 'u', 'der_u') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
     annotation(derivative(order = 2) = 'Modelica.Blocks.Tables.Internal.getDer2Table1DValue');
   end 'Modelica.Blocks.Tables.Internal.getDerTable1DValue';
+
+  function 'Complex.\'*\'.scalarProduct' "Scalar product of two complex vectors c1 and c2"
+    input 'Complex' 'c1'[:];
+    input 'Complex' 'c2'[size('c1', 1)];
+    output 'Complex' 'c3';
+  algorithm
+    'c3' := 'Complex'(0.0, 0.0);
+
+    for 'i' in 1:size('c1', 1) loop
+      'c3' := 'Complex.\'constructor\'.fromReal'('c3'.'re' + 'c1[\'i\']'.'re' * 'c2[\'i\']'.'re' + 'c1[\'i\']'.'im' * 'c2[\'i\']'.'im', 'c3'.'im' + 'c1[\'i\']'.'re' * 'c2[\'i\']'.'im' - 'c1[\'i\']'.'im' * 'c2[\'i\']'.'re');
+    end for;
+    annotation(Inline = true, smoothOrder = 100);
+  end 'Complex.\'*\'.scalarProduct';
+
+  function 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin' "Return minimum abscissa value of 1-dim. table defined by matrix"
+    input 'Modelica.Blocks.Types.ExternalCombiTable1D' 'tableID';
+    output Real 'uMin';
+  external "C" 'uMin' = ModelicaStandardTables_CombiTable1D_minimumAbscissa('tableID') annotation(Library = {"ModelicaStandardTables", "ModelicaIO", "ModelicaMatIO", "zlib"}, LibraryDirectory = "modelica://Modelica/Resources/Library");
+  end 'Modelica.Blocks.Tables.Internal.getTable1DAbscissaUmin';
 
   type 'Modelica.Blocks.Types.Init' = enumeration('NoInit', 'SteadyState', 'InitialState', 'InitialOutput');
 

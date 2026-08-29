@@ -1,13 +1,65 @@
 //! base 0.1.0
 package 'PlanarLoops_analytic'
-  function 'Modelica.Math.Vectors.normalizeWithAssert' "Return normalized vector such that length = 1 (trigger an assert for zero vector)"
-    input Real 'v'[:];
-    output Real 'result'[size('v', 1)];
+  function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
+    input Real 'n_x'[3];
+    input Real 'n_y'[3];
+    output Real 'T'[3, 3];
+    Real 'e_x'[3](each unit = "1") = if 'Modelica.Math.Vectors.length'('n_x') < 1e-10 then {1.0, 0.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_x', 2.220446049250313e-14);
+    Real 'e_y'[3](each unit = "1") = if 'Modelica.Math.Vectors.length'('n_y') < 1e-10 then {0.0, 1.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_y', 2.220446049250313e-14);
+    Real 'n_z_aux'[3](each unit = "1") = {'e_x'[2] * 'e_y'[3] - 'e_x'[3] * 'e_y'[2], 'e_x'[3] * 'e_y'[1] - 'e_x'[1] * 'e_y'[3], 'e_x'[1] * 'e_y'[2] - 'e_x'[2] * 'e_y'[1]};
+    Real 'n_y_aux'[3](each unit = "1") = if 'n_z_aux'[1] * 'n_z_aux'[1] + 'n_z_aux'[2] * 'n_z_aux'[2] + 'n_z_aux'[3] * 'n_z_aux'[3] > 1e-6 then 'e_y' else if abs('e_x'[1]) > 1e-6 then {0.0, 1.0, 0.0} else {1.0, 0.0, 0.0};
+    Real 'e_z_aux'[3](each unit = "1") = {'e_x'[2] * 'n_y_aux'[3] - 'e_x'[3] * 'n_y_aux'[2], 'e_x'[3] * 'n_y_aux'[1] - 'e_x'[1] * 'n_y_aux'[3], 'e_x'[1] * 'n_y_aux'[2] - 'e_x'[2] * 'n_y_aux'[1]};
+    Real 'e_z'[3](each unit = "1") = 'Modelica.Math.Vectors.normalize'('e_z_aux', 2.220446049250313e-14);
   algorithm
-    assert('Modelica.Math.Vectors.length'('v') > 0.0, "Vector v={0,0,0} shall be normalized (= v/sqrt(v*v)), but this results in a division by zero.\nProvide a non-zero vector!", AssertionLevel.error);
-    'result' := 'v' / 'Modelica.Math.Vectors.length'('v');
-    annotation(Inline = true);
-  end 'Modelica.Math.Vectors.normalizeWithAssert';
+    'T' := {'e_x', {'e_z'[2] * 'e_x'[3] - 'e_z'[3] * 'e_x'[2], 'e_z'[3] * 'e_x'[1] - 'e_z'[1] * 'e_x'[3], 'e_z'[1] * 'e_x'[2] - 'e_z'[2] * 'e_x'[1]}, 'e_z'};
+  end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
+
+  function 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR2.jointUSR.revolute.selectBranch' "Determine branch which is closest to initial angle=0"
+    input Real 'L'(unit = "m", quantity = "Length");
+    input Real 'e'[3](each unit = "1");
+    input Real 'angle_guess'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    input Real 'r_a'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
+    input Real 'r_b'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
+    output Boolean 'positiveBranch';
+    Real 'e_r_a';
+    Real 'e_r_b';
+    Real 'A';
+    Real 'B';
+    Real 'C';
+    Real 'k1';
+    Real 'k2';
+    Real 'k1a';
+    Real 'k1b';
+    Real 'kcos1';
+    Real 'ksin1';
+    Real 'kcos2';
+    Real 'ksin2';
+    Real 'angle1'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+    Real 'angle2'(displayUnit = "deg", unit = "rad", quantity = "Angle");
+  algorithm
+    'e_r_a' := 'e'[1] * 'r_a'[1] + 'e'[2] * 'r_a'[2] + 'e'[3] * 'r_a'[3];
+    'e_r_b' := 'e'[1] * 'r_b'[1] + 'e'[2] * 'r_b'[2] + 'e'[3] * 'r_b'[3];
+    'A' := -2.0 * ('r_b'[1] * 'r_a'[1] + 'r_b'[2] * 'r_a'[2] + 'r_b'[3] * 'r_a'[3] - 'e_r_b' * 'e_r_a');
+    'B' := 2.0 * 'r_b'[1] * ('e'[2] * 'r_a'[3] - 'e'[3] * 'r_a'[2]) + 2.0 * 'r_b'[2] * ('e'[3] * 'r_a'[1] - 'e'[1] * 'r_a'[3]) + 2.0 * 'r_b'[3] * ('e'[1] * 'r_a'[2] - 'e'[2] * 'r_a'[1]);
+    'C' := 'r_a'[1] * 'r_a'[1] + 'r_a'[2] * 'r_a'[2] + 'r_a'[3] * 'r_a'[3] + 'r_b'[1] * 'r_b'[1] + 'r_b'[2] * 'r_b'[2] + 'r_b'[3] * 'r_b'[3] - 'L' * 'L' - 2.0 * 'e_r_b' * 'e_r_a';
+    'k1' := 'A' * 'A' + 'B' * 'B';
+    'k1a' := 'k1' - 'C' * 'C';
+    assert('k1a' > 1e-10, "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIn most cases it is best that the joints outside of the JointXXX\ncomponent are revolute and NOT prismatic joints. If this also\nlead to singular positions, it could be that this kinematic loop\ncannot be solved analytically. In this case you have to build\nup the loop with basic joints (NO aggregation JointXXX components)\nand rely on dynamic state selection, i.e., during simulation\nthe states will be dynamically selected in such a way that in no\nposition a degree of freedom is lost.\n", AssertionLevel.error);
+    'k1b' := max('k1a', 1e-12);
+    'k2' := sqrt('k1b');
+    'kcos1' := 'B' * 'k2' - 'A' * 'C';
+    'ksin1' := -('B' * 'C' + 'A' * 'k2');
+    'angle1' := 'Modelica.Math.atan2'('ksin1', 'kcos1');
+    'kcos2' := -('A' * 'C' + 'B' * 'k2');
+    'ksin2' := 'A' * 'k2' - 'B' * 'C';
+    'angle2' := 'Modelica.Math.atan2'('ksin2', 'kcos2');
+
+    if abs('angle1' - 'angle_guess') <= abs('angle2' - 'angle_guess') then
+      'positiveBranch' := true;
+    else
+      'positiveBranch' := false;
+    end if;
+  end 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR2.jointUSR.revolute.selectBranch';
 
   function 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR3.jointUSR.revolute.selectBranch' "Determine branch which is closest to initial angle=0"
     input Real 'L'(unit = "m", quantity = "Length");
@@ -103,66 +155,14 @@ package 'PlanarLoops_analytic'
     end if;
   end 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR1.jointUSR.revolute.selectBranch';
 
-  function 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy' "Return orientation object from n_x and n_y vectors"
-    input Real 'n_x'[3];
-    input Real 'n_y'[3];
-    output Real 'T'[3, 3];
-    Real 'e_x'[3](each unit = "1") = if 'Modelica.Math.Vectors.length'('n_x') < 1e-10 then {1.0, 0.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_x', 2.220446049250313e-14);
-    Real 'e_y'[3](each unit = "1") = if 'Modelica.Math.Vectors.length'('n_y') < 1e-10 then {0.0, 1.0, 0.0} else 'Modelica.Math.Vectors.normalize'('n_y', 2.220446049250313e-14);
-    Real 'n_z_aux'[3](each unit = "1") = {'e_x'[2] * 'e_y'[3] - 'e_x'[3] * 'e_y'[2], 'e_x'[3] * 'e_y'[1] - 'e_x'[1] * 'e_y'[3], 'e_x'[1] * 'e_y'[2] - 'e_x'[2] * 'e_y'[1]};
-    Real 'n_y_aux'[3](each unit = "1") = if 'n_z_aux'[1] * 'n_z_aux'[1] + 'n_z_aux'[2] * 'n_z_aux'[2] + 'n_z_aux'[3] * 'n_z_aux'[3] > 1e-6 then 'e_y' else if abs('e_x'[1]) > 1e-6 then {0.0, 1.0, 0.0} else {1.0, 0.0, 0.0};
-    Real 'e_z_aux'[3](each unit = "1") = {'e_x'[2] * 'n_y_aux'[3] - 'e_x'[3] * 'n_y_aux'[2], 'e_x'[3] * 'n_y_aux'[1] - 'e_x'[1] * 'n_y_aux'[3], 'e_x'[1] * 'n_y_aux'[2] - 'e_x'[2] * 'n_y_aux'[1]};
-    Real 'e_z'[3](each unit = "1") = 'Modelica.Math.Vectors.normalize'('e_z_aux', 2.220446049250313e-14);
+  function 'Modelica.Math.Vectors.normalizeWithAssert' "Return normalized vector such that length = 1 (trigger an assert for zero vector)"
+    input Real 'v'[:];
+    output Real 'result'[size('v', 1)];
   algorithm
-    'T' := {'e_x', {'e_z'[2] * 'e_x'[3] - 'e_z'[3] * 'e_x'[2], 'e_z'[3] * 'e_x'[1] - 'e_z'[1] * 'e_x'[3], 'e_z'[1] * 'e_x'[2] - 'e_z'[2] * 'e_x'[1]}, 'e_z'};
-  end 'Modelica.Mechanics.MultiBody.Frames.TransformationMatrices.from_nxy';
-
-  function 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR2.jointUSR.revolute.selectBranch' "Determine branch which is closest to initial angle=0"
-    input Real 'L'(unit = "m", quantity = "Length");
-    input Real 'e'[3](each unit = "1");
-    input Real 'angle_guess'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    input Real 'r_a'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    input Real 'r_b'[3](unit = {"m", "m", "m"}, quantity = {"Length", "Length", "Length"});
-    output Boolean 'positiveBranch';
-    Real 'e_r_a';
-    Real 'e_r_b';
-    Real 'A';
-    Real 'B';
-    Real 'C';
-    Real 'k1';
-    Real 'k2';
-    Real 'k1a';
-    Real 'k1b';
-    Real 'kcos1';
-    Real 'ksin1';
-    Real 'kcos2';
-    Real 'ksin2';
-    Real 'angle1'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-    Real 'angle2'(displayUnit = "deg", unit = "rad", quantity = "Angle");
-  algorithm
-    'e_r_a' := 'e'[1] * 'r_a'[1] + 'e'[2] * 'r_a'[2] + 'e'[3] * 'r_a'[3];
-    'e_r_b' := 'e'[1] * 'r_b'[1] + 'e'[2] * 'r_b'[2] + 'e'[3] * 'r_b'[3];
-    'A' := -2.0 * ('r_b'[1] * 'r_a'[1] + 'r_b'[2] * 'r_a'[2] + 'r_b'[3] * 'r_a'[3] - 'e_r_b' * 'e_r_a');
-    'B' := 2.0 * 'r_b'[1] * ('e'[2] * 'r_a'[3] - 'e'[3] * 'r_a'[2]) + 2.0 * 'r_b'[2] * ('e'[3] * 'r_a'[1] - 'e'[1] * 'r_a'[3]) + 2.0 * 'r_b'[3] * ('e'[1] * 'r_a'[2] - 'e'[2] * 'r_a'[1]);
-    'C' := 'r_a'[1] * 'r_a'[1] + 'r_a'[2] * 'r_a'[2] + 'r_a'[3] * 'r_a'[3] + 'r_b'[1] * 'r_b'[1] + 'r_b'[2] * 'r_b'[2] + 'r_b'[3] * 'r_b'[3] - 'L' * 'L' - 2.0 * 'e_r_b' * 'e_r_a';
-    'k1' := 'A' * 'A' + 'B' * 'B';
-    'k1a' := 'k1' - 'C' * 'C';
-    assert('k1a' > 1e-10, "\nSingular position of loop (either no or two analytic solutions;\nthe mechanism has lost one-degree-of freedom in this position).\nTry first to use another Modelica.Mechanics.MultiBody.Joints.Assemblies.JointXXX component.\nIn most cases it is best that the joints outside of the JointXXX\ncomponent are revolute and NOT prismatic joints. If this also\nlead to singular positions, it could be that this kinematic loop\ncannot be solved analytically. In this case you have to build\nup the loop with basic joints (NO aggregation JointXXX components)\nand rely on dynamic state selection, i.e., during simulation\nthe states will be dynamically selected in such a way that in no\nposition a degree of freedom is lost.\n", AssertionLevel.error);
-    'k1b' := max('k1a', 1e-12);
-    'k2' := sqrt('k1b');
-    'kcos1' := 'B' * 'k2' - 'A' * 'C';
-    'ksin1' := -('B' * 'C' + 'A' * 'k2');
-    'angle1' := 'Modelica.Math.atan2'('ksin1', 'kcos1');
-    'kcos2' := -('A' * 'C' + 'B' * 'k2');
-    'ksin2' := 'A' * 'k2' - 'B' * 'C';
-    'angle2' := 'Modelica.Math.atan2'('ksin2', 'kcos2');
-
-    if abs('angle1' - 'angle_guess') <= abs('angle2' - 'angle_guess') then
-      'positiveBranch' := true;
-    else
-      'positiveBranch' := false;
-    end if;
-  end 'Modelica.Mechanics.MultiBody.Examples.Loops.PlanarLoops_analytic.jointRRR2.jointUSR.revolute.selectBranch';
+    assert('Modelica.Math.Vectors.length'('v') > 0.0, "Vector v={0,0,0} shall be normalized (= v/sqrt(v*v)), but this results in a division by zero.\nProvide a non-zero vector!", AssertionLevel.error);
+    'result' := 'v' / 'Modelica.Math.Vectors.length'('v');
+    annotation(Inline = true);
+  end 'Modelica.Math.Vectors.normalizeWithAssert';
 
   type 'Modelica.Mechanics.MultiBody.Types.GravityTypes' = enumeration('NoGravity', 'UniformGravity', 'PointGravity');
 

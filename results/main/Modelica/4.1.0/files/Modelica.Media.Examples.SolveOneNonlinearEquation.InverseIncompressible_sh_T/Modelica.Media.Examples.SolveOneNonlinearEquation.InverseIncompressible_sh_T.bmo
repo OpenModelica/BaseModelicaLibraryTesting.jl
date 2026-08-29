@@ -1,22 +1,5 @@
 //! base 0.1.0
 package 'InverseIncompressible_sh_T'
-  function 'Modelica.Math.Polynomials.integralValue' "Integral of polynomial p(u) from u_low to u_high"
-    input Real 'p'[:];
-    input Real 'u_high';
-    input Real 'u_low' = 0.0;
-    output Real 'integral' = 0.0;
-    Integer 'n' = size('p', 1);
-    Real 'y_low' = 0.0;
-  algorithm
-    for 'j' in 1:'n' loop
-      'integral' := 'u_high' * ('p'['j'] / ('n' - 'j' + 1) + 'integral');
-      'y_low' := 'u_low' * ('p'['j'] / ('n' - 'j' + 1) + 'y_low');
-    end for;
-
-    'integral' := 'integral' - 'y_low';
-    annotation(derivative(order = 1, zeroDerivative = 'p') = 'Modelica.Math.Polynomials.integralValue_der');
-  end 'Modelica.Math.Polynomials.integralValue';
-
   function 'Modelica.Math.Nonlinear.solveOneNonlinearEquation' "Solve f(u) = 0 in a very reliable and efficient way (f(u_min) and f(u_max) must have different signs)"
     input 'Modelica.Math.Nonlinear.Interfaces.partialScalarFunction' 'f';
     input Real 'u_min';
@@ -118,15 +101,15 @@ package 'InverseIncompressible_sh_T'
     end while;
   end 'Modelica.Math.Nonlinear.solveOneNonlinearEquation';
 
-  function 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.specificEntropy' "Return specific entropy as a function of the thermodynamic state record"
-    input 'Medium.ThermodynamicState' 'state';
-    output Real 's'(nominal = 1000.0, max = 1e7, min = -1e7, unit = "J/(kg.K)", quantity = "SpecificEntropy");
-    Integer 'npol' = 2;
+  function 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.setState_pT' "Returns state record as function of p and T"
+    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'T'(nominal = 300.0, start = 288.15, max = 373.15, min = 243.14999999999998, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    output 'Medium.ThermodynamicState' 'state';
   algorithm
-    assert(true, "Specific Entropy, s(T), is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
-    's' := 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.s_T'('state'.'T');
-    annotation(smoothOrder = 2);
-  end 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.specificEntropy';
+    'state'.'T' := 'T';
+    'state'.'p' := 'p';
+    annotation(smoothOrder = 3);
+  end 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.setState_pT';
 
   function 'Modelica.Math.Polynomials.integralValue_der' "Time derivative of integral of polynomial p(u) from u_low to u_high, assuming only u_high as time-dependent (Leibniz rule)"
     input Real 'p'[:];
@@ -139,15 +122,32 @@ package 'InverseIncompressible_sh_T'
     'dintegral' := 'Modelica.Math.Polynomials.evaluate'('p', 'u_high') * 'du_high';
   end 'Modelica.Math.Polynomials.integralValue_der';
 
-  function 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.setState_pT' "Returns state record as function of p and T"
-    input Real 'p'(nominal = 1e5, start = 1e5, max = 1e8, min = 0.0, displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'T'(nominal = 300.0, start = 288.15, max = 373.15, min = 243.14999999999998, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    output 'Medium.ThermodynamicState' 'state';
+  function 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.specificEntropy' "Return specific entropy as a function of the thermodynamic state record"
+    input 'Medium.ThermodynamicState' 'state';
+    output Real 's'(nominal = 1000.0, max = 1e7, min = -1e7, unit = "J/(kg.K)", quantity = "SpecificEntropy");
+    Integer 'npol' = 2;
   algorithm
-    'state'.'T' := 'T';
-    'state'.'p' := 'p';
-    annotation(smoothOrder = 3);
-  end 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.setState_pT';
+    assert(true, "Specific Entropy, s(T), is not defined for medium Glycol-Water 47%.", AssertionLevel.error);
+    's' := 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.s_T'('state'.'T');
+    annotation(smoothOrder = 2);
+  end 'Modelica.Media.Examples.SolveOneNonlinearEquation.InverseIncompressible_sh_T.Medium.specificEntropy';
+
+  function 'Modelica.Math.Polynomials.integralValue' "Integral of polynomial p(u) from u_low to u_high"
+    input Real 'p'[:];
+    input Real 'u_high';
+    input Real 'u_low' = 0.0;
+    output Real 'integral' = 0.0;
+    Integer 'n' = size('p', 1);
+    Real 'y_low' = 0.0;
+  algorithm
+    for 'j' in 1:'n' loop
+      'integral' := 'u_high' * ('p'['j'] / ('n' - 'j' + 1) + 'integral');
+      'y_low' := 'u_low' * ('p'['j'] / ('n' - 'j' + 1) + 'y_low');
+    end for;
+
+    'integral' := 'integral' - 'y_low';
+    annotation(derivative(order = 1, zeroDerivative = 'p') = 'Modelica.Math.Polynomials.integralValue_der');
+  end 'Modelica.Math.Polynomials.integralValue';
 
   record 'Medium.ThermodynamicState'
     Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");

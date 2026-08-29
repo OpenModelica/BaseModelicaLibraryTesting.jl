@@ -1,5 +1,15 @@
 //! base 0.1.0
 package 'PumpingSystem'
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der' "Derivative function for tsat"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    input Real 'der_p'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
+    output Real 'der_tsat'(unit = "K/s", quantity = "TemperatureSlope");
+    Real 'dtp';
+  algorithm
+    'dtp' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('p');
+    'der_tsat' := 'dtp' * 'der_p';
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der';
+
   function 'Modelica.Fluid.Examples.PumpingSystem.pipe.flowModel.WallFriction.pressureLoss_m_flow' "Return pressure loss dp as function of mass flow rate m_flow, i.e., dp = f(m_flow), due to wall friction"
     input Real 'm_flow'(unit = "kg/s", quantity = "MassFlowRate");
     input Real 'rho_a'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
@@ -165,37 +175,65 @@ package 'PumpingSystem'
     end if;
   end 'Modelica.Fluid.Examples.PumpingSystem.pumps.flowCharacteristic';
 
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat' "Region 4 saturation temperature as a function of pressure"
+  function 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity' "Compute eta(d,T) in the one-phase region"
+    input Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
+    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    Real 'pi';
-    Real 'o'[20];
+    input Integer 'phase' = 0;
+    input Boolean 'checkLimits' = true;
+    output Real 'eta'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
+    constant Real 'n0' = 1.0;
+    constant Real 'n1' = 0.978197;
+    constant Real 'n2' = 0.579829;
+    constant Real 'n3' = -0.202354;
+    constant Real 'nn'[42] = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
+    constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
+    constant Real 'etastar'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 5.5071e-5;
+    constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;
+    Integer 'i';
+    Integer 'j';
+    Real 'delta';
+    Real 'deltam1';
+    Real 'tau';
+    Real 'taum1';
+    Real 'Psi0';
+    Real 'Psi1';
+    Real 'tfun';
+    Real 'rhofun';
+    Real 'Tc' = 'T' - 273.15;
   algorithm
-    assert('p' > 611.657, "IF97 medium function tsat called with too low pressure\np = " + String('p') + " Pa <= " + "611.657" + " Pa (triple point pressure)", AssertionLevel.error);
-    'pi' := min('p', 2.2064e7) * 1e-6;
-    'o'[1] := 'pi' ^ 0.25;
-    'o'[2] := -3.2325550322333e6 * 'o'[1];
-    'o'[3] := 'pi' ^ 0.5;
-    'o'[4] := -724213.16703206 * 'o'[3];
-    'o'[5] := 405113.40542057 + 'o'[2] + 'o'[4];
-    'o'[6] := -17.073846940092 * 'o'[1];
-    'o'[7] := 14.91510861353 + 'o'[3] + 'o'[6];
-    'o'[8] := -4.0 * 'o'[5] * 'o'[7];
-    'o'[9] := 12020.82470247 * 'o'[1];
-    'o'[10] := 1167.0521452767 * 'o'[3];
-    'o'[11] := 'o'[10] - 4823.2657361591 + 'o'[9];
-    'o'[12] := 'o'[11] * 'o'[11];
-    'o'[13] := 'o'[12] + 'o'[8];
-    'o'[14] := 'o'[13] ^ 0.5;
-    'o'[15] := -'o'[14];
-    'o'[16] := -12020.82470247 * 'o'[1];
-    'o'[17] := -1167.0521452767 * 'o'[3];
-    'o'[18] := 4823.2657361591 + 'o'[15] + 'o'[16] + 'o'[17];
-    'o'[19] := 1.0 / 'o'[18];
-    'o'[20] := 2.0 * 'o'[19] * 'o'[5];
-    't_sat' := 0.5 * (650.17534844798 + 'o'[20] - ((650.17534844798 + 'o'[20]) ^ 2.0 - 4.0 * (1300.35069689596 * 'o'[19] * 'o'[5] - 0.23855557567849)) ^ 0.5);
-    annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der');
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat';
+    'delta' := 'd' / 'rhostar';
+
+    if 'checkLimits' then
+      assert('d' > 0.004854575724778614, "IF97 medium function visc_dTp for viscosity called with too low density\nd = " + String('d') + " <= " + "0.00485458" + " (triple point density)", AssertionLevel.error);
+      assert(('p' <= 5e8 and 'Tc' >= 0.0 and 'Tc' <= 150.0 or 'p' <= 3.5e8 and 'Tc' > 150.0 and 'Tc' <= 600.0) or 'p' <= 3e8 and 'Tc' > 600.0 and 'Tc' <= 900.0, "IF97 medium function visc_dTp: viscosity computed outside the range\nof validity of the IF97 formulation: p = " + String('p') + " Pa, Tc = " + String('Tc') + " K", AssertionLevel.error);
+    end if;
+
+    'deltam1' := 'delta' - 1.0;
+    'tau' := 'tstar' / 'T';
+    'taum1' := 'tau' - 1.0;
+    'Psi0' := 1.0 / ('n0' + ('n1' + ('n2' + 'n3' * 'tau') * 'tau') * 'tau') / sqrt('tau');
+    'Psi1' := 0.0;
+    'tfun' := 1.0;
+
+    for 'i' in 1:6 loop
+      if 'i' <> 1 then
+        'tfun' := 'tfun' * 'taum1';
+      end if;
+
+      'rhofun' := 1.0;
+
+      for 'j' in 0:6 loop
+        if 'j' <> 0 then
+          'rhofun' := 'rhofun' * 'deltam1';
+        end if;
+
+        'Psi1' := 'Psi1' + 'nn'['i' + 'j' * 6] * 'tfun' * 'rhofun';
+      end for;
+    end for;
+
+    'eta' := 'etastar' * 'Psi0' * 'Modelica.Math.exp'('delta' * 'Psi1');
+  end 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity';
 
   function 'Modelica.Fluid.Examples.PumpingSystem.pipe.flowModel.WallFriction.massFlowRate_dp_staticHead' "Return mass flow rate m_flow as function of pressure loss dp, i.e., m_flow = f(dp), due to wall friction and static head"
     input Real 'dp'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
@@ -297,6 +335,38 @@ package 'PumpingSystem'
     annotation(smoothOrder = 2);
   end 'Modelica.Fluid.Utilities.regSquare2.regSquare2_utility';
 
+  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat' "Region 4 saturation temperature as a function of pressure"
+    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
+    output Real 't_sat'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
+    Real 'pi';
+    Real 'o'[20];
+  algorithm
+    assert('p' > 611.657, "IF97 medium function tsat called with too low pressure\np = " + String('p') + " Pa <= " + "611.657" + " Pa (triple point pressure)", AssertionLevel.error);
+    'pi' := min('p', 2.2064e7) * 1e-6;
+    'o'[1] := 'pi' ^ 0.25;
+    'o'[2] := -3.2325550322333e6 * 'o'[1];
+    'o'[3] := 'pi' ^ 0.5;
+    'o'[4] := -724213.16703206 * 'o'[3];
+    'o'[5] := 405113.40542057 + 'o'[2] + 'o'[4];
+    'o'[6] := -17.073846940092 * 'o'[1];
+    'o'[7] := 14.91510861353 + 'o'[3] + 'o'[6];
+    'o'[8] := -4.0 * 'o'[5] * 'o'[7];
+    'o'[9] := 12020.82470247 * 'o'[1];
+    'o'[10] := 1167.0521452767 * 'o'[3];
+    'o'[11] := 'o'[10] - 4823.2657361591 + 'o'[9];
+    'o'[12] := 'o'[11] * 'o'[11];
+    'o'[13] := 'o'[12] + 'o'[8];
+    'o'[14] := 'o'[13] ^ 0.5;
+    'o'[15] := -'o'[14];
+    'o'[16] := -12020.82470247 * 'o'[1];
+    'o'[17] := -1167.0521452767 * 'o'[3];
+    'o'[18] := 4823.2657361591 + 'o'[15] + 'o'[16] + 'o'[17];
+    'o'[19] := 1.0 / 'o'[18];
+    'o'[20] := 2.0 * 'o'[19] * 'o'[5];
+    't_sat' := 0.5 * (650.17534844798 + 'o'[20] - ((650.17534844798 + 'o'[20]) ^ 2.0 - 4.0 * (1300.35069689596 * 'o'[19] * 'o'[5] - 0.23855557567849)) ^ 0.5);
+    annotation(derivative(order = 1) = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der');
+  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat';
+
   function 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT' "Intermediate property record for water (p and T preferred states)"
     input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
     input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
@@ -367,76 +437,6 @@ package 'PumpingSystem'
       assert(false, "Error in region computation of IF97 steam tables(p = " + String('p') + ", T = " + String('T') + ")", AssertionLevel.error);
     end if;
   end 'Modelica.Media.Water.IF97_Utilities.waterBaseProp_pT';
-
-  function 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity' "Compute eta(d,T) in the one-phase region"
-    input Real 'd'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density");
-    input Real 'T'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature");
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Integer 'phase' = 0;
-    input Boolean 'checkLimits' = true;
-    output Real 'eta'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity");
-    constant Real 'n0' = 1.0;
-    constant Real 'n1' = 0.978197;
-    constant Real 'n2' = 0.579829;
-    constant Real 'n3' = -0.202354;
-    constant Real 'nn'[42] = {0.5132047, 0.3205656, 0.0, 0.0, -0.7782567, 0.1885447, 0.2151778, 0.7317883, 1.241044, 1.476783, 0.0, 0.0, -0.2818107, -1.070786, -1.263184, 0.0, 0.0, 0.0, 0.1778064, 0.460504, 0.2340379, -0.4924179, 0.0, 0.0, -0.0417661, 0.0, 0.0, 0.1600435, 0.0, 0.0, 0.0, -0.01578386, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.003629481, 0.0, 0.0};
-    constant Real 'rhostar'(min = 0.0, displayUnit = "g/cm3", unit = "kg/m3", quantity = "Density") = 317.763;
-    constant Real 'etastar'(min = 0.0, unit = "Pa.s", quantity = "DynamicViscosity") = 5.5071e-5;
-    constant Real 'tstar'(nominal = 300.0, start = 288.15, min = 0.0, displayUnit = "degC", unit = "K", quantity = "ThermodynamicTemperature") = 647.226;
-    Integer 'i';
-    Integer 'j';
-    Real 'delta';
-    Real 'deltam1';
-    Real 'tau';
-    Real 'taum1';
-    Real 'Psi0';
-    Real 'Psi1';
-    Real 'tfun';
-    Real 'rhofun';
-    Real 'Tc' = 'T' - 273.15;
-  algorithm
-    'delta' := 'd' / 'rhostar';
-
-    if 'checkLimits' then
-      assert('d' > 0.004854575724778614, "IF97 medium function visc_dTp for viscosity called with too low density\nd = " + String('d') + " <= " + "0.00485458" + " (triple point density)", AssertionLevel.error);
-      assert(('p' <= 5e8 and 'Tc' >= 0.0 and 'Tc' <= 150.0 or 'p' <= 3.5e8 and 'Tc' > 150.0 and 'Tc' <= 600.0) or 'p' <= 3e8 and 'Tc' > 600.0 and 'Tc' <= 900.0, "IF97 medium function visc_dTp: viscosity computed outside the range\nof validity of the IF97 formulation: p = " + String('p') + " Pa, Tc = " + String('Tc') + " K", AssertionLevel.error);
-    end if;
-
-    'deltam1' := 'delta' - 1.0;
-    'tau' := 'tstar' / 'T';
-    'taum1' := 'tau' - 1.0;
-    'Psi0' := 1.0 / ('n0' + ('n1' + ('n2' + 'n3' * 'tau') * 'tau') * 'tau') / sqrt('tau');
-    'Psi1' := 0.0;
-    'tfun' := 1.0;
-
-    for 'i' in 1:6 loop
-      if 'i' <> 1 then
-        'tfun' := 'tfun' * 'taum1';
-      end if;
-
-      'rhofun' := 1.0;
-
-      for 'j' in 0:6 loop
-        if 'j' <> 0 then
-          'rhofun' := 'rhofun' * 'deltam1';
-        end if;
-
-        'Psi1' := 'Psi1' + 'nn'['i' + 'j' * 6] * 'tfun' * 'rhofun';
-      end for;
-    end for;
-
-    'eta' := 'etastar' * 'Psi0' * 'Modelica.Math.exp'('delta' * 'Psi1');
-  end 'Modelica.Media.Water.IF97_Utilities.dynamicViscosity';
-
-  function 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der' "Derivative function for tsat"
-    input Real 'p'(displayUnit = "bar", unit = "Pa", quantity = "Pressure");
-    input Real 'der_p'(displayUnit = "bar/s", unit = "Pa/s", quantity = "PressureSlope");
-    output Real 'der_tsat'(unit = "K/s", quantity = "TemperatureSlope");
-    Real 'dtp';
-  algorithm
-    'dtp' := 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.dtsatofp'('p');
-    'der_tsat' := 'dtp' * 'der_p';
-  end 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat_der';
 
   type 'Modelica.Fluid.Types.PortFlowDirection' = enumeration('Entering', 'Leaving', 'Bidirectional');
 

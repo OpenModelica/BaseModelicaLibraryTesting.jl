@@ -1,14 +1,5 @@
 //! base 0.1.0
 package 'SMPM_OpenCircuit'
-  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
-    input 'Complex' 'u'[:];
-    output Real 'y';
-    Integer 'm' = size('u', 1);
-  algorithm
-    'y' := sum(sqrt('u[\'k\']'.'re' ^ 2.0 + 'u[\'k\']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
-    annotation(Inline = true);
-  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
-
   function 'Modelica.Math.atan3' "Four quadrant inverse tangent (select solution that is closest to given angle y0)"
     input Real 'u1';
     input Real 'u2';
@@ -25,6 +16,15 @@ package 'SMPM_OpenCircuit'
       'y' := 'w' + 'pi2' * integer((3.141592653589793 + 'y0' - 'w') / 'pi2');
     end if;
   end 'Modelica.Math.atan3';
+
+  function 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS' "Overall quasi-RMS value of complex input (current or voltage)"
+    input 'Complex' 'u'[:];
+    output Real 'y';
+    Integer 'm' = size('u', 1);
+  algorithm
+    'y' := sum(sqrt('u[\'k\']'.'re' ^ 2.0 + 'u[\'k\']'.'im' ^ 2.0) for 'k' in 1:'m') / 'm';
+    annotation(Inline = true);
+  end 'Modelica.Electrical.QuasiStatic.Polyphase.Functions.quasiRMS';
 
   record 'Modelica.Units.SI.ComplexVoltage'
     Real 're';
