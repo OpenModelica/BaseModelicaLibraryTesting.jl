@@ -5667,7 +5667,7 @@ package 'BatchPlant_StandardWater'
     'B5.m_flow_SidePorts_pos[1]' = if 'B5.m_flow_SidePorts[1]' > 0.0 then 'B5.m_flow_SidePorts[1]' else 0.0;
     'B5.m_flow_TopPorts_pos[1]' = if 'B5.m_flow_TopPorts[1]' > 0.0 then 'B5.m_flow_TopPorts[1]' else 0.0;
     'B5.medium.p' = 101325.0;
-    der('B5.m') = 'B5.m_flow_BottomPorts[1]' + 'B5.m_flow_SidePorts[1]' + 'B5.m_flow_TopPorts[1]' + 'B5.Condensed.m_flow';
+    der('B5.m') = 'B5.m_flow_BottomPorts[1]' + ('B5.m_flow_SidePorts[1]') + ('B5.m_flow_TopPorts[1]') + 'B5.Condensed.m_flow';
     'B5.U' = 'B5.m' * 'B5.medium.h' - 101325.0 * 'B5.V' "Internal energy of fluid";
     'B5.m' = 'B5.V' * 'B5.medium.d' "Mass of fluid";
     'B5.V' = 0.05 * 'B5.level' + 0.001 "Volume of fluid";
@@ -5675,13 +5675,13 @@ package 'BatchPlant_StandardWater'
     'B5.sat.Tsat' = 'Modelica.Media.Water.IF97_Utilities.BaseIF97.Basic.tsat'('B5.medium.p');
 
     if noEvent('B5.medium.T' < 'B5.sat.Tsat') then
-      der('B5.U') = 'B5.H_flow_BottomPorts[1]' + 'B5.H_flow_SidePorts[1]' + 'B5.H_flow_TopPorts[1]' + smooth(0, 'B5.Condensed.m_flow' * 'B5.Condensed.h_outflow') - 101325.0 * der('B5.V') + 'B5.heatTransfer.Q_flows[1]';
+      der('B5.U') = 'B5.H_flow_BottomPorts[1]' + ('B5.H_flow_SidePorts[1]') + ('B5.H_flow_TopPorts[1]') + smooth(0, 'B5.Condensed.m_flow' * 'B5.Condensed.h_outflow') - 101325.0 * der('B5.V') + 'B5.heatTransfer.Q_flows[1]';
       'B5.Condensed.h_outflow' = 'B5.h';
       'B5.Condensed.m_flow' = 0.0;
       'B5.rho' = 'B5.medium.d';
       'B5.h' = 'B5.medium.h';
     else
-      der('B5.U') = 'B5.H_flow_BottomPorts[1]' + 'B5.H_flow_SidePorts[1]' + 'B5.H_flow_TopPorts[1]' + smooth(0, 'B5.Condensed.m_flow' * 'B5.Condensed.h_outflow') - 101325.0 * der('B5.V');
+      der('B5.U') = 'B5.H_flow_BottomPorts[1]' + ('B5.H_flow_SidePorts[1]') + ('B5.H_flow_TopPorts[1]') + smooth(0, 'B5.Condensed.m_flow' * 'B5.Condensed.h_outflow') - 101325.0 * der('B5.V');
       'B5.Condensed.h_outflow' = 'B5.h';
       'B5.Condensed.m_flow' = -'B5.heatTransfer.Q_flows[1]' / ('B5.h_v' - 'B5.h_l');
       'B5.rho' = 'B5.rho_l';
@@ -5692,7 +5692,7 @@ package 'BatchPlant_StandardWater'
       end if;
     end if;
 
-    'B5.m_flow_pos' = 'B5.m_flow_TopPorts_pos[1]' + 'B5.m_flow_SidePorts_pos[1]' + 'B5.m_flow_BottomPorts_pos[1]';
+    'B5.m_flow_pos' = 'B5.m_flow_TopPorts_pos[1]' + ('B5.m_flow_SidePorts_pos[1]') + ('B5.m_flow_BottomPorts_pos[1]');
     assert('B5.level' < 0.5, "Tank is overflowing.", AssertionLevel.error);
     assert(not ('B5.heatPort.Q_flow' > 0.0 and 'B5.level' <= 1e-4), "Attempting to heat an empty tank.", AssertionLevel.error);
     'V12.openingGenerator.y' = if time < 'V12.openingGenerator.T' then 'V12.openingGenerator.endValue' - ('V12.openingGenerator.T' - time) * 'V12.openingGenerator.rate' else 'V12.openingGenerator.endValue';
@@ -6730,8 +6730,8 @@ package 'BatchPlant_StandardWater'
     'B1.ports_emptyPipeHysteresis[1]' = 'B1.portsData_diameter2[1]' * 0.1;
     'B1.medium.p' = 101325.0;
     'B1.V' = 0.05 * 'B1.level' + 1e-4 "Volume of fluid";
-    'B1.mb_flow' = 'B1.topPorts[1].m_flow' + 'B1.ports[1].m_flow';
-    'B1.Hb_flow' = 'B1.H_flow_top[1]' + 'B1.port_b_H_flow_bottom[1]';
+    'B1.mb_flow' = 'B1.topPorts[1].m_flow' + ('B1.ports[1].m_flow');
+    'B1.Hb_flow' = 'B1.H_flow_top[1]' + ('B1.port_b_H_flow_bottom[1]');
     'B1.Qb_flow' = 'B1.heatTransfer.Q_flows[1]';
     'B1.Wb_flow' = -101325.0 * der('B1.V');
     'B1.H_flow_top[1]' = 'B1.topPorts[1].m_flow' * 'V3.port_b.h_outflow';
@@ -6802,8 +6802,8 @@ package 'BatchPlant_StandardWater'
     'B2.ports_emptyPipeHysteresis[1]' = 'B2.portsData_diameter2[1]' * 0.1;
     'B2.medium.p' = 101325.0;
     'B2.V' = 0.05 * 'B2.level' + 1e-4 "Volume of fluid";
-    'B2.mb_flow' = 'B2.topPorts[1].m_flow' + 'B2.ports[1].m_flow';
-    'B2.Hb_flow' = 'B2.H_flow_top[1]' + 'B2.port_b_H_flow_bottom[1]';
+    'B2.mb_flow' = 'B2.topPorts[1].m_flow' + ('B2.ports[1].m_flow');
+    'B2.Hb_flow' = 'B2.H_flow_top[1]' + ('B2.port_b_H_flow_bottom[1]');
     'B2.Qb_flow' = 'B2.heatTransfer.Q_flows[1]';
     'B2.Wb_flow' = -101325.0 * der('B2.V');
     'B2.H_flow_top[1]' = 'B2.topPorts[1].m_flow' * 'V6.port_b.h_outflow';
@@ -6862,8 +6862,8 @@ package 'BatchPlant_StandardWater'
     'B3.ports_emptyPipeHysteresis[2]' = 'B3.portsData_diameter2[2]' * 0.1;
     'B3.medium.p' = 101325.0;
     'B3.V' = 0.05 * 'B3.level' + 1e-4 "Volume of fluid";
-    'B3.mb_flow' = 'B3.topPorts[1].m_flow' + 'B3.topPorts[2].m_flow' + 'B3.ports[1].m_flow' + 'B3.ports[2].m_flow';
-    'B3.Hb_flow' = 'B3.H_flow_top[1]' + 'B3.H_flow_top[2]' + 'B3.port_b_H_flow_bottom[1]' + 'B3.port_b_H_flow_bottom[2]';
+    'B3.mb_flow' = 'B3.topPorts[1].m_flow' + 'B3.topPorts[2].m_flow' + ('B3.ports[1].m_flow' + 'B3.ports[2].m_flow');
+    'B3.Hb_flow' = 'B3.H_flow_top[1]' + 'B3.H_flow_top[2]' + ('B3.port_b_H_flow_bottom[1]' + 'B3.port_b_H_flow_bottom[2]');
     'B3.Qb_flow' = 'B3.heatTransfer.Q_flows[1]';
     'B3.Wb_flow' = -101325.0 * der('B3.V');
     'B3.H_flow_top[1]' = 'B3.topPorts[1].m_flow' * 'pipeB1B3.port_b.h_outflow';
@@ -6938,8 +6938,8 @@ package 'BatchPlant_StandardWater'
     'B4.ports_emptyPipeHysteresis[1]' = 'B4.portsData_diameter2[1]' * 0.1;
     'B4.medium.p' = 101325.0;
     'B4.V' = 0.05 * 'B4.level' + 1e-4 "Volume of fluid";
-    'B4.mb_flow' = 'B4.topPorts[1].m_flow' + 'B4.ports[1].m_flow';
-    'B4.Hb_flow' = 'B4.H_flow_top[1]' + 'B4.port_b_H_flow_bottom[1]';
+    'B4.mb_flow' = 'B4.topPorts[1].m_flow' + ('B4.ports[1].m_flow');
+    'B4.Hb_flow' = 'B4.H_flow_top[1]' + ('B4.port_b_H_flow_bottom[1]');
     'B4.Qb_flow' = 'B4.heatTransfer.Q_flows[1]';
     'B4.Wb_flow' = -101325.0 * der('B4.V');
     'B4.H_flow_top[1]' = 'B4.topPorts[1].m_flow' * 'V11.port_b.h_outflow';
@@ -6994,8 +6994,8 @@ package 'BatchPlant_StandardWater'
     'B7.ports_emptyPipeHysteresis[1]' = 'B7.portsData_diameter2[1]' * 0.1;
     'B7.medium.p' = 101325.0;
     'B7.V' = 0.05 * 'B7.level' + 1e-4 "Volume of fluid";
-    'B7.mb_flow' = 'B7.topPorts[1].m_flow' + 'B7.ports[1].m_flow';
-    'B7.Hb_flow' = 'B7.H_flow_top[1]' + 'B7.port_b_H_flow_bottom[1]';
+    'B7.mb_flow' = 'B7.topPorts[1].m_flow' + ('B7.ports[1].m_flow');
+    'B7.Hb_flow' = 'B7.H_flow_top[1]' + ('B7.port_b_H_flow_bottom[1]');
     'B7.Qb_flow' = 'B7.heatTransfer.Q_flows[1]';
     'B7.Wb_flow' = -101325.0 * der('B7.V');
     'B7.H_flow_top[1]' = 'B7.topPorts[1].m_flow' * 'V15.port_b.h_outflow';
@@ -7644,8 +7644,8 @@ package 'BatchPlant_StandardWater'
     'B6.ports_emptyPipeHysteresis[1]' = 'B6.portsData_diameter2[1]' * 0.1;
     'B6.medium.p' = 101325.0;
     'B6.V' = 0.05 * 'B6.level' + 1e-4 "Volume of fluid";
-    'B6.mb_flow' = 'B6.topPorts[1].m_flow' + 'B6.ports[1].m_flow';
-    'B6.Hb_flow' = 'B6.H_flow_top[1]' + 'B6.port_b_H_flow_bottom[1]';
+    'B6.mb_flow' = 'B6.topPorts[1].m_flow' + ('B6.ports[1].m_flow');
+    'B6.Hb_flow' = 'B6.H_flow_top[1]' + ('B6.port_b_H_flow_bottom[1]');
     'B6.Qb_flow' = 'B6.heatTransfer.Q_flows[1]';
     'B6.Wb_flow' = -101325.0 * der('B6.V');
     'B6.H_flow_top[1]' = 'B6.topPorts[1].m_flow' * 'B5.Condensed.h_outflow';
@@ -7672,7 +7672,7 @@ package 'BatchPlant_StandardWater'
     'B6.U' = 'B6.m' * 'B6.medium.u';
     der('B6.U') = 'B6.Hb_flow' + 'B6.Qb_flow' + 'B6.Wb_flow';
     der('B6.m') = 'B6.mb_flow';
-    0.0 = 'multiPort.port_a.m_flow' + 'multiPort.ports_b[1].m_flow' + 'multiPort.ports_b[2].m_flow' + 'multiPort.ports_b[3].m_flow';
+    0.0 = 'multiPort.port_a.m_flow' + ('multiPort.ports_b[1].m_flow' + 'multiPort.ports_b[2].m_flow' + 'multiPort.ports_b[3].m_flow');
     'multiPort.ports_b[1].p' = 'multiPort.port_a.p';
     'multiPort.ports_b[2].p' = 'multiPort.port_a.p';
     'multiPort.ports_b[3].p' = 'multiPort.port_a.p';

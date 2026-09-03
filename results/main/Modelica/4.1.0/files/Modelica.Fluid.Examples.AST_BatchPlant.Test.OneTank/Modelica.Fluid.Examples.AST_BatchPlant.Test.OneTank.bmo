@@ -489,8 +489,8 @@ package 'OneTank'
     'tank.ports_emptyPipeHysteresis[1]' = 'tank.portsData_diameter2[1]' * 0.01;
     'tank.medium.p' = 101325.0;
     'tank.V' = 'tank.level' + 0.1 "Volume of fluid";
-    'tank.mb_flow' = 'tank.topPorts[1].m_flow' + 'tank.ports[1].m_flow';
-    'tank.Hb_flow' = 'tank.H_flow_top[1]' + 'tank.port_b_H_flow_bottom[1]';
+    'tank.mb_flow' = 'tank.topPorts[1].m_flow' + ('tank.ports[1].m_flow');
+    'tank.Hb_flow' = 'tank.H_flow_top[1]' + ('tank.port_b_H_flow_bottom[1]');
     'tank.Qb_flow' = 'tank.heatTransfer.Q_flows[1]';
     'tank.Wb_flow' = 0.0 "Mechanical work is neglected, since also neglected in medium model (otherwise unphysical small temperature change, if tank level changes)";
     'tank.H_flow_top[1]' = 'tank.topPorts[1].m_flow' * 'flowSource.ports[1].h_outflow';
@@ -533,6 +533,7 @@ package 'OneTank'
     'flowSource.X_in_internal[1]' = 1.0;
     'flowSource.medium.T' = 'flowSource.T_in_internal';
     'flowSource.ports[1].m_flow' = -'flowSource.m_flow_in_internal';
+    assert(abs(abs('flowSource.ports[1].m_flow') - abs('flowSource.ports[1].m_flow')) <= 2.2250738585072014e-308, "FlowSource only supports one connection with flow", AssertionLevel.error);
     'flowSource.ports[1].p' = 'flowSource.medium.p';
     'flowSource.ports[1].h_outflow' = 'flowSource.medium.h';
     assert('ambient_fixed.medium.T' >= 272.15 and 'ambient_fixed.medium.T' <= 403.15, "\nTemperature T (= " + String('ambient_fixed.medium.T') + " K) is not\nin the allowed range (" + String(272.15) + " K <= T <= " + String(403.15) + " K)\nrequired from medium model \"" + "SimpleLiquidWater" + "\".\n", AssertionLevel.error);

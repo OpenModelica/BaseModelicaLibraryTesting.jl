@@ -810,7 +810,7 @@ package 'TanksWithOverflow'
     'upperTank.vessel_ps_static[3]' = max(0.0, 'upperTank.level' - 'upperTank.portsData_height[3]') * 9.80665 * 'upperTank.medium.d' + 101325.0;
     assert('upperTank.level' > 0.0, "Fluid level is too low; the energy balance equation becomes singular when the tank is completely empty.", AssertionLevel.error);
     'upperTank.mb_flow' = 'upperTank.ports[1].m_flow' + 'upperTank.ports[2].m_flow' + 'upperTank.ports[3].m_flow';
-    'upperTank.Hb_flow' = 'upperTank.ports_H_flow[1]' + 'upperTank.ports_H_flow[2]' + 'upperTank.ports_H_flow[3]' + 'upperTank.ports_E_flow[1]' + 'upperTank.ports_E_flow[2]' + 'upperTank.ports_E_flow[3]';
+    'upperTank.Hb_flow' = 'upperTank.ports_H_flow[1]' + 'upperTank.ports_H_flow[2]' + 'upperTank.ports_H_flow[3]' + ('upperTank.ports_E_flow[1]' + 'upperTank.ports_E_flow[2]' + 'upperTank.ports_E_flow[3]');
     'upperTank.Qb_flow' = 'upperTank.heatTransfer.Q_flows[1]';
     assert('upperTank.fluidLevel' <= 20.0, "Vessel is overflowing (fluidLevel > fluidLevel_max = " + String('upperTank.fluidLevel') + ")", AssertionLevel.error);
     'upperTank.portInDensities[1]' = (1.0 + ('upperTank.vessel_ps_static[1]' - 101325.0) * 4.5154e-10 - (('massFlowRate.ports[1].h_outflow' - 104929.0 - ('upperTank.vessel_ps_static[1]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05;
@@ -895,6 +895,7 @@ package 'TanksWithOverflow'
     'massFlowRate.X_in_internal[1]' = 1.0;
     'massFlowRate.medium.T' = 'massFlowRate.T_in_internal';
     'massFlowRate.ports[1].m_flow' = -'massFlowRate.m_flow_in_internal';
+    assert(abs(abs('massFlowRate.ports[1].m_flow') - abs('massFlowRate.ports[1].m_flow')) <= 2.2250738585072014e-308, "FlowSource only supports one connection with flow", AssertionLevel.error);
     'massFlowRate.ports[1].p' = 'massFlowRate.medium.p';
     'massFlowRate.ports[1].h_outflow' = 'massFlowRate.medium.h';
     'pressure.p' = 'pressure.port.p';
@@ -964,7 +965,7 @@ package 'TanksWithOverflow'
     'lowerTank.vessel_ps_static[2]' = max(0.0, 'lowerTank.level' - 'lowerTank.portsData_height[2]') * 9.80665 * 'lowerTank.medium.d' + 101325.0;
     assert('lowerTank.level' > 0.0, "Fluid level is too low; the energy balance equation becomes singular when the tank is completely empty.", AssertionLevel.error);
     'lowerTank.mb_flow' = 'lowerTank.ports[1].m_flow' + 'lowerTank.ports[2].m_flow';
-    'lowerTank.Hb_flow' = 'lowerTank.ports_H_flow[1]' + 'lowerTank.ports_H_flow[2]' + 'lowerTank.ports_E_flow[1]' + 'lowerTank.ports_E_flow[2]';
+    'lowerTank.Hb_flow' = 'lowerTank.ports_H_flow[1]' + 'lowerTank.ports_H_flow[2]' + ('lowerTank.ports_E_flow[1]' + 'lowerTank.ports_E_flow[2]');
     'lowerTank.Qb_flow' = 'lowerTank.heatTransfer.Q_flows[1]';
     assert('lowerTank.fluidLevel' <= 20.0, "Vessel is overflowing (fluidLevel > fluidLevel_max = " + String('lowerTank.fluidLevel') + ")", AssertionLevel.error);
     'lowerTank.portInDensities[1]' = (1.0 + ('lowerTank.vessel_ps_static[1]' - 101325.0) * 4.5154e-10 - (('pipe.port_b.h_outflow' - 104929.0 - ('lowerTank.vessel_ps_static[1]' - 101325.0) * 9.312264084047942e-4) / 4181.9 + 278.15 - 278.15) * 2.5713e-4) * 997.05;
